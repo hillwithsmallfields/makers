@@ -1,7 +1,17 @@
-# YAML file describing the data
-# RHS words that look like type descriptions usually are type descriptions
+# YAML file describing the data (almost like a schema)
 
-# The config data is kept as YAML rather than inside the mongodb database, so it can be version-controlled under git etc
+# RHS words that look like type descriptions usually are type
+# descriptions, but it's not really a DB schema; these are directions
+# to the programs on what to do with these fields.
+
+# The config data is kept as YAML rather than inside the mongodb
+# database, so it can be version-controlled under git etc.
+
+# Where there's a choice of whether to store data attached to a person
+# or to something else, e.g. whether they are trained, or an owner, on
+# a piece of equipment, we'll generally attach the data to a person,
+# because, for example, training a person on a device changes the
+# state of the person, not of the device.
 
 person:
   status:
@@ -45,7 +55,10 @@ person:
 
 # These make up bitmaps, which should fit into a Python integer, so
 # assuming 7 days, you can have up to four time slots per day even on
-# a 32-bit system.
+# a 32-bit system.  A timeslots bitmap is part of a user's profile,
+# and each event instance (e.g. a training session) has a time, so the
+# system can work out who to offer slots to when a training session
+# becomes available.
 
 timeslots:
   days:
@@ -84,7 +97,7 @@ events:
     transition:  trained_on
     host:        trainer_for
     fields:
-      equipment: equipment
+      equipment: equipment_class
   meeting:
     fields:
       location: location
