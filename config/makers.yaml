@@ -1,0 +1,158 @@
+person:
+  fields:
+    email:           email
+    surname:         string
+    given_name:      string
+    known_as:        string
+  status:
+    registered:
+      fields:
+        date_registered: date
+      actions:
+        - attend_meeting
+        - signup_see_the_space
+    interested:
+      times_available: timeslots
+    visited:
+      date_registered: date
+      date_visited:    date
+      times_available: timeslots
+      actions:
+        - signup_induction
+    applicant:
+    member:
+      fields:
+        date_registered: date
+        date_visited:    date
+        date_joined:     date
+        date_suspended:  date
+        date_resumed:    date
+        address:         postal
+        trained_on:      [ (equipment_class, date) ]
+        trainer_for:     [ (equipment_class, date) ]
+        owner_for:       [ (equipment_class, date) ]
+        administrator:   date
+      times_available:   timeslots
+
+# These make up bitmaps, which should fit into a Python integer, so
+# assuming 7 days, you can have up to four time slots per day.
+
+timeslots:
+  days:
+    - Monday
+    - Tuesday
+    - Wednesday
+    - Thursday
+    - Friday
+    - Saturday
+    - Sunday
+  times:
+    - morning
+    - afternoon
+    - evening
+
+events:
+  ALL:
+    fields:
+      date:       date
+      start_time: time
+      duration:   duration
+      host:       member
+  see_the_space:
+    requirement: interested
+    transition:  visited
+  induction:
+    requirement: visited
+    transition:  member
+  training:
+    requirement: member
+    transition:  trained_on
+    host:        trainer_for
+    fields:
+      equipment: equipment
+  meeting:
+    fields:
+      location: location
+  hackathon:
+    fields:
+      location: location
+
+locations:
+  main_space:
+    name: Main space
+  classroom:
+    name: Classroom
+    capacity:
+      tables: 30
+      seated: 60
+  trove:
+    name: Trove
+  office:
+    name: Office
+  workshop:
+    name: Secure workshop
+  craft_room:
+    name: Craft room
+  corridor:
+    name: Corridor
+  kitchen:
+    name: Cakespace
+
+equipment_classes:
+  makespace:
+    description: The hackerspace itself.  Its equipment training is the induction.
+  laser_cutter:
+    training_class: red
+    manufacturer:   laserscript
+  ultimaker:
+    training_class: red
+  formlabs:
+    training_class: red
+  vacuum_former:
+    training_class: amber
+    manufacturer:   Formech
+  warco_metal_mill:
+    manufacturer:   Warco
+    training_class: red
+
+training_classes:
+  red:
+    training_required: Yes
+    training_available: Yes
+  amber:
+    training_required: No
+    training_available: Yes
+  green:
+    training_required: No
+    training_available: No
+
+equipment:
+  makespace:
+    class:    makespace
+    name:     Makespace
+    acquired: 2012
+  betsy:
+    class:    laser_cutter
+    name:     Betsy
+    location: main_space
+    supplier: HPC Laser
+  jaws:
+    class:    laser_cutter
+    name:     Jaws
+    location: main_space
+    supplier: HPC Laser
+  pla_printer_1:
+    class:    ultimaker
+    location: main_space
+  pla_printer_2:
+    class:    ultimaker
+    location: main_space
+  abs_printer_1:
+    class:    ultimaker
+    location: main_space
+  abs_printer_2:
+    class:    ultimaker
+    location: main_space
+  metal_mill_1:
+    class:    warco_metal_mill
+    location: workshop
