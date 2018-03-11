@@ -1,41 +1,51 @@
+# YAML file describing the data
+# RHS words that look like type descriptions usually are type descriptions
+
+# The config data is kept as YAML rather than inside the mongodb database, so it can be version-controlled under git etc
+
 person:
-  fields:
-    email:           email
-    surname:         string
-    given_name:      string
-    known_as:        string
   status:
-    registered:
+    ALL:
+      fields:
+        email:           email
+        surname:         string
+        given_name:      string
+        known_as:        string
+    registered:                 # anyone who has self-registered on the site e.g. with a view to doing See the Space
       fields:
         date_registered: date
       actions:
         - attend_meeting
         - signup_see_the_space
-    interested:
+    interested:                 # people who have signed up for See the Space
       times_available: timeslots
-    visited:
+    visited:                    # people who have done See the Space and are eligible to apply for induction
       date_registered: date
       date_visited:    date
       times_available: timeslots
       actions:
         - signup_induction
-    applicant:
-    member:
+    applicant:                  # people who have applied for induction
+    member:                     # inducted members
       fields:
         date_registered: date
         date_visited:    date
         date_joined:     date
-        date_suspended:  date
+        date_suspended:  date   # there is no concept of leaving the organization, only suspending membership without rejoining since
         date_resumed:    date
         address:         postal
+        # for each user, there are lists of their relationships with equipments
         trained_on:      [ (equipment_class, date) ]
         trainer_for:     [ (equipment_class, date) ]
         owner_for:       [ (equipment_class, date) ]
-        administrator:   date
-      times_available:   timeslots
+        merits:          number # keep track of people doing things for the space such as running training
+        demerits:        number # keep track of number of times someone has signed up for something but not attended
+        administrator:   date   # date since, instead of boolean
+      times_available:   timeslots # see below for description of timeslots
 
 # These make up bitmaps, which should fit into a Python integer, so
-# assuming 7 days, you can have up to four time slots per day.
+# assuming 7 days, you can have up to four time slots per day even on
+# a 32-bit system.
 
 timeslots:
   days:
@@ -50,6 +60,11 @@ timeslots:
     - morning
     - afternoon
     - evening
+
+# There'll be a template system for instantiating events for people to
+# sign up to.  'requirement' describes the condition for being
+# eligible to sign up for something, and 'transition' for what happens
+# if the host confirms their successful attendance.
 
 events:
   ALL:
@@ -98,6 +113,10 @@ locations:
   kitchen:
     name: Cakespace
 
+# The data which is the same for each piece of the same type of
+# equipment, so we don't have to repeat it.  Members get trained on an
+# equipment class, not an individual instance of the equipment.
+    
 equipment_classes:
   makespace:
     description: The hackerspace itself.  Its equipment training is the induction.
@@ -126,6 +145,8 @@ training_classes:
     training_required: No
     training_available: No
 
+# The list of individual instances of equipment.
+    
 equipment:
   makespace:
     class:    makespace
