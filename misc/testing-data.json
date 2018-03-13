@@ -1,0 +1,28 @@
+{
+    "people": [ {"family_name": "Sturdy",
+                 "given_name": "John",
+                 "known_as": "John",
+                 "email": "jcg.sturdy@gmail.com",
+                 "date_registered": "2010-11-20",
+                 "date_joined": "2012-10-05",
+                 "trained": [{"class": "Laser cutter", "trainer": "Mat Cook"},
+                             {"class": "CNC router"},
+                             {"class": "Warco mill"}],
+                 "owner": [{"machine": "CNC router"}],
+                 "trainer": [{"class": "Makespace"},
+                             {"class": "CNC router"},
+                             {"class": "Warco mill"}]}
+              ],
+    "equipment" : [ {"name": "Betsy",
+                     "class": "Laser cutter"},
+                    {"name": "Jaws",
+                     "class": "Laser cutter"},
+                    {"name": "CNC router 1",
+                     "class": "CNC router"},
+                    {"name": "Warco mill 1",
+                     "class": "Warco mill"}
+                  ]
+    
+}
+
+                

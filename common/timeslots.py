@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+import sys
+sys.path.append('../common')
+
 from nevow import tags as T
 from nevow import flat
 import config
