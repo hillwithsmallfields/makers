@@ -157,36 +157,3 @@ training_classes:
   green:
     training_required: No
     training_available: No
-
-# The list of individual instances of equipment.
-    
-equipment:
-  makespace:
-    class:    makespace
-    name:     Makespace
-    acquired: 2012
-  betsy:
-    class:    laser_cutter
-    name:     Betsy
-    location: main_space
-    supplier: HPC Laser
-  jaws:
-    class:    laser_cutter
-    name:     Jaws
-    location: main_space
-    supplier: HPC Laser
-  pla_printer_1:
-    class:    ultimaker
-    location: main_space
-  pla_printer_2:
-    class:    ultimaker
-    location: main_space
-  abs_printer_1:
-    class:    ultimaker
-    location: main_space
-  abs_printer_2:
-    class:    ultimaker
-    location: main_space
-  metal_mill_1:
-    class:    warco_metal_mill
-    location: workshop
