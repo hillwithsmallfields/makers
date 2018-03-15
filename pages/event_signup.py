@@ -6,12 +6,13 @@ sys.path.append('../common')
 from nevow import flat
 from nevow import tags as T
 import config
+import pages
 
 def event_signup(event, person_viewing):
     """Make a signup form for an event."""
-    page = T.html[T.head[T.title["Signup for " + event['name']]],
-                  T.body[T.h1["Signup for " + event['name']]]]
-    return flat.flatten(page)
+    # todo: make signup data
+    return pages.page_string("Signup for " + event['name'],
+                             [])
 
 def main():                     # for testing
     john = {'name': "John"}

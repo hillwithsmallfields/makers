@@ -7,12 +7,13 @@ from nevow import flat
 from nevow import tags as T
 import config
 import database
+import pages
 
 def event_create(person_making):
     """Make an event."""
-    page = T.html[T.head[T.title["Create event"]],
-                  T.body[T.h1["Create event"]]]
-    return flat.flatten(page)
+    # todo: make the event creation data
+    return pages.page_string("Create event",
+                             [])
 
 def main():                     # for testing
     john = database.get_person("John Sturdy")

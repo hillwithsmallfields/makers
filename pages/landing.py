@@ -7,37 +7,32 @@ from nevow import flat
 from nevow import tags as T
 import config
 import database
+import pages
 
-def trained_descr(devclass):
-    return [T.h3[devclass['class']],
-            T.p["Trained by " + devclass['trained by'],
-                " on ", devclass['since']]]
-
-def owning_descr(device):
-    return T.h3[device['machine']]
-
-def trainer_descr(devclass):
-    return T.h3[devclass['class']]
+def relation_table(person, role):
+    return [T.table[ [ T.tr[T.th[devclass['class']],
+                            T.td[devclass['trained by']],
+                            T.td[devclass['since']]]
+                      for devclass in sorted(set([ machine['class']
+                                        for machine in get_person_machines(person, role) ])) ] ] ]
 
 def landing_page(person):
     name = person['given_name'] + " " + person['family_name']
-    trained = [ [trained_descr(devclass) for devclass in person['trained']] ]
+    trained = relation_table(person, 'trained')
     if len(trained) > 0:
         trained = [ T.h2["Trained"]] + trained
-    owning = [ [owning_descr(equipment) for equipment in person['owner']] ]
+    owning = relation_table(person, 'owner')
     if len(owning) > 0:
         owning = [ T.h2["Owner"]] + owning
-    trainer = [ [trainer_descr(devclass) for devclass in person['trainer']] ]
+    trainer = relation_table(person, 'trainer')
     if len(trainer) > 0:
         trainer = [ T.h2["Trainer"]] + trainer
-    page = T.html[T.head[T.title["Home for " + name]],
-                  T.body[T.h1["Home for " + name],
-                         T.h2["Events registered for"],
-                         T.p[T.a(href="person_profile")["View/edit profile"]],
-                         trained,
-                         owning,
-                         trainer]]
-    return flat.flatten(page)
+    return pages.page_string("Home for " + name,
+                             [T.h2["Events registered for"],
+                              T.p[T.a(href="person_profile")["View/edit profile"]],
+                              trained,
+                              owning,
+                              trainer])
 
 def main():                     # for testing
     john = database.get_person('John Sturdy')

@@ -7,11 +7,12 @@ from nevow import flat
 from nevow import tags as T
 import config
 import database
+import pages
 
 def event_calendar():
-    page = T.html[T.head[T.title["Event calendar"]],
-                  T.body[T.h1["Event calendar"]]]
-    return flat.flatten(page)
+    # todo: generate calendar
+    return pages.page_string("Event calendar",
+                             [])
 
 def main():                     # for testing
     print event_calendar()
