@@ -47,8 +47,8 @@ def get_machine(name):
             return machine
     return None
 
-def get_machine_people(machine, role):
-    """For a given machine, get a list of people in a given role.
+def get_machine_class_people(machine_class, role):
+    """For a given machine class, get a list of people in a given role.
     The machine can be given by name or objectId.
     The role will be a list field of the machine document,
     typically 'trained', 'owner' or 'trainer'."""
