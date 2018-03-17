@@ -41,6 +41,7 @@ person:
         date_registered: date
         date_visited:    date
         date_joined:     date
+        inducted_by:     person
         date_suspended:  date   # there is no concept of leaving the organization, only suspending membership without rejoining since
         date_resumed:    date
         address:         postal
@@ -146,6 +147,12 @@ equipment_classes:
   warco_metal_mill:
     manufacturer:   Warco
     training_class: red
+  metal_lathe:
+    training_class: red
+  wood_lathe:
+    training_class: red
+  projector:
+    training_class: green
 
 training_classes:
   red:
