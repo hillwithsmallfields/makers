@@ -1,11 +1,8 @@
 #!/usr/bin/python
 
-import sys
-sys.path.append('../common')
-
 from nevow import flat
 from nevow import tags as T
-import config
+
 import database
 import pages
 

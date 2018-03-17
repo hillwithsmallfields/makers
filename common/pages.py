@@ -15,10 +15,14 @@ def page_string(title, content):
         preamble = conf['page']['preamble']
         postamble = conf['page']['postamble']
     return flat.flatten(T.html[T.head[T.title[title]],
-                               T.body[preamble,
+                               T.body[T.raw(preamble),
                                       T.h1[title],
                                       content,
-                                      postamble]])
+                                      T.raw(postamble)]])
+
+def test_page_section(title, content):
+    """Make a section of the overall test page."""
+    return [T.h2[title], content]
 
 def error_page(message):
     return page_string(message, message)

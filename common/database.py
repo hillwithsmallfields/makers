@@ -1,24 +1,24 @@
 #!/usr/bin/python
 
-import sys
-sys.path.append('../common')
-
 import os
 import json
+import pymongo
 
-loaded_data = None
+client = None
+database = None
+people_collection = None
+equipment_collection = None
+events_collection = None
 
-def get_data():
-    """Return the whole database.  For early debugging without a real db."""
-    global loaded_data
-    if loaded_data is None:
-        # testing code follows
-        file = os.path.expanduser("~/makers-data/data.json")
-        if not os.path.exists(file):
-            file = "/usr/local/share/makers-data.json"
-        with open(file, 'r') as confstream:
-            loaded_data = json.load(confstream)
-    return loaded_data
+def database_init(config):
+    global client, database, people_collection, equipment_collection, events_collection
+    db_config = config['database']
+    collection_names = db_config['collections']
+    client = pymongo.MongoClient(db_config['URI'])
+    database = client[db_config['database_name']]
+    people_collection = database[collection_names['people']]
+    equipment_collection = database[collection_names['equipment']]
+    events_collection = database[collection_names['events']]
 
 def get_person(name):
     """Read the data for a person from the database."""

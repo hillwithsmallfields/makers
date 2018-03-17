@@ -157,3 +157,15 @@ training_classes:
   green:
     training_required: No
     training_available: No
+
+page:
+  preamble: <p>Top navigation bar etc will go here.</p>
+  postamble: <p>Bottom navigation bar etc will go here.</p>
+
+database:
+  URI: mongodb://localhost/
+  database_name: Makespace
+  collections:
+    people:    MakespacePeople
+    equipment: MakespaceEquipment
+    events:    MakespaceEvents

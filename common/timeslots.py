@@ -1,11 +1,8 @@
 #!/usr/bin/python
 
-import sys
-sys.path.append('../common')
-
 from nevow import tags as T
 from nevow import flat
-import config
+import configuration
 
 def timeslots_form(config, values):
     """Make a timeslots form, with some values pre-checked."""
