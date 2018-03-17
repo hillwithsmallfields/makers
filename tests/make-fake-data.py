@@ -96,18 +96,18 @@ def main():
                 if random.random() < 0.2:
                     tr = {'Equipment': ec,
                           'Name': name,
-                          'Date': induction_date + datetime.timedelta(random.randrange(14,90)),
-                          'Trainer': random.choice(trainers[ec]) if ec in trainers else "unknown"}
+                          'Date': (induction_date + datetime.timedelta(random.randrange(14,90))).isoformat(),
+                          'Trainer': random.choice(trainers[ec])['Name'] if ec in trainers else "unknown trainer"}
                     trained_on[ec] = tr
                     users[ec] = users.get(ec,[]) + [tr]
                     if random.random() < 0.1:
                         owners[ec] = owners.get(ec, []) + [{'Equipment': ec,
                                                             'Name': name,
-                                                            'Date': induction_date + datetime.timedelta(random.randrange(14,90))}]
+                                                            'Date': (induction_date + datetime.timedelta(random.randrange(14,90))).isoformat()}]
                     if random.random() < 0.1:
                         trainers[ec] = trainers.get(ec, []) + [{'Equipment': ec,
                                                                 'Name': name,
-                                                                'Date': induction_date + datetime.timedelta(random.randrange(14,90))}]
+                                                                'Date': (induction_date + datetime.timedelta(random.randrange(14,90))).isoformat()}]
             row['trained_on'] = trained_on
             by_email[email] = row
             by_number[member_no] = row
@@ -121,7 +121,7 @@ def main():
         for member_no in range(1010,0,-1):
             if member_no in by_number:
                 member_writer.writerow(by_number[member_no])
-    with open("trained.csv", "w") as trained_file:
+    with open("users.csv", "w") as trained_file:
         trained_writer = csv.DictWriter(trained_file, fieldnames=trained_fields)
         trained_writer.writeheader()
         for eusers in users.values():

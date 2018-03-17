@@ -10,32 +10,40 @@ people_collection = None
 equipment_collection = None
 events_collection = None
 
-def database_init(config):
+def database_init(config, delete_existing=False):
     global client, database, people_collection, equipment_collection, events_collection
     db_config = config['database']
     collection_names = db_config['collections']
     client = pymongo.MongoClient(db_config['URI'])
     database = client[db_config['database_name']]
+    if delete_existing:
+        database.drop_collection(collection_names['people'])
+        database.drop_collection(collection_names['equipment'])
+        database.drop_collection(collection_names['events'])
     people_collection = database[collection_names['people']]
     equipment_collection = database[collection_names['equipment']]
     events_collection = database[collection_names['events']]
+    print "people_collection is", people_collection
+
+def add_person(record):
+    print "Adding person", record, "to collection", people_collection
+    # todo: convert dates to datetime.datetime
+    # todo: possibly use upsert
+    people_collection.insert(record)
+
+def members():
+    """Return a list of all members."""
+
 
 def get_person(name):
     """Read the data for a person from the database."""
-    data = get_data()
-    # todo: replace with mongodb stuff
-    for person in data['people']:
-        if (person['email'] == name
-            or person['_id'] == name
-            or person['known_as'] == name):
-            return person
-    parts = name.split(' ')
-    if len(parts) == 2:
-        forename, surname = parts
-        # todo: replace with mongodb stuff
-        for person in data['people']:
-            if person['family_name'] == surname and person['given_name'] == forename:
-                return person
+    name_parts = name.rsplit(" ", 1)
+    record = (people_collection.find_one({'given_name': name_parts[0],
+                                         'surname': name_parts[1]})
+              or people_collection.find_one({'email': name})
+              or people_collection.find_one({'_id': name}))
+    if record:
+        return record
     return None
 
 def get_machine(name):
