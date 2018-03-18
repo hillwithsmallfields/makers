@@ -166,7 +166,8 @@ training_classes:
     training_available: No
 
 page:
-  preamble: <p>Top navigation bar etc will go here.</p>
+  stylesheet: makers.css
+  preamble:  <p>Top navigation bar etc will go here.</p>
   postamble: <p>Bottom navigation bar etc will go here.</p>
 
 database:
