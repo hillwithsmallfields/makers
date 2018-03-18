@@ -15,6 +15,8 @@ def page_string(title, content):
         preamble = conf['page']['preamble']
         postamble = conf['page']['postamble']
     return flat.flatten(T.html[T.head[T.title[title]],
+                               # todo: set the encoding
+                               # todo: include a stylesheet as set in the config file
                                T.body[T.raw(preamble),
                                       T.h1[title],
                                       content,

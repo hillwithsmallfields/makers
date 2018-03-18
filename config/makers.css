@@ -1,0 +1,55 @@
+BODY {
+  color: black;
+  background-color: #f0fff0;
+  font-family: sans-serif;
+  font-size: small;
+  font-style: normal;
+  font-weight: normal;
+  margin-top: 2em;
+  margin-bottom: 5em;
+  margin-left: 5%;
+  margin-right: 8%;
+  text-align: left;   /* discourage justification */
+  letter-spacing: 0;  /* in fact, switch it right off */
+  /* line-height: 125% */
+}
+
+H1 {
+  padding: 6px;
+  background:     #c0f0c0;
+  color:          #004000;
+  border-top:     2px solid #008000;
+  border-bottom:  2px solid #008000;
+  border-left:    2px solid #008000;
+  border-right:   2px solid #008000;
+}
+
+H2 {
+  padding: 6px;
+  background:     #c0f0c0;
+  color:          #004000;
+  border-top:     2px solid #008000;
+  border-bottom:  2px solid #008000;
+  border-left:    2px solid #008000;
+  border-right:   2px solid #008000;
+}
+
+H3 {
+  padding: 6px;
+  background:     #c0f0c0;
+  color:          #004000;
+  border-top:     2px solid #008000;
+  border-bottom:  2px solid #008000;
+  border-left:    2px solid #008000;
+  border-right:   2px solid #008000;
+}
+
+H4 {
+  padding: 6px;
+  background:     #c0f0c0;
+  color:          #004000;
+  border-top:     2px solid #008000;
+  border-bottom:  2px solid #008000;
+  border-left:    2px solid #008000;
+  border-right:   2px solid #008000;
+}
