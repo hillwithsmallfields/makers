@@ -33,7 +33,7 @@ def add_person(record):
 
 def members():
     """Return a list of all members."""
-
+    return [ person for person in people_collection.find({}) ]
 
 def get_person(name):
     """Read the data for a person from the database."""
@@ -60,20 +60,48 @@ def get_machine_class_people(machine_class, role):
     The machine can be given by name or objectId.
     The role will be a list field of the machine document,
     typically 'trained', 'owner' or 'trainer'."""
-    # todo: mongodb stuff
+    # todo: make this find a <role> which has an entry with the appropriate machine_class
+    raw = people_collection.find({role: machine_class})
+    checked = {}
+    # todo: filter the ones which have been cancelled
     return None
 
 def get_person_machines(person, role):
     """Return the machines on which a person has a given role.
-    The role will be a list field of the machine document,
-    typically 'trained', 'owner' or 'trainer'."""
-    # todo: mongodb stuff
-    return None
+    The role will be a list field of the machine document, typically
+    'trained', 'owner' or 'trainer'.  The result will be a dictionary
+    keyed by equipment class, with the values in the result being
+    dictionaries giving their name, the equipment class, when they
+    were trained and who by."""
+    latest_periods = get_person(person)[role]
+    if latest_periods is None:
+        return None
+    enablements = {}
+    for record in latest_periods:
+        if (record['equipment_class'] not in enablements
+            and record.get('until', None) is None):
+            enablements[record['equipment_class']] = record
+    return enablements
 
-def is_administrator(person):
-    """Return whether a person is an administrator."""
-    # todo: look up whether they are an owner of the database 'equipment'
-    return False
+def is_administrator(person, config, writer=False):
+    """Return whether a person is an administrator who can access other people's data in the database.
+    With the optional third argument non-False, check whether they have write access too."""
+    return (config['organization']['database']
+            in get_person_machines(person,
+                                   'owner' if writer else 'trained'))
+
+def add_person_machine_role(person, person_adding, machine_class, role):
+    # todo: indicate that a person has a relationship to a machine class
+    pass
+
+def cancel_person_machine_role(person, person_cancelling, machine_class, role):
+    # todo: indicate that a person no longer has a relationship to a machine class
+    pass
+
+
+def check_person_machine_role(person, machine_class, role):
+    # todo: check whether a person has a relationship to a machine class
+    return None
 
 def main():                     # for testing
     print get_person('jcg.sturdy@gmail.com')
