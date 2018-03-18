@@ -2,7 +2,7 @@
 
 from nevow import flat
 from nevow import tags as T
-import config
+import configuration
 
 preamble = None
 postamble = None
@@ -11,7 +11,7 @@ def page_string(title, content):
     """Make up a complete page as a string."""
     global preamble, postamble
     if preamble is None or postamble is None:
-        conf = config.get_config()
+        conf = configuration.get_config()
         preamble = conf['page']['preamble']
         postamble = conf['page']['postamble']
     return flat.flatten(T.html[T.head[T.title[title]],

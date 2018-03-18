@@ -37,6 +37,7 @@ def members():
 
 def get_person(name):
     """Read the data for a person from the database."""
+    print "get_person", name
     name_parts = name.rsplit(" ", 1)
     record = (people_collection.find_one({'given_name': name_parts[0],
                                          'surname': name_parts[1]})
@@ -73,9 +74,11 @@ def get_person_machines(person, role):
     keyed by equipment class, with the values in the result being
     dictionaries giving their name, the equipment class, when they
     were trained and who by."""
-    latest_periods = get_person(person)[role]
-    if latest_periods is None:
+    if isinstance(person, basestring):
+        person = get_person(person)
+    if role not in person:
         return None
+    latest_periods = person[role]
     enablements = {}
     for record in latest_periods:
         if (record['equipment_class'] not in enablements

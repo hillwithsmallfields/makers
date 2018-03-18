@@ -67,8 +67,12 @@ def main():
     owners = {}
     trainers = {}
     for member_no in range(1,1010):
-        forename = random.choice(forenames)
-        surname = random.choice(surnames)
+        if member_no == 1:
+            forename = "Joe"
+            surname = "Bloggs"
+        else:
+            forename = random.choice(forenames)
+            surname = random.choice(surnames)
         name = forename + " " + surname
         email = forename.lower() + surname.lower() + "@" + random.choice(emailers) + ".com"
         induction_size -= 1

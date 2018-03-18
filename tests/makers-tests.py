@@ -6,14 +6,16 @@ sys.path.append('pages')
 
 from nevow import flat
 from nevow import tags as T
+import configuration
 import database
 import pages
 import list_members
 import landing
 
 def main():
-    config = config.get_config()
-    person = database.get_person('John Sturdy')
+    config = configuration.get_config()
+    database.database_init(config)
+    person = database.get_person('Joe Bloggs')
     test_content = [pages.test_page_section("List of members",
                                             list_members.list_members(person)),
                     pages.test_page_section("Landing page",
