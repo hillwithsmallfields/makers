@@ -14,7 +14,7 @@ If the person viewing the page is an owner, they will get a form to alter the st
                              [])
 
 def main():                     # for testing
-    john = database.get_person("John Sturdy")
+    john = database.get_person("Joe Bloggs")
     betsy = database.get_machine("Betsy")
     print equipment_status(betsy, john)
 

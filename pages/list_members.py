@@ -17,3 +17,7 @@ def list_members(viewing_member):
     # todo: get the names, sort them, construct a table
     # todo: allow the sorting to be by membership number, first name, or last name
     return T.table[[member_row(person) for person in database.members()]]
+
+def list_members_page(viewing_member):
+    return pages.page_string("List of members",
+                             list_members(viewing_member))

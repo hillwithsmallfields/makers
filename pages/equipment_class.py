@@ -12,7 +12,7 @@ def people_table(people_machine_relations):
                          T.td[person['trained_by']]] # todo: check the key I use for this
                       for person in people_machine_relations]]
 
-def equipment_class(machine_class):
+def equipment_class_content(machine_class):
     # todo: get data from config, and search database for users, owners, and trainers
     users = get_machine_class_people(machine_class, 'trained')
     owners = get_machine_class_people(machine_class, 'owners')
@@ -26,3 +26,7 @@ def equipment_class(machine_class):
         page_body = page_body + [T.h2["Trainers"] + people_table(trainers)]
     return pages.page_string("Equipment class " + machine_class,
                              page_body)
+
+def equipment_class_page(machine_class):
+    return pages.page_string("Equipment: " + machine_class,
+                             equipment_class_content(machine_class))
