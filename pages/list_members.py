@@ -4,19 +4,18 @@ from nevow import tags as T
 import database
 import pages
 
-def member_row(person):
-    name = person['given_name'] + " " + person['surname']
-    return [T.tr[T.th(_class="pn")[name],
-                 T.td(_class="em")[person['email']]]]
+def member_row(person, viewing_person):
+    return [T.tr[T.th(_class="pn")[database.person_name(person, viewing_person)],
+                 T.td(_class="em")[database.person_email(person, viewing_person)]]]
 
-def list_members(viewing_member):
+def list_members(viewing_person):
     """List all the members.
     Probably only the admins should be allowed to do this."""
-    # todo: check that viewing_member is an admin
     members = database.members()
-    # todo: get the names, sort them, construct a table
-    # todo: allow the sorting to be by membership number, first name, or last name
-    return T.table[[member_row(person) for person in database.members()]]
+    # todo: allow the sorting to be by membership number, date joined, first name, or last name
+    return T.table[T.tr[T.th["Name"], T.th["email"]],
+                   [member_row(person, viewing_member)
+                    for person in database.members()]]
 
 def list_members_page(viewing_member):
     return pages.page_string("List of members",

@@ -93,6 +93,34 @@ def is_administrator(person, config, writer=False):
             in get_person_machines(person,
                                    'owner' if writer else 'trained'))
 
+# You should generally use these functions to get these details of
+# people, rather than looking directly in the relevant fields of the
+# record, so that privacy protection can be applied.
+
+def person_name(person, viewing_person):
+    """Return the person's full name and nickname.
+    If they have requested anonymity, only they and the admins can see their name."""
+    person = get_person(person)
+    viewing_person = get_person(viewing_person)
+    if (person == viewing_person
+        or not person.get("anonymized", False) # optional flag
+        # todo: add an equipment arg to give context so that owners and trainers of that equipment can see this
+        or is_administrator(viewing_person)):
+        given_name = person['given_name']
+        return given_name + " " + person['surname'], person.get('known_as', given_name)
+    else:
+        return "Anonymous", "Anon"
+
+def person_email(person, viewing_person):
+    """Return the person's email address.
+    If they have requested anonymity, only they and the admins can see this."""
+    return (person['email']
+            if (person == viewing_person
+                or not person.get("anonymized", False) # optional flag
+                # todo: add an equipment arg to give context so that owners and trainers of that equipment can see this
+                or is_administrator(viewing_person))
+            else "anon@anonymous.com")
+
 def add_person_machine_role(person, person_adding, machine_class, role):
     # todo: indicate that a person has a relationship to a machine class
     pass
