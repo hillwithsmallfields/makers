@@ -42,6 +42,7 @@ def get_person(name):
     record = (people_collection.find_one({'given_name': name_parts[0],
                                          'surname': name_parts[1]})
               or people_collection.find_one({'email': name})
+              or people_collection.find_one({'fob': name})
               or people_collection.find_one({'_id': name}))
     if record:
         return record
