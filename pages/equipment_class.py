@@ -14,9 +14,9 @@ def people_table(people_machine_relations):
 
 def equipment_class_content(machine_class):
     # todo: get data from config, and search database for users, owners, and trainers
-    users = get_machine_class_people(machine_class, 'trained')
-    owners = get_machine_class_people(machine_class, 'owners')
-    trainers = get_machine_class_people(machine_class, 'trainers')
+    users = database.get_machine_class_people(machine_class, 'trained')
+    owners = database.get_machine_class_people(machine_class, 'owners')
+    trainers = database.get_machine_class_people(machine_class, 'trainers')
     page_body = []
     if users and len(users) > 0:
         page_body = page_body + [T.h2["Users"] + people_table(users)]

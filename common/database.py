@@ -23,7 +23,6 @@ def database_init(config, delete_existing=False):
     people_collection = database[collection_names['people']]
     equipment_collection = database[collection_names['equipment']]
     events_collection = database[collection_names['events']]
-    print "people_collection is", people_collection
 
 def add_person(record):
     print "Adding person", record, "to collection", people_collection
@@ -37,7 +36,8 @@ def members():
 
 def get_person(name):
     """Read the data for a person from the database."""
-    print "get_person", name
+    if isinstance(name, dict):
+        return name             # no lookup needed
     name_parts = name.rsplit(" ", 1)
     record = (people_collection.find_one({'given_name': name_parts[0],
                                          'surname': name_parts[1]})
@@ -134,11 +134,3 @@ def cancel_person_machine_role(person, person_cancelling, machine_class, role):
 def check_person_machine_role(person, machine_class, role):
     # todo: check whether a person has a relationship to a machine class
     return None
-
-def main():                     # for testing
-    print get_person('jcg.sturdy@gmail.com')
-    print get_person('John Sturdy')
-    print get_machine("Betsy")
-
-if __name__ == "__main__":
-    main()

@@ -113,15 +113,15 @@ events:
   training:
     requirement: member
     transition:  trained_on
-    description: Training on %(equipment_class)s
+    description: "Training on %(equipment_class)s"
     host:        trainer_for
-    name:        %(equipment_class)s training
+    name:        "%(equipment_class)s training"
     typename:    Equipment training
-    equipment:   %(equipment_class)s
+    equipment:   "%(equipment_class)s"
     fields:
       equipment: equipment_class
   meeting:
-    name:         %(meeting_name)
+    name:         "%(meeting_name)"
     description:  A meeting where people are sitting in rows of chairs, lecture-style.
     typename:     Meeting
     equipment:    classroom
@@ -130,7 +130,7 @@ events:
       location:   location
       max_people: 60
   hackathon:
-    name:         %(meeting_name)
+    name:         "%(meeting_name)"
     description:  A meeting where people are sitting at tables.
     typename:     Hackathon
     equipment:    classroom
@@ -204,9 +204,11 @@ training_classes:
     training_available: No
 
 page:
-  stylesheet: makers.css
-  preamble:  <p>Top navigation bar etc will go here.</p>
-  postamble: <p>Bottom navigation bar etc will go here.</p>
+  stylesheet:   config/makers.css
+  style_inline: True
+  preamble:     <p>Top navigation bar etc will go here.</p>
+  postamble:    <p>Bottom navigation bar etc will go here.</p>
+  motd_file:    config/motd.html
 
 database:
   URI: mongodb://localhost/
@@ -226,4 +228,3 @@ organization:
   # Being a trained user on the equipment class named here gives you
   # read access to the database; being an owner on it gives you write access
   database:    makespace_admin_db
-  motd_file:   /home/admin/motd.html

@@ -60,9 +60,11 @@ def main():
     induction_size = random.randrange(1, 6)
     config = configuration.get_config()
     equipment_classes = config['equipment_classes']
+    equipment_last_training_sessions = {}
+    equipment_last_trainers = {}
     del equipment_classes['makespace']
     equipment_classes = [ eqcl for eqcl in equipment_classes.keys()
-                          if equipment_classes[eqcl]['training_class'] == 'red' ]
+                          if equipment_classes[eqcl].get('training_class', 'red') == 'red' ]
     users = {}
     owners = {}
     trainers = {}
@@ -74,7 +76,9 @@ def main():
             forename = random.choice(forenames)
             surname = random.choice(surnames)
         name = forename + " " + surname
-        email = forename.lower() + surname.lower() + "@" + random.choice(emailers) + ".com"
+        e1 = forename.lower()
+        e2 = surname.lower()
+        email = random.choice([e1, e1[0:1]]) + random.choice(["", ".", "_"]) + e2 + "@" + random.choice(emailers) + ".com"
         induction_size -= 1
         if induction_size == 0:
             induction_size = random.randrange(1, 6)
@@ -97,11 +101,19 @@ def main():
                 row['Date expired'] = induction_date+datetime.timedelta(random.randrange(90,700))
             trained_on = {}
             for ec in equipment_classes:
-                if random.random() < 0.2:
+                if random.random() < 0.2: # 0.2 of all users trained on each device
+                    if ec not in equipment_last_training_sessions or random.random() < 0.25: # bunch the trainees for that equipment
+                        training_date = (induction_date + datetime.timedelta(random.randrange(14,90))).isoformat()
+                        trainer = random.choice(trainers[ec])['Name'] if ec in trainers else "unknown trainer"
+                        equipment_last_training_sessions[ec] = training_date
+                        equipment_last_trainers[ec] = trainer
+                    else:
+                        training_date = equipment_last_training_sessions[ec]
+                        trainer = equipment_last_trainers[ec]
                     tr = {'Equipment': ec,
                           'Name': name,
-                          'Date': (induction_date + datetime.timedelta(random.randrange(14,90))).isoformat(),
-                          'Trainer': random.choice(trainers[ec])['Name'] if ec in trainers else "unknown trainer"}
+                          'Date': training_date,
+                          'Trainer': trainer}
                     trained_on[ec] = tr
                     users[ec] = users.get(ec,[]) + [tr]
                     if random.random() < 0.1:
