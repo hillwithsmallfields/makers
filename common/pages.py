@@ -13,6 +13,7 @@ def page_string(title, content):
     if preamble is None or postamble is None:
         conf = configuration.get_config()
         preamble = conf['page']['preamble']
+        # todo: get MOTD that can be set by admins
         postamble = conf['page']['postamble']
     return flat.flatten(T.html[T.head[T.title[title]],
                                # todo: set the encoding
@@ -28,9 +29,3 @@ def test_page_section(title, content):
 
 def error_page(message):
     return page_string(message, message)
-
-def main():                     # for testing
-    print page_string("Test page", "Test content")
-
-if __name__ == "__main__":
-    main()
