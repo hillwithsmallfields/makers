@@ -85,27 +85,56 @@ timeslots:
 events:
   ALL:
     fields:
-      date:       date
-      start_time: time
-      duration:   duration
-      host:       member
+      date:        date
+      start_time:  time
+      duration:    duration
+      hosts:       [member]
+      registered:  [person]
+      attended:    [person]
+      declined:    [person]
+      no_show:     [person]
+      name:        string
+      typename:    string
+      description: string
   see_the_space:
     requirement: interested
     transition:  visited
+    name:        See the Space
+    typename:    See the Space
+    description: A tour of the Space, required before applying to join (to make sure you know what you'll be signing up for).
+    equipment:   makespace
   induction:
     requirement: visited
     transition:  member
+    name:        New members' induction
+    typename:    New members' induction
+    description: The general induction and safety briefing for the space as a whole, that all new members must attend.
+    equipment:   makespace
   training:
     requirement: member
     transition:  trained_on
+    description: Training on %(equipment_class)s
     host:        trainer_for
+    name:        %(equipment_class)s training
+    typename:    Equipment training
+    equipment:   %(equipment_class)s
     fields:
       equipment: equipment_class
   meeting:
+    name:         %(meeting_name)
+    description:  A meeting where people are sitting in rows of chairs, lecture-style.
+    typename:     Meeting
+    equipment:    classroom
+    location:     classroom
     fields:
       location:   location
       max_people: 60
   hackathon:
+    name:         %(meeting_name)
+    description:  A meeting where people are sitting at tables.
+    typename:     Hackathon
+    equipment:    classroom
+    location:     classroom
     fields:
       location:   location
       max_people: 30
@@ -197,3 +226,4 @@ organization:
   # Being a trained user on the equipment class named here gives you
   # read access to the database; being an owner on it gives you write access
   database:    makespace_admin_db
+  motd_file:   /home/admin/motd.html
