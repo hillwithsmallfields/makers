@@ -30,9 +30,10 @@ person:
     interested:                 # people who have signed up for See the Space
       times_available: timeslots
     visited:                    # people who have done See the Space and are eligible to apply for induction
-      date_registered: date
-      date_visited:    date
-      times_available: timeslots
+      fields:
+        date_registered: date
+        date_visited:    date
+        times_available: timeslots
       actions:
         - signup_induction
     applicant:                  # people who have applied for induction
@@ -41,6 +42,7 @@ person:
         date_registered: date
         date_visited:    date
         date_joined:     date
+        times_available: timeslots
         inducted_by:     person
         date_suspended:  date   # there is no concept of leaving the organization, only suspending membership without rejoining since
         date_resumed:    date
