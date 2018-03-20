@@ -103,11 +103,16 @@ events:
       equipment: equipment_class
   meeting:
     fields:
-      location: location
+      location:   location
+      max_people: 60
   hackathon:
     fields:
-      location: location
+      location:   location
+      max_people: 30
 
+# This section defines the names that can be used as locations in the
+# "events" and "equipment_classes" sections
+      
 locations:
   main_space:
     name: Main space
@@ -136,6 +141,8 @@ locations:
 equipment_classes:
   makespace:
     description: The hackerspace itself.  Its equipment training is the induction.
+  makespace_admin_db:
+    description: The admin database.  Being a user of it means you can read other people's data, and being an owner means you can write other people's data.
   laser_cutter:
     training_class: red
     manufacturer:   laserscript
