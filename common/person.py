@@ -1,3 +1,4 @@
+import database
 
 class Person(object):
 
@@ -41,3 +42,18 @@ class Person(object):
     def is_trained(self, machine):
         """Return whether the person is a trainer for that machine."""
         pass
+
+def all_people():
+    """Return a list of all registered people."""
+    return [ person for person in people_collection.find({}) ]
+
+def all_members():
+    """Return a list of all current members."""
+    return [ person for person in people_collection.find({})
+             if person.is_member()]
+
+def add_person(record):
+    print "Adding person", record, "to collection", people_collection
+    # todo: convert dates to datetime.datetime
+    # todo: possibly use upsert
+    database.people_collection.insert(record)

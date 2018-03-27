@@ -24,16 +24,6 @@ def database_init(config, delete_existing=False):
     equipment_collection = database[collection_names['equipment']]
     events_collection = database[collection_names['events']]
 
-def add_person(record):
-    print "Adding person", record, "to collection", people_collection
-    # todo: convert dates to datetime.datetime
-    # todo: possibly use upsert
-    people_collection.insert(record)
-
-def members():
-    """Return a list of all members."""
-    return [ person for person in people_collection.find({}) ]
-
 def get_person(name):
     """Read the data for a person from the database."""
     if isinstance(name, dict):

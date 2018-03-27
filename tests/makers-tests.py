@@ -13,6 +13,7 @@ import landing
 import list_equipment
 import list_members
 import pages
+import timeslots
 
 def main():
     config = configuration.get_config()
@@ -22,6 +23,8 @@ def main():
                                             list_members.list_members(person)),
                     pages.test_page_section("Landing page",
                                             landing.landing_page_content(person)),
+                    pages.test_page_section("Timeslots",
+                                            timeslots.timeslots_form(configuration.get_config(), 12345))
                     pages.test_page_section("Equipment list",
                                             list_equipment.list_equipment_content()),
                     pages.test_page_section("Equipment class page",
