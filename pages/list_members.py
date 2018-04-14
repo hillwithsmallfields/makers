@@ -3,6 +3,7 @@ from nevow import tags as T
 
 import database
 import pages
+import person
 
 def member_row(person, viewing_person):
     name, nickname = database.person_name(person, viewing_person)
@@ -17,7 +18,7 @@ def list_members(viewing_person):
     # todo: allow the sorting to be by membership number, date joined, first name, or last name
     return T.table[T.tr[T.th["Name"], T.th["Known as"], T.th["email"]],
                    [member_row(person, viewing_person)
-                    for person in database.members()]]
+                    for person in person.all_members()]]
 
 def list_members_page(viewing_member):
     return pages.page_string("List of members",

@@ -3,37 +3,35 @@
 import os
 import json
 import pymongo
+import configuration
 
 client = None
 database = None
-people_collection = None
-equipment_collection = None
-events_collection = None
+collection_names = None
 
 def database_init(config, delete_existing=False):
-    global client, database, people_collection, equipment_collection, events_collection
+    global client, database, collection_names
     db_config = config['database']
     collection_names = db_config['collections']
+    print "collection names are", collection_names
     client = pymongo.MongoClient(db_config['URI'])
     database = client[db_config['database_name']]
     if delete_existing:
+        # I think these are wrong
         database.drop_collection(collection_names['people'])
         database.drop_collection(collection_names['equipment'])
         database.drop_collection(collection_names['events'])
-    people_collection = database[collection_names['people']]
-    equipment_collection = database[collection_names['equipment']]
-    events_collection = database[collection_names['events']]
 
 def get_person(name):
     """Read the data for a person from the database."""
     if isinstance(name, dict):
         return name             # no lookup needed
     name_parts = name.rsplit(" ", 1)
-    record = (people_collection.find_one({'given_name': name_parts[0],
-                                         'surname': name_parts[1]})
-              or people_collection.find_one({'email': name})
-              or people_collection.find_one({'fob': name})
-              or people_collection.find_one({'_id': name}))
+    collection = database[collection_names['people']]
+    record = (collection.find_one({"surname" : name_parts[1], "given_name" : name_parts[0]})
+              or collection.find_one({'email': name})
+              or collection.find_one({'fob': name})
+              or collection.find_one({'_id': name}))
     if record:
         return record
     return None
@@ -53,7 +51,7 @@ def get_machine_class_people(machine_class, role):
     The role will be a list field of the machine document,
     typically 'trained', 'owner' or 'trainer'."""
     # todo: make this find a <role> which has an entry with the appropriate machine_class
-    raw = people_collection.find({role: machine_class})
+    raw = database[collection_names['people']].find({role: machine_class})
     checked = {}
     # todo: filter the ones which have been cancelled
     return None
@@ -77,10 +75,10 @@ def get_person_machines(person, role):
             enablements[record['equipment_class']] = record
     return enablements
 
-def is_administrator(person, config, writer=False):
+def is_administrator(person, writer=False):
     """Return whether a person is an administrator who can access other people's data in the database.
     With the optional third argument non-False, check whether they have write access too."""
-    return (config['organization']['database']
+    return (configuration.get_config['organization']['database']
             in get_person_machines(person,
                                    'owner' if writer else 'trained'))
 
@@ -120,7 +118,11 @@ def cancel_person_machine_role(person, person_cancelling, machine_class, role):
     # todo: indicate that a person no longer has a relationship to a machine class
     pass
 
-
 def check_person_machine_role(person, machine_class, role):
     # todo: check whether a person has a relationship to a machine class
     return None
+
+def add_person(record):
+    # todo: convert dates to datetime.datetime
+    # todo: possibly use upsert
+    database[collection_names['people']].insert(record)

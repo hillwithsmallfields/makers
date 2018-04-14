@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import sys
 sys.path.append('common')
@@ -8,6 +8,7 @@ import csv
 import configuration
 import yaml
 import database
+from person import Person
 
 def main():
     # todo: convert all dates to datetime.datetime as mentioned in http://api.mongodb.com/python/current/examples/datetimes.html
@@ -37,7 +38,7 @@ def main():
             trainer = database.get_person(trainer_name)
             if trainer:
                 trainer = trainer['_id']
-            print "Will mark", person, "as users of", row['Equipment'], "trained by", trainer, "on", row['Date']
+            print "Will mark", person, "as user of", row['Equipment'], "trained by", trainer, "on", row['Date']
             # todo: use update_one
 
 

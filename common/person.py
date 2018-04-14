@@ -10,6 +10,10 @@ class Person(object):
         #               'trainer': []}
         pass
 
+    @staticmethod
+    def get(identification):
+        return database.get_person(identification)
+
     def set_profile_field(self, *kwargs):
         """Set the fields and write them back to the database."""
         pass
@@ -66,9 +70,3 @@ def all_members():
     """Return a list of all current members."""
     return [ person for person in people_collection.find({})
              if person.is_member()]
-
-def add_person(record):
-    print "Adding person", record, "to collection", people_collection
-    # todo: convert dates to datetime.datetime
-    # todo: possibly use upsert
-    database.people_collection.insert(record)
