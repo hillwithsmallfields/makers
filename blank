@@ -1,0 +1,6 @@
+#!/bin/bash
+mongo <<EOS
+use Makespace
+db.MakespacePeople.drop()
+db.MakespaceEvents.drop()
+EOS
