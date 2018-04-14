@@ -9,5 +9,6 @@ setup(name='makers',
     license='',
     install_requires = [
         'pymongo',
+        'yaml'
     ],
     packages=find_packages())
