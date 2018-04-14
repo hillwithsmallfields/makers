@@ -1,5 +1,5 @@
 
-class Equipment_class(0bject):
+class Equipment_class(object):
 
     def __init__(self, identification):
         """Set up an equipment class structure from its name or other identification."""
