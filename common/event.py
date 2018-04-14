@@ -1,4 +1,4 @@
-"Checking if it is working"
+
 class Event(object):
 
     def __init__(self, event_type,
