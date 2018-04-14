@@ -28,22 +28,36 @@ def get_person(name):
         return name             # no lookup needed
     name_parts = name.rsplit(" ", 1)
     collection = database[collection_names['people']]
-    record = (collection.find_one({"surname" : name_parts[1], "given_name" : name_parts[0]})
-              or collection.find_one({'email': name})
-              or collection.find_one({'fob': name})
-              or collection.find_one({'_id': name}))
-    if record:
-        return record
-    return None
+    return ((len(name_parts) >= 2
+             and collection.find_one({"surname" : name_parts[1], "given_name" : name_parts[0]}))
+            or collection.find_one({'email': name})
+            or collection.find_one({'fob': name})
+            or collection.find_one({'_id': name}))
+
+def add_person(record):
+    # todo: convert dates to datetime.datetime
+    # todo: possibly use upsert
+    database[collection_names['people']].insert(record)
 
 def get_machine(name):
     """Read the data for a machine from the database."""
-    # todo: replace with mongodb stuff
-    for machine in get_data()['equipment']:
-        if (machine['name'] == name
-            or machine['_id'] == name):
-            return machine
-    return None
+    collection = database[collection_names['equipment']]
+    return (collection.find_one({'name': name})
+            or collection.find_one({'_id': name}))
+
+def get_event(hosts, date, event_type, equipment, create=True):
+    """Read the data for an event from the database."""
+    found = database[collection_names['events']].find_one({'hosts': {'$in': hosts},
+                                                           'date': date,
+                                                           'event_type': event_type,
+                                                           'equipment': equipment})
+    if create and found is None:
+        database[collection_names['events']].insert({'hosts': hosts,
+                                                     'date': date,
+                                                     'equipment': equipment,
+                                                     'event_type': event_type})
+        return get_event(hosts, date, event_type, equipment, False)
+    return found
 
 def get_machine_class_people(machine_class, role):
     """For a given machine class, get a list of people in a given role.
@@ -121,8 +135,3 @@ def cancel_person_machine_role(person, person_cancelling, machine_class, role):
 def check_person_machine_role(person, machine_class, role):
     # todo: check whether a person has a relationship to a machine class
     return None
-
-def add_person(record):
-    # todo: convert dates to datetime.datetime
-    # todo: possibly use upsert
-    database[collection_names['people']].insert(record)

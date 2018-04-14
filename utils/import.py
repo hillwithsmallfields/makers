@@ -10,6 +10,12 @@ import yaml
 import database
 from person import Person
 
+def add_training(person, trainer, trained_date, equipment):
+    if trainer:
+        trainer = trainer._id
+    event = database.get_event([trainer], trained_date, 'training', [equipment])
+    person.add_event(event)
+
 def main():
     # todo: convert all dates to datetime.datetime as mentioned in http://api.mongodb.com/python/current/examples/datetimes.html
     parser = argparse.ArgumentParser()
@@ -27,20 +33,22 @@ def main():
             database.add_person({'given_name': name_parts[0],
                                  'surname': name_parts[1],
                                  'known_as': name_parts[0],
-                                 'date_joined': row['Date inducted'],
-                                 'inducted_by': row['Inductor'],
-                                 'email': row['Email']})
+                                 'email': row['Email'],
+                                 'membership_number': row['Member no']})
+            added = Person.find(row['Email'])
+            add_training(added,
+                         Person.find(row['Inductor']),
+                         row['Date inducted'],
+                         'Makespace')
     with open(args.users) as users_file:
         for row in csv.DictReader(users_file):
-            name = row['Name']
-            person = database.get_person(name)
-            trainer_name = row['Trainer']
-            trainer = database.get_person(trainer_name)
-            if trainer:
-                trainer = trainer['_id']
-            print "Will mark", person, "as user of", row['Equipment'], "trained by", trainer, "on", row['Date']
-            # todo: use update_one
-
+            person = Person.find(row['Name'])
+            add_training(person,
+                         Person.find(row['Trainer']),
+                         row['Date'],
+                         row['Equipment'])
+            checkback = Person.find(person.email)
+            print "checkback is", checkback, "with events", checkback.events
 
 if __name__ == "__main__":
     main()

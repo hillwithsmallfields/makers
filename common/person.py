@@ -2,28 +2,40 @@ import database
 
 class Person(object):
 
-    def __init__(self, identification):
+    def __init__(self):
         """Find a person in the database."""
-        # todo: fetch the person entry from the database
-        # self.role_transitions = {'user': [],
-        #               'owner': [],
-        #               'trainer': []}
+        self.email = None
+        self._id = None
+        self.surname = None
+        self.given_name = None
+        self.known_as = None
+        self.membership_number = None
+        self.fob = None
+        self.events = []
+        self.available = 0      # bitmap of timeslots, lowest bit is Monday morning, etc
+        self.profile = {}       # bag of stuff like address
         pass
 
     @staticmethod
-    def get(identification):
-        return database.get_person(identification)
+    def find(identification):
+        data = database.get_person(identification)
+        if data is None:
+            return None
+        p = Person()
+        p.__dict__.update(data)
+        return p
 
     def set_profile_field(self, *kwargs):
         """Set the fields and write them back to the database."""
         pass
 
-    def add_training(self, event):
-        """Add the event to the appropriate role list of the person's training, and write it back to the database."""
+    def add_event(self, event):
+        """Add the event to the appropriate role list of the person's events, and write it back to the database."""
         # note that the role can be found from 'aim' field of the event details,
         # and the equipment classes from the 'equipment_classes' of the event details
         # training event lists are kept in time order, with the latest (which may be in the future) at the front of the list
-        pass
+        database.database[database.collection_names['people']].update({"_id" : self._id},
+                                                                       {'$set': {'events.-1': event}})
 
     def get_equipment_classes(self, role):
         """Get the list of the equipment_classes for which the person has the specified role."""
@@ -45,6 +57,11 @@ class Person(object):
     def is_administrator(self):
         """Return whether the person is an admin."""
         return self.is_owner(get_config()['organization']['database'])
+
+    def is_auditor(self):
+        """Return whether the person is an auditor.
+        Similar to admin but read-only."""
+        return self.is_trained(get_config()['organization']['database'])
 
     def is_inductor(self):
         """Return whether the person is a general inductor."""
