@@ -1,6 +1,7 @@
 #!/bin/bash
 mongo <<EOS
 use Makespace
+db.MakespaceNames.drop()
 db.MakespacePeople.drop()
 db.MakespaceEvents.drop()
 EOS

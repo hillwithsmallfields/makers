@@ -3,12 +3,12 @@
 import sys
 sys.path.append('common')
 
-import argparse
-import csv
-import configuration
-import yaml
-import database
 from person import Person
+import argparse
+import configuration
+import csv
+import database
+import yaml
 
 def add_training(person, trainer, trained_date, equipment):
     if trainer:
@@ -26,20 +26,33 @@ def main():
     parser.add_argument("--delete-existing", action='store_true')
     args = parser.parse_args()
     config = configuration.get_config()
+    db_config = config['database']
+    collection_names = db_config['collections']
+    print "collection names are", collection_names
     database.database_init(config, args.delete_existing)
+
+    # todo: fix these
+    # database[collection_names['people']].create_index('link_id')
+    # database[collection_names['names']].create_index('link_id')
+
     with open(args.members) as members_file:
         for row in csv.DictReader(members_file):
             name_parts = row['Name'].rsplit(" ", 1)
-            database.add_person({'given_name': name_parts[0],
-                                 'surname': name_parts[1],
-                                 'known_as': name_parts[0],
+            member_no = row['Member no']
+            database.add_person({'membership_number': member_no,
                                  'email': row['Email'],
-                                 'membership_number': row['Member no']})
-            added = Person.find(row['Email'])
+                                 'given_name': name_parts[0],
+                                 'surname': name_parts[1],
+                                 'known_as': name_parts[0]},
+                                {'membership_number': member_no})
+            added = Person.find(row['Name'])
+            print "added person record", added
             add_training(added,
                          Person.find(row['Inductor']),
                          row['Date inducted'],
                          'Makespace')
+            inducted = Person.find(row['Name'])
+            print "inducted is", inducted, "with events", inducted.events
     with open(args.users) as users_file:
         for row in csv.DictReader(users_file):
             person = Person.find(row['Name'])
@@ -47,7 +60,7 @@ def main():
                          Person.find(row['Trainer']),
                          row['Date'],
                          row['Equipment'])
-            checkback = Person.find(person.email)
+            checkback = Person.find(row['Name'])
             print "checkback is", checkback, "with events", checkback.events
 
 if __name__ == "__main__":

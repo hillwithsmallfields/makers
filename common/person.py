@@ -3,9 +3,9 @@ import database
 class Person(object):
 
     def __init__(self):
-        """Find a person in the database."""
         self.email = None
         self._id = None
+        self.link_id = None
         self.surname = None
         self.given_name = None
         self.known_as = None
@@ -16,14 +16,36 @@ class Person(object):
         self.profile = {}       # bag of stuff like address
         pass
 
+    def __str__(self):
+        return ("<member " + str(self.membership_number)
+                + " " + self.name()
+                + ">")
+
+    def __repr__(self):
+        return "<member " + str(self.membership_number) + ">"
+
     @staticmethod
     def find(identification):
+        """Find a person in the database."""
         data = database.get_person(identification)
         if data is None:
             return None
+        # convert the dictionary into a Person object
         p = Person()
         p.__dict__.update(data)
         return p
+
+    def name(self):
+        """Return the person's name, unless they've requested anonymity."""
+        # todo: add admin override of anonymity
+        formal, _ = database.person_name(self.link_id)
+        return formal.encode('utf-8')
+
+    def nickname(self):
+        """Return the person's nickname, unless they've requested anonymity."""
+        # todo: add admin override of anonymity
+        _, informal = database.person_name(self.link_id)
+        return informal
 
     def set_profile_field(self, *kwargs):
         """Set the fields and write them back to the database."""
@@ -35,6 +57,7 @@ class Person(object):
         # and the equipment classes from the 'equipment_classes' of the event details
         # training event lists are kept in time order, with the latest (which may be in the future) at the front of the list
         database.database[database.collection_names['people']].update({"_id" : self._id},
+                                                                      # todo: this seems to be replacing the front event, not prepending (but is it a list already?)
                                                                        {'$set': {'events.-1': event}})
 
     def get_equipment_classes(self, role):
