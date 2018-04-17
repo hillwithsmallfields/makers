@@ -3,6 +3,7 @@
 import sys
 sys.path.append('common')
 
+from event import Event
 from person import Person
 import argparse
 import configuration
@@ -13,7 +14,7 @@ import yaml
 def add_training(person, trainer, trained_date, equipment):
     if trainer:
         trainer = trainer._id
-    event = database.get_event([trainer], trained_date, 'training', [equipment])
+    event = Event.find([trainer], trained_date, 'training', [equipment])
     person.add_event(event)
 
 def main():

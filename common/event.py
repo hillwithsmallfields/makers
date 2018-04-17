@@ -1,16 +1,26 @@
 
+import database
+
 class Event(object):
 
     def __init__(self, event_type,
-                 event_datetime, event_duration):
+                 event_datetime,
+                 hosts,
+                 attendees=[],
+                 event_duration=60,
+                 equipment=None):
         """Create an event of a given type and datetime.
         The current user is added as a host.
         The event type names a template to build the event from.
         An event template is an event which is copied.
         The event is not saved and scheduled yet."""
         self.details = get_event_template(event_type)
-        self.details['start'] = event_datetime,
-        self.details['duration'] = event_duration
+        self.start = event_datetime,
+        self.event_type = event_type
+        self.hosts = hosts
+        self.attendees = attendees
+        self.duration = event_duration
+        self.equipment = equipment
         # 'hosts': [], # todo: put the current user in as a host
         # 'attendees': [],
         # # preconditions; not sure of the format of this
@@ -21,7 +31,25 @@ class Event(object):
         # # What the event needs to reserve
         # 'location': None,
         # 'equipment': []
-        pass
+
+    def __str__(self):
+        accum = "<" + self.event_type + "event at " + self.start
+        if self.equipment and self.equipment != []:
+            accum += " on " + ",".join(self.equipment)
+        accum += ">"
+        return accum
+
+    def __repr__(self):
+        return __str__(self)
+
+    @staticmethod
+    def find(event_type, event_datetime, hosts, equipment):
+        event_dict = database.get_event(hosts, event_datetime, event_type, equipment, create=True)
+        if event_dict is None:
+            return None
+        e = Event(event_type, event_datetime, hosts, equipment=equipment)
+        e.__dict__.update(event_dict)
+        return e
 
     def get_details(self):
         """Get the details of an event, as a dictionary."""
