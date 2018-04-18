@@ -3,6 +3,9 @@ import database
 
 class Event(object):
 
+    # keep a hash of events so each one is only in memory once
+    events_by_id = {}
+
     def __init__(self, event_type,
                  event_datetime,
                  hosts,
@@ -15,12 +18,13 @@ class Event(object):
         An event template is an event which is copied.
         The event is not saved and scheduled yet."""
         self.details = get_event_template(event_type)
-        self.start = event_datetime,
         self.event_type = event_type
+        self.start = event_datetime # todo: convert strings and numbers to datetimes
+        self.duration = event_duration # todo: convert strings and numbers to durations
         self.hosts = hosts
         self.attendees = attendees
-        self.duration = event_duration
         self.equipment = equipment
+        self._id = None
         # 'hosts': [], # todo: put the current user in as a host
         # 'attendees': [],
         # # preconditions; not sure of the format of this
@@ -33,21 +37,25 @@ class Event(object):
         # 'equipment': []
 
     def __str__(self):
-        accum = "<" + self.event_type + "event at " + self.start
+        accum = "<" + self.event_type
+        accum += "_event at " + str(self.start)
         if self.equipment and self.equipment != []:
             accum += " on " + ",".join(self.equipment)
         accum += ">"
         return accum
 
     def __repr__(self):
-        return __str__(self)
+        return self.__str__()
 
     @staticmethod
     def find(event_type, event_datetime, hosts, equipment):
-        event_dict = database.get_event(hosts, event_datetime, event_type, equipment, create=True)
+        event_dict = database.get_event(event_type, event_datetime, hosts, equipment, create=True)
         if event_dict is None:
             return None
-        e = Event(event_type, event_datetime, hosts, equipment=equipment)
+        event_id = event_dict['_id']
+        if event_id not in Event.events_by_id:
+            Event.events_by_id[event_id] = Event(event_type, event_datetime, hosts, equipment=equipment)
+        e = Event.events_by_id[event_id]
         e.__dict__.update(event_dict)
         return e
 

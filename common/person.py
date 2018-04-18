@@ -1,6 +1,9 @@
 import database
+import timeline
 
 class Person(object):
+
+    people_by_id = {}
 
     def __init__(self):
         self.email = None
@@ -11,10 +14,9 @@ class Person(object):
         self.known_as = None
         self.membership_number = None
         self.fob = None
-        self.events = []
+        self.events = timeline.Timeline()
         self.available = 0      # bitmap of timeslots, lowest bit is Monday morning, etc
         self.profile = {}       # bag of stuff like address
-        pass
 
     def __str__(self):
         return ("<member " + str(self.membership_number)
@@ -31,7 +33,10 @@ class Person(object):
         if data is None:
             return None
         # convert the dictionary into a Person object
-        p = Person()
+        person_id = data['_id']
+        if person_id not in Person.people_by_id:
+            Person.people_by_id[person_id] = Person()
+        p = Person.people_by_id[person_id]
         p.__dict__.update(data)
         return p
 
@@ -58,7 +63,7 @@ class Person(object):
         # training event lists are kept in time order, with the latest (which may be in the future) at the front of the list
         database.database[database.collection_names['people']].update({"_id" : self._id},
                                                                       # todo: this seems to be replacing the front event, not prepending (but is it a list already?)
-                                                                       {'$set': {'events.-1': event}})
+                                                                       {'$set': {'events.-1': event._id}})
 
     def get_equipment_classes(self, role):
         """Get the list of the equipment_classes for which the person has the specified role."""

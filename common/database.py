@@ -76,18 +76,19 @@ def get_machine(name):
     return (collection.find_one({'name': name})
             or collection.find_one({'_id': name}))
 
-def get_event(hosts, date, event_type, equipment, create=True):
+def get_event(event_type, event_datetime, hosts, equipment, create=True):
     """Read the data for an event from the database."""
+    # print "Looking for event", "hosts,", hosts, "date", event_datetime, "event_type,", event_type, "equipment", equipment
     found = database[collection_names['events']].find_one({'hosts': {'$in': hosts},
-                                                           'date': date,
+                                                           'date': event_datetime,
                                                            'event_type': event_type,
                                                            'equipment': equipment})
     if create and found is None:
         database[collection_names['events']].insert({'hosts': hosts,
-                                                     'date': date,
+                                                     'date': event_datetime,
                                                      'equipment': equipment,
                                                      'event_type': event_type})
-        return get_event(hosts, date, event_type, equipment, False)
+        return get_event(event_type, event_datetime, hosts, equipment, False)
     return found
 
 def get_machine_class_people(machine_class, role):

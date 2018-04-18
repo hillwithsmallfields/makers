@@ -14,7 +14,7 @@ import yaml
 def add_training(person, trainer, trained_date, equipment):
     if trainer:
         trainer = trainer._id
-    event = Event.find([trainer], trained_date, 'training', [equipment])
+    event = Event.find('training', trained_date, [trainer], [equipment])
     person.add_event(event)
 
 def main():
