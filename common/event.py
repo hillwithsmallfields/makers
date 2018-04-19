@@ -1,5 +1,6 @@
 
 import database
+from datetime import datetime, timedelta
 
 class Event(object):
 
@@ -17,10 +18,20 @@ class Event(object):
         The event type names a template to build the event from.
         An event template is an event which is copied.
         The event is not saved and scheduled yet."""
-        self.details = get_event_template(event_type)
+        # self.details = get_event_template(event_type)
         self.event_type = event_type
-        self.start = event_datetime # todo: convert strings and numbers to datetimes
-        self.duration = event_duration # todo: convert strings and numbers to durations
+        self.start = (event_datetime
+                      if isinstance(event_datetime, datetime)
+                      else (datetime.fromordinal(event_datetime)
+                            if isinstance(event_datetime, int)
+                            else (datetime.strptime(event_datetime, "%Y-%m-%dT%H:%M:%S")
+                                  if isinstance(event_datetime, basestring)
+                                  else None)))
+        self.duration = (event_duration
+                         if isinstance(event_duration, timedelta)
+                         else (timedelta(0, event_duration * 60) # given in minutes
+                               if isinstance(event_duration, int)
+                               else None))
         self.hosts = hosts
         self.attendees = attendees
         self.equipment = equipment
@@ -39,6 +50,8 @@ class Event(object):
     def __str__(self):
         accum = "<" + self.event_type
         accum += "_event at " + str(self.start)
+        if self.hosts and self.hosts != []:
+            accum += " with " + ",".join(self.hosts)
         if self.equipment and self.equipment != []:
             accum += " on " + ",".join(self.equipment)
         accum += ">"
