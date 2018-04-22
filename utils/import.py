@@ -45,22 +45,27 @@ def main():
                                  'given_name': name_parts[0],
                                  'surname': name_parts[1],
                                  'known_as': name_parts[0]},
-                                {'membership_number': member_no})
+                                {'membership_number': member_no,
+                                 'training': database.create_timeline_id("training for " + name_parts[0] + " " + name_parts[1])})
             added = Person.find(row['Name'])
             print "added person record", added
-            add_training(added,
-                         Person.find(row['Inductor']),
-                         row['Date inducted'],
-                         'Makespace')
+            inductor = Person.find(row['Inductor'])
+            print "inductor is", inductor
+            inductor_id = inductor._id
+            print "inductor_id is", inductor_id
+            added.add_training(Event.find('training',
+                                          row['Date inducted'],
+                                          [inductor_id],
+                                          ['Makespace']))
             inducted = Person.find(row['Name'])
             print "inducted is", inducted, "with events", inducted.events
     with open(args.users) as users_file:
         for row in csv.DictReader(users_file):
             person = Person.find(row['Name'])
-            add_training(person,
-                         Person.find(row['Trainer']),
-                         row['Date'],
-                         row['Equipment'])
+            person.add_training(Event.find('training',
+                                           row['Date'],
+                                           [Person.find(row['Trainer'])['_id']],
+                                           row['Equipment']))
             checkback = Person.find(row['Name'])
             print "checkback is", checkback, "with events", checkback.events
 

@@ -14,7 +14,7 @@ class Person(object):
         self.known_as = None
         self.membership_number = None
         self.fob = None
-        self.events = timeline.Timeline()
+        self.training = None
         self.available = 0      # bitmap of timeslots, lowest bit is Monday morning, etc
         self.profile = {}       # bag of stuff like address
 
@@ -56,14 +56,15 @@ class Person(object):
         """Set the fields and write them back to the database."""
         pass
 
-    def add_event(self, event):
+    def add_training(self, event):
         """Add the event to the appropriate role list of the person's events, and write it back to the database."""
         # note that the role can be found from 'aim' field of the event details,
         # and the equipment classes from the 'equipment_classes' of the event details
         # training event lists are kept in time order, with the latest (which may be in the future) at the front of the list
-        database.database[database.collection_names['people']].update({"_id" : self._id},
-                                                                      # todo: this seems to be replacing the front event, not prepending (but is it a list already?)
-                                                                       {'$set': {'events.-1': event._id}})
+        if self.training is None:
+            self.training = timeline.Timeline(self.given_name + " " + self.surname + "'s training")._id
+            database[collection_names['people']].update({'_id': self._id}, {'$set': {'training': self.training}})
+        timeline.Timeline.find(self.training).insert(event)
 
     def get_equipment_classes(self, role):
         """Get the list of the equipment_classes for which the person has the specified role."""

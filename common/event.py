@@ -1,6 +1,21 @@
 
 import database
+import re
 from datetime import datetime, timedelta
+
+fulltime = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}:[0-9]{2}")
+
+def as_time(clue):
+    return (clue
+            if isinstance(clue, datetime)
+            else (datetime.fromordinal(clue)
+                  if isinstance(clue, int)
+                  else (datetime.strptime(clue, "%Y-%m-%dT%H:%M:%S"
+                                          if fulltime.match(clue)
+                                          else "%Y-%m-%d")
+                        if isinstance(clue, basestring)
+                        else None)))
+
 
 class Event(object):
 
@@ -20,13 +35,7 @@ class Event(object):
         The event is not saved and scheduled yet."""
         # self.details = get_event_template(event_type)
         self.event_type = event_type
-        self.start = (event_datetime
-                      if isinstance(event_datetime, datetime)
-                      else (datetime.fromordinal(event_datetime)
-                            if isinstance(event_datetime, int)
-                            else (datetime.strptime(event_datetime, "%Y-%m-%dT%H:%M:%S")
-                                  if isinstance(event_datetime, basestring)
-                                  else None)))
+        self.start = as_time(event_datetime)
         self.duration = (event_duration
                          if isinstance(event_duration, timedelta)
                          else (timedelta(0, event_duration * 60) # given in minutes
@@ -51,7 +60,7 @@ class Event(object):
         accum = "<" + self.event_type
         accum += "_event at " + str(self.start)
         if self.hosts and self.hosts != []:
-            accum += " with " + ",".join(self.hosts)
+            accum += " with " + ",".join(map(str, self.hosts))
         if self.equipment and self.equipment != []:
             accum += " on " + ",".join(self.equipment)
         accum += ">"

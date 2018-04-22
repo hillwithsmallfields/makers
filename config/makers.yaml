@@ -219,6 +219,7 @@ database:
     equipment_types: MakespaceEquipmentTypes
     equipment:       MakespaceEquipment
     events:          MakespaceEvents
+    timelines:       MakepaceTimelines
 
 # The names in this section indicate which equipment class names
 # are magical

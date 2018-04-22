@@ -54,7 +54,7 @@ trainers_fields = ['Equipment', 'Name', 'Date']
 def main():
     by_email = {}
     by_number = {}
-    inductor = "Self"
+    inductor = "Joe Bloggs"
     inductors = []
     induction_date = datetime.date(2013,03,19)
     induction_size = random.randrange(1, 6)
@@ -82,7 +82,7 @@ def main():
         induction_size -= 1
         if induction_size == 0:
             induction_size = random.randrange(1, 6)
-            inductor = random.choice(inductors) if len(inductors) > 0 else "Self"
+            inductor = random.choice(inductors) if len(inductors) > 0 else "Joe Bloggs" # the first member must be their own inductor
             induction_date = induction_date + datetime.timedelta(random.randrange(3,7))
         if email not in by_email: # avoid duplicates
             row = {'Member no': member_no,
@@ -94,7 +94,7 @@ def main():
                    'Code': random.choice(animals)+random.choice(furniture),
                    'Code returned?': "Yes",
                    'Fob enabled & e-mail sent on': induction_date+datetime.timedelta(random.randrange(1,4)),
-                   'Enabled by': random.choice(inductors) if len(inductors) > 0 else "Self"
+                   'Enabled by': random.choice(inductors) if len(inductors) > 0 else inductor
             }
             # decreasing probability that they've left
             if random.randrange(member_no) < 24:
@@ -134,7 +134,7 @@ def main():
                                        fieldnames=member_fields,
                                        extrasaction='ignore')
         member_writer.writeheader()
-        for member_no in range(1010,0,-1):
+        for member_no in range(0,1010):
             if member_no in by_number:
                 member_writer.writerow(by_number[member_no])
     with open("users.csv", "w") as trained_file:

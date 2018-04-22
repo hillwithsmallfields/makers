@@ -91,6 +91,20 @@ def get_event(event_type, event_datetime, hosts, equipment, create=True):
         return get_event(event_type, event_datetime, hosts, equipment, False)
     return found
 
+def create_timeline_id(name):
+    return (database[collection_names['timelines']].insert({'name': name}))
+
+def get_timeline(id):
+    return database[collection_names['timelines']].find_one({'_id': id})
+
+def save_timeline(tl):
+    d = tl.__dict__
+    database[collection_names['timelines']].update({'_id': tl._id},
+                                                   {'name': tl.name,
+                                                    'events': [te._id
+                                                               # todo: sort out how to save these timestamp:event pairs
+                                                               for te in tl.events]})
+
 def get_machine_class_people(machine_class, role):
     """For a given machine class, get a list of people in a given role.
     The machine can be given by name or objectId.

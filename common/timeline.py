@@ -1,10 +1,15 @@
 from datetime import datetime, timedelta
 from event import Event
+import database
 import time
 
 class Timeline(object):
 
-    def __init__(self):
+    timelines_by_id = {}
+
+    def __init__(self, name):
+        self.name = name
+        self._id = None
         self.events = []             # in time order, latest first
 
     def __str__(self):
@@ -13,6 +18,17 @@ class Timeline(object):
     def __repr__(self):
         return self.__str__()
 
+    @staticmethod
+    def find(identification):
+        data = database.get_timeline(identification)
+        if data is None:
+            return None
+        if identification not in Timeline.timelines_by_id:
+            Timeline.timelines_by_id[identification] = Timeline(None)
+        tl = Timeline.timelines_by_id[identification]
+        tl.__dict__.update(data)
+        return tl
+
     def insert(self, event):
         """Insert an event at its place in the timeline."""
         eventwhen = event.start
@@ -20,8 +36,10 @@ class Timeline(object):
         for i in range(0, len(events)):
             if events[i][0] < eventwhen:
                 self.events.insert(i, (eventwhen, event))
+                database.save_timeline(self)
                 return
         self.events.insert(len(events), (eventwhen, event))
+        database.save_timeline(self)
 
     def until(self, when):
         """Return all the events up to a given time."""
