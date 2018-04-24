@@ -17,7 +17,7 @@ def add_training(person, trainer, trained_date, equipment):
     event = Event.find('training', trained_date, [trainer], [equipment])
     person.add_event(event)
 
-def main():
+def import_main(verbose=True):
     # todo: convert all dates to datetime.datetime as mentioned in http://api.mongodb.com/python/current/examples/datetimes.html
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--members", default="members.csv")
@@ -29,7 +29,8 @@ def main():
     config = configuration.get_config()
     db_config = config['database']
     collection_names = db_config['collections']
-    print "collection names are", collection_names
+    if verbose:
+        print "collection names are", collection_names
     database.database_init(config, args.delete_existing)
 
     # todo: fix these
@@ -48,17 +49,19 @@ def main():
                                 {'membership_number': member_no,
                                  'training': database.create_timeline_id("training for " + name_parts[0] + " " + name_parts[1])})
             added = Person.find(row['Name'])
-            print "added person record", added
+            if verbose:
+                print "added person record", added
             inductor = Person.find(row['Inductor'])
-            print "inductor is", inductor
+            if verbose:
+                print "inductor is", inductor
             inductor_id = inductor._id
-            print "inductor_id is", inductor_id
             added.add_training(Event.find('training',
                                           row['Date inducted'],
                                           [inductor_id],
                                           ['Makespace']))
             inducted = Person.find(row['Name'])
-            print "inducted is", inducted, "with training", inducted.get_training()
+            if verbose:
+                print "inducted is", inducted, "with training", inducted.get_training()
     with open(args.users) as users_file:
         for row in csv.DictReader(users_file):
             person = Person.find(row['Name'])
@@ -69,7 +72,8 @@ def main():
                                            [trainer_id],
                                            row['Equipment']))
             checkback = Person.find(row['Name'])
-            print "checkback is", checkback, "with training timeline", checkback.get_training()
+            if verbose:
+                print "checkback is", checkback, "with training timeline", checkback.get_training()
 
 if __name__ == "__main__":
-    main()
+    import_main()

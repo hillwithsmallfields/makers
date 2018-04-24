@@ -29,7 +29,7 @@ class Person(object):
     @staticmethod
     def find(identification):
         """Find a person in the database."""
-        data = database.get_person(identification)
+        data = identification if type(identification) is dict else database.get_person(identification)
         if data is None:
             return None
         # convert the dictionary into a Person object
@@ -117,9 +117,9 @@ class Person(object):
 
 def all_people():
     """Return a list of all registered people."""
-    return [ person for person in people_collection.find({}) ]
+    return [ Person.find(person) for person in database.database[database.collection_names['people']].find({}) ]
 
 def all_members():
     """Return a list of all current members."""
-    return [ person for person in people_collection.find({})
+    return [ person for person in database.database[database.collection_names['people']].find({})
              if person.is_member()]
