@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import configuration
+import event
 import json
 import os
 import pymongo
@@ -101,7 +102,7 @@ def save_timeline(tl):
     d = tl.__dict__
     database[collection_names['timelines']].update({'_id': tl._id},
                                                    {'name': tl.name,
-                                                    'events': [te._id
+                                                    'events': [[te[0], event.as_id(te[1])]
                                                                # todo: sort out how to save these timestamp:event pairs
                                                                for te in tl.events]})
 

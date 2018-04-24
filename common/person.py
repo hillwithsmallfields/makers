@@ -56,6 +56,13 @@ class Person(object):
         """Set the fields and write them back to the database."""
         pass
 
+    def get_training(self):
+        """Return the training data for this user,
+        as a timeline of training events.
+        What is stored in the user record is just the _id of the timeline,
+        because timelines are stored as records in their own right."""
+        return timeline.Timeline.find(self.training)
+
     def add_training(self, event):
         """Add the event to the appropriate role list of the person's events, and write it back to the database."""
         # note that the role can be found from 'aim' field of the event details,
@@ -64,7 +71,7 @@ class Person(object):
         if self.training is None:
             self.training = timeline.Timeline(self.given_name + " " + self.surname + "'s training")._id
             database[collection_names['people']].update({'_id': self._id}, {'$set': {'training': self.training}})
-        timeline.Timeline.find(self.training).insert(event)
+        self.get_training().insert(event)
 
     def get_equipment_classes(self, role):
         """Get the list of the equipment_classes for which the person has the specified role."""

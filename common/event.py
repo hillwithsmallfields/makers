@@ -71,6 +71,7 @@ class Event(object):
 
     @staticmethod
     def find(event_type, event_datetime, hosts, equipment):
+        event_datetime = as_time(event_datetime)
         event_dict = database.get_event(event_type, event_datetime, hosts, equipment, create=True)
         if event_dict is None:
             return None
@@ -133,3 +134,11 @@ def get_event_template(name):
     """Find an event template by name."""
     # todo: there should be a collection of event templates in the database
     return None
+
+def as_id(event):
+    """Given an event or id, return the id."""
+    return event._id if type(event) == Event else event
+
+def as_event(event):
+    """Given an event or id, return the event."""
+    return event if type(event) == Event else Event.events_by_id.get(event, None)

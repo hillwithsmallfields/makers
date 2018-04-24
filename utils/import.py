@@ -58,16 +58,18 @@ def main():
                                           [inductor_id],
                                           ['Makespace']))
             inducted = Person.find(row['Name'])
-            print "inducted is", inducted, "with events", inducted.events
+            print "inducted is", inducted, "with training", inducted.get_training()
     with open(args.users) as users_file:
         for row in csv.DictReader(users_file):
             person = Person.find(row['Name'])
+            trainer = Person.find(row['Trainer'])
+            trainer_id = trainer._id if trainer else None
             person.add_training(Event.find('training',
                                            row['Date'],
-                                           [Person.find(row['Trainer'])['_id']],
+                                           [trainer_id],
                                            row['Equipment']))
             checkback = Person.find(row['Name'])
-            print "checkback is", checkback, "with events", checkback.events
+            print "checkback is", checkback, "with training timeline", checkback.get_training()
 
 if __name__ == "__main__":
     main()
