@@ -4,6 +4,7 @@ import configuration
 import event
 import json
 import os
+import person
 import pymongo
 import uuid
 
@@ -24,10 +25,12 @@ def database_init(config, delete_existing=False):
         database.drop_collection(collection_names['equipment'])
         database.drop_collection(collection_names['events'])
 
-def get_person(identification):
-    """Read the data for a person from the database."""
+def get_person_dict(identification):
+    """Read the data for a person from the database, as a dictionary."""
     if isinstance(identification, dict):
         return identification             # no lookup needed
+    if isinstance(identification, person.Person):
+        return identification.__dict__
     collection = database[collection_names['people']]
     return (collection.find_one({'_id': identification})
             or collection.find_one({'link_id': identification})
@@ -35,13 +38,16 @@ def get_person(identification):
             # names and email addresses are kept in a separate database
             or collection.find_one({'link_id': name_to_id(identification)}))
 
-def person_name(person):
+def person_name(whoever):
     """Return the formal and informal names of a person, or not, if they're anonymous.
     Always use this to get someone's name; this way, anonymity is handled for you."""
     # todo: add admin override of anonymity
-    if type(person) == dict:
-        person = person['link_id']
-    name_record = database[collection_names['names']].find_one({'link_id': person})
+    person_link = (whoever['link_id']
+                   if isinstance(whoever, dict)
+                   else (whoever.link_id
+                         if isinstance(whoever, person.Person)
+                         else whoever))
+    name_record = database[collection_names['names']].find_one({'link_id': person_link})
     if name_record is None:
         return "unknown", "unknown"
     if name_record.get('anonymous', False):
@@ -125,7 +131,7 @@ def get_person_machines(person, role):
     dictionaries giving their name, the equipment class, when they
     were trained and who by."""
     if isinstance(person, basestring):
-        person = get_person(person)
+        person = get_person_dict(person)
     if role not in person:
         return None
     latest_periods = person[role]
@@ -151,8 +157,8 @@ def person_name0(person, viewing_person):
     """Return the person's full name and nickname.
     If they have requested anonymity, only they and the admins can see their name."""
     # todo: integrate with other name function
-    person = get_person(person)
-    viewing_person = get_person(viewing_person)
+    person = get_person_dict(person)
+    viewing_person = get_person_dict(viewing_person)
     if (person == viewing_person
         or not person.get("anonymized", False) # optional flag
         # todo: add an equipment arg to give context so that owners and trainers of that equipment can see this

@@ -9,9 +9,9 @@ import pages
 def member_profile(person, person_viewing):
     """Show a person profile, with fields appropriate to that person and this viewer."""
     if isinstance(person, basestring):
-        person = get_person(person)
+        person = get_person_dict(person)
     if isinstance(person_viewing, basestring):
-        person_viewing = get_person(person_viewing)
+        person_viewing = get_person_dict(person_viewing)
     if (person == person_viewing
         or database.is_administrator(person_viewing)):
         name = person['given_name'] + " " + person['family_name']

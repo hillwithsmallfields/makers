@@ -29,7 +29,7 @@ class Person(object):
     @staticmethod
     def find(identification):
         """Find a person in the database."""
-        data = identification if type(identification) is dict else database.get_person(identification)
+        data = identification if type(identification) is dict else database.get_person_dict(identification)
         if data is None:
             return None
         # convert the dictionary into a Person object

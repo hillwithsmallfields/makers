@@ -21,7 +21,7 @@ import timeslots
 def main():
     config = configuration.get_config()
     database.database_init(config)
-    person = database.get_person('Joe Bloggs')
+    person = database.get_person_dict('Joe Bloggs')
     test_content = [pages.test_page_section("List of members",
                                             list_members.list_members(person))
                     ,
