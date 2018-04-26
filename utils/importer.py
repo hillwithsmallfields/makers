@@ -70,7 +70,7 @@ def import_main(verbose=True):
             person.add_training(Event.find('training',
                                            row['Date'],
                                            [trainer_id],
-                                           row['Equipment']))
+                                           row['Equipment'].split(';')))
             checkback = Person.find(row['Name'])
             if verbose:
                 print "checkback is", checkback, "with training timeline", checkback.get_training()

@@ -12,7 +12,7 @@ def show_person(person_object):
     print
     print person
     name, known_as = database.person_name(person_object)
-    training = person_object.get_training()
+    training = person_object.get_training_events()
     print name, "known as", known_as
     print "training:", training
 

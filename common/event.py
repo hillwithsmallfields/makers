@@ -58,7 +58,7 @@ class Event(object):
 
     def __str__(self):
         accum = "<" + self.event_type
-        accum += "_event at " + str(self.start)
+        accum += "_event at " + str(self.start) # todo: don't print time if it's all zeroes, just print date
         if self.hosts and self.hosts != []:
             accum += " with " + ",".join(map(str, self.hosts))
         if self.equipment and self.equipment != []:
@@ -82,13 +82,24 @@ class Event(object):
         e.__dict__.update(event_dict)
         return e
 
+    @staticmethod
+    def find_by_id(event_id):
+        event_dict = database.get_event_by_id(event_id)
+        if event_dict is None:
+            return None
+        if event_id not in Event.events_by_id:
+            Event.events_by_id[event_id] = Event(event_type, event_datetime, hosts, equipment=equipment)
+        e = Event.events_by_id[event_id]
+        e.__dict__.update(event_dict) # todo: sort out whether I need to re-read this in case of database changes
+        return e
+
     def get_details(self):
         """Get the details of an event, as a dictionary."""
-        pass
+        return self.__dict__
 
     def set_details(self, details_dict):
         """Set the details of an event, from a dictionary."""
-        pass
+        self.__dict__.update(details_dict)
 
     def schedule(self):
         """Save the event to the database, and add it to the list of scheduled events."""

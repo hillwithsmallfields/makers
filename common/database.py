@@ -98,6 +98,10 @@ def get_event(event_type, event_datetime, hosts, equipment, create=True):
         return get_event(event_type, event_datetime, hosts, equipment, False)
     return found
 
+def get_event_by_id(event_id):
+    """Read the data for an event from the database."""
+    return database[collection_names['events']].find_one({'_id': event_id})
+
 def create_timeline_id(name):
     return (database[collection_names['timelines']].insert({'name': name}))
 

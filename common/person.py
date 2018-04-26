@@ -1,5 +1,6 @@
 import database
 import timeline
+from event import Event
 
 class Person(object):
 
@@ -56,12 +57,19 @@ class Person(object):
         """Set the fields and write them back to the database."""
         pass
 
-    def get_training(self):
+    def get_training_timeline(self):
         """Return the training data for this user,
         as a timeline of training events.
         What is stored in the user record is just the _id of the timeline,
         because timelines are stored as records in their own right."""
         return timeline.Timeline.find(self.training)
+
+    def get_training_events(self):
+        """Return the training data for this user,
+        as a list of training events.
+        What is stored in the user record is just the _id of the timeline,
+        because timelines are stored as records in their own right."""
+        return [ Event.find_by_id(event_id) for (_, event_id) in self.get_training_timeline().events ]
 
     def add_training(self, event):
         """Add the event to the appropriate role list of the person's events, and write it back to the database."""
@@ -71,7 +79,7 @@ class Person(object):
         if self.training is None:
             self.training = timeline.Timeline(self.given_name + " " + self.surname + "'s training")._id
             database[collection_names['people']].update({'_id': self._id}, {'$set': {'training': self.training}})
-        self.get_training().insert(event)
+        self.get_training_timeline().insert(event)
 
     def get_equipment_classes(self, role):
         """Get the list of the equipment_classes for which the person has the specified role."""
