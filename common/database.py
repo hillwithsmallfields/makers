@@ -105,7 +105,7 @@ def get_event_by_id(event_id):
 def create_timeline_id(name):
     return (database[collection_names['timelines']].insert({'name': name}))
 
-def get_timeline(id):
+def get_timeline_by_id(id):
     return database[collection_names['timelines']].find_one({'_id': id})
 
 def save_timeline(tl):

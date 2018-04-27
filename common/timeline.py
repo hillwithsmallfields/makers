@@ -19,8 +19,8 @@ class Timeline(object):
         return self.__str__()
 
     @staticmethod
-    def find(identification):
-        data = database.get_timeline(identification)
+    def find_by_id(identification):
+        data = database.get_timeline_by_id(identification)
         if data is None:
             return None
         if identification not in Timeline.timelines_by_id:

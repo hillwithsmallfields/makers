@@ -43,7 +43,7 @@ class Event(object):
                                else None))
         self.hosts = hosts
         self.attendees = attendees
-        self.equipment = equipment
+        self.equipment = equipment # a list, not a single item
         self._id = None
         # 'hosts': [], # todo: put the current user in as a host
         # 'attendees': [],

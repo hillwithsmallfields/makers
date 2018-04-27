@@ -1,6 +1,7 @@
 import database
 import timeline
 from event import Event
+from datetime import datetime
 
 class Person(object):
 
@@ -62,14 +63,15 @@ class Person(object):
         as a timeline of training events.
         What is stored in the user record is just the _id of the timeline,
         because timelines are stored as records in their own right."""
-        return timeline.Timeline.find(self.training)
+        return timeline.Timeline.find_by_id(self.training)
 
-    def get_training_events(self):
+    def get_training_events(self, when=None):
         """Return the training data for this user,
         as a list of training events.
         What is stored in the user record is just the _id of the timeline,
         because timelines are stored as records in their own right."""
-        return [ Event.find_by_id(event_id) for (_, event_id) in self.get_training_timeline().events ]
+        return [ Event.find_by_id(event_id) for (timestamp, event_id) in self.get_training_timeline().events
+                 if when is None or timestamp < when ]
 
     def add_training(self, event):
         """Add the event to the appropriate role list of the person's events, and write it back to the database."""
@@ -85,14 +87,19 @@ class Person(object):
         """Get the list of the equipment_classes for which the person has the specified role."""
         pass
 
-    def is_qualified(self, equipment_class, role):
-        """Return whether the user is qualified for a role on an equipment class."""
-        for transition in self.role_transitions[role]:
-            details = transition.get_details()
-            if equipment_class not in details['equipment_classes']:
+    def qualification(self, equipment_class, role, when=None):
+        """Return whether the user is qualified for a role on an equipment class.
+        The result is the event that qualified them."""
+        role_training = role + "_training"
+        role_untraining = role + "_untraining"
+        for event in self.get_training_events(when or datetime.now()):
+            if equipment_class not in event.equipment:
                 continue
-        # todo: throw away any future events in transitions
-        pass
+            if event.event_type == role_training:
+                return event
+            if event.event_type == role_untraining:
+                return None
+        return None
 
     def is_member(self):
         """Return whether the person is a member."""
