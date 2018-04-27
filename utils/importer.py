@@ -65,6 +65,9 @@ def import_main(verbose=True):
     with open(args.users) as users_file:
         for row in csv.DictReader(users_file):
             person = Person.find(row['Name'])
+            if person is None:
+                print "Could not find", row['Name'], "to add training"
+                continue
             trainer = Person.find(row['Trainer'])
             trainer_id = trainer._id if trainer else None
             person.add_training(Event.find('training',

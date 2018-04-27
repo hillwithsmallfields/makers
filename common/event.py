@@ -88,7 +88,10 @@ class Event(object):
         if event_dict is None:
             return None
         if event_id not in Event.events_by_id:
-            Event.events_by_id[event_id] = Event(event_type, event_datetime, hosts, equipment=equipment)
+            Event.events_by_id[event_id] = Event(event_dict['event_type'],
+                                                 event_dict['event_datetime'],
+                                                 event_dict['hosts'],
+                                                 equipment=event_dict['equipment'])
         e = Event.events_by_id[event_id]
         e.__dict__.update(event_dict) # todo: sort out whether I need to re-read this in case of database changes
         return e

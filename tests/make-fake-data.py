@@ -10,15 +10,21 @@ surnames = ["Bernard", "Brown", "Clarke", "Davies", "Dubois", "Evans",
             "Fischer", "Green", "Hall", "Jackson", "Johnson", "Jones",
             "Kamiński", "Kelmendi", "Kowalczyk", "Kowalski", "Lewandowski",
             "Maes", "Maler", "Martin", "Meyer", "Müller", "Nowak", "Roberts",
-            "Robinson", "Schmidt", "Schneider", "Smith", "Surname",
-            "Svensson", "Taylor", "Thompson", "Virtanen", "Wagner", "Walker",
-            "White", "Williams", "Wilson", "Wiśniewski", "Wood", "Wright",
-            "Wójcik"]
+            "Robinson", "Schmidt", "Schneider", "Smith", "Altdorf",
+            "Neumann", "Johansson", "Jansson", "Svensson", "Carey",
+            "Armstrong", "Lejeune", "Young", "Jung", "Taylor", "Green",
+            "Hinton", "Bond", "Farmer", "Palmer", "Thompson", "Virtanen",
+            "Wagner", "Walker", "White", "Williams", "Wilson", "Wiśniewski",
+            "Wood", "Wright", "Wójcik"]
 
 forenames = ["Alexandru", "Alice", "Andrei", "Anna", "Charlie", "Charlotte",
              "Chloé", "David", "Emma", "Gabriel", "George", "Harry", "Inès",
              "Jack", "Jacob", "John", "Louise", "Léa", "Noah", "Oliver",
-             "Oscar", "Sarah", "Thomas",]
+             "Timothy", "Tina", "Tania", "Gavin", "Roger", "Ivan",
+             "Oscar", "Sarah", "Thomas", "Anthony", "Christine", "Antonia",
+             "Mark", "Judith", "Daniel", "Adam", "Catherine", "Silvia",
+             "Quentin", "Robert", "Rupert", "Gwendoline", "Amanda",
+             "Miranda", "Jan", "Janet", "Susan"]
 
 animals = ["Fox", "Mongoose", "Lizard", "Bat", "Mouse", "Raptor"]
 
@@ -54,6 +60,7 @@ trainers_fields = ['Equipment', 'Name', 'Date']
 def main():
     by_email = {}
     by_number = {}
+    by_name = {}
     inductor = "Joe Bloggs"
     inductors = []
     induction_date = datetime.date(2013,03,19)
@@ -68,7 +75,8 @@ def main():
     users = {}
     owners = {}
     trainers = {}
-    for member_no in range(1,1010):
+    member_no = 1
+    while member_no < 1010:
         if member_no == 1:
             forename = "Joe"
             surname = "Bloggs"
@@ -76,6 +84,11 @@ def main():
             forename = random.choice(forenames)
             surname = random.choice(surnames)
         name = forename + " " + surname
+        if name in by_name:
+            print "duplicate name", name, member_no
+            continue
+        print "unique name", name, member_no
+        member_no += 1
         e1 = forename.lower()
         e2 = surname.lower()
         email = random.choice([e1, e1[0:1]]) + random.choice(["", ".", "_"]) + e2 + "@" + random.choice(emailers) + ".com"
@@ -127,6 +140,7 @@ def main():
             row['trained_on'] = trained_on
             by_email[email] = row
             by_number[member_no] = row
+            by_name[name] = row
             if member_no < 4 or random.random() < 0.01:
                 inductors = inductors + [name]
     with open("members.csv", "w") as member_file:
