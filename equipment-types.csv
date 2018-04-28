@@ -1,0 +1,26 @@
+name,training_category,manufacturer
+hpc_laser,red,"HPC laser"
+ultimaker,red,
+formone,red,Formlabs
+vacuum_former,amber
+cordless_drill,green
+cnc_router,red
+metal_lathe,red
+warco_mill,red,Warco
+model_mill,red,Warco
+makespace,red
+admin_database,red
+vinyl_cutter,amber
+janome_423,amber
+fine_metalwork,amber
+glasswork,amber
+classroom,green
+soldering_stations,amber
+bike_repair_kit,green
+reflow_oven,red
+screen_printing,amber
+bandsaw,red
+chopsaw,red,Evolution
+belt_disc_sander,amber
+pillar_drill,amber
+tormek,red,Tormek
