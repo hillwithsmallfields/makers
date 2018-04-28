@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-from event import Event
+# from event import Event
+import event
 import database
 import time
 
@@ -124,10 +125,10 @@ def test_timelines():
     day_6 = day_0 + timedelta(6)
     day_after_all = day_0 + timedelta(7)
     # these should appear in the order Joe, Jane, Arthur, John
-    x.insert(Event('training', day_2, ['Jane Smith']))
-    x.insert(Event('training', day_0, ['Arthur King'], equipment=['laser']))
-    x.insert(Event('meeting', day_4, ['Joe Bloggs']))
-    x.insert(Event('training', day_6, ['John Doe']))
+    x.insert(event.Event('training', day_2, ['Jane Smith']))
+    x.insert(event.Event('training', day_0, ['Arthur King'], equipment=['laser']))
+    x.insert(event.Event('meeting', day_4, ['Joe Bloggs']))
+    x.insert(event.Event('training', day_6, ['John Doe']))
     print "Timeline is now", x
     r1 = x.until(day_before_all)
     print len(r1), "events (should be 0) until pre-beginning", r1

@@ -66,12 +66,16 @@ def main():
     induction_date = datetime.date(2013,03,19)
     induction_size = random.randrange(1, 6)
     config = configuration.get_config()
-    equipment_classes = config['equipment_classes']
+    equipment_classes = {}
+    with open('equipment-types.csv') as types_file:
+        for row in csv.DictReader(types_file):
+            equipment_classes[row['name']] = row
     equipment_last_training_sessions = {}
     equipment_last_trainers = {}
     del equipment_classes['makespace']
+    # record training only for red equipment
     equipment_classes = [ eqcl for eqcl in equipment_classes.keys()
-                          if equipment_classes[eqcl].get('training_class', 'red') == 'red' ]
+                          if equipment_classes[eqcl].get('training_category', 'red') == 'red' ]
     users = {}
     owners = {}
     trainers = {}
@@ -143,12 +147,13 @@ def main():
             by_name[name] = row
             if member_no < 4 or random.random() < 0.01:
                 inductors = inductors + [name]
+    max_member_number = member_no
     with open("members.csv", "w") as member_file:
         member_writer = csv.DictWriter(member_file,
                                        fieldnames=member_fields,
                                        extrasaction='ignore')
         member_writer.writeheader()
-        for member_no in range(0,1010):
+        for member_no in range(0, max_member_number):
             if member_no in by_number:
                 member_writer.writerow(by_number[member_no])
     with open("users.csv", "w") as trained_file:

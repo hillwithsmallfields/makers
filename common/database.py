@@ -22,6 +22,7 @@ def database_init(config, delete_existing=False):
     if delete_existing:
         # I think these are wrong
         database.drop_collection(collection_names['people'])
+        database.drop_collection(collection_names['equipment_types'])
         database.drop_collection(collection_names['equipment'])
         database.drop_collection(collection_names['events'])
 
@@ -77,12 +78,6 @@ def add_person(name_record, main_record):
     database[collection_names['people']].insert(main_record)
     database[collection_names['names']].insert(name_record)
 
-def get_machine(name):
-    """Read the data for a machine from the database."""
-    collection = database[collection_names['equipment']]
-    return (collection.find_one({'name': name})
-            or collection.find_one({'_id': name}))
-
 def get_event(event_type, event_datetime, hosts, equipment, create=True):
     """Read the data for an event from the database."""
     # print "Looking for event", "hosts,", hosts, "date", event_datetime, "event_type,", event_type, "equipment", equipment
@@ -115,36 +110,6 @@ def save_timeline(tl):
                                                     'events': [[te[0], event.as_id(te[1])]
                                                                # todo: sort out how to save these timestamp:event pairs
                                                                for te in tl.events]})
-
-def get_machine_class_people(machine_class, role):
-    """For a given machine class, get a list of people in a given role.
-    The machine can be given by name or objectId.
-    The role will be a list field of the machine document,
-    typically 'trained', 'owner' or 'trainer'."""
-    # todo: make this find a <role> which has an entry with the appropriate machine_class
-    raw = database[collection_names['people']].find({role: machine_class})
-    checked = {}
-    # todo: filter the ones which have been cancelled
-    return None
-
-def get_person_machines(person, role):
-    """Return the machines on which a person has a given role.
-    The role will be a list field of the machine document, typically
-    'trained', 'owner' or 'trainer'.  The result will be a dictionary
-    keyed by equipment class, with the values in the result being
-    dictionaries giving their name, the equipment class, when they
-    were trained and who by."""
-    if isinstance(person, basestring):
-        person = get_person_dict(person)
-    if role not in person:
-        return None
-    latest_periods = person[role]
-    enablements = {}
-    for record in latest_periods:
-        if (record['equipment_class'] not in enablements
-            and record.get('until', None) is None):
-            enablements[record['equipment_class']] = record
-    return enablements
 
 def is_administrator(person, writer=False):
     """Return whether a person is an administrator who can access other people's data in the database.
@@ -183,14 +148,35 @@ def person_email0(person, viewing_person):
                 or is_administrator(viewing_person))
             else "anon@anonymous.com")
 
-def add_person_machine_role(person, person_adding, machine_class, role):
-    # todo: indicate that a person has a relationship to a machine class
-    pass
+# Equipment classes
 
-def cancel_person_machine_role(person, person_cancelling, machine_class, role):
-    # todo: indicate that a person no longer has a relationship to a machine class
-    pass
+def get_equipment_type_dict(clue):
+    collection = database[collection_names['equipment_types']]
+    return (collection.find_one({'_id': clue})
+            or collection.find_one({'name': clue}))
 
-def check_person_machine_role(person, machine_class, role):
-    # todo: check whether a person has a relationship to a machine class
-    return None
+def add_equipment_type(name, training_category,
+                        manufacturer=None):
+    data = {'name': name,
+            'training_category': training_category}
+    if manufacturer:
+        data['manufacturer'] = manufacturer
+    database[collection_names['equipment_types']].insert(data)
+
+# Equipment
+
+def get_machine(name):
+    """Read the data for a machine from the database."""
+    collection = database[collection_names['equipment']]
+    return (collection.find_one({'name': name})
+            or collection.find_one({'_id': name}))
+
+def add_machine(name, equipment_type,
+                location=None, acquired=None):
+    data = {'name': name,
+            'equipment_type': equipment_type}
+    if location:
+        data['location'] = location
+    if acquired:
+        data['acquired'] = acquired
+    database[collection_names['equipment']].insert(data)

@@ -2,6 +2,7 @@
 import database
 import re
 from datetime import datetime, timedelta
+import person
 
 fulltime = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}:[0-9]{2}")
 
@@ -60,9 +61,10 @@ class Event(object):
         accum = "<" + self.event_type
         accum += "_event at " + str(self.start) # todo: don't print time if it's all zeroes, just print date
         if self.hosts and self.hosts != []:
-            accum += " with " + ",".join(map(str, self.hosts))
+            accum += " with " + ",".join([person.Person.find(host_id).name()
+                                          for host_id in self.hosts])
         if self.equipment and self.equipment != []:
-            accum += " on " + ",".join(self.equipment)
+            accum += " on " + ",".join([str(e) for e in self.equipment])
         accum += ">"
         return accum
 

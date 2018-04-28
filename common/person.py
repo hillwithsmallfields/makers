@@ -1,6 +1,7 @@
 import database
 import timeline
-from event import Event
+# from event import Event
+import event
 from datetime import datetime
 
 class Person(object):
@@ -70,7 +71,7 @@ class Person(object):
         as a list of training events.
         What is stored in the user record is just the _id of the timeline,
         because timelines are stored as records in their own right."""
-        return [ Event.find_by_id(event_id) for (timestamp, event_id) in self.get_training_timeline().events
+        return [ event.Event.find_by_id(event_id) for (timestamp, event_id) in self.get_training_timeline().events
                  if when is None or timestamp < when ]
 
     def add_training(self, event):
