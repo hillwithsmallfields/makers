@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+  {% if request.user.is_authenticated %}
+    USER!
+  {% endif %}
+{% endblock content %}
