@@ -81,7 +81,7 @@ class Person(object):
         # training event lists are kept in time order, with the latest (which may be in the future) at the front of the list
         if self.training is None:
             self.training = timeline.Timeline(self.given_name + " " + self.surname + "'s training")._id
-            database[collection_names['people']].update({'_id': self._id}, {'$set': {'training': self.training}})
+            database.database[database.collection_names['people']].update({'_id': self._id}, {'$set': {'training': self.training}})
         self.get_training_timeline().insert(event)
 
     def get_equipment_classes(self, role):

@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import configuration
+from context import Context
 import event
 import json
 import os
@@ -39,9 +40,15 @@ def get_person_dict(identification):
             # names and email addresses are kept in a separate database
             or collection.find_one({'link_id': name_to_id(identification)}))
 
-def person_name(whoever):
+# You should generally use these functions to get these details of
+# people, rather than looking directly in the relevant fields of the
+# record, so that privacy protection can be applied.
+
+def person_name(whoever,
+                equipment=None, role_viewed=None):
     """Return the formal and informal names of a person, or not, if they're anonymous.
-    Always use this to get someone's name; this way, anonymity is handled for you."""
+    Always use this to get someone's name; this way, anonymity is handled for you.
+    For events, if you're being viewed in the host role, you can't be anonymous (for now)."""
     # todo: add admin override of anonymity
     person_link = (whoever['link_id']
                    if isinstance(whoever, dict)
@@ -51,7 +58,9 @@ def person_name(whoever):
     name_record = database[collection_names['names']].find_one({'link_id': person_link})
     if name_record is None:
         return "unknown", "unknown"
-    if name_record.get('anonymous', False):
+    if (not Context.get_context().can_read_for(equipment)
+        and role_viewed != 'host'
+        and name_record.get('anonymous', False)):
         if 'membership_number' in name_record:
             num_string = str(name_record['membership_number'])
             return "member " + num_string, num_string
@@ -60,6 +69,32 @@ def person_name(whoever):
     else:
         return (name_record.get('given_name', "?") + " " + name_record.get('surname', "?"),
                 name_record.get('known_as', name_record.get('given_name', "?")))
+
+def person_name0(person, viewing_person):
+    """Return the person's full name and nickname.
+    If they have requested anonymity, only they and the admins can see their name."""
+    # todo: integrate with other name function
+    person = get_person_dict(person)
+    viewing_person = get_person_dict(viewing_person)
+    if (person == viewing_person
+        or not person.get("anonymized", False) # optional flag
+        # todo: add an equipment arg to give context so that owners and trainers of that equipment can see this
+        or is_administrator(viewing_person)):
+        given_name = person['given_name']
+        return given_name + " " + person['surname'], person.get('known_as', given_name)
+    else:
+        return "Anonymous", "Anon"
+
+def person_email0(person, viewing_person):
+    # todo: use name database
+    """Return the person's email address.
+    If they have requested anonymity, only they and the admins can see this."""
+    return (person['email']
+            if (person == viewing_person
+                or not person.get("anonymized", False) # optional flag
+                # todo: add an equipment arg to give context so that owners and trainers of that equipment can see this
+                or is_administrator(viewing_person))
+            else "anon@anonymous.com")
 
 def name_to_id(name):
     name_parts = name.rsplit(" ", 1)
@@ -117,36 +152,6 @@ def is_administrator(person, writer=False):
     return (configuration.get_config['organization']['database']
             in get_person_machines(person,
                                    'owner' if writer else 'trained'))
-
-# You should generally use these functions to get these details of
-# people, rather than looking directly in the relevant fields of the
-# record, so that privacy protection can be applied.
-
-def person_name0(person, viewing_person):
-    """Return the person's full name and nickname.
-    If they have requested anonymity, only they and the admins can see their name."""
-    # todo: integrate with other name function
-    person = get_person_dict(person)
-    viewing_person = get_person_dict(viewing_person)
-    if (person == viewing_person
-        or not person.get("anonymized", False) # optional flag
-        # todo: add an equipment arg to give context so that owners and trainers of that equipment can see this
-        or is_administrator(viewing_person)):
-        given_name = person['given_name']
-        return given_name + " " + person['surname'], person.get('known_as', given_name)
-    else:
-        return "Anonymous", "Anon"
-
-def person_email0(person, viewing_person):
-    # todo: use name database
-    """Return the person's email address.
-    If they have requested anonymity, only they and the admins can see this."""
-    return (person['email']
-            if (person == viewing_person
-                or not person.get("anonymized", False) # optional flag
-                # todo: add an equipment arg to give context so that owners and trainers of that equipment can see this
-                or is_administrator(viewing_person))
-            else "anon@anonymous.com")
 
 # Equipment classes
 

@@ -1,5 +1,6 @@
 # -*- coding: utf8
 import database
+from equipment_type import Equipment_type
 import re
 from datetime import datetime, timedelta
 import person
@@ -64,7 +65,7 @@ class Event(object):
             accum += " with " + ",".join([person.Person.find(host_id).name()
                                           for host_id in self.hosts]).encode('utf-8')
         if self.equipment and self.equipment != []:
-            accum += " on " + ",".join([str(e) for e in self.equipment])
+            accum += " on " + ",".join([Equipment_type.find(e).name for e in self.equipment])
         accum += ">"
         return accum
 
