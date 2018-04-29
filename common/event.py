@@ -47,6 +47,9 @@ class Event(object):
         self.attendees = attendees
         self.equipment = equipment # a list, not a single item
         self._id = None
+        self.passed = []        # _id of person
+        self.failed = []        # _id of person
+        self.noshow = []        # _id of person
         # 'hosts': [], # todo: put the current user in as a host
         # 'attendees': [],
         # # preconditions; not sure of the format of this

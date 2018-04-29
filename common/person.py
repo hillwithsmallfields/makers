@@ -95,7 +95,7 @@ class Person(object):
         equipments = {}
         for ev in training:
             for eq in ev.equipment:
-                if ev.event_type == role_training:
+                if ev.event_type == role_training and self._id in ev.passed:
                     trained[eq._id] = ev.start
                     equipments[eq._id] = eq
                 elif ev.event_type == role_untraining:
@@ -113,8 +113,8 @@ class Person(object):
             if equipment_type not in event.equipment:
                 continue
             if event.event_type == role_training:
-                # todo: check they passed the training
-                return event
+                if self._id in event.passed:
+                    return event
             if event.event_type == role_untraining:
                 return None
         return None

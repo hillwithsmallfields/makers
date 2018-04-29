@@ -16,7 +16,9 @@ def add_training(person, trainer, trained_date, equipment):
     if trainer:
         trainer = trainer._id
     event = Event.find('training', trained_date, [trainer], [equipment])
-    person.add_event(event)
+    person.add_training(event)
+    person.attendees.append(person._id)
+    person.passed.append(person._id)
 
 def import_main(verbose=True):
     # todo: convert all dates to datetime.datetime as mentioned in http://api.mongodb.com/python/current/examples/datetimes.html
