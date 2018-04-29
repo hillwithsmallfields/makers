@@ -1,5 +1,6 @@
-
+# -*- coding: utf8
 import database
+from equipment_type import Equipment_type
 import re
 from datetime import datetime, timedelta
 import person
@@ -46,6 +47,9 @@ class Event(object):
         self.attendees = attendees
         self.equipment = equipment # a list, not a single item
         self._id = None
+        self.passed = []        # _id of person
+        self.failed = []        # _id of person
+        self.noshow = []        # _id of person
         # 'hosts': [], # todo: put the current user in as a host
         # 'attendees': [],
         # # preconditions; not sure of the format of this
@@ -62,9 +66,9 @@ class Event(object):
         accum += "_event at " + str(self.start) # todo: don't print time if it's all zeroes, just print date
         if self.hosts and self.hosts != []:
             accum += " with " + ",".join([person.Person.find(host_id).name()
-                                          for host_id in self.hosts])
+                                          for host_id in self.hosts]).encode('utf-8')
         if self.equipment and self.equipment != []:
-            accum += " on " + ",".join([str(e) for e in self.equipment])
+            accum += " on " + ",".join([Equipment_type.find(e).name for e in self.equipment])
         accum += ">"
         return accum
 

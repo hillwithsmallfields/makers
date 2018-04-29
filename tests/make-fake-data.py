@@ -7,20 +7,24 @@ sys.path.append('common')
 import csv, random, datetime, configuration
 
 surnames = ["Bernard", "Brown", "Clarke", "Davies", "Dubois", "Evans",
+            # "Kamiński", "Müller", "Wiśniewski", "Wójcik", # with accented characters
             "Fischer", "Green", "Hall", "Jackson", "Johnson", "Jones",
-            "Kamiński", "Kelmendi", "Kowalczyk", "Kowalski", "Lewandowski",
-            "Maes", "Maler", "Martin", "Meyer", "Müller", "Nowak", "Roberts",
+            "Kelmendi", "Kowalczyk", "Kowalski", "Lewandowski",
+            "Maes", "Maler", "Martin", "Meyer", "Nowak", "Roberts",
             "Robinson", "Schmidt", "Schneider", "Smith", "Altdorf",
+            "Martin", "Earl", "StClair", "Farquhar", "Levi", "Albrecht",
             "Neumann", "Johansson", "Jansson", "Svensson", "Carey",
             "Armstrong", "Lejeune", "Young", "Jung", "Taylor", "Green",
             "Hinton", "Bond", "Farmer", "Palmer", "Thompson", "Virtanen",
-            "Wagner", "Walker", "White", "Williams", "Wilson", "Wiśniewski",
-            "Wood", "Wright", "Wójcik"]
+            "Wagner", "Walker", "White", "Williams", "Wilson",
+            "Wood", "Wright"]
 
 forenames = ["Alexandru", "Alice", "Andrei", "Anna", "Charlie", "Charlotte",
-             "Chloé", "David", "Emma", "Gabriel", "George", "Harry", "Inès",
-             "Jack", "Jacob", "John", "Louise", "Léa", "Noah", "Oliver",
+             # "Chloé", "Inès", "Léa", # with accented characters
+             "David", "Emma", "Gabriel", "George", "Harry",
+             "Jack", "Jacob", "John", "Louise", "Noah", "Oliver",
              "Timothy", "Tina", "Tania", "Gavin", "Roger", "Ivan",
+             "Carlos", "Ewan", "Eoin", "Caomhghin", "Donncha",
              "Oscar", "Sarah", "Thomas", "Anthony", "Christine", "Antonia",
              "Mark", "Judith", "Daniel", "Adam", "Catherine", "Silvia",
              "Quentin", "Robert", "Rupert", "Gwendoline", "Amanda",
