@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf8
 
 import sys
@@ -10,15 +10,21 @@ surnames = ["Bernard", "Brown", "Clarke", "Davies", "Dubois", "Evans",
             "Fischer", "Green", "Hall", "Jackson", "Johnson", "Jones",
             "Kamiński", "Kelmendi", "Kowalczyk", "Kowalski", "Lewandowski",
             "Maes", "Maler", "Martin", "Meyer", "Müller", "Nowak", "Roberts",
-            "Robinson", "Schmidt", "Schneider", "Smith", "Surname",
-            "Svensson", "Taylor", "Thompson", "Virtanen", "Wagner", "Walker",
-            "White", "Williams", "Wilson", "Wiśniewski", "Wood", "Wright",
-            "Wójcik"]
+            "Robinson", "Schmidt", "Schneider", "Smith", "Altdorf",
+            "Neumann", "Johansson", "Jansson", "Svensson", "Carey",
+            "Armstrong", "Lejeune", "Young", "Jung", "Taylor", "Green",
+            "Hinton", "Bond", "Farmer", "Palmer", "Thompson", "Virtanen",
+            "Wagner", "Walker", "White", "Williams", "Wilson", "Wiśniewski",
+            "Wood", "Wright", "Wójcik"]
 
 forenames = ["Alexandru", "Alice", "Andrei", "Anna", "Charlie", "Charlotte",
              "Chloé", "David", "Emma", "Gabriel", "George", "Harry", "Inès",
              "Jack", "Jacob", "John", "Louise", "Léa", "Noah", "Oliver",
-             "Oscar", "Sarah", "Thomas",]
+             "Timothy", "Tina", "Tania", "Gavin", "Roger", "Ivan",
+             "Oscar", "Sarah", "Thomas", "Anthony", "Christine", "Antonia",
+             "Mark", "Judith", "Daniel", "Adam", "Catherine", "Silvia",
+             "Quentin", "Robert", "Rupert", "Gwendoline", "Amanda",
+             "Miranda", "Jan", "Janet", "Susan"]
 
 animals = ["Fox", "Mongoose", "Lizard", "Bat", "Mouse", "Raptor"]
 
@@ -54,21 +60,27 @@ trainers_fields = ['Equipment', 'Name', 'Date']
 def main():
     by_email = {}
     by_number = {}
-    inductor = "Self"
+    by_name = {}
+    inductor = "Joe Bloggs"
     inductors = []
     induction_date = datetime.date(2013,03,19)
     induction_size = random.randrange(1, 6)
     config = configuration.get_config()
-    equipment_classes = config['equipment_classes']
+    equipment_classes = {}
+    with open('equipment-types.csv') as types_file:
+        for row in csv.DictReader(types_file):
+            equipment_classes[row['name']] = row
     equipment_last_training_sessions = {}
     equipment_last_trainers = {}
     del equipment_classes['makespace']
+    # record training only for red equipment
     equipment_classes = [ eqcl for eqcl in equipment_classes.keys()
-                          if equipment_classes[eqcl].get('training_class', 'red') == 'red' ]
+                          if equipment_classes[eqcl].get('training_category', 'red') == 'red' ]
     users = {}
     owners = {}
     trainers = {}
-    for member_no in range(1,1010):
+    member_no = 1
+    while member_no < 1010:
         if member_no == 1:
             forename = "Joe"
             surname = "Bloggs"
@@ -76,13 +88,18 @@ def main():
             forename = random.choice(forenames)
             surname = random.choice(surnames)
         name = forename + " " + surname
+        if name in by_name:
+            print "duplicate name", name, member_no
+            continue
+        print "unique name", name, member_no
+        member_no += 1
         e1 = forename.lower()
         e2 = surname.lower()
         email = random.choice([e1, e1[0:1]]) + random.choice(["", ".", "_"]) + e2 + "@" + random.choice(emailers) + ".com"
         induction_size -= 1
         if induction_size == 0:
             induction_size = random.randrange(1, 6)
-            inductor = random.choice(inductors) if len(inductors) > 0 else "Self"
+            inductor = random.choice(inductors) if len(inductors) > 0 else "Joe Bloggs" # the first member must be their own inductor
             induction_date = induction_date + datetime.timedelta(random.randrange(3,7))
         if email not in by_email: # avoid duplicates
             row = {'Member no': member_no,
@@ -94,7 +111,7 @@ def main():
                    'Code': random.choice(animals)+random.choice(furniture),
                    'Code returned?': "Yes",
                    'Fob enabled & e-mail sent on': induction_date+datetime.timedelta(random.randrange(1,4)),
-                   'Enabled by': random.choice(inductors) if len(inductors) > 0 else "Self"
+                   'Enabled by': random.choice(inductors) if len(inductors) > 0 else inductor
             }
             # decreasing probability that they've left
             if random.randrange(member_no) < 24:
@@ -127,14 +144,16 @@ def main():
             row['trained_on'] = trained_on
             by_email[email] = row
             by_number[member_no] = row
+            by_name[name] = row
             if member_no < 4 or random.random() < 0.01:
                 inductors = inductors + [name]
+    max_member_number = member_no
     with open("members.csv", "w") as member_file:
         member_writer = csv.DictWriter(member_file,
                                        fieldnames=member_fields,
                                        extrasaction='ignore')
         member_writer.writeheader()
-        for member_no in range(1010,0,-1):
+        for member_no in range(0, max_member_number):
             if member_no in by_number:
                 member_writer.writerow(by_number[member_no])
     with open("users.csv", "w") as trained_file:

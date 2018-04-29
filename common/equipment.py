@@ -1,3 +1,4 @@
+import database
 
 class Equipment(object):
 

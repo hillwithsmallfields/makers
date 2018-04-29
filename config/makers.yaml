@@ -214,9 +214,12 @@ database:
   URI: mongodb://localhost/
   database_name: Makespace
   collections:
-    people:    MakespacePeople
-    equipment: MakespaceEquipment
-    events:    MakespaceEvents
+    names:           MakespaceNames
+    people:          MakespacePeople
+    equipment_types: MakespaceEquipmentTypes
+    equipment:       MakespaceEquipment
+    events:          MakespaceEvents
+    timelines:       MakepaceTimelines
 
 # The names in this section indicate which equipment class names
 # are magical
