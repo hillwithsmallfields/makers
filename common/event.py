@@ -1,4 +1,4 @@
-
+# -*- coding: utf8
 import database
 import re
 from datetime import datetime, timedelta
@@ -62,7 +62,7 @@ class Event(object):
         accum += "_event at " + str(self.start) # todo: don't print time if it's all zeroes, just print date
         if self.hosts and self.hosts != []:
             accum += " with " + ",".join([person.Person.find(host_id).name()
-                                          for host_id in self.hosts])
+                                          for host_id in self.hosts]).encode('utf-8')
         if self.equipment and self.equipment != []:
             accum += " on " + ",".join([str(e) for e in self.equipment])
         accum += ">"

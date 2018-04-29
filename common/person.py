@@ -53,7 +53,7 @@ class Person(object):
         """Return the person's nickname, unless they've requested anonymity."""
         # todo: add admin override of anonymity
         _, informal = database.person_name(self.link_id)
-        return informal
+        return informal.encode('utf-8')
 
     def set_profile_field(self, *kwargs):
         """Set the fields and write them back to the database."""
