@@ -2,6 +2,7 @@ import database
 import timeline
 # from event import Event
 import event
+import configuration
 from datetime import datetime
 
 class Person(object):
@@ -84,19 +85,35 @@ class Person(object):
             database.database[database.collection_names['people']].update({'_id': self._id}, {'$set': {'training': self.training}})
         self.get_training_timeline().insert(event)
 
-    def get_equipment_classes(self, role):
+    def get_equipment_classes(self, role, when=None):
         """Get the list of the equipment_classes for which the person has the specified role."""
-        pass
+        role_training = role + "_training"
+        role_untraining = role + "_untraining"
+        training = self.get_training_events(when or datetime.now())
+        trained = {}
+        detrained = {}
+        equipments = {}
+        for ev in training:
+            for eq in ev.equipment:
+                if ev.event_type == role_training:
+                    trained[eq._id] = ev.start
+                    equipments[eq._id] = eq
+                elif ev.event_type == role_untraining:
+                    detrained[eq._id] = ev.start
+        return [ equipments[e] for e in trained.keys()
+                 if (e not in detrained
+                     or trained[e] > detrained[e])]
 
-    def qualification(self, equipment_class, role, when=None):
+    def qualification(self, equipment_type, role, when=None):
         """Return whether the user is qualified for a role on an equipment class.
         The result is the event that qualified them."""
         role_training = role + "_training"
         role_untraining = role + "_untraining"
         for event in self.get_training_events(when or datetime.now()):
-            if equipment_class not in event.equipment:
+            if equipment_type not in event.equipment:
                 continue
             if event.event_type == role_training:
+                # todo: check they passed the training
                 return event
             if event.event_type == role_untraining:
                 return None
@@ -104,16 +121,16 @@ class Person(object):
 
     def is_member(self):
         """Return whether the person is a member."""
-        return is_trained(self, configuration.get_config()['organization']['name'])
+        return self.qualification(configuration.get_config()['organization']['name'], 'user')
 
     def is_administrator(self):
         """Return whether the person is an admin."""
-        return self.is_owner(get_config()['organization']['database'])
+        return self.is_owner(configuration.get_config()['organization']['database'])
 
     def is_auditor(self):
         """Return whether the person is an auditor.
         Similar to admin but read-only."""
-        return self.is_trained(get_config()['organization']['database'])
+        return self.is_trained(configuration.get_config()['organization']['database'])
 
     def is_inductor(self):
         """Return whether the person is a general inductor."""
@@ -121,15 +138,15 @@ class Person(object):
 
     def is_trained(self, equipment_class):
         """Return whether a person is trained to use a particular equipment_class."""
-        return self.is_qualified(equipment_class, 'user')
+        return self.qualification(equipment_class, 'user')
 
     def is_owner(self, equipment_class):
         """Return whether the person is an owner of that equipment_class."""
-        return self.is_qualified(equipment_class, 'owner')
+        return self.qualification(equipment_class, 'owner')
 
     def is_trainer(self, equipment_class):
         """Return whether the person is a trainer for that equipment_class."""
-        return self.is_qualified(equipment_class, 'trainer')
+        return self.qualification(equipment_class, 'trainer')
 
 def all_people():
     """Return a list of all registered people."""
