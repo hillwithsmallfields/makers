@@ -97,11 +97,13 @@ def import_main(verbose=True):
                 continue
             trainer = Person.find(row['Trainer'])
             trainer_id = trainer._id if trainer else None
-            person.add_training(Event.find('training',
-                                           row['Date'],
-                                           [trainer_id],
-                                           [ Equipment_type.find(typename)._id
-                                             for typename in row['Equipment'].split(';') ]))
+            training_event = Event.find('training',
+                                        row['Date'],
+                                        [trainer_id],
+                                        [ Equipment_type.find(typename)._id
+                                          for typename in row['Equipment'].split(';') ])
+            training_event.mark_results([person], [], [])
+            person.add_training(training_event)
             checkback = Person.find(row['Name'])
             if verbose:
                 print "checkback is", checkback, "with training events", checkback.get_training_events()

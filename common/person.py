@@ -65,6 +65,7 @@ class Person(object):
         as a timeline of training events.
         What is stored in the user record is just the _id of the timeline,
         because timelines are stored as records in their own right."""
+        # todo: stop storing the timeline as such, and generate it by searching the database
         return timeline.Timeline.find_by_id(self.training)
 
     def get_training_events(self, when=None):

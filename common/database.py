@@ -132,6 +132,9 @@ def get_event_by_id(event_id):
     """Read the data for an event from the database."""
     return database[collection_names['events']].find_one({'_id': event_id})
 
+def save_event(this_event):
+    database[collection_names['events']].save(this_event)
+
 def create_timeline_id(name):
     return (database[collection_names['timelines']].insert({'name': name}))
 
@@ -140,11 +143,11 @@ def get_timeline_by_id(id):
 
 def save_timeline(tl):
     d = tl.__dict__
-    database[collection_names['timelines']].update({'_id': tl._id},
-                                                   {'name': tl.name,
-                                                    'events': [[te[0], event.as_id(te[1])]
-                                                               # todo: sort out how to save these timestamp:event pairs
-                                                               for te in tl.events]})
+    database[collection_names['timelines']].save({'_id': tl._id},
+                                                 {'name': tl.name,
+                                                  'events': [[te[0], event.as_id(te[1])]
+                                                             # todo: sort out how to save these timestamp:event pairs
+                                                             for te in tl.events]})
 
 def is_administrator(person, writer=False):
     """Return whether a person is an administrator who can access other people's data in the database.
