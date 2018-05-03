@@ -29,7 +29,8 @@ class Event(object):
                  hosts,
                  attendees=[],
                  event_duration=60,
-                 equipment=None):
+                 equipment_types=[],
+                 equipment=[]):
         """Create an event of a given type and datetime.
         The current user is added as a host.
         The event type names a template to build the event from.
@@ -38,28 +39,28 @@ class Event(object):
         # self.details = get_event_template(event_type)
         self.event_type = event_type
         self.start = as_time(event_datetime)
-        self.duration = (event_duration
-                         if isinstance(event_duration, timedelta)
-                         else (timedelta(0, event_duration * 60) # given in minutes
-                               if isinstance(event_duration, int)
-                               else None))
-        self.hosts = hosts
-        self.attendees = attendees
-        self.equipment = equipment # a list, not a single item
+        self.end = self.start + (event_duration
+                                 if isinstance(event_duration, timedelta)
+                                 else (timedelta(0, event_duration * 60) # given in minutes
+                                       if isinstance(event_duration, int)
+                                       else timedelta(0, 120 * 60)))
+        # It would be nice to use Python sets for these,
+        # but then we'd have to convert them for loading and saving in mongo.
+        self.hosts = hosts         # _id of person
+        self.attendees = attendees # _id of person
+        self.equipment_types = equipment_types
+        self.equipment = equipment
         self._id = None
-        self.passed = []        # _id of person
-        self.failed = []        # _id of person
-        self.noshow = []        # _id of person
-        # 'hosts': [], # todo: put the current user in as a host
-        # 'attendees': [],
-        # # preconditions; not sure of the format of this
+        self.passed = []   # _id of person
+        self.failed = []   # _id of person
+        self.noshow = []   # _id of person
+        self.prerequisites = []
+        self.location = None
         # 'prerequisites': [],
         # # What the event will result in, if training
         # 'aim': None,      # what role the event trains for
         # 'equipment_classes': [],
         # # What the event needs to reserve
-        # 'location': None,
-        # 'equipment': []
 
     def __str__(self):
         accum = "<" + self.event_type
@@ -76,14 +77,19 @@ class Event(object):
         return self.__str__()
 
     @staticmethod
-    def find(event_type, event_datetime, hosts, equipment):
+    def find(event_type, event_datetime, hosts, equipment_types):
         event_datetime = as_time(event_datetime)
-        event_dict = database.get_event(event_type, event_datetime, hosts, equipment, create=True)
+        event_dict = database.get_event(event_type, event_datetime,
+                                        hosts,
+                                        equipment_types,
+                                        create=True)
         if event_dict is None:
             return None
         event_id = event_dict['_id']
         if event_id not in Event.events_by_id:
-            Event.events_by_id[event_id] = Event(event_type, event_datetime, hosts, equipment=equipment)
+            Event.events_by_id[event_id] = Event(event_type, event_datetime,
+                                                 hosts,
+                                                 equipment_types=equipment_types)
         e = Event.events_by_id[event_id]
         e.__dict__.update(event_dict)
         return e
@@ -97,7 +103,7 @@ class Event(object):
             Event.events_by_id[event_id] = Event(event_dict['event_type'],
                                                  event_dict['event_datetime'],
                                                  event_dict['hosts'],
-                                                 equipment=event_dict['equipment'])
+                                                 equipment_types=event_dict['equipment_types'])
         e = Event.events_by_id[event_id]
         e.__dict__.update(event_dict) # todo: sort out whether I need to re-read this in case of database changes
         return e
@@ -110,6 +116,10 @@ class Event(object):
         """Set the details of an event, from a dictionary."""
         self.__dict__.update(details_dict)
 
+    def save(self):
+        """Save the event to the database."""
+        database.save_event(self.__dict__)
+
     def schedule(self):
         """Save the event to the database, and add it to the list of scheduled events."""
         pass
@@ -120,31 +130,52 @@ class Event(object):
 
     def get_hosts(self):
         """Return the list of people hosting the event."""
-        pass
+        return self.hosts
 
-    def add_hosts(self, *hosts):
+    def add_hosts(self, hosts):
         """Add specified hosts to the hosts list."""
-        pass
+        for host in hosts:
+            if host not in self.hosts:
+                self.hosts.append(host._id)
+        self.save()
 
-    def remove_hosts(self, *hosts):
+    def remove_hosts(self, hosts):
         """Remove specified hosts from the hosts list."""
-        pass
+        for host in hosts:
+            if host in self.hosts:
+                self.hosts.remove(host._id)
+        self.save()
 
     def get_attendees(self):
         """Return the list of people attending the event."""
-        pass
+        return self.attendees
 
-    def add_attendees(self, *attendees):
+    def add_attendees(self, attendees):
         """Add specified people to the attendees list."""
-        pass
+        for attendee in attendees:
+            if attendee not in self.attendees:
+                self.attendees.append(attendee._id)
+        self.save()
 
-    def remove_attendees(self, *attendees):
+    def remove_attendees(self, attendees):
         """Remove specified people from the attendees list."""
-        pass
+        for attendee in attendees:
+            if attendee in self.attendees:
+                self.attendees.remove(attendee._id)
+        self.save()
 
-    def mark_results(self, *attendees):
+    def mark_results(self, successful, failed, noshow):
         """Record the results of a training session."""
-        pass
+        for whoever in successful:
+            if whoever not in self.passed:
+                self.passed.append(whoever._id)
+        for whoever in failed:
+            if whoever not in self.failed:
+                self.failed.append(whoever._id)
+        for whoever in noshow:
+            if whoever not in self.noshow:
+                self.noshow.append(whoever._id)
+        self.save()
 
     def save_as_template(self, name):
         """Save this event as a named template."""

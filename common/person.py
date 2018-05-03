@@ -3,6 +3,7 @@ import timeline
 # from event import Event
 import event
 import configuration
+import equipment_type
 from datetime import datetime
 
 class Person(object):
@@ -65,42 +66,48 @@ class Person(object):
         as a timeline of training events.
         What is stored in the user record is just the _id of the timeline,
         because timelines are stored as records in their own right."""
-        return timeline.Timeline.find_by_id(self.training)
+        # todo: stop storing the timeline as such, and generate it by searching the database
+        # return timeline.Timeline.find_by_id(self.training)
+        pass
 
-    def get_training_events(self, when=None):
+    def get_training_events(self, event_type='user_training', when=None):
         """Return the training data for this user,
-        as a list of training events.
-        What is stored in the user record is just the _id of the timeline,
-        because timelines are stored as records in their own right."""
-        return [ event.Event.find_by_id(event_id) for (timestamp, event_id) in self.get_training_timeline().events
-                 if when is None or timestamp < when ]
+        as a list of training events."""
+        # todo: handle the when parameter
+        return database.get_events(event_type=event_type,
+                                   person_field='passed',
+                                   person_id=self._id,
+        )
 
     def add_training(self, event):
         """Add the event to the appropriate role list of the person's events, and write it back to the database."""
         # note that the role can be found from 'aim' field of the event details,
         # and the equipment classes from the 'equipment_classes' of the event details
         # training event lists are kept in time order, with the latest (which may be in the future) at the front of the list
-        if self.training is None:
-            self.training = timeline.Timeline(self.given_name + " " + self.surname + "'s training")._id
-            database.database[database.collection_names['people']].update({'_id': self._id}, {'$set': {'training': self.training}})
-        self.get_training_timeline().insert(event)
+        # if self.training is None:
+        #     self.training = timeline.Timeline(self.given_name + " " + self.surname + "'s training")._id
+        #     database.database[database.collection_names['people']].update({'_id': self._id}, {'$set': {'training': self.training}})
+        # self.get_training_timeline().insert(event)
+        pass
 
     def get_equipment_classes(self, role, when=None):
         """Get the list of the equipment_classes for which the person has the specified role."""
         role_training = role + "_training"
         role_untraining = role + "_untraining"
-        training = self.get_training_events(when or datetime.now())
+        training = self.get_training_events(event_type = role_training, when=when or datetime.now())
+        untraining = self.get_training_events(event_type = role_untraining, when=when or datetime.now())
         trained = {}
         detrained = {}
         equipments = {}
         for ev in training:
             for eq in ev.equipment:
-                if ev.event_type == role_training and self._id in ev.passed:
-                    trained[eq._id] = ev.start
-                    equipments[eq._id] = eq
-                elif ev.event_type == role_untraining:
-                    detrained[eq._id] = ev.start
-        return [ equipments[e] for e in trained.keys()
+                trained[eq] = ev.start
+                equipments[eq] = eq
+        for ev in untraining:
+            for eq in ev.equipment:
+                detrained[eq] = ev.start
+        return [ equipment_type.Equipment_type.find_by_id(equipments[e])
+                 for e in trained.keys()
                  if (e not in detrained
                      or trained[e] > detrained[e])]
 

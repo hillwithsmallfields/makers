@@ -72,8 +72,7 @@ def import_main(verbose=True):
                                  'given_name': name_parts[0],
                                  'surname': name_parts[1],
                                  'known_as': name_parts[0]},
-                                {'membership_number': member_no,
-                                 'training': database.create_timeline_id("training for " + name_parts[0] + " " + name_parts[1])})
+                                {'membership_number': member_no})
             added = Person.find(row['Name'])
             if verbose:
                 print "added person record", added
@@ -81,10 +80,14 @@ def import_main(verbose=True):
             if verbose:
                 print "inductor is", inductor
             inductor_id = inductor._id
-            added.add_training(Event.find('training',
+            # todo: record that the inductor is trained as an inducotr
+            induction_event = Event.find('user_training',
                                           row['Date inducted'],
                                           [inductor_id],
-                                          [Equipment_type.find('makespace')._id]))
+                                          [Equipment_type.find('makespace')._id])
+            induction_event.add_attendees([added])
+            induction_event.mark_results([added], [], [])
+            added.add_training(induction_event)
             inducted = Person.find(row['Name'])
             if verbose:
                 print "inducted is", inducted, "with training", inducted.get_training_events()
@@ -97,11 +100,19 @@ def import_main(verbose=True):
                 continue
             trainer = Person.find(row['Trainer'])
             trainer_id = trainer._id if trainer else None
-            person.add_training(Event.find('training',
-                                           row['Date'],
-                                           [trainer_id],
-                                           [ Equipment_type.find(typename)._id
-                                             for typename in row['Equipment'].split(';') ]))
+            # todo: record that the trainer is trained as a trainer --- maybe read the trainers list first
+            equipment_type_names = row['Equipment'].split(';')
+            equipment_type_ids = [ Equipment_type.find(typename)._id
+                                   for typename in equipment_type_names ]
+            if verbose:
+                print "equipment", equipment_type_names, equipment_type_ids
+            training_event = Event.find('user_training',
+                                        row['Date'],
+                                        [trainer_id],
+                                        equipment_type_ids)
+            training_event.add_attendees([person])
+            training_event.mark_results([person], [], [])
+            person.add_training(training_event)
             checkback = Person.find(row['Name'])
             if verbose:
                 print "checkback is", checkback, "with training events", checkback.get_training_events()

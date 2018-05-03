@@ -12,7 +12,7 @@ class Equipment_type(object):
         self.manufacturer = None
 
     def __str__(self):
-        return "<type " + self.name + " (" + self.training_category + ")>"
+        return "<equipment_type " + self.name + " (" + self.training_category + ")>"
 
     def __repr__(self):
         return self.__str__()
@@ -22,6 +22,19 @@ class Equipment_type(object):
         if name in Equipment_type.types_by_name:
             return Equipment_type.types_by_name[name]
         data = database.get_equipment_type_dict(name)
+        if data is None:
+            return None
+        c = Equipment_type()
+        c.__dict__.update(data)
+        Equipment_type.types_by_id[data['_id']] = c
+        Equipment_type.types_by_name[data['name']] = c
+        return c
+
+    @staticmethod
+    def find_by_id(id):
+        if id in Equipment_type.types_by_id:
+            return Equipment_type.types_by_id[id]
+        data = database.get_equipment_type_dict(id)
         if data is None:
             return None
         c = Equipment_type()

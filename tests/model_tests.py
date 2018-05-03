@@ -8,6 +8,7 @@ sys.path.append('utils')
 import database
 import importer
 import person
+import event
 
 def show_person(person_object):
     print
@@ -15,7 +16,11 @@ def show_person(person_object):
     name, known_as = database.person_name(person_object)
     training = person_object.get_training_events()
     print name, "known as", known_as
-    print "training:", training
+    print "Id", person._id
+    print "training:"
+    for session in training:
+        print "  ", session
+    print "user of", person.get_equipment_classes('user')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
