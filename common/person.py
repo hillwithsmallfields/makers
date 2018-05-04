@@ -111,20 +111,42 @@ class Person(object):
                  if (e not in detrained
                      or trained[e] > detrained[e])]
 
+    def get_equipment_class_names(self, role):
+        """Get the list of equipment types for which the user has a given role.
+        Aimed mostly at the JSON API."""
+        return [ eq.name for eq in self.get_equipment_classes(role) ]
+
+    def get_qualifications(self):
+        # aimed at JSON API
+        quals = {}
+        for role in ['user', 'owner', 'trainer']:
+            q = self.get_equipment_class_names(role)
+            if q:
+                quals[role] = q
+        return quals
+
     def qualification(self, equipment_type, role, when=None):
         """Return whether the user is qualified for a role on an equipment class.
         The result is the event that qualified them."""
         role_training = role + "_training"
         role_untraining = role + "_untraining"
-        for event in self.get_training_events(when or datetime.now()):
-            if equipment_type not in event.equipment:
-                continue
-            if event.event_type == role_training:
-                if self._id in event.passed:
-                    return event
-            if event.event_type == role_untraining:
-                return None
-        return None
+        training = self.get_training_events(event_type = role_training, when=when or datetime.now())
+        untraining = self.get_training_events(event_type = role_untraining, when=when or datetime.now())
+        trained = {}
+        detrained = {}
+        equipments = {}
+        for ev in training:
+
+            # todo: change "for in" to "if in", etc
+
+
+
+            for eq in ev.equipment:
+                trained[eq] = ev.start
+                equipments[eq] = eq
+        for ev in untraining:
+            for eq in ev.equipment:
+                detrained[eq] = ev.start
 
     def is_member(self):
         """Return whether the person is a member."""
@@ -154,6 +176,17 @@ class Person(object):
     def is_trainer(self, equipment_class):
         """Return whether the person is a trainer for that equipment_class."""
         return self.qualification(equipment_class, 'trainer')
+
+    def api_personal_data(self):
+        name, known_as = database.person_name(self)
+        personal_data = {'name': name,
+                         'qualified': self.get_qualifications()}
+        # todo: add date joined
+        if known_as:
+            personal_data['known_as'] = known_as
+        if self.membership_number:
+            personal_data['membership_number'] = self.membership_number
+        return personal_data
 
 def all_people():
     """Return a list of all registered people."""

@@ -21,6 +21,7 @@ def show_person(person_object):
     for session in training:
         print "  ", session
     print "user of", person.get_equipment_classes('user')
+    print "personal data for API", person.api_personal_data()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
