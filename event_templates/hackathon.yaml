@@ -1,0 +1,5 @@
+event_type:             hackathon
+title:                  Hackathon
+attendance_limit:       30
+host_prerequisites:
+  - member
