@@ -27,7 +27,9 @@ class Event(object):
     def __init__(self, event_type,
                  event_datetime,
                  hosts,
+                 title=None,
                  attendees=[],
+                 signups=[],
                  event_duration=60,
                  equipment_types=[],
                  equipment=[]):
@@ -37,6 +39,7 @@ class Event(object):
         An event template is an event which is copied.
         The event is not saved and scheduled yet."""
         # self.details = get_event_template(event_type)
+        self.title = title
         self.event_type = event_type
         self.start = as_time(event_datetime)
         self.end = self.start + (event_duration
@@ -47,20 +50,18 @@ class Event(object):
         # It would be nice to use Python sets for these,
         # but then we'd have to convert them for loading and saving in mongo.
         self.hosts = hosts         # _id of person
+        self.attendance_limit = 30
         self.attendees = attendees # _id of person
+        self.signups = signups
         self.equipment_types = equipment_types
         self.equipment = equipment
         self._id = None
         self.passed = []   # _id of person
         self.failed = []   # _id of person
         self.noshow = []   # _id of person
-        self.prerequisites = []
+        self.host_prerequisites = []
+        self.attendee_prerequisites = []
         self.location = None
-        # 'prerequisites': [],
-        # # What the event will result in, if training
-        # 'aim': None,      # what role the event trains for
-        # 'equipment_classes': [],
-        # # What the event needs to reserve
 
     def __str__(self):
         accum = "<" + self.event_type
@@ -119,6 +120,82 @@ class Event(object):
     def save(self):
         """Save the event to the database."""
         database.save_event(self.__dict__)
+
+    @staticmethod
+    def find_template(template_name):
+        return database.find_event_template(template_name)
+
+    @staticmethod
+    def _preprocess_conditions_(raw_conds, equipment_types):
+        """Typical conditions are an equipment type name followed by a role,
+        such as "laser_cutter user" or "bandsaw owner".  The special equipment
+        type name "$equipment" is expanded to all the equipment in the
+        equipment_types argument.
+        Also, a condition can be any of the strings "member", "admin",
+        "auditor", or "director", which are given configuration-dependent expansions."""
+        result = []
+        for cond in raw_conds:
+            if cond == "member":
+                result.append(configuration.get_config()['organization']['name'] + " user")
+            elif cond == "admin":
+                result.append(configuration.get_config()['database']['database_name'] + " owner")
+            elif cond == "auditor":
+                result.append(configuration.get_config()['database']['database_name'] + " user")
+            elif cond == "director":
+                result.append(configuration.get_config()['organization']['name'] + " owner")
+            elif ' ' not in cond:
+                # really all the others should be two words, but just pass the
+                # buck for now, someone might define a use for such a thing later
+                result.append(cond)
+            else:
+                equiptypes, role = cond.split(' ')
+                for onetype in equipment_types if equiptypes == "$equipment" else equiptypes/split(';'):
+                    # print "onetype is", onetype
+                    result.append(onetype.name + " " + role)
+        return result
+
+    @staticmethod
+    def instantiate_template(template_name, equipment_types,
+                             hosts, event_datetime, allow_past=False):
+        """Instantiate a template, or explain the first reason to refuse to do so.
+        Results are the resulting event instance, and the error; one of these will be None."""
+        if event_datetime < datetime.now() and not allow_past:
+            return None, "Cannot create a past event"
+        template_dict = Event.find_template(template_name)
+        host_prerequisites = Event._preprocess_conditions_(template_dict.get('host_prerequisites', ['member']),
+                                                           equipment_types)
+        for host in hosts:
+            person_obj = person.find(host)
+            if not person_obj.satisfies_conditions(host_prerequisites, equipment_types):
+                return None, person_obj.name() + " is not qualified to host this event"
+        attendee_prerequisites = Event._preprocess_conditions_(template_dict.get('attendee_prerequisites', []),
+                                                               equipment_types)
+        title = template_dict['title'].replace("$equipment", ", ".join(equipment_types))
+        instance = Event.Event(template_dict['event_type'],
+                               event_datetime,
+                               hosts,
+                               title=title,
+                               equipment_types=equipment_types)
+        instance.__dict__.update(template_dict)
+        instance.host_prerequisites = host_prerequisites
+        instance.attendee_prerequisites = attendee_prerequisites
+        return instance, None
+
+    @staticmethod
+    def _all_hosts_suitable_(template_dict, hosts, equipment_types):
+        host_conds = Event._preprocess_conditions_(template_dict.get('host_prerequisites', ['member']),
+                                                   equipment_types)
+        for host in hosts:
+            if not person.Person.find(host).satisfies_conditions(host_conds):
+                return False
+        return True
+
+    @staticmethod
+    def list_templates(hosts, equipment_types):
+        """Return the list of event templates for which all the specified hosts
+        have all the hosting prerequisites."""
+        return [ template for template in database.list_event_templates()
+                 if Event._all_hosts_suitable_(template, hosts, equipment_types) ]
 
     def schedule(self):
         """Save the event to the database, and add it to the list of scheduled events."""

@@ -26,6 +26,7 @@ def database_init(config, delete_existing=False):
         database.drop_collection(collection_names['equipment_types'])
         database.drop_collection(collection_names['equipment'])
         database.drop_collection(collection_names['events'])
+        database.drop_collection(collection_names['event_templatess'])
 
 def get_person_dict(identification):
     """Read the data for a person from the database, as a dictionary."""
@@ -145,6 +146,19 @@ def get_event_by_id(event_id):
 
 def save_event(this_event):
     database[collection_names['events']].save(this_event)
+
+# event templates
+
+def find_event_template(name):
+    return database[collection_names['event_templates']].find_one({'name': name})
+
+def list_event_templates():
+    return [ template for template in database[collection_names['event_templates']].find({}) ]
+
+def add_template(template):
+    database[collection_names['event_templates']].insert(template)
+
+# timelines (may disappear later)
 
 def create_timeline_id(name):
     return (database[collection_names['timelines']].insert({'name': name}))

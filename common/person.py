@@ -184,6 +184,16 @@ class Person(object):
         """Return whether the person is a trainer for that equipment_class."""
         return self.qualification(equipment_class, 'trainer')
 
+    def satisfies_condition(self, condition):
+        equiptype, role = condition.split(' ')
+        return self.qualification(equiptype, role)
+
+    def satisfies_conditions(self, conditions):
+        for condition in conditions:
+            if not self.satisfies_condition(condition):
+                return False
+        return True
+
     def api_personal_data(self):
         name, known_as = database.person_name(self)
         personal_data = {'name': name,

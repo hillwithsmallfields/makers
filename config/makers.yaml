@@ -219,6 +219,7 @@ database:
     equipment_types: MakespaceEquipmentTypes
     equipment:       MakespaceEquipment
     events:          MakespaceEvents
+    event_templates: MakespaceEventTemplates
     timelines:       MakepaceTimelines
 
 # The names in this section indicate which equipment class names

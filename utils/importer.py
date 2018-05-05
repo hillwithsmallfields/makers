@@ -11,6 +11,7 @@ import configuration
 import csv
 import database
 import yaml
+import os
 
 def add_training(person, trainer, trained_date, equipment):
     if trainer:
@@ -19,6 +20,17 @@ def add_training(person, trainer, trained_date, equipment):
     person.add_training(event)
     person.attendees.append(person._id)
     person.passed.append(person._id)
+
+def import_template_file(file):
+    if os.path.isdir(file):
+        for f in os.listdir(file):
+            import_template_file(os.path.join(file, f))
+    else:
+        with open(file, 'r') as confstream:
+            incoming_template = yaml.load(confstream)
+            if 'name' not in incoming_template:
+                incoming_template['name'] = os.path.splitext(os.path.basename(file))[0]
+            database.add_template(incoming_template)
 
 def import_role_file(role, csv_file, verbose):
     with open(csv_file) as users_file:
@@ -55,6 +67,7 @@ def import_main(verbose=True):
     parser.add_argument("-u", "--users", default="users.csv")
     parser.add_argument("-o", "--owners", default="owners.csv")
     parser.add_argument("-t", "--trainers", default="trainers.csv")
+    parser.add_argument("-b", "--templates", default="event_templates")
     parser.add_argument("--delete-existing", action='store_true')
     parser.add_argument("-v", "--verbose", action='store_true')
     args = parser.parse_args()
@@ -122,6 +135,7 @@ def import_main(verbose=True):
     import_role_file('owner', args.owners, verbose)
     import_role_file('trainer', args.trainers, verbose)
     import_role_file('user', args.users, verbose)
+    import_template_file(args.templates)
 
 if __name__ == "__main__":
     import_main()

@@ -21,7 +21,9 @@ def show_person(person_object):
     print "training:"
     for session in training:
         print "  ", session
-    print "user of", person_object.get_equipment_classes('user')
+    their_equipment_types = person_object.get_equipment_classes('user')
+    print "user of", their_equipment_types
+    print "can instantiate event templates", event.Event.list_templates([person], their_equipment_types)
     print "personal data for API", person_object.api_personal_data()
 
 if __name__ == "__main__":
