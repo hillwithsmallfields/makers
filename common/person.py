@@ -32,6 +32,14 @@ class Person(object):
         return "<member " + str(self.membership_number) + ">"
 
     @staticmethod
+    def list_all_people():
+        return [ Person.find(whoever) for whoever in database.get_all_person_dicts() ]
+
+    @staticmethod
+    def list_all_members():
+        return equipment_type.Equipment_type.find(configuration.get_config()['organization']['name']).get_trained_users()
+
+    @staticmethod
     def find(identification):
         """Find a person in the database."""
         data = identification if type(identification) is dict else database.get_person_dict(identification)
@@ -56,6 +64,9 @@ class Person(object):
         # todo: add admin override of anonymity
         _, informal = database.person_name(self.link_id)
         return informal.encode('utf-8')
+
+    def set_fob(self, newfob):
+        self.fob = newfob
 
     def set_profile_field(self, *kwargs):
         """Set the fields and write them back to the database."""
@@ -92,18 +103,16 @@ class Person(object):
 
     def get_equipment_classes(self, role, when=None):
         """Get the list of the equipment_classes for which the person has the specified role."""
-        role_training = role + "_training"
-        role_untraining = role + "_untraining"
-        training = self.get_training_events(event_type = role_training, when=when or datetime.now())
-        untraining = self.get_training_events(event_type = role_untraining, when=when or datetime.now())
         trained = {}
         detrained = {}
         equipments = {}
-        for ev in training:
+        for ev in self.get_training_events(event_type = database.role_training(role),
+                                           when=when or datetime.now()):
             for eq in ev.equipment:
                 trained[eq] = ev.start
                 equipments[eq] = eq
-        for ev in untraining:
+        for ev in self.get_training_events(event_type = database.role_untraining(role),
+                                           when=when or datetime.now()):
             for eq in ev.equipment:
                 detrained[eq] = ev.start
         return [ equipment_type.Equipment_type.find_by_id(equipments[e])
@@ -128,25 +137,23 @@ class Person(object):
     def qualification(self, equipment_type, role, when=None):
         """Return whether the user is qualified for a role on an equipment class.
         The result is the event that qualified them."""
-        role_training = role + "_training"
-        role_untraining = role + "_untraining"
-        training = self.get_training_events(event_type = role_training, when=when or datetime.now())
-        untraining = self.get_training_events(event_type = role_untraining, when=when or datetime.now())
-        trained = {}
-        detrained = {}
-        equipments = {}
-        for ev in training:
-
-            # todo: change "for in" to "if in", etc
-
-
-
-            for eq in ev.equipment:
-                trained[eq] = ev.start
-                equipments[eq] = eq
-        for ev in untraining:
-            for eq in ev.equipment:
-                detrained[eq] = ev.start
+        trained = None
+        detrained = None
+        for ev in self.get_training_events(event_type = database.role_training(role),
+                                           when=when or datetime.now()):
+            if equipment_type in ev.equipment:
+                trained = ev
+                break
+        for ev in self.get_training_events(event_type = database.role_untraining(role),
+                                           when=when or datetime.now()):
+            if equipment_type in ev.equipment:
+                detrained = ev.start
+                break
+        if detrained is None:
+            return trained
+        if trained is None or detrained.start > trained.start:
+            return None
+        return trained
 
     def is_member(self):
         """Return whether the person is a member."""
@@ -187,12 +194,3 @@ class Person(object):
         if self.membership_number:
             personal_data['membership_number'] = self.membership_number
         return personal_data
-
-def all_people():
-    """Return a list of all registered people."""
-    return [ Person.find(person) for person in database.database[database.collection_names['people']].find({}) ]
-
-def all_members():
-    """Return a list of all current members."""
-    return [ person for person in database.database[database.collection_names['people']].find({})
-             if person.is_member()]

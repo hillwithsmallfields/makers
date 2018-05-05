@@ -20,6 +20,32 @@ def add_training(person, trainer, trained_date, equipment):
     person.attendees.append(person._id)
     person.passed.append(person._id)
 
+def import_role_file(role, csv_file, verbose):
+    with open(csv_file) as users_file:
+        for row in csv.DictReader(users_file):
+            person = Person.find(row['Name'])
+            if person is None:
+                print "Could not find", row['Name'], "to add training"
+                continue
+            trainer = Person.find(row.get('Trainer', "Joe Bloggs"))
+            trainer_id = trainer._id if trainer else None
+            # todo: record that the trainer is trained as a trainer --- maybe read the trainers list first
+            equipment_type_names = row['Equipment'].split(';')
+            equipment_type_ids = [ Equipment_type.find(typename)._id
+                                   for typename in equipment_type_names ]
+            if verbose:
+                print "equipment", equipment_type_names, equipment_type_ids
+            training_event = Event.find(database.role_training(role),
+                                        row['Date'],
+                                        [trainer_id],
+                                        equipment_type_ids)
+            training_event.add_attendees([person])
+            training_event.mark_results([person], [], [])
+            person.add_training(training_event)
+            checkback = Person.find(row['Name'])
+            if verbose:
+                print "checkback is", checkback, "with training events", checkback.get_training_events()
+
 def import_main(verbose=True):
     # todo: convert all dates to datetime.datetime as mentioned in http://api.mongodb.com/python/current/examples/datetimes.html
     parser = argparse.ArgumentParser()
@@ -74,6 +100,7 @@ def import_main(verbose=True):
                                  'known_as': name_parts[0]},
                                 {'membership_number': member_no})
             added = Person.find(row['Name'])
+            added.set_fob(row.get('Fob', None))
             if verbose:
                 print "added person record", added
             inductor = Person.find(row['Inductor'])
@@ -84,7 +111,7 @@ def import_main(verbose=True):
             induction_event = Event.find('user_training',
                                           row['Date inducted'],
                                           [inductor_id],
-                                          [Equipment_type.find('makespace')._id])
+                                          [Equipment_type.find(config['organization']['name'])._id])
             induction_event.add_attendees([added])
             induction_event.mark_results([added], [], [])
             added.add_training(induction_event)
@@ -92,30 +119,9 @@ def import_main(verbose=True):
             if verbose:
                 print "inducted is", inducted, "with training", inducted.get_training_events()
 
-    with open(args.users) as users_file:
-        for row in csv.DictReader(users_file):
-            person = Person.find(row['Name'])
-            if person is None:
-                print "Could not find", row['Name'], "to add training"
-                continue
-            trainer = Person.find(row['Trainer'])
-            trainer_id = trainer._id if trainer else None
-            # todo: record that the trainer is trained as a trainer --- maybe read the trainers list first
-            equipment_type_names = row['Equipment'].split(';')
-            equipment_type_ids = [ Equipment_type.find(typename)._id
-                                   for typename in equipment_type_names ]
-            if verbose:
-                print "equipment", equipment_type_names, equipment_type_ids
-            training_event = Event.find('user_training',
-                                        row['Date'],
-                                        [trainer_id],
-                                        equipment_type_ids)
-            training_event.add_attendees([person])
-            training_event.mark_results([person], [], [])
-            person.add_training(training_event)
-            checkback = Person.find(row['Name'])
-            if verbose:
-                print "checkback is", checkback, "with training events", checkback.get_training_events()
+    import_role_file('owner', args.owners, verbose)
+    import_role_file('trainer', args.trainers, verbose)
+    import_role_file('user', args.users, verbose)
 
 if __name__ == "__main__":
     import_main()

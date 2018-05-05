@@ -113,6 +113,11 @@ def add_person(name_record, main_record):
     database[collection_names['people']].insert(main_record)
     database[collection_names['names']].insert(name_record)
 
+def get_all_person_dicts():
+    return [ whoever for whoever in database[collection_names['people']].find({}) ]
+
+# Events
+
 def get_event(event_type, event_datetime, hosts, equipment, create=True):
     """Read the data for an event from the database."""
     # print "Looking for event", "hosts,", hosts, "date", event_datetime, "event_type,", event_type, "equipment", equipment
@@ -130,12 +135,9 @@ def get_event(event_type, event_datetime, hosts, equipment, create=True):
 
 def get_events(event_type, person_field, person_id):
     """Get events of a given type in which a person appears in a specific list field."""
-    query = {'event_type': event_type,
-             person_field: {'$in': [person_id]}}
-    # print "event query is", query
-    result = [ event.Event.find_by_id(tr_event['_id']) for tr_event in database[collection_names['events']].find(query) ]
-    # print "found events", result
-    return result
+    return [ event.Event.find_by_id(tr_event['_id'])
+             for tr_event in database[collection_names['events']].find({'event_type': event_type,
+                                                                        person_field: {'$in': [person_id]}}).sort('start', pymongo.DESCENDING) ]
 
 def get_event_by_id(event_id):
     """Read the data for an event from the database."""
@@ -161,11 +163,11 @@ def save_timeline(tl):
 def is_administrator(person, writer=False):
     """Return whether a person is an administrator who can access other people's data in the database.
     With the optional third argument non-False, check whether they have write access too."""
-    return (configuration.get_config['organization']['database']
+    return (configuration.get_config()['organization']['database']
             in get_person_machines(person,
                                    'owner' if writer else 'trained'))
 
-# Equipment classes
+# Equipment types
 
 def get_equipment_type_dict(clue):
     collection = database[collection_names['equipment_types']]
@@ -179,6 +181,14 @@ def add_equipment_type(name, training_category,
     if manufacturer:
         data['manufacturer'] = manufacturer
     database[collection_names['equipment_types']].insert(data)
+
+def list_equipment_types():
+    return [ et for et in database[collection_names['equipment_types']].find({}) ]
+
+def get_eqtype_events(equipment_type, event_type):
+    return [ event.Event.find_by_id(tr_event['_id'])
+             for tr_event in database[collection_names['events']].find({'event_type': event_type,
+                                                                        'equipment_types': {'$in': [equipment_type]}}).sort('start', pymongo.DESCENDING) ]
 
 # Equipment
 
@@ -197,3 +207,11 @@ def add_machine(name, equipment_type,
     if acquired:
         data['acquired'] = acquired
     database[collection_names['equipment']].insert(data)
+
+# misc
+
+def role_training(role):
+    return role + "_training"
+
+def role_untraining(role):
+    return role + "_untraining"
