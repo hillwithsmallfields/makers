@@ -1,9 +1,10 @@
 # -*- coding: utf8
-import database
-from equipment_type import Equipment_type
-import re
 from datetime import datetime, timedelta
+from equipment_type import Equipment_type
+import configuration
+import database
 import person
+import re
 
 fulltime = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}:[0-9]{2}")
 
@@ -68,7 +69,8 @@ class Event(object):
         accum += "_event at " + str(self.start) # todo: don't print time if it's all zeroes, just print date
         if self.hosts and self.hosts != []:
             accum += " with " + ",".join([person.Person.find(host_id).name()
-                                          for host_id in self.hosts]).encode('utf-8')
+                                          for host_id in self.hosts
+                                          if host_id is not None]).encode('utf-8')
         if self.equipment and self.equipment != []:
             accum += " on " + ",".join([Equipment_type.find(e).name for e in self.equipment])
         accum += ">"
@@ -185,8 +187,11 @@ class Event(object):
     def _all_hosts_suitable_(template_dict, hosts, equipment_types):
         host_conds = Event._preprocess_conditions_(template_dict.get('host_prerequisites', ['member']),
                                                    equipment_types)
+        print "checking", hosts, "against", template_dict, "using conditions", host_conds
         for host in hosts:
-            if not person.Person.find(host).satisfies_conditions(host_conds):
+            x = person.Person.find(host)
+            if not x.satisfies_conditions(host_conds):
+                print x, "does not satisfy", host_conds
                 return False
         return True
 

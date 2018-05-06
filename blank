@@ -6,4 +6,8 @@ db.MakespaceEquipment.drop()
 db.MakespaceNames.drop()
 db.MakespacePeople.drop()
 db.MakespaceEvents.drop()
+db.MakepaceTimelines.drop()
+db.MakespaceEventTemplates.drop()
 EOS
+mkdir -p user-pages member-pages equipment-type-pages equipment-pages
+rm -f user-pages/* member-pages/* equipment-type-pages/* equipment-pages/* allfobs.json

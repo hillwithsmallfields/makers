@@ -30,11 +30,14 @@ def database_init(config, delete_existing=False):
 
 def get_person_dict(identification):
     """Read the data for a person from the database, as a dictionary."""
+    if identification is None:
+        return None
     if isinstance(identification, dict):
         return identification             # no lookup needed
     if isinstance(identification, person.Person):
         return identification.__dict__
     collection = database[collection_names['people']]
+    # print "get_person_dict lookup", identification
     return (collection.find_one({'_id': identification})
             or collection.find_one({'link_id': identification})
             or collection.find_one({'fob': identification})
