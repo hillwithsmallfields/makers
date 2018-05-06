@@ -134,22 +134,26 @@ class Person(object):
                 quals[role] = q
         return quals
 
-    def qualification(self, equipment_type, role, when=None):
+    def qualification(self, equipment_type_name, role, when=None):
         """Return whether the user is qualified for a role on an equipment class.
         The result is the event that qualified them."""
         trained = None
         detrained = None
+        equipment_id = equipment_type.Equipment_type.find(equipment_type_name)._id
+        print "qualification on", equipment_type_name, "role", role, "for", self.name(), "?"
         for ev in self.get_training_events(event_type = database.role_training(role),
                                            when=when or datetime.now()):
-            if equipment_type in ev.equipment:
+            print "  is", equipment_id, "in", ev.equipment, "?"
+            if equipment_id in ev.equipment:
                 trained = ev
                 break
         for ev in self.get_training_events(event_type = database.role_untraining(role),
                                            when=when or datetime.now()):
-            if equipment_type in ev.equipment:
+            if equipment_id in ev.equipment:
                 detrained = ev.start
                 break
         if detrained is None:
+            print "not detrained, returning", trained
             return trained
         if trained is None or detrained.start > trained.start:
             return None
@@ -186,6 +190,7 @@ class Person(object):
 
     def satisfies_condition(self, condition):
         equiptype, role = condition.split(' ')
+        print "satisfies_condition eq", equiptype, "role", role, "?"
         return self.qualification(equiptype, role)
 
     def satisfies_conditions(self, conditions):

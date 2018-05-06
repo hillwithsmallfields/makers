@@ -42,10 +42,18 @@ def show_person(directory, person_object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("-y", "--equipment-types", default="equipment-types.csv")
+    parser.add_argument("-e", "--equipment", default="equipment.csv")
+    parser.add_argument("-m", "--members", default="members.csv")
+    parser.add_argument("-u", "--users", default="users.csv")
+    parser.add_argument("-o", "--owners", default="owners.csv")
+    parser.add_argument("-t", "--trainers", default="trainers.csv")
+    parser.add_argument("-b", "--templates", default="event_templates")
+    parser.add_argument("--delete-existing", action='store_true')
     parser.add_argument("-v", "--verbose", action='store_true')
     args = parser.parse_args()
     print "importing from spreadsheet files"
-    importer.import_main(args.verbose)
+    importer.import0(args)
     print "import complete, scanning list of people"
     for whoever in person.Person.list_all_people():
         show_person("user-pages", whoever)

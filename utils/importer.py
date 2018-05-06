@@ -71,8 +71,10 @@ def import_main(verbose=True):
     parser.add_argument("--delete-existing", action='store_true')
     parser.add_argument("-v", "--verbose", action='store_true')
     args = parser.parse_args()
-    if args.verbose:
-        verbose = True
+    import0(args)
+
+def import0(args):
+    verbose = args.verbose
     config = configuration.get_config()
     db_config = config['database']
     collection_names = db_config['collections']
@@ -83,7 +85,7 @@ def import_main(verbose=True):
     # todo: fix these
     # database[collection_names['people']].create_index('link_id')
     # database[collection_names['names']].create_index('link_id')
-
+    # and so on for the other collections?
 
     if verbose:
         print "loading equipment types"
@@ -125,8 +127,10 @@ def import_main(verbose=True):
                                           row['Date inducted'],
                                           [inductor_id],
                                           [Equipment_type.find(config['organization']['name'])._id])
+            # todo: attendees seem to be accumulating
             induction_event.add_attendees([added])
             induction_event.mark_results([added], [], [])
+            # print "induction event is now", induction_event
             added.add_training(induction_event)
             inducted = Person.find(row['Name'])
             if verbose:

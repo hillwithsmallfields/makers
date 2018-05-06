@@ -73,6 +73,10 @@ class Event(object):
                                           if host_id is not None]).encode('utf-8')
         if self.equipment and self.equipment != []:
             accum += " on " + ",".join([Equipment_type.find(e).name for e in self.equipment])
+        if len(self.passed) > 0:
+            accum += " passing " + ",".join([person.Person.find(who).name() for who in self.passed])
+        elif len(self.attendees) > 0:
+            accum += " attending " + ",".join([person.Person.find(who).name() for who in self.attendees])
         accum += ">"
         return accum
 
