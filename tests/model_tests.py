@@ -43,12 +43,24 @@ def show_person(directory, somebody):
         print "  ", session.date, ev_type, ' '*(20-len(ev_type)), equip, ' '*(30 - len(equip)), hosts
     all_remaining_types = set(equipment_type.Equipment_type.list_equipment_types())
 
-    for role, button in [('user', '[Request owner training] [Request trainer training]'),
-                         ('trainer', '[Schedule training session]'),
+    their_equipment_types = set(somebody.get_equipment_classes('user'))
+    keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in their_equipment_types }
+    if len(their_equipment_types) > 0:
+        print_heading("User")
+        for tyname in sorted(keyed_types.keys()):
+            ty = keyed_types[tyname]
+            buttons = []
+            if not somebody.is_owner(ty._id):
+                buttons.append("[Request owner training]")
+            if not somebody.is_trainer(ty._id):
+                buttons.append("[Request trainer training]")
+            print tyname, ' '*(30-len(tyname)), " ".join(buttons)
+            all_remaining_types -= their_equipment_types
+    for role, button in [('trainer', '[Schedule training session]'),
                          ('owner', '[Schedule maintenance session]')]:
         their_equipment_types = set(somebody.get_equipment_classes(role))
         if len(their_equipment_types) > 0:
-            print_heading(role)
+            print_heading(role.capitalize())
             for tyname in sorted([ ty.name.replace('_', ' ').capitalize() for ty in their_equipment_types ]):
                 print tyname, ' '*(30-len(tyname)), button
             all_remaining_types -= their_equipment_types
