@@ -21,6 +21,8 @@ class Equipment_type(object):
 
     @staticmethod
     def find(name):
+        if isinstance(name, Equipment_type):
+            return name
         if name in Equipment_type.types_by_name:
             return Equipment_type.types_by_name[name]
         data = database.get_equipment_type_dict(name)

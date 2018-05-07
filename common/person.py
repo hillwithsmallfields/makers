@@ -20,6 +20,7 @@ class Person(object):
         self.membership_number = None
         self.fob = None
         self.training = None
+        self.requests =[]
         self.available = 0      # bitmap of timeslots, lowest bit is Monday morning, etc
         self.profile = {}       # bag of stuff like address
 
@@ -65,12 +66,27 @@ class Person(object):
         _, informal = database.person_name(self.link_id)
         return informal.encode('utf-8')
 
+    def save(self):
+        """Save the person to the database."""
+        database.save_person(self.__dict__)
+
     def set_fob(self, newfob):
         self.fob = newfob
+        self.save()
 
     def set_profile_field(self, *kwargs):
         """Set the fields and write them back to the database."""
         pass
+
+    def add_training_request(self, role, equipment_types, when=None):
+        self.requests.append({'request_date': when or datetime.now(),
+                              'equipment_types': [ equipment_type.Equipment_type.find(eqt)._id for eqt in equipment_types],
+                              'event_type': database.role_training(role)})
+        self.save()
+
+    def get_training_requests(self):
+        keyed = { req['request_date']: req for req in self.requests }
+        return [ keyed[d] for d in sorted(keyed.keys()) ]
 
     def get_training_timeline(self):
         """Return the training data for this user,
@@ -131,7 +147,7 @@ class Person(object):
         for role in ['user', 'owner', 'trainer']:
             q = self.get_equipment_class_names(role)
             if q:
-                quals[role] = q
+                quals[role] = quals.get(role, []) + q
         return quals
 
     def qualification(self, equipment_type_name, role, when=None):

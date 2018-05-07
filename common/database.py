@@ -120,6 +120,9 @@ def add_person(name_record, main_record):
 def get_all_person_dicts():
     return [ whoever for whoever in database[collection_names['people']].find({}) ]
 
+def save_person(somebody):
+    database[collection_names['people']].save(somebody)
+
 # Events
 
 def get_event(event_type, event_datetime, hosts, equipment, create=True):
@@ -224,6 +227,14 @@ def add_machine(name, equipment_type,
     if acquired:
         data['acquired'] = acquired
     database[collection_names['equipment']].insert(data)
+
+# training requests
+
+def get_training_queue(role, equipment_types):
+    return [ somebody for somebody in database[collection_names['people']].find(
+        { 'requests': { '$elemMatch': { 'event_type': role_training(role),
+                                        # todo: check the sort spec (it seems to work but I'm not sure it looks right)
+                                        'equipment_types': { '$in': equipment_types } } } }).sort('requests.request_date', pymongo.ASCENDING) ]
 
 # misc
 

@@ -3,15 +3,32 @@
 import argparse
 import json
 import os
+import random
 import sys
+from datetime import datetime, timedelta
 sys.path.append('common')
 sys.path.append('utils')
-
 import database
 import importer
 import person
 import event
 import equipment_type
+
+def random_user_activities(equipments):
+    for whoever in person.Person.list_all_people():
+        date_joined = whoever.is_member().start
+        for i in range(1, random.randrange(1, 4)):
+            request_date = date_joined + timedelta(random.randrange(7, 56), 0)
+            equip = random.choice(equipments)
+            # print whoever, "requests", equip, "on", request_date
+            role = 'user'
+            if whoever.qualification(equip, role):
+                role = 'trainer'
+            if whoever.qualification(equip, role):
+                role = 'owner'
+            if whoever.qualification(equip, role):
+                continue
+            whoever.add_training_request(role, [equip], request_date)
 
 def print_heading(text):
     print
@@ -67,7 +84,12 @@ def show_person(directory, somebody):
     if len(all_remaining_types) > 0:
         print_heading("Other equipment")
         for tyname in sorted([ ty.name.replace('_', ' ').capitalize() for ty in all_remaining_types ]):
+            # todo: filter out request button for equipment for which the user already has a request
             print tyname, ' '*(30-len(tyname)), "[Request training]"
+
+    print_heading("Training requests")
+    for req in somebody.get_training_requests():
+        print req['request_date'], req['event_type'], [equipment_type.Equipment_type.find(reqeq).name for reqeq in req['equipment_types']]
 
     print_heading("Create events")
     for evtitle in sorted([ ev['title'].replace('$', 'some ').capitalize() for ev in event.Event.list_templates([somebody], their_equipment_types) ]):
@@ -99,14 +121,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print "importing from spreadsheet files"
     importer.import0(args)
-    print "import complete, scanning list of people"
-    for whoever in person.Person.list_all_people():
-        show_person("user-pages", whoever)
+    print "import complete, running random user behaviour"
+    all_types = equipment_type.Equipment_type.list_equipment_types()
+    random_user_activities(all_types)
+    # print "scanning list of people"
+    # for whoever in person.Person.list_all_people():
+    #     show_person("user-pages", whoever)
     print "listing members"
     for whoever in person.Person.list_all_members():
         show_person("member-pages", whoever)
     print "Listing equipment types"
-    all_types = equipment_type.Equipment_type.list_equipment_types()
     print "Equipment types are:", all_types
     for eqtype in all_types:
         old_stdout = sys.stdout
@@ -115,6 +139,12 @@ if __name__ == "__main__":
         print "  owners",  [ user.name() for user in eqtype.get_owners() ]
         print "  trainers",  [ user.name() for user in eqtype.get_trainers() ]
         print "  enabled fobs", json.dumps(eqtype.API_enabled_fobs(), indent=4)
+        for role in ['user', 'owner', 'trainer']:
+            requests = database.get_training_queue(role, [eqtype._id])
+            print_heading(role + " requests")
+            for req in requests:
+                print "  ", req
+                # print req.name()
         sys.stdout.close()
         sys.stdout = old_stdout
     with open("allfobs.json", 'w') as outfile:
