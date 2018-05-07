@@ -140,10 +140,10 @@ class Person(object):
         trained = None
         detrained = None
         equipment_id = equipment_type.Equipment_type.find(equipment_type_name)._id
-        print "qualification on", equipment_type_name, "role", role, "for", self.name(), "?"
+        # print "qualification on", equipment_type_name, "role", role, "for", self.name(), "?"
         for ev in self.get_training_events(event_type = database.role_training(role),
                                            when=when or datetime.now()):
-            print "  is", equipment_id, "in", ev.equipment, "?"
+            # print "  is", equipment_id, "in", ev.equipment, "?"
             if equipment_id in ev.equipment:
                 trained = ev
                 break
@@ -153,7 +153,7 @@ class Person(object):
                 detrained = ev.start
                 break
         if detrained is None:
-            print "not detrained, returning", trained
+            # print "not detrained, returning", trained
             return trained
         if trained is None or detrained.start > trained.start:
             return None
@@ -190,7 +190,7 @@ class Person(object):
 
     def satisfies_condition(self, condition):
         equiptype, role = condition.split(' ')
-        print "satisfies_condition eq", equiptype, "role", role, "?"
+        # print "satisfies_condition eq", equiptype, "role", role, "?"
         return self.qualification(equiptype, role)
 
     def satisfies_conditions(self, conditions):
@@ -207,5 +207,7 @@ class Person(object):
         if known_as:
             personal_data['known_as'] = known_as
         if self.membership_number:
-            personal_data['membership_number'] = self.membership_number
+            personal_data['membership_number'] = int(self.membership_number)
+        if self.fob:
+            personal_data['fob'] = int(self.fob)
         return personal_data

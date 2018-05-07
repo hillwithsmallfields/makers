@@ -72,7 +72,7 @@ class Event(object):
                                           for host_id in self.hosts
                                           if host_id is not None]).encode('utf-8')
         if self.equipment and self.equipment != []:
-            accum += " on " + ",".join([Equipment_type.find(e).name for e in self.equipment])
+            accum += " on " + ",".join([Equipment_type.find(e).name for e in self.equipment_types])
         if len(self.passed) > 0:
             accum += " passing " + ",".join([person.Person.find(who).name() for who in self.passed])
         elif len(self.attendees) > 0:
@@ -191,11 +191,11 @@ class Event(object):
     def _all_hosts_suitable_(template_dict, hosts, equipment_types):
         host_conds = Event._preprocess_conditions_(template_dict.get('host_prerequisites', ['member']),
                                                    equipment_types)
-        print "checking", hosts, "against", template_dict, "using conditions", host_conds
+        # print "checking", hosts, "against", template_dict, "using conditions", host_conds
         for host in hosts:
             x = person.Person.find(host)
             if not x.satisfies_conditions(host_conds):
-                print x, "does not satisfy", host_conds
+                # print x, "does not satisfy", host_conds
                 return False
         return True
 

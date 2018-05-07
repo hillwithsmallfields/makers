@@ -13,30 +13,63 @@ import person
 import event
 import equipment_type
 
-def show_person(directory, person_object):
+def print_heading(text):
+    print
+    print text
+    print '-'*len(text)
+
+def show_person(directory, somebody):
     old_stdout = sys.stdout
-    name, known_as = database.person_name(person_object)
+    name, known_as = database.person_name(somebody)
     sys.stdout = open(os.path.join(directory, name.replace(' ', '_') + ".txt"), 'w')
-    print person_object
-    print name, "known as", known_as
-    print "Id", person_object._id
-    training = person_object.get_training_events()
-    print "training:"
-    for session in training:
-        print "  ", session
+    print_heading(name)
+    print somebody
+    print "Known as", known_as
+    print "Id", somebody._id
+    if somebody.fob:
+        print "Fob:", somebody.fob
+    training = { ev.start: ev for ev in (somebody.get_training_events(event_type='user_training')
+                                         + somebody.get_training_events(event_type='owner_training')
+                                         + somebody.get_training_events(event_type='trainer_training')) }
+    print_heading("Training attended")
+    for tr_date in sorted(training.keys()):
+        session = training[tr_date]
+        ev_type = session.event_type.replace('_', ' ').capitalize()
+        equip = ",".join([equipment_type.Equipment_type.find(e).name
+                          for e in session.equipment_types]).replace('_', ' ').capitalize()
+        hosts =  ",".join([person.Person.find(host_id).name()
+                           for host_id in session.hosts
+                           if host_id is not None])
+        print "  ", session.date, ev_type, ' '*(20-len(ev_type)), equip, ' '*(30 - len(equip)), hosts
     all_remaining_types = set(equipment_type.Equipment_type.list_equipment_types())
-    for role in ['user', 'trainer', 'owner']:
-        their_equipment_types = set(person_object.get_equipment_classes(role))
+
+    for role, button in [('user', '[Request owner training] [Request trainer training]'),
+                         ('trainer', '[Schedule training session]'),
+                         ('owner', '[Schedule maintenance session]')]:
+        their_equipment_types = set(somebody.get_equipment_classes(role))
         if len(their_equipment_types) > 0:
-            print role, "of", [ ty for ty in their_equipment_types ]
+            print_heading(role)
+            for tyname in sorted([ ty.name.replace('_', ' ').capitalize() for ty in their_equipment_types ]):
+                print tyname, ' '*(30-len(tyname)), button
             all_remaining_types -= their_equipment_types
     if len(all_remaining_types) > 0:
-        print "Can sign up for training on", [ ty for ty in all_remaining_types ]
+        print_heading("Other equipment")
+        for tyname in sorted([ ty.name.replace('_', ' ').capitalize() for ty in all_remaining_types ]):
+            print tyname, ' '*(30-len(tyname)), "[Request training]"
 
-    # rethink this part
-    print "can instantiate event templates", event.Event.list_templates([person_object], their_equipment_types)
+    print_heading("Create events")
+    for evtitle in sorted([ ev['title'].replace('$', 'some ').capitalize() for ev in event.Event.list_templates([somebody], their_equipment_types) ]):
+        print evtitle
 
-    print "personal data for API:", json.dumps(person_object.api_personal_data(), indent=4)
+    # todo: fix these
+    # if somebody.is_auditor() or somebody.is_admin():
+    #     print "[User list]"
+
+    # if somebody.is_admin():
+    #     print "[Create special event]"
+
+    print_heading("personal data for API")
+    print json.dumps(somebody.api_personal_data(), indent=4)
     sys.stdout.close()
     sys.stdout = old_stdout
 
