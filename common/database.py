@@ -26,14 +26,18 @@ def database_init(config, delete_existing=False):
         database.drop_collection(collection_names['equipment_types'])
         database.drop_collection(collection_names['equipment'])
         database.drop_collection(collection_names['events'])
+        database.drop_collection(collection_names['event_templatess'])
 
 def get_person_dict(identification):
     """Read the data for a person from the database, as a dictionary."""
+    if identification is None:
+        return None
     if isinstance(identification, dict):
         return identification             # no lookup needed
     if isinstance(identification, person.Person):
         return identification.__dict__
     collection = database[collection_names['people']]
+    # print "get_person_dict lookup", identification
     return (collection.find_one({'_id': identification})
             or collection.find_one({'link_id': identification})
             or collection.find_one({'fob': identification})
@@ -113,6 +117,11 @@ def add_person(name_record, main_record):
     database[collection_names['people']].insert(main_record)
     database[collection_names['names']].insert(name_record)
 
+def get_all_person_dicts():
+    return [ whoever for whoever in database[collection_names['people']].find({}) ]
+
+# Events
+
 def get_event(event_type, event_datetime, hosts, equipment, create=True):
     """Read the data for an event from the database."""
     # print "Looking for event", "hosts,", hosts, "date", event_datetime, "event_type,", event_type, "equipment", equipment
@@ -128,9 +137,31 @@ def get_event(event_type, event_datetime, hosts, equipment, create=True):
         return get_event(event_type, event_datetime, hosts, equipment, False)
     return found
 
+def get_events(event_type, person_field, person_id):
+    """Get events of a given type in which a person appears in a specific list field."""
+    return [ event.Event.find_by_id(tr_event['_id'])
+             for tr_event in database[collection_names['events']].find({'event_type': event_type,
+                                                                        person_field: {'$in': [person_id]}}).sort('start', pymongo.DESCENDING) ]
+
 def get_event_by_id(event_id):
     """Read the data for an event from the database."""
     return database[collection_names['events']].find_one({'_id': event_id})
+
+def save_event(this_event):
+    database[collection_names['events']].save(this_event)
+
+# event templates
+
+def find_event_template(name):
+    return database[collection_names['event_templates']].find_one({'name': name})
+
+def list_event_templates():
+    return [ template for template in database[collection_names['event_templates']].find({}) ]
+
+def add_template(template):
+    database[collection_names['event_templates']].insert(template)
+
+# timelines (may disappear later)
 
 def create_timeline_id(name):
     return (database[collection_names['timelines']].insert({'name': name}))
@@ -140,20 +171,20 @@ def get_timeline_by_id(id):
 
 def save_timeline(tl):
     d = tl.__dict__
-    database[collection_names['timelines']].update({'_id': tl._id},
-                                                   {'name': tl.name,
-                                                    'events': [[te[0], event.as_id(te[1])]
-                                                               # todo: sort out how to save these timestamp:event pairs
-                                                               for te in tl.events]})
+    database[collection_names['timelines']].save({'_id': tl._id},
+                                                 {'name': tl.name,
+                                                  'events': [[te[0], event.as_id(te[1])]
+                                                             # todo: sort out how to save these timestamp:event pairs
+                                                             for te in tl.events]})
 
 def is_administrator(person, writer=False):
     """Return whether a person is an administrator who can access other people's data in the database.
     With the optional third argument non-False, check whether they have write access too."""
-    return (configuration.get_config['organization']['database']
+    return (configuration.get_config()['organization']['database']
             in get_person_machines(person,
                                    'owner' if writer else 'trained'))
 
-# Equipment classes
+# Equipment types
 
 def get_equipment_type_dict(clue):
     collection = database[collection_names['equipment_types']]
@@ -167,6 +198,14 @@ def add_equipment_type(name, training_category,
     if manufacturer:
         data['manufacturer'] = manufacturer
     database[collection_names['equipment_types']].insert(data)
+
+def list_equipment_types():
+    return [ et for et in database[collection_names['equipment_types']].find({}) ]
+
+def get_eqtype_events(equipment_type, event_type):
+    return [ event.Event.find_by_id(tr_event['_id'])
+             for tr_event in database[collection_names['events']].find({'event_type': event_type,
+                                                                        'equipment_types': {'$in': [equipment_type]}}).sort('start', pymongo.DESCENDING) ]
 
 # Equipment
 
@@ -185,3 +224,11 @@ def add_machine(name, equipment_type,
     if acquired:
         data['acquired'] = acquired
     database[collection_names['equipment']].insert(data)
+
+# misc
+
+def role_training(role):
+    return role + "_training"
+
+def role_untraining(role):
+    return role + "_untraining"

@@ -3,6 +3,7 @@ import timeline
 # from event import Event
 import event
 import configuration
+import equipment_type
 from datetime import datetime
 
 class Person(object):
@@ -31,6 +32,14 @@ class Person(object):
         return "<member " + str(self.membership_number) + ">"
 
     @staticmethod
+    def list_all_people():
+        return [ Person.find(whoever) for whoever in database.get_all_person_dicts() ]
+
+    @staticmethod
+    def list_all_members():
+        return equipment_type.Equipment_type.find(configuration.get_config()['organization']['name']).get_trained_users()
+
+    @staticmethod
     def find(identification):
         """Find a person in the database."""
         data = identification if type(identification) is dict else database.get_person_dict(identification)
@@ -56,6 +65,9 @@ class Person(object):
         _, informal = database.person_name(self.link_id)
         return informal.encode('utf-8')
 
+    def set_fob(self, newfob):
+        self.fob = newfob
+
     def set_profile_field(self, *kwargs):
         """Set the fields and write them back to the database."""
         pass
@@ -65,59 +77,87 @@ class Person(object):
         as a timeline of training events.
         What is stored in the user record is just the _id of the timeline,
         because timelines are stored as records in their own right."""
-        return timeline.Timeline.find_by_id(self.training)
+        # todo: stop storing the timeline as such, and generate it by searching the database
+        # return timeline.Timeline.find_by_id(self.training)
+        pass
 
-    def get_training_events(self, when=None):
+    def get_training_events(self, event_type='user_training', when=None):
         """Return the training data for this user,
-        as a list of training events.
-        What is stored in the user record is just the _id of the timeline,
-        because timelines are stored as records in their own right."""
-        return [ event.Event.find_by_id(event_id) for (timestamp, event_id) in self.get_training_timeline().events
-                 if when is None or timestamp < when ]
+        as a list of training events."""
+        # todo: handle the when parameter
+        return database.get_events(event_type=event_type,
+                                   person_field='passed',
+                                   person_id=self._id,
+        )
 
     def add_training(self, event):
         """Add the event to the appropriate role list of the person's events, and write it back to the database."""
         # note that the role can be found from 'aim' field of the event details,
         # and the equipment classes from the 'equipment_classes' of the event details
         # training event lists are kept in time order, with the latest (which may be in the future) at the front of the list
-        if self.training is None:
-            self.training = timeline.Timeline(self.given_name + " " + self.surname + "'s training")._id
-            database.database[database.collection_names['people']].update({'_id': self._id}, {'$set': {'training': self.training}})
-        self.get_training_timeline().insert(event)
+        # if self.training is None:
+        #     self.training = timeline.Timeline(self.given_name + " " + self.surname + "'s training")._id
+        #     database.database[database.collection_names['people']].update({'_id': self._id}, {'$set': {'training': self.training}})
+        # self.get_training_timeline().insert(event)
+        pass
 
     def get_equipment_classes(self, role, when=None):
         """Get the list of the equipment_classes for which the person has the specified role."""
-        role_training = role + "_training"
-        role_untraining = role + "_untraining"
-        training = self.get_training_events(when or datetime.now())
         trained = {}
         detrained = {}
         equipments = {}
-        for ev in training:
+        for ev in self.get_training_events(event_type = database.role_training(role),
+                                           when=when or datetime.now()):
             for eq in ev.equipment:
-                if ev.event_type == role_training and self._id in ev.passed:
-                    trained[eq._id] = ev.start
-                    equipments[eq._id] = eq
-                elif ev.event_type == role_untraining:
-                    detrained[eq._id] = ev.start
-        return [ equipments[e] for e in trained.keys()
+                trained[eq] = ev.start
+                equipments[eq] = eq
+        for ev in self.get_training_events(event_type = database.role_untraining(role),
+                                           when=when or datetime.now()):
+            for eq in ev.equipment:
+                detrained[eq] = ev.start
+        return [ equipment_type.Equipment_type.find_by_id(equipments[e])
+                 for e in trained.keys()
                  if (e not in detrained
                      or trained[e] > detrained[e])]
 
-    def qualification(self, equipment_type, role, when=None):
+    def get_equipment_class_names(self, role):
+        """Get the list of equipment types for which the user has a given role.
+        Aimed mostly at the JSON API."""
+        return [ eq.name for eq in self.get_equipment_classes(role) ]
+
+    def get_qualifications(self):
+        # aimed at JSON API
+        quals = {}
+        for role in ['user', 'owner', 'trainer']:
+            q = self.get_equipment_class_names(role)
+            if q:
+                quals[role] = q
+        return quals
+
+    def qualification(self, equipment_type_name, role, when=None):
         """Return whether the user is qualified for a role on an equipment class.
         The result is the event that qualified them."""
-        role_training = role + "_training"
-        role_untraining = role + "_untraining"
-        for event in self.get_training_events(when or datetime.now()):
-            if equipment_type not in event.equipment:
-                continue
-            if event.event_type == role_training:
-                if self._id in event.passed:
-                    return event
-            if event.event_type == role_untraining:
-                return None
-        return None
+        trained = None
+        detrained = None
+        equipment_id = equipment_type.Equipment_type.find(equipment_type_name)._id
+        # print "qualification on", equipment_type_name, "role", role, "for", self.name(), "?"
+        for ev in self.get_training_events(event_type = database.role_training(role),
+                                           when=when or datetime.now()):
+            # print "  is", equipment_id, "in", ev.equipment, "?"
+            if equipment_id in ev.equipment:
+                trained = ev
+                break
+        for ev in self.get_training_events(event_type = database.role_untraining(role),
+                                           when=when or datetime.now()):
+            if equipment_id in ev.equipment:
+                detrained = ev.start
+                break
+        if detrained is None:
+            # print "not detrained, returning", trained
+            return trained
+        if trained is None or detrained.start > trained.start:
+            return None
+        return trained
 
     def is_member(self):
         """Return whether the person is a member."""
@@ -148,11 +188,26 @@ class Person(object):
         """Return whether the person is a trainer for that equipment_class."""
         return self.qualification(equipment_class, 'trainer')
 
-def all_people():
-    """Return a list of all registered people."""
-    return [ Person.find(person) for person in database.database[database.collection_names['people']].find({}) ]
+    def satisfies_condition(self, condition):
+        equiptype, role = condition.split(' ')
+        # print "satisfies_condition eq", equiptype, "role", role, "?"
+        return self.qualification(equiptype, role)
 
-def all_members():
-    """Return a list of all current members."""
-    return [ person for person in database.database[database.collection_names['people']].find({})
-             if person.is_member()]
+    def satisfies_conditions(self, conditions):
+        for condition in conditions:
+            if not self.satisfies_condition(condition):
+                return False
+        return True
+
+    def api_personal_data(self):
+        name, known_as = database.person_name(self)
+        personal_data = {'name': name,
+                         'qualified': self.get_qualifications()}
+        # todo: add date joined
+        if known_as:
+            personal_data['known_as'] = known_as
+        if self.membership_number:
+            personal_data['membership_number'] = int(self.membership_number)
+        if self.fob:
+            personal_data['fob'] = int(self.fob)
+        return personal_data

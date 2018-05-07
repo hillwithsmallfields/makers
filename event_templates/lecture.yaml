@@ -1,0 +1,6 @@
+event_type:            lecture
+title:                 Lecture
+attendance_limit:      60
+host_prerequisites:
+  - member
+

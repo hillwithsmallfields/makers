@@ -1,9 +1,10 @@
 # -*- coding: utf8
-import database
-from equipment_type import Equipment_type
-import re
 from datetime import datetime, timedelta
+from equipment_type import Equipment_type
+import configuration
+import database
 import person
+import re
 
 fulltime = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}:[0-9]{2}")
 
@@ -27,48 +28,55 @@ class Event(object):
     def __init__(self, event_type,
                  event_datetime,
                  hosts,
+                 title=None,
                  attendees=[],
+                 signups=[],
                  event_duration=60,
-                 equipment=None):
+                 equipment_types=[],
+                 equipment=[]):
         """Create an event of a given type and datetime.
         The current user is added as a host.
         The event type names a template to build the event from.
         An event template is an event which is copied.
         The event is not saved and scheduled yet."""
         # self.details = get_event_template(event_type)
+        self.title = title
         self.event_type = event_type
         self.start = as_time(event_datetime)
-        self.duration = (event_duration
-                         if isinstance(event_duration, timedelta)
-                         else (timedelta(0, event_duration * 60) # given in minutes
-                               if isinstance(event_duration, int)
-                               else None))
-        self.hosts = hosts
-        self.attendees = attendees
-        self.equipment = equipment # a list, not a single item
+        self.end = self.start + (event_duration
+                                 if isinstance(event_duration, timedelta)
+                                 else (timedelta(0, event_duration * 60) # given in minutes
+                                       if isinstance(event_duration, int)
+                                       else timedelta(0, 120 * 60)))
+        # It would be nice to use Python sets for these,
+        # but then we'd have to convert them for loading and saving in mongo.
+        self.hosts = hosts         # _id of person
+        self.attendance_limit = 30
+        self.attendees = attendees # _id of person
+        self.signups = signups
+        self.equipment_types = equipment_types
+        self.equipment = equipment
         self._id = None
-        self.passed = []        # _id of person
-        self.failed = []        # _id of person
-        self.noshow = []        # _id of person
-        # 'hosts': [], # todo: put the current user in as a host
-        # 'attendees': [],
-        # # preconditions; not sure of the format of this
-        # 'prerequisites': [],
-        # # What the event will result in, if training
-        # 'aim': None,      # what role the event trains for
-        # 'equipment_classes': [],
-        # # What the event needs to reserve
-        # 'location': None,
-        # 'equipment': []
+        self.passed = []   # _id of person
+        self.failed = []   # _id of person
+        self.noshow = []   # _id of person
+        self.host_prerequisites = []
+        self.attendee_prerequisites = []
+        self.location = None
 
     def __str__(self):
         accum = "<" + self.event_type
         accum += "_event at " + str(self.start) # todo: don't print time if it's all zeroes, just print date
         if self.hosts and self.hosts != []:
             accum += " with " + ",".join([person.Person.find(host_id).name()
-                                          for host_id in self.hosts]).encode('utf-8')
+                                          for host_id in self.hosts
+                                          if host_id is not None]).encode('utf-8')
         if self.equipment and self.equipment != []:
-            accum += " on " + ",".join([Equipment_type.find(e).name for e in self.equipment])
+            accum += " on " + ",".join([Equipment_type.find(e).name for e in self.equipment_types])
+        if len(self.passed) > 0:
+            accum += " passing " + ",".join([person.Person.find(who).name() for who in self.passed])
+        elif len(self.attendees) > 0:
+            accum += " attending " + ",".join([person.Person.find(who).name() for who in self.attendees])
         accum += ">"
         return accum
 
@@ -76,14 +84,19 @@ class Event(object):
         return self.__str__()
 
     @staticmethod
-    def find(event_type, event_datetime, hosts, equipment):
+    def find(event_type, event_datetime, hosts, equipment_types):
         event_datetime = as_time(event_datetime)
-        event_dict = database.get_event(event_type, event_datetime, hosts, equipment, create=True)
+        event_dict = database.get_event(event_type, event_datetime,
+                                        hosts,
+                                        equipment_types,
+                                        create=True)
         if event_dict is None:
             return None
         event_id = event_dict['_id']
         if event_id not in Event.events_by_id:
-            Event.events_by_id[event_id] = Event(event_type, event_datetime, hosts, equipment=equipment)
+            Event.events_by_id[event_id] = Event(event_type, event_datetime,
+                                                 hosts,
+                                                 equipment_types=equipment_types)
         e = Event.events_by_id[event_id]
         e.__dict__.update(event_dict)
         return e
@@ -97,7 +110,7 @@ class Event(object):
             Event.events_by_id[event_id] = Event(event_dict['event_type'],
                                                  event_dict['event_datetime'],
                                                  event_dict['hosts'],
-                                                 equipment=event_dict['equipment'])
+                                                 equipment_types=event_dict['equipment_types'])
         e = Event.events_by_id[event_id]
         e.__dict__.update(event_dict) # todo: sort out whether I need to re-read this in case of database changes
         return e
@@ -110,6 +123,89 @@ class Event(object):
         """Set the details of an event, from a dictionary."""
         self.__dict__.update(details_dict)
 
+    def save(self):
+        """Save the event to the database."""
+        database.save_event(self.__dict__)
+
+    @staticmethod
+    def find_template(template_name):
+        return database.find_event_template(template_name)
+
+    @staticmethod
+    def _preprocess_conditions_(raw_conds, equipment_types):
+        """Typical conditions are an equipment type name followed by a role,
+        such as "laser_cutter user" or "bandsaw owner".  The special equipment
+        type name "$equipment" is expanded to all the equipment in the
+        equipment_types argument.
+        Also, a condition can be any of the strings "member", "admin",
+        "auditor", or "director", which are given configuration-dependent expansions."""
+        result = []
+        for cond in raw_conds:
+            if cond == "member":
+                result.append(configuration.get_config()['organization']['name'] + " user")
+            elif cond == "admin":
+                result.append(configuration.get_config()['database']['database_name'] + " owner")
+            elif cond == "auditor":
+                result.append(configuration.get_config()['database']['database_name'] + " user")
+            elif cond == "director":
+                result.append(configuration.get_config()['organization']['name'] + " owner")
+            elif ' ' not in cond:
+                # really all the others should be two words, but just pass the
+                # buck for now, someone might define a use for such a thing later
+                result.append(cond)
+            else:
+                equiptypes, role = cond.split(' ')
+                for onetype in equipment_types if equiptypes == "$equipment" else equiptypes/split(';'):
+                    # print "onetype is", onetype
+                    result.append(onetype.name + " " + role)
+        return result
+
+    @staticmethod
+    def instantiate_template(template_name, equipment_types,
+                             hosts, event_datetime, allow_past=False):
+        """Instantiate a template, or explain the first reason to refuse to do so.
+        Results are the resulting event instance, and the error; one of these will be None."""
+        if event_datetime < datetime.now() and not allow_past:
+            return None, "Cannot create a past event"
+        template_dict = Event.find_template(template_name)
+        host_prerequisites = Event._preprocess_conditions_(template_dict.get('host_prerequisites', ['member']),
+                                                           equipment_types)
+        for host in hosts:
+            person_obj = person.find(host)
+            if not person_obj.satisfies_conditions(host_prerequisites, equipment_types):
+                return None, person_obj.name() + " is not qualified to host this event"
+        attendee_prerequisites = Event._preprocess_conditions_(template_dict.get('attendee_prerequisites', []),
+                                                               equipment_types)
+        title = template_dict['title'].replace("$equipment", ", ".join(equipment_types))
+        instance = Event.Event(template_dict['event_type'],
+                               event_datetime,
+                               hosts,
+                               title=title,
+                               equipment_types=equipment_types)
+        instance.__dict__.update(template_dict)
+        instance.host_prerequisites = host_prerequisites
+        instance.attendee_prerequisites = attendee_prerequisites
+        return instance, None
+
+    @staticmethod
+    def _all_hosts_suitable_(template_dict, hosts, equipment_types):
+        host_conds = Event._preprocess_conditions_(template_dict.get('host_prerequisites', ['member']),
+                                                   equipment_types)
+        # print "checking", hosts, "against", template_dict, "using conditions", host_conds
+        for host in hosts:
+            x = person.Person.find(host)
+            if not x.satisfies_conditions(host_conds):
+                # print x, "does not satisfy", host_conds
+                return False
+        return True
+
+    @staticmethod
+    def list_templates(hosts, equipment_types):
+        """Return the list of event templates for which all the specified hosts
+        have all the hosting prerequisites."""
+        return [ template for template in database.list_event_templates()
+                 if Event._all_hosts_suitable_(template, hosts, equipment_types) ]
+
     def schedule(self):
         """Save the event to the database, and add it to the list of scheduled events."""
         pass
@@ -120,31 +216,52 @@ class Event(object):
 
     def get_hosts(self):
         """Return the list of people hosting the event."""
-        pass
+        return self.hosts
 
-    def add_hosts(self, *hosts):
+    def add_hosts(self, hosts):
         """Add specified hosts to the hosts list."""
-        pass
+        for host in hosts:
+            if host not in self.hosts:
+                self.hosts.append(host._id)
+        self.save()
 
-    def remove_hosts(self, *hosts):
+    def remove_hosts(self, hosts):
         """Remove specified hosts from the hosts list."""
-        pass
+        for host in hosts:
+            if host in self.hosts:
+                self.hosts.remove(host._id)
+        self.save()
 
     def get_attendees(self):
         """Return the list of people attending the event."""
-        pass
+        return self.attendees
 
-    def add_attendees(self, *attendees):
+    def add_attendees(self, attendees):
         """Add specified people to the attendees list."""
-        pass
+        for attendee in attendees:
+            if attendee not in self.attendees:
+                self.attendees.append(attendee._id)
+        self.save()
 
-    def remove_attendees(self, *attendees):
+    def remove_attendees(self, attendees):
         """Remove specified people from the attendees list."""
-        pass
+        for attendee in attendees:
+            if attendee in self.attendees:
+                self.attendees.remove(attendee._id)
+        self.save()
 
-    def mark_results(self, *attendees):
+    def mark_results(self, successful, failed, noshow):
         """Record the results of a training session."""
-        pass
+        for whoever in successful:
+            if whoever not in self.passed:
+                self.passed.append(whoever._id)
+        for whoever in failed:
+            if whoever not in self.failed:
+                self.failed.append(whoever._id)
+        for whoever in noshow:
+            if whoever not in self.noshow:
+                self.noshow.append(whoever._id)
+        self.save()
 
     def save_as_template(self, name):
         """Save this event as a named template."""

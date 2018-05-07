@@ -1,0 +1,7 @@
+event_type:            social
+title:                 Social
+attendance_limit:      100
+host_prerequisites:
+  - director
+
+
