@@ -140,8 +140,9 @@ def get_event(event_type, event_datetime, hosts, equipment, create=True):
         return get_event(event_type, event_datetime, hosts, equipment, False)
     return found
 
-def get_events(event_type, person_field, person_id):
+def get_events(event_type, person_field, person_id, as_far_back_as=None, as_recently_as=None):
     """Get events of a given type in which a person appears in a specific list field."""
+    # todo: implement time limits as_far_back_as and until
     return [ event.Event.find_by_id(tr_event['_id'])
              for tr_event in database[collection_names['events']].find({'event_type': event_type,
                                                                         person_field: {'$in': [person_id]}}).sort('start', pymongo.DESCENDING) ]
@@ -231,6 +232,7 @@ def add_machine(name, equipment_type,
 # training requests
 
 def get_training_queue(role, equipment_types):
+    # todo: wrap this in a higher level that converts these to 'person' objects
     return [ somebody for somebody in database[collection_names['people']].find(
         { 'requests': { '$elemMatch': { 'event_type': role_training(role),
                                         # todo: check the sort spec (it seems to work but I'm not sure it looks right)

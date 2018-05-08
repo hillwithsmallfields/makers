@@ -20,7 +20,9 @@ class Person(object):
         self.membership_number = None
         self.fob = None
         self.training = None
-        self.requests =[]
+        self.requests = []
+        self.training_requests_limit = None # normally comes from config but admins can override using this
+        self.noshow_absolutions = 0
         self.available = 0      # bitmap of timeslots, lowest bit is Monday morning, etc
         self.profile = {}       # bag of stuff like address
 
@@ -78,11 +80,30 @@ class Person(object):
         """Set the fields and write them back to the database."""
         pass
 
+    def get_training_requests_limit(self):
+        return (self.training_requests_limit
+                or int(configuration.get_config()['training']['default_max_requests']))
+
+    def set_training_requests_limit(self, limit):
+        self.training_requests_limit = limit
+
+    def absolve_noshows(self):
+        self.noshow_absolutions = (len(self.get_training_events('yser_training', result='noshow'))
+                                   + len(self.get_training_events('owner_training', result='noshow'))
+                                   + len(self.get_training_events('trainer_training', result='noshow')))
+
     def add_training_request(self, role, equipment_types, when=None):
+        if len(self.get_training_requests()) > self.get_training_requests_limit():
+            return False, "Too many open training requests"
+        role_training = database.role_training(role)
+        if ((len(self.get_training_events(role_training, result='noshow')) - self.noshow_absolutions)
+            >= int(configuration.get_config()['training']['no_shows_limit'])):
+            return False, "Too many no-shows"
         self.requests.append({'request_date': when or datetime.now(),
                               'equipment_types': [ equipment_type.Equipment_type.find(eqt)._id for eqt in equipment_types],
-                              'event_type': database.role_training(role)})
+                              'event_type': role_training})
         self.save()
+        return True, None
 
     def get_training_requests(self):
         keyed = { req['request_date']: req for req in self.requests }
@@ -97,14 +118,14 @@ class Person(object):
         # return timeline.Timeline.find_by_id(self.training)
         pass
 
-    def get_training_events(self, event_type='user_training', when=None):
+    def get_training_events(self, event_type='user_training', when=None,  result='passed'):
         """Return the training data for this user,
         as a list of training events."""
         # todo: handle the when parameter
         return database.get_events(event_type=event_type,
-                                   person_field='passed',
+                                   person_field=result,
                                    person_id=self._id,
-        )
+                                   as_recently_as=when)
 
     def add_training(self, event):
         """Add the event to the appropriate role list of the person's events, and write it back to the database."""

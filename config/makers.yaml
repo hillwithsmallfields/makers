@@ -203,6 +203,10 @@ training_classes:
     training_required: No
     training_available: No
 
+training:
+  default_max_requests: 3
+  no_shows_limit:       2
+    
 page:
   stylesheet:   config/makers.css
   style_inline: True
