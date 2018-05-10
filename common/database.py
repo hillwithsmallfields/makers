@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# Support functions for the modules intended to support the UI.
+# The UI probably shouldn't call anything in this file directly.
+
 import configuration
 from context import Context
 import event

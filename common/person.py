@@ -93,6 +93,11 @@ class Person(object):
                                    + len(self.get_training_events('trainer_training', result='noshow')))
 
     def add_training_request(self, role, equipment_types, when=None):
+        """Register a a training request for one or more equipment types.
+        The time should not normally be specified, as that would allow
+        queue-jumping, although an admin might do that if someone convinces
+        them that they have a reasonable need for urgent training.
+        The role may be 'user','trainer', or 'owner'."""
         if len(self.get_training_requests()) > self.get_training_requests_limit():
             return False, "Too many open training requests"
         role_training = database.role_training(role)
@@ -162,7 +167,7 @@ class Person(object):
         Aimed mostly at the JSON API."""
         return [ eq.name for eq in self.get_equipment_classes(role) ]
 
-    def get_qualifications(self):
+    def get_qualifications(self, detailed=False):
         # aimed at JSON API
         quals = {}
         for role in ['user', 'owner', 'trainer']:
@@ -236,7 +241,9 @@ class Person(object):
                 return False
         return True
 
-    def api_personal_data(self):
+    def api_personal_data(self, detailed=False):
+        """Get the data for a user, in a suitable form for the API.
+        With an optional flag, get more detail."""
         name, known_as = database.person_name(self)
         personal_data = {'name': name,
                          'qualified': self.get_qualifications()}
