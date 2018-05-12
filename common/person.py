@@ -20,10 +20,10 @@ class Person(object):
         self.membership_number = None
         self.fob = None
         self.training = None
-        self.requests = []
+        self.requests = []      # list of dict with 'request_date', 'equipment_types' (as _id), 'event_type'
         self.training_requests_limit = None # normally comes from config but admins can override using this
         self.noshow_absolutions = 0
-        self.available = 0      # bitmap of timeslots, lowest bit is Monday morning, etc
+        self.available = 0xffffffff # bitmap of timeslots, lowest bit is Monday morning, etc
         self.profile = {}       # bag of stuff like address
 
     def __str__(self):
@@ -143,6 +143,11 @@ class Person(object):
         # self.get_training_timeline().insert(event)
         pass
 
+    @staticmethod
+    def awaiting_training(event_type, equipment_types):
+        """List the people who have requested a particular type of training."""
+        return database.get_people_awaiting_training(event_type, equipment_types)
+
     def get_equipment_classes(self, role, when=None):
         """Get the list of the equipment_classes for which the person has the specified role."""
         trained = {}
@@ -240,6 +245,17 @@ class Person(object):
             if not self.satisfies_condition(condition):
                 return False
         return True
+
+    def has_requested_training(self, equipment_types, role):
+        # todo: I've seen it fail to show that someone has requested a training
+        event_type = database.role_training(role)
+        for req in self.requests:
+            if req['event_type'] != event_type:
+                continue
+                for eqty in req['equipment_types']:
+                    if eqty in equipment_types:
+                        return req
+        return None
 
     def api_personal_data(self, detailed=False):
         """Get the data for a user, in a suitable form for the API.

@@ -126,6 +126,11 @@ def get_all_person_dicts():
 def save_person(somebody):
     database[collection_names['people']].save(somebody)
 
+def get_people_awaiting_training(event_type, equipment_types):
+    query = {'training_requests': {'$elem_match': {'event_type': event_type,
+                                                   'equipment_types': {'$in': equipment_types}}}}
+    return [ who for who in database[collection_names['people']].find(query) ]
+
 # Events
 
 def get_event(event_type, event_datetime, hosts, equipment, create=True):

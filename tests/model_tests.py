@@ -67,9 +67,9 @@ def show_person(directory, somebody):
         for tyname in sorted(keyed_types.keys()):
             ty = keyed_types[tyname]
             buttons = []
-            if not somebody.is_owner(ty._id):
+            if not (somebody.is_owner(ty._id) or somebody.has_requested_training(ty._id, 'owner')):
                 buttons.append("[Request owner training]")
-            if not somebody.is_trainer(ty._id):
+            if not (somebody.is_trainer(ty._id) or somebody.has_requested_training(ty._id, 'trainer')):
                 buttons.append("[Request trainer training]")
             print tyname, ' '*(30-len(tyname)), " ".join(buttons)
             all_remaining_types -= their_equipment_types
@@ -83,9 +83,12 @@ def show_person(directory, somebody):
             all_remaining_types -= their_equipment_types
     if len(all_remaining_types) > 0:
         print_heading("Other equipment")
-        for tyname in sorted([ ty.name.replace('_', ' ').capitalize() for ty in all_remaining_types ]):
-            # todo: filter out request button for equipment for which the user already has a request
-            print tyname, ' '*(30-len(tyname)), "[Request training]"
+        # todo: fix this, it has stopped listing anything
+        keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in all_remaining_types }
+        for tyname in sorted(keyed_types.keys()):
+            ty = keyed_types[tyname]
+            if somebody.has_requested_training(ty._id, 'user'):
+                print tyname, ' '*(30-len(tyname)), "[Request training]"
 
     print_heading("Training requests")
     for req in somebody.get_training_requests():

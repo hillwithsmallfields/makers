@@ -155,7 +155,9 @@ class Event(object):
                 result.append(cond)
             else:
                 equiptypes, role = cond.split(' ')
-                for onetype in equipment_types if equiptypes == "$equipment" else equiptypes/split(';'):
+                for onetype in (equipment_types
+                                if equiptypes == "$equipment"
+                                else equiptypes.split(';')):
                     # print "onetype is", onetype
                     result.append(onetype.name + " " + role)
         return result
@@ -205,6 +207,12 @@ class Event(object):
         have all the hosting prerequisites."""
         return [ template for template in database.list_event_templates()
                  if Event._all_hosts_suitable_(template, hosts, equipment_types) ]
+
+    def notify_interested_people(self):
+        timeslot = as_timeslot(self.start)
+        for person in person.awaiting_training(self.event_type, self.equipment_types):
+            if person.available & timeslot:
+                person.notify(self)
 
     def schedule(self):
         """Save the event to the database, and add it to the list of scheduled events."""
@@ -266,11 +274,6 @@ class Event(object):
     def save_as_template(self, name):
         """Save this event as a named template."""
         pass
-
-def get_event_template(name):
-    """Find an event template by name."""
-    # todo: there should be a collection of event templates in the database
-    return None
 
 def as_id(event):
     """Given an event or id, return the id."""
