@@ -6,6 +6,11 @@ import configuration
 import equipment_type
 from datetime import datetime
 
+# todo: induction input from jotform.com
+# todo: suppress equipment access for non-members
+# todo: admin to change training request dates
+
+
 class Person(object):
 
     people_by_id = {}
@@ -129,8 +134,10 @@ class Person(object):
         # todo: handle the when parameter
         return database.get_events(event_type=event_type,
                                    person_field=result,
-                                   person_id=self._id,
-                                   as_recently_as=when)
+                                   person_id=self._id
+                                   # ,
+                                   # as_recently_as=when
+        )
 
     def add_training(self, event):
         """Add the event to the appropriate role list of the person's events, and write it back to the database."""
@@ -248,13 +255,16 @@ class Person(object):
 
     def has_requested_training(self, equipment_types, role):
         # todo: I've seen it fail to show that someone has requested a training
+        print "checking", self, "for", role, "on", equipment_types
         event_type = database.role_training(role)
         for req in self.requests:
             if req['event_type'] != event_type:
                 continue
                 for eqty in req['equipment_types']:
                     if eqty in equipment_types:
+                        print "got", req
                         return req
+        print "didn't find any"
         return None
 
     def api_personal_data(self, detailed=False):

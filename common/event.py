@@ -6,6 +6,8 @@ import database
 import person
 import re
 
+# todo: event templates to have after-effect fields
+
 fulltime = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}:[0-9]{2}")
 
 def as_time(clue):
@@ -48,6 +50,7 @@ class Event(object):
                                  else (timedelta(0, event_duration * 60) # given in minutes
                                        if isinstance(event_duration, int)
                                        else timedelta(0, 120 * 60)))
+        self.status = 'draft'
         # It would be nice to use Python sets for these,
         # but then we'd have to convert them for loading and saving in mongo.
         self.hosts = hosts         # _id of person
@@ -214,13 +217,30 @@ class Event(object):
             if person.available & timeslot:
                 person.notify(self)
 
-    def schedule(self):
-        """Save the event to the database, and add it to the list of scheduled events."""
-        pass
+    def publish(self):
+        """Make the event appear in the list of scheduled events."""
+        self.status = 'published'
+        self.save
 
-    def cancel(self):
-        """Remove the event to the list of scheduled events."""
-        pass
+    def unpublish(self):
+        """Stop the event appearing in the list of scheduled events."""
+        self.status = 'concealed'
+        self.save
+
+    @staticmethod
+    def future_events():
+        """List the events which have not yet started."""
+        return None
+
+    @staticmethod
+    def present_events():
+        """List the events which have started but not finished."""
+        return None
+
+    @staticmethod
+    def past_events():
+        """List the events which have finished."""
+        return None
 
     def get_hosts(self):
         """Return the list of people hosting the event."""

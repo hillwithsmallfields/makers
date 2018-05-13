@@ -148,12 +148,22 @@ def get_event(event_type, event_datetime, hosts, equipment, create=True):
         return get_event(event_type, event_datetime, hosts, equipment, False)
     return found
 
-def get_events(event_type, person_field, person_id, as_far_back_as=None, as_recently_as=None):
+def get_events(event_type, person_field, person_id,
+               as_far_back_as=None, as_recently_as=None,
+               include_hidden=False):
     """Get events of a given type in which a person appears in a specific list field."""
     # todo: implement time limits as_far_back_as and until
+    query = {'event_type': event_type,
+             person_field: {'$in': [person_id]}}
+    if not include_hidden:
+        query['status'] = 'published'
+    if as_far_back_as:
+        query['start'] = {'$gt': as_far_back_as}
+    if as_recently_as:
+        query['end'] = {'$lt': as_far_back_as}
     return [ event.Event.find_by_id(tr_event['_id'])
-             for tr_event in database[collection_names['events']].find({'event_type': event_type,
-                                                                        person_field: {'$in': [person_id]}}).sort('start', pymongo.DESCENDING) ]
+             for tr_event in database[collection_names['events']].find(query).sort('start',
+                                                                                   pymongo.DESCENDING) ]
 
 def get_event_by_id(event_id):
     """Read the data for an event from the database."""

@@ -16,19 +16,24 @@ import equipment_type
 
 def random_user_activities(equipments):
     for whoever in person.Person.list_all_people():
-        date_joined = whoever.is_member().start
-        for i in range(1, random.randrange(1, 4)):
-            request_date = date_joined + timedelta(random.randrange(7, 56), 0)
-            equip = random.choice(equipments)
-            # print whoever, "requests", equip, "on", request_date
-            role = 'user'
-            if whoever.qualification(equip, role):
-                role = 'trainer'
-            if whoever.qualification(equip, role):
-                role = 'owner'
-            if whoever.qualification(equip, role):
-                continue
-            whoever.add_training_request(role, [equip], request_date)
+        print whoever, "making random activities"
+        membership = whoever.is_member()
+        if membership:
+            date_joined = membership.start
+            for i in range(1, random.randrange(1, 4)):
+                request_date = date_joined + timedelta(random.randrange(7, 56), 0)
+                equip = random.choice(equipments)
+                # print whoever, "requests", equip, "on", request_date
+                role = 'user'
+                if whoever.qualification(equip, role):
+                    role = 'trainer'
+                if whoever.qualification(equip, role):
+                    role = 'owner'
+                if whoever.qualification(equip, role):
+                    continue
+                whoever.add_training_request(role, [equip], request_date)
+        else:
+            "no membership found for", whoever
 
 def print_heading(text):
     print
@@ -49,6 +54,7 @@ def show_person(directory, somebody):
                                          + somebody.get_training_events(event_type='owner_training')
                                          + somebody.get_training_events(event_type='trainer_training')) }
     print_heading("Training attended")
+    # todo: this seems to have stopped working
     for tr_date in sorted(training.keys()):
         session = training[tr_date]
         ev_type = session.event_type.replace('_', ' ').capitalize()
@@ -84,10 +90,11 @@ def show_person(directory, somebody):
     if len(all_remaining_types) > 0:
         print_heading("Other equipment")
         # todo: fix this, it has stopped listing anything
+        print "all_remaining_types are", all_remaining_types
         keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in all_remaining_types }
         for tyname in sorted(keyed_types.keys()):
             ty = keyed_types[tyname]
-            if somebody.has_requested_training(ty._id, 'user'):
+            if not somebody.has_requested_training(ty._id, 'user'):
                 print tyname, ' '*(30-len(tyname)), "[Request training]"
 
     print_heading("Training requests")
