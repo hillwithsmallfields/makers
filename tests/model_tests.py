@@ -14,7 +14,7 @@ import person
 import event
 import equipment_type
 
-def random_user_activities(equipments):
+def random_user_activities(equipments, green_templates):
     for whoever in person.Person.list_all_people():
         membership = whoever.is_member()
         if membership:
@@ -31,6 +31,18 @@ def random_user_activities(equipments):
                 if whoever.qualification(equip, role):
                     continue
                 whoever.add_training_request(role, [equip], request_date)
+            my_trainer_classes = whoever.get_equipment_classes('trainer')
+            possible_templates = green_templates + event.Event.list_templates([whoever], my_trainer_classes)
+            # print "event templates for", whoever.name(), "are", possible_templates
+            for i in range(1, random.randrange(1, 3)):
+                template = random.choice(possible_templates)
+                event_datetime = datetime.now() + timedelta(random.randrange(-30,30))
+                print whoever.name(), "wants to instantiate", template, "at", event_datetime
+                event.Event.instantiate_template(template['event_type'],
+                                                 [random.choice(my_trainer_classes)],
+                                                 [whoever],
+                                                 event_datetime,
+                                                 allow_past=True)
         else:
             "no membership found for", whoever
 
@@ -89,9 +101,11 @@ def show_person(directory, somebody):
         print_heading("Other equipment")
         # todo: fix this, it has stopped listing anything
         # print "all_remaining_types are", all_remaining_types
-        # keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in all_remaining_types }
-        # for tyname in sorted(keyed_types.keys()):
-        #     ty = keyed_types[tyname]
+        keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in all_remaining_types }
+        print "keyed_types are", keyed_types
+        for tyname in sorted(keyed_types.keys()):
+            ty = keyed_types[tyname]
+            print ty, tyname, somebody.has_requested_training(ty._id, 'user') # todo: the has_requested_training isn't working
         #     if not somebody.has_requested_training(ty._id, 'user'):
         #         print tyname, ' '*(30-len(tyname)), "[Request training]"
         for tyname in sorted([ ty.name.replace('_', ' ').capitalize() for ty in all_remaining_types ]):
@@ -104,7 +118,7 @@ def show_person(directory, somebody):
 
     print_heading("Create events")
     for evtitle in sorted([ ev['title'].replace('$', 'some ').capitalize() for ev in event.Event.list_templates([somebody], their_equipment_types) ]):
-        print evtitle
+        print "[ Create", evtitle, "]"
 
     # todo: fix these
     # if somebody.is_auditor() or somebody.is_admin():
@@ -134,7 +148,8 @@ if __name__ == "__main__":
     importer.import0(args)
     print "import complete, running random user behaviour"
     all_types = equipment_type.Equipment_type.list_equipment_types()
-    random_user_activities(all_types)
+    green_templates = equipment_type.Equipment_type.list_equipment_types('green')
+    random_user_activities(all_types, green_templates)
     # print "scanning list of people"
     # for whoever in person.Person.list_all_people():
     #     show_person("user-pages", whoever)

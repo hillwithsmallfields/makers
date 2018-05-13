@@ -175,7 +175,7 @@ def save_event(this_event):
 # event templates
 
 def find_event_template(name):
-    return database[collection_names['event_templates']].find_one({'name': name})
+    return database[collection_names['event_templates']].find_one({'event_type': name})
 
 def list_event_templates():
     return [ template for template in database[collection_names['event_templates']].find({}) ]
@@ -221,8 +221,11 @@ def add_equipment_type(name, training_category,
         data['manufacturer'] = manufacturer
     database[collection_names['equipment_types']].insert(data)
 
-def list_equipment_types():
-    return [ et for et in database[collection_names['equipment_types']].find({}) ]
+def list_equipment_types(training_category=None):
+    query = {}
+    if training_category:
+        query['training_category'] = training_category
+    return [ et for et in database[collection_names['equipment_types']].find(query) ]
 
 def get_eqtype_events(equipment_type, event_type):
     return [ event.Event.find_by_id(tr_event['_id'])

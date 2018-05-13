@@ -48,9 +48,9 @@ class Equipment_type(object):
         return c
 
     @staticmethod
-    def list_equipment_types():
+    def list_equipment_types(training_category=None):
         return [ Equipment_type.find_by_id(et_dict['_id'])
-                 for et_dict in database.list_equipment_types() ]
+                 for et_dict in database.list_equipment_types(training_category) ]
 
     @staticmethod
     def API_all_equipment_fobs():

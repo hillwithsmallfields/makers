@@ -157,6 +157,7 @@ class Person(object):
 
     def get_equipment_classes(self, role, when=None):
         """Get the list of the equipment_classes for which the person has the specified role."""
+        # todo: pass the when parameter on
         trained = {}
         detrained = {}
         equipments = {}
