@@ -53,6 +53,7 @@ def import_role_file(role, csv_file, verbose):
                                         equipment_type_ids)
             training_event.add_attendees([person])
             training_event.mark_results([person], [], [])
+            training_event.publish()
             person.add_training(training_event)
             checkback = Person.find(row['Name'])
             if verbose:

@@ -134,9 +134,9 @@ class Person(object):
         # todo: handle the when parameter
         return database.get_events(event_type=event_type,
                                    person_field=result,
-                                   person_id=self._id
-                                   # ,
-                                   # as_recently_as=when
+                                   person_id=self._id,
+                                   include_hidden=True
+                                   # ,as_recently_as=when
         )
 
     def add_training(self, event):
@@ -255,16 +255,13 @@ class Person(object):
 
     def has_requested_training(self, equipment_types, role):
         # todo: I've seen it fail to show that someone has requested a training
-        print "checking", self, "for", role, "on", equipment_types
         event_type = database.role_training(role)
         for req in self.requests:
             if req['event_type'] != event_type:
                 continue
                 for eqty in req['equipment_types']:
                     if eqty in equipment_types:
-                        print "got", req
                         return req
-        print "didn't find any"
         return None
 
     def api_personal_data(self, detailed=False):
