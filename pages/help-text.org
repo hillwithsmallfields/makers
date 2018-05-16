@@ -1,0 +1,29 @@
+* Makespace database help
+** Introduction
+
+   This is the membership, equipment and training database for
+   Makespace, a hackerspace in Cambridge, UK.
+
+   It holds the following information:
+
+   - the list of members
+   - the list of equipment types
+   - [the list of equipment instances --- not yet]
+   - the list of events held at Makespace
+
+   Through this system, you can:
+
+   - maintain your user profile
+   - check your training status for equipment
+   - request training on equipment
+   - schedule events
+   - [check equipment status -- not yet]
+
+   Makespace members are likely to be the type of people who like to
+   form a good mental model of how something works, so we'll go
+   straight in with the real key to understanding the system: it is
+   centred around ``events'', of which the most important is
+   training.  The system manages people's permissions to do things
+   (such as use particular equipment), and those permissions are
+   represented by having successfully attended events which grant
+   those permissions (i.e. training).
