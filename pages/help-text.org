@@ -109,9 +109,10 @@
    out, the information going to the equipment controllers will not
    include your name, but only your keyfob number (except for
    equipment that can be left running unattended, such as the 3-D
-   printers).
+   printers, as they display the name associated with the current
+   job).
 
-** Leaving the system
+** Leaving (and possibly re-joining)
 
    Your database entry is held in two separate databases, an
    identifying one containing your name, email address, etc, and an
@@ -120,13 +121,23 @@
 
    - having your entry in the identifying database deleted (leaving
      just an anonymous UUID in the operational database's log of
-     events); this is the GDPR-encouraged version
+     events); this is what the GDPR requires us to offer.  We will
+     tell you a UUID identifying your anonymized data, which may be
+     helpful if you do decide to re-join despite having expected not
+     to at the time you left.
 
    - having a de-training event applied (by an admin) to your
      Makespace training, which represents suspension of your
      membership until further notice.  This makes it easier to
      re-join, and (until an expiry time) allows your training status
      to be regained without going through re-training if you re-join.
+
+   When you leave, you will be marked as de-trained on Makespace, and
+   a future one-person de-training event will be scheduled for each
+   piece of equipment you're trained on, with a delay specified by the
+   configuration for that equipment.  If you re-join before then,
+   those de-training events will be cancelled, and you will be able to
+   resume using that equipment without re-training.
 
    If Makespace requires you to leave (bans you) for misconduct, we
    will keep your identifying information as required for operational
