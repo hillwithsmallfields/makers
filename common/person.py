@@ -243,26 +243,29 @@ class Person(object):
         """Return whether the person is a trainer for that equipment_class."""
         return self.qualification(equipment_class, 'trainer')
 
-    def satisfies_condition(self, condition):
+    def satisfies_condition(self, condition, equipment_types):
         equiptype, role = condition.split(' ')
         # print "satisfies_condition eq", equiptype, "role", role, "?"
         return self.qualification(equiptype, role)
 
-    def satisfies_conditions(self, conditions):
+    def satisfies_conditions(self, conditions, equipment_types):
         for condition in conditions:
-            if not self.satisfies_condition(condition):
+            if not self.satisfies_condition(condition, equipment_types):
                 return False
         return True
 
     def has_requested_training(self, equipment_types, role):
         # todo: I've seen it fail to show that someone has requested a training
         event_type = database.role_training(role)
+        print "tr req for", self.name(), "on", equipment_types, "in", role, event_type
         for req in self.requests:
             if req['event_type'] != event_type:
                 continue
                 for eqty in req['equipment_types']:
                     if eqty in equipment_types:
+                        print "yes, ", req
                         return req
+        print "no"
         return None
 
     def api_personal_data(self, detailed=False):

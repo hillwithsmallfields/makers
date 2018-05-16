@@ -176,17 +176,17 @@ class Event(object):
         host_prerequisites = Event._preprocess_conditions_(template_dict.get('host_prerequisites', ['member']),
                                                            equipment_types)
         for host in hosts:
-            person_obj = person.find(host)
+            person_obj = person.Person.find(host)
             if not person_obj.satisfies_conditions(host_prerequisites, equipment_types):
                 return None, person_obj.name() + " is not qualified to host this event"
         attendee_prerequisites = Event._preprocess_conditions_(template_dict.get('attendee_prerequisites', []),
                                                                equipment_types)
-        title = template_dict['title'].replace("$equipment", ", ".join(equipment_types))
-        instance = Event.Event(template_dict['event_type'],
-                               event_datetime,
-                               hosts,
-                               title=title,
-                               equipment_types=equipment_types)
+        title = template_dict['title'].replace("$equipment", ", ".join([eqty.name for eqty in equipment_types]))
+        instance = Event(template_dict['event_type'],
+                         event_datetime,
+                         hosts,
+                         title=title,
+                         equipment_types=equipment_types)
         instance.__dict__.update(template_dict)
         instance.host_prerequisites = host_prerequisites
         instance.attendee_prerequisites = attendee_prerequisites
@@ -199,7 +199,7 @@ class Event(object):
         # print "checking", hosts, "against", template_dict, "using conditions", host_conds
         for host in hosts:
             x = person.Person.find(host)
-            if not x.satisfies_conditions(host_conds):
+            if not x.satisfies_conditions(host_conds, equipment_types):
                 # print x, "does not satisfy", host_conds
                 return False
         return True

@@ -32,19 +32,28 @@ def random_user_activities(equipments, green_templates):
                     continue
                 whoever.add_training_request(role, [equip], request_date)
             my_trainer_classes = whoever.get_equipment_classes('trainer')
-            possible_templates = green_templates + event.Event.list_templates([whoever], my_trainer_classes)
-            # print "event templates for", whoever.name(), "are", possible_templates
-            for i in range(1, random.randrange(1, 3)):
-                template = random.choice(possible_templates)
-                event_datetime = datetime.now() + timedelta(random.randrange(-30,30))
-                print whoever.name(), "wants to instantiate", template, "at", event_datetime
-                event.Event.instantiate_template(template['event_type'],
-                                                 [random.choice(my_trainer_classes)],
-                                                 [whoever],
-                                                 event_datetime,
-                                                 allow_past=True)
+            if len(my_trainer_classes) > 0:
+                possible_templates = green_templates + event.Event.list_templates([whoever], my_trainer_classes)
+                # print "event templates for", whoever.name(), "are", possible_templates
+                for i in range(1, random.randrange(1, 3)):
+                    template = random.choice(possible_templates)
+                    event_datetime = datetime.now() + timedelta(random.randrange(-30,30))
+                    print whoever.name(), "wants to instantiate", template, "at", event_datetime
+                    event.Event.instantiate_template(template['event_type'],
+                                                     [random.choice(my_trainer_classes)],
+                                                     [whoever],
+                                                     event_datetime,
+                                                     allow_past=True)
+            # todo: sign up for training at random
         else:
             "no membership found for", whoever
+          
+def make_training_event_template(eqty):
+    return { 'event_type': 'user training',
+             'title': eqty.name + ' user training',
+             'attendance_limit': 6,
+             'host_prerequisites':   [ eqty.name + ' trainer' ],
+             'attendee_prerequisites': [ 'member' ] }
 
 def print_heading(text):
     print
@@ -119,6 +128,7 @@ def show_person(directory, somebody):
     print_heading("Create events")
     for evtitle in sorted([ ev['title'].replace('$', 'some ').capitalize() for ev in event.Event.list_templates([somebody], their_equipment_types) ]):
         print "[ Create", evtitle, "]"
+    # todo: show events signed up for
 
     # todo: fix these
     # if somebody.is_auditor() or somebody.is_admin():
@@ -148,7 +158,8 @@ if __name__ == "__main__":
     importer.import0(args)
     print "import complete, running random user behaviour"
     all_types = equipment_type.Equipment_type.list_equipment_types()
-    green_templates = equipment_type.Equipment_type.list_equipment_types('green')
+    green_templates = [ make_training_event_template(eqty) for eqty in equipment_type.Equipment_type.list_equipment_types('green') ]
+    print "green templates are", green_templates
     random_user_activities(all_types, green_templates)
     # print "scanning list of people"
     # for whoever in person.Person.list_all_people():
@@ -156,6 +167,7 @@ if __name__ == "__main__":
     print "listing members"
     for whoever in person.Person.list_all_members():
         show_person("member-pages", whoever)
+    # todo: show the timeline of scheduled events
     print "Listing equipment types"
     print "Equipment types are:", all_types
     for eqtype in all_types:
