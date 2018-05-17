@@ -29,7 +29,7 @@ class Person(object):
         self.training_requests_limit = None # normally comes from config but admins can override using this
         self.noshow_absolutions = 0
         self.available = 0xffffffff # bitmap of timeslots, lowest bit is Monday morning, etc
-        self.profile = {}       # bag of stuff like address
+        self.profile = {} # bag of stuff like skills, demographic info, foods they avoid
 
     def __str__(self):
         return ("<member " + str(self.membership_number)

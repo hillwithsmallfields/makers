@@ -122,18 +122,20 @@
 
 ** Meeting requirements and preferences
 
-   For events for which catering is provided, if people tell us what
-   they don't eat, we can make sure we include suitable proportions of
-   non-default foods (yes, usually pizza).  This information will only
-   be shown to event hosts, and only anonymously (the hosts' view of
-   the event page will include show how many of each requirement
-   combination there are).  Of course, database admins can see the
-   information; they can see all information.
+   For events for which food is provided, if people tell us what they
+   don't eat, we can make sure we include suitable proportions of
+   non-default foods.  If you don't want to provide this information,
+   you'll probably get counted in for peperoni pizza.  This
+   information will only be shown to event hosts, and only anonymously
+   (the hosts' view of the event page will include show how many of
+   each requirement combination there are).  Of course, database
+   admins can see the information; they can see all information.
 
    - gluten-free
    - halal
    - ketogenic (low-carb)
    - kosher
+   - nut-free
    - vegan
    - vegetarian
    - other
@@ -143,7 +145,8 @@
    We would like to gather some demographic information, to help to
    guide our outreach and monitor its effectiveness.  We will use this
    information in aggregate form only.  Please feel welcome to leave
-   this unanswered if you don't think it's any of our business.
+   any or all of this unanswered if you don't think it's any of our
+   business.
 
    - birth year
    - gender

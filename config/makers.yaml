@@ -214,6 +214,33 @@ page:
   postamble:    <p>Bottom navigation bar etc will go here.</p>
   motd_file:    config/motd.html
 
+skill_areas:
+  - Biohacking
+  - Civic engineering
+  - Clothes-making and modification
+  - Electro-mechanical engineering
+  - Electronic engineering
+  - Environmental science
+  - Fine arts
+  - Flying things (drones, model aircraft, HAB, rocketry)
+  - Historic technology
+  - Home automation
+  - Jewellery and ornament making
+  - Lifehacking
+  - Mechanical engineering
+  - Metalwork
+  - Optics
+  - Pottery
+  - Programming (general)
+  - Programming (embedded)
+  - Renewables
+  - Sculpture and carving
+  - Sewing, knitting, chrocheting, macramé, weaving, spinning etc
+  - Steampunk
+  - STEM outreach and public engagement
+  - Wearable computing
+  - Woodwork
+
 database:
   URI: mongodb://localhost/
   database_name: Makespace
