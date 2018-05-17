@@ -138,6 +138,18 @@ def show_person(directory, somebody):
     # if somebody.is_admin():
     #     print "[Create special event]"
 
+    for field, title in [('hosts', 'hosting'), ('attendees', 'attending')]:
+        my_events = timeline.Timeline.create_timeline(person_field=field, person_id=somebody._id).events
+        if len(my_events) > 0:
+            print_heading("Events I'm " + title)
+            for tl_event in my_events:
+                hosts = tl_event.hosts
+                if hosts is None:
+                    hosts = []
+                print tl_event.start, tl_event.event_type, ", ".join([person.Person.find(ev_host).name()
+                                                                      for ev_host in hosts
+                                                                      if ev_host is not None])
+
     print_heading("personal data for API")
     print json.dumps(somebody.api_personal_data(), indent=4)
     if directory:

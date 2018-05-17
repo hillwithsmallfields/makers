@@ -179,7 +179,7 @@ class Person(object):
                  if (e not in detrained
                      or trained[e] > detrained[e])]
 
-    def get_equipment_class_names(self, role):
+    def get_equipment_type_names(self, role):
         """Get the list of equipment types for which the user has a given role.
         Aimed mostly at the JSON API."""
         return [ eq.name for eq in self.get_equipment_types(role) ]
@@ -188,7 +188,7 @@ class Person(object):
         # aimed at JSON API
         quals = {}
         for role in ['user', 'owner', 'trainer']:
-            q = self.get_equipment_class_names(role)
+            q = self.get_equipment_type_names(role)
             if q:
                 quals[role] = quals.get(role, []) + q
         return quals
