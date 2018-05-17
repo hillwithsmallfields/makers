@@ -135,20 +135,23 @@ def get_people_awaiting_training(event_type, equipment_types):
 
 def get_event(event_type, event_datetime, hosts, equipment, create=True):
     """Read the data for an event from the database."""
-    # print "Looking for event", "hosts,", hosts, "date", event_datetime, "event_type,", event_type, "equipment", equipment
+    # print "Database looking for event", "hosts:", hosts, "date", event_datetime, "event_type:", event_type, "equipment", equipment
     found = database[collection_names['events']].find_one({'hosts': {'$in': hosts},
                                                            'date': event_datetime,
                                                            'event_type': event_type,
                                                            'equipment': equipment})
     if found is None and create:
-        print "making new event in database"
-        database[collection_names['events']].insert({'hosts': hosts,
-                                                     'date': event_datetime,
-                                                     'equipment': equipment,
-                                                     'event_type': event_type})
+        # print "making new event in database"
+        # print "get_event recursing"
+        x = database[collection_names['events']].insert({'hosts': hosts,
+                                                         'date': event_datetime,
+                                                         'equipment': equipment,
+                                                         'event_type': event_type})
+        # print "result of db insert is", x
         new_event = get_event(event_type, event_datetime, hosts, equipment, False)
-        print "new event is", new_event
+        # print "returned from recursion, database new event is", new_event['_id'], "with", len(new_event.get('attendees', [])), "attendees"
         return new_event
+    # print "database found event already", found['_id']
     return found
 
 def get_events(event_type=None,
@@ -169,8 +172,8 @@ def get_events(event_type=None,
         query['end'] = {'$lt': as_far_back_as}
     # print "get_events query", query
     result = [ event.Event.find_by_id(tr_event['_id'])
-             for tr_event in database[collection_names['events']].find(query).sort('start',
-                                                                                   pymongo.DESCENDING) ]
+               for tr_event in database[collection_names['events']].find(query).sort('start',
+                                                                                     pymongo.DESCENDING) ]
     # print "get_events result", result
     return result
 
@@ -179,7 +182,7 @@ def get_event_by_id(event_id):
     return database[collection_names['events']].find_one({'_id': event_id})
 
 def save_event(this_event):
-    print "saving event", this_event
+    # print "saving event", this_event
     database[collection_names['events']].save(this_event)
 
 # event templates

@@ -89,6 +89,7 @@ class Event(object):
     @staticmethod
     def find(event_type, event_datetime, hosts, equipment_types):
         event_datetime = as_time(event_datetime)
+        # print "Event.find", event_type, event_datetime, hosts, equipment_types
         event_dict = database.get_event(event_type, event_datetime,
                                         hosts,
                                         equipment_types,
@@ -96,16 +97,18 @@ class Event(object):
         if event_dict is None:
             return None
         event_id = event_dict['_id']
-        print "event_id from db layer is", event_id, "dict is", event_dict
+        # print "event_id from db layer is", event_id, "dict is", event_dict
         if event_id not in Event.events_by_id:
-            print "adding new Event for that to events_by_id"
-            Event.events_by_id[event_id] = Event(event_type, event_datetime,
-                                                 hosts,
-                                                 equipment_types=equipment_types)
+            new_event_object = Event(event_type, event_datetime,
+                                     hosts,
+                                     attendees=[], # I don't know why I need to make this explicit, but if I don't, it keeps including all the previous ones
+                                     equipment_types=equipment_types)
+            # print "adding new Event", new_event_object, "for that id", event_id, "to events_by_id"
+            Event.events_by_id[event_id] = new_event_object
         e = Event.events_by_id[event_id]
-        print "got", e, "from events_by_id"
+        # print "got", e, "from events_by_id with", len(e.attendees), "attendees"
         e.__dict__.update(event_dict)
-        print "updated it to", e
+        # print "updated it to", e, "with", len(e.attendees), "attendees"
         return e
 
     @staticmethod
@@ -115,7 +118,7 @@ class Event(object):
             return None
         if event_id not in Event.events_by_id:
             Event.events_by_id[event_id] = Event(event_dict['event_type'],
-                                                 event_dict['event_datetime'],
+                                                 event_dict['start'],
                                                  event_dict['hosts'],
                                                  equipment_types=event_dict['equipment_types'])
         e = Event.events_by_id[event_id]
@@ -165,8 +168,7 @@ class Event(object):
                 for onetype in (equipment_types
                                 if equiptypes == "$equipment"
                                 else equiptypes.split(';')):
-                    # print "onetype is", onetype
-                    result.append(onetype.name + " " + role)
+                    result.append(Equipment_type.find(onetype).name + " " + role)
         return result
 
     @staticmethod
@@ -186,7 +188,9 @@ class Event(object):
                 return None, person_obj.name() + " is not qualified to host this event"
         attendee_prerequisites = Event._preprocess_conditions_(template_dict.get('attendee_prerequisites', []),
                                                                equipment_types)
-        title = template_dict['title'].replace("$equipment", ", ".join([eqty.name for eqty in equipment_types]))
+        title = template_dict['title'].replace("$equipment",
+                                               ", ".join([Equipment_type.find(eqty).name
+                                                          for eqty in equipment_types]))
         instance = Event(template_dict['event_type'],
                          event_datetime,
                          hosts,
@@ -272,10 +276,10 @@ class Event(object):
 
     def add_attendees(self, attendees):
         """Add specified people to the attendees list."""
-        print "event", self._id, "adding", attendees, "to", self.attendees, "?"
+        # print "event", self._id, "adding", attendees, "to", self.attendees, "?"
         for attendee in attendees:
             if attendee._id not in self.attendees:
-                print "yes, adding", attendee, attendee._id
+                # print "yes, adding", attendee, attendee._id
                 self.attendees.append(attendee._id)
         self.save()
 

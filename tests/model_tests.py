@@ -23,7 +23,6 @@ def random_user_activities(equipments, green_templates):
             for i in range(1, random.randrange(1, 4)):
                 request_date = date_joined + timedelta(random.randrange(7, 56), 0)
                 equip = random.choice(equipments)
-                # print whoever, "requests", equip, "on", request_date
                 role = 'user'
                 if whoever.qualification(equip, role):
                     role = 'trainer'
@@ -32,21 +31,18 @@ def random_user_activities(equipments, green_templates):
                 if whoever.qualification(equip, role):
                     continue
                 whoever.add_training_request(role, [equip], request_date)
-            my_trainer_classes = whoever.get_equipment_classes('trainer')
-            if len(my_trainer_classes) > 0:
-                possible_templates = green_templates + event.Event.list_templates([whoever], my_trainer_classes)
-                # print "event templates for", whoever.name(), "are", possible_templates
+            my_trainer_types = whoever.get_equipment_types('trainer')
+            if len(my_trainer_types) > 0:
+                possible_templates = green_templates + event.Event.list_templates([whoever], my_trainer_types)
                 for i in range(1, random.randrange(1, 3)):
                     template = random.choice(possible_templates)
                     event_datetime = datetime.now() + timedelta(random.randrange(-30,30))
-                    print whoever.name(), "wants to instantiate", template, "at", event_datetime
                     new_event, problem = event.Event.instantiate_template(template['event_type'],
-                                                                          [random.choice(my_trainer_classes)],
-                                                                          [whoever],
+                                                                          [random.choice(my_trainer_types)._id],
+                                                                          [whoever._id],
                                                                           event_datetime,
                                                                           allow_past=True)
                     if not problem:
-                        print "new event is", new_event
                         new_event.publish()
             # todo: sign up for training at random
         else:
@@ -90,7 +86,7 @@ def show_person(directory, somebody):
         print "  ", session.date, ev_type, ' '*(20-len(ev_type)), equip, ' '*(30 - len(equip)), hosts
     all_remaining_types = set(equipment_type.Equipment_type.list_equipment_types())
 
-    their_equipment_types = set(somebody.get_equipment_classes('user'))
+    their_equipment_types = set(somebody.get_equipment_types('user'))
     keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in their_equipment_types }
     if len(their_equipment_types) > 0:
         print_heading("User")
@@ -105,7 +101,7 @@ def show_person(directory, somebody):
             all_remaining_types -= their_equipment_types
     for role, button in [('trainer', '[Schedule training session]'),
                          ('owner', '[Schedule maintenance session]')]:
-        their_equipment_types = set(somebody.get_equipment_classes(role))
+        their_equipment_types = set(somebody.get_equipment_types(role))
         if len(their_equipment_types) > 0:
             print_heading(role.capitalize())
             for tyname in sorted([ ty.name.replace('_', ' ').capitalize() for ty in their_equipment_types ]):
@@ -116,10 +112,10 @@ def show_person(directory, somebody):
         # todo: fix this, it has stopped listing anything
         # print "all_remaining_types are", all_remaining_types
         keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in all_remaining_types }
-        print "keyed_types are", keyed_types
-        for tyname in sorted(keyed_types.keys()):
-            ty = keyed_types[tyname]
-            print ty, tyname, somebody.has_requested_training([ty._id], 'user') # todo: the has_requested_training isn't working
+        # print "keyed_types are", keyed_types
+        # for tyname in sorted(keyed_types.keys()):
+        #     ty = keyed_types[tyname]
+        #     print ty, tyname, somebody.has_requested_training([ty._id], 'user') # todo: the has_requested_training isn't working
         #     if not somebody.has_requested_training(ty._id, 'user'):
         #         print tyname, ' '*(30-len(tyname)), "[Request training]"
         for tyname in sorted([ ty.name.replace('_', ' ').capitalize() for ty in all_remaining_types ]):
@@ -175,7 +171,6 @@ if __name__ == "__main__":
     chosen_tool = random.choice(equipment_type.Equipment_type.list_equipment_types())
     roles = ['user', 'owner', 'trainer']
     print "Using", guinea_pig.name()[0], "as guinea pig, with tool", chosen_tool
-    print_heading("Guinea pig before tests")
     show_person("before", guinea_pig)
     for adding_role in roles:
         print "    About to add request", adding_role, chosen_tool
@@ -187,7 +182,6 @@ if __name__ == "__main__":
         for checking_role in roles:
             print "        Have they now got", checking_role, "?"
             print "        ", guinea_pig.has_requested_training([chosen_tool._id], checking_role)
-    print_heading("Guinea pig after tests")
     show_person("after", guinea_pig)
 
     if not args.quick:
@@ -197,10 +191,13 @@ if __name__ == "__main__":
 
     print_heading("All events")
     events = timeline.Timeline.create_timeline()
-    for event in events.events:
-        print event
+    for tl_event in events.events:
+        hosts = tl_event.hosts
+        if hosts is None:
+            hosts = []
+        print tl_event.start, tl_event.event_type, ", ".join([person.Person.find(ev_host).name() for ev_host in hosts if ev_host is not None])
 
-    print_heading("Equipment types")
+    print "Listing equipment types"
     for eqtype in all_types:
         old_stdout = sys.stdout
         sys.stdout = open(os.path.join("equipment-type-pages", eqtype.name.replace(' ', '_') + ".txt"), 'w')

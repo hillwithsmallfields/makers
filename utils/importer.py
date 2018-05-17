@@ -116,18 +116,10 @@ def import0(args):
                 print "inductor is", inductor
             inductor_id = inductor._id
             # todo: record that the inductor is trained as an inducotr
-            old_induction_event = induction_event
             induction_event = Event.find('user_training',
                                           row['Date inducted'],
                                           [inductor_id],
                                           [Equipment_type.find(config['organization']['name'])._id])
-
-            # todo: attendees seem to be accumulating
-            if old_induction_event == induction_event:
-                print "re-using induction event", len(induction_event.attendees), "attendees"
-            else:
-                print "starting new induction event", len(induction_event.attendees), "attendees"
-
             induction_event.add_attendees([added])
             induction_event.mark_results([added], [], [])
             # print "induction event is now", induction_event

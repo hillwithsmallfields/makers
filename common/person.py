@@ -159,7 +159,7 @@ class Person(object):
         """List the people who have requested a particular type of training."""
         return database.get_people_awaiting_training(event_type, equipment_types)
 
-    def get_equipment_classes(self, role, when=None):
+    def get_equipment_types(self, role, when=None):
         """Get the list of the equipment_classes for which the person has the specified role."""
         # todo: pass the when parameter on
         trained = {}
@@ -182,7 +182,7 @@ class Person(object):
     def get_equipment_class_names(self, role):
         """Get the list of equipment types for which the user has a given role.
         Aimed mostly at the JSON API."""
-        return [ eq.name for eq in self.get_equipment_classes(role) ]
+        return [ eq.name for eq in self.get_equipment_types(role) ]
 
     def get_qualifications(self, detailed=False):
         # aimed at JSON API
