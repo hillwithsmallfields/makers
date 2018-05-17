@@ -148,13 +148,16 @@ def get_event(event_type, event_datetime, hosts, equipment, create=True):
         return get_event(event_type, event_datetime, hosts, equipment, False)
     return found
 
-def get_events(event_type, person_field, person_id,
+def get_events(event_type=None,
+               person_field=None, person_id=None,
                as_far_back_as=None, as_recently_as=None,
                include_hidden=False):
-    """Get events of a given type in which a person appears in a specific list field."""
-    # todo: implement time limits as_far_back_as and until
-    query = {'event_type': event_type,
-             person_field: {'$in': [person_id]}}
+    """Get events matching various requirements."""
+    query = {}
+    if event_type:
+        query['event_type'] = event_type
+    if person_field and person_id:
+        query[person_field] = {'$in': [person_id]}
     if not include_hidden:
         query['status'] = 'published'
     if as_far_back_as:
@@ -183,21 +186,7 @@ def list_event_templates():
 def add_template(template):
     database[collection_names['event_templates']].insert(template)
 
-# timelines (may disappear later)
-
-def create_timeline_id(name):
-    return (database[collection_names['timelines']].insert({'name': name}))
-
-def get_timeline_by_id(id):
-    return database[collection_names['timelines']].find_one({'_id': id})
-
-def save_timeline(tl):
-    d = tl.__dict__
-    database[collection_names['timelines']].save({'_id': tl._id},
-                                                 {'name': tl.name,
-                                                  'events': [[te[0], event.as_id(te[1])]
-                                                             # todo: sort out how to save these timestamp:event pairs
-                                                             for te in tl.events]})
+# Access permissions
 
 def is_administrator(person, writer=False):
     """Return whether a person is an administrator who can access other people's data in the database.
