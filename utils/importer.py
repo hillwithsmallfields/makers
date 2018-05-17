@@ -13,14 +13,6 @@ import database
 import yaml
 import os
 
-def add_training(person, trainer, trained_date, equipment):
-    if trainer:
-        trainer = trainer._id
-    event = Event.find('training', trained_date, [trainer], [equipment])
-    person.add_training(event)
-    person.attendees.append(person._id)
-    person.passed.append(person._id)
-
 def import_template_file(file):
     if os.path.isdir(file):
         for f in os.listdir(file):
@@ -35,8 +27,8 @@ def import_template_file(file):
 def import_role_file(role, csv_file, verbose):
     with open(csv_file) as users_file:
         for row in csv.DictReader(users_file):
-            person = Person.find(row['Name'])
-            if person is None:
+            tr_person = Person.find(row['Name'])
+            if tr_person is None:
                 print "Could not find", row['Name'], "to add training"
                 continue
             trainer = Person.find(row.get('Trainer', "Joe Bloggs"))
@@ -51,10 +43,9 @@ def import_role_file(role, csv_file, verbose):
                                         row['Date'],
                                         [trainer_id],
                                         equipment_type_ids)
-            training_event.add_attendees([person])
-            training_event.mark_results([person], [], [])
             training_event.publish()
-            person.add_training(training_event)
+            training_event.add_attendees([tr_person])
+            training_event.mark_results([tr_person], [], [])
             checkback = Person.find(row['Name'])
             if verbose:
                 print "checkback is", checkback, "with training events", checkback.get_training_events()
@@ -105,6 +96,7 @@ def import0(args):
                                  row['location'],
                                  row['acquired'])
 
+    induction_event = None
     with open(args.members) as members_file:
         for row in csv.DictReader(members_file):
             name_parts = row['Name'].rsplit(" ", 1)
@@ -124,11 +116,18 @@ def import0(args):
                 print "inductor is", inductor
             inductor_id = inductor._id
             # todo: record that the inductor is trained as an inducotr
+            old_induction_event = induction_event
             induction_event = Event.find('user_training',
                                           row['Date inducted'],
                                           [inductor_id],
                                           [Equipment_type.find(config['organization']['name'])._id])
+
             # todo: attendees seem to be accumulating
+            if old_induction_event == induction_event:
+                print "re-using induction event", len(induction_event.attendees), "attendees"
+            else:
+                print "starting new induction event", len(induction_event.attendees), "attendees"
+
             induction_event.add_attendees([added])
             induction_event.mark_results([added], [], [])
             # print "induction event is now", induction_event

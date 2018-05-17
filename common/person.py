@@ -150,16 +150,9 @@ class Person(object):
                                    # ,as_recently_as=when
         )
 
-    def add_training(self, event):
+    def add_training(self, tr_event):
         """Add the event to the appropriate role list of the person's events, and write it back to the database."""
-        # note that the role can be found from 'aim' field of the event details,
-        # and the equipment classes from the 'equipment_classes' of the event details
-        # training event lists are kept in time order, with the latest (which may be in the future) at the front of the list
-        # if self.training is None:
-        #     self.training = timeline.Timeline(self.given_name + " " + self.surname + "'s training")._id
-        #     database.database[database.collection_names['people']].update({'_id': self._id}, {'$set': {'training': self.training}})
-        # self.get_training_timeline().insert(event)
-        pass
+        tr_event.mark_results([self], [], [])
 
     @staticmethod
     def awaiting_training(event_type, equipment_types):

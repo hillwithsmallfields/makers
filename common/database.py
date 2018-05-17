@@ -140,12 +140,15 @@ def get_event(event_type, event_datetime, hosts, equipment, create=True):
                                                            'date': event_datetime,
                                                            'event_type': event_type,
                                                            'equipment': equipment})
-    if create and found is None:
+    if found is None and create:
+        print "making new event in database"
         database[collection_names['events']].insert({'hosts': hosts,
                                                      'date': event_datetime,
                                                      'equipment': equipment,
                                                      'event_type': event_type})
-        return get_event(event_type, event_datetime, hosts, equipment, False)
+        new_event = get_event(event_type, event_datetime, hosts, equipment, False)
+        print "new event is", new_event
+        return new_event
     return found
 
 def get_events(event_type=None,
@@ -176,6 +179,7 @@ def get_event_by_id(event_id):
     return database[collection_names['events']].find_one({'_id': event_id})
 
 def save_event(this_event):
+    print "saving event", this_event
     database[collection_names['events']].save(this_event)
 
 # event templates

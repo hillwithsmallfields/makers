@@ -96,12 +96,16 @@ class Event(object):
         if event_dict is None:
             return None
         event_id = event_dict['_id']
+        print "event_id from db layer is", event_id, "dict is", event_dict
         if event_id not in Event.events_by_id:
+            print "adding new Event for that to events_by_id"
             Event.events_by_id[event_id] = Event(event_type, event_datetime,
                                                  hosts,
                                                  equipment_types=equipment_types)
         e = Event.events_by_id[event_id]
+        print "got", e, "from events_by_id"
         e.__dict__.update(event_dict)
+        print "updated it to", e
         return e
 
     @staticmethod
@@ -187,7 +191,7 @@ class Event(object):
                          event_datetime,
                          hosts,
                          title=title,
-                         attendees=[], # Possibly a python bug? if I don't force this to empty, it keeps accumulating. Very odd.
+                         attendees=[],
                          equipment_types=equipment_types)
         instance.__dict__.update(template_dict)
         instance.host_prerequisites = host_prerequisites
@@ -222,12 +226,12 @@ class Event(object):
     def publish(self):
         """Make the event appear in the list of scheduled events."""
         self.status = 'published'
-        self.save
+        self.save()
 
     def unpublish(self):
         """Stop the event appearing in the list of scheduled events."""
         self.status = 'concealed'
-        self.save
+        self.save()
 
     @staticmethod
     def future_events():
@@ -251,7 +255,7 @@ class Event(object):
     def add_hosts(self, hosts):
         """Add specified hosts to the hosts list."""
         for host in hosts:
-            if host not in self.hosts:
+            if host._id not in self.hosts:
                 self.hosts.append(host._id)
         self.save()
 
@@ -264,32 +268,34 @@ class Event(object):
 
     def get_attendees(self):
         """Return the list of people attending the event."""
-        return self.attendees
+        return [ person.Person.find(at_id) for at_id in self.attendees ]
 
     def add_attendees(self, attendees):
         """Add specified people to the attendees list."""
+        print "event", self._id, "adding", attendees, "to", self.attendees, "?"
         for attendee in attendees:
-            if attendee not in self.attendees:
+            if attendee._id not in self.attendees:
+                print "yes, adding", attendee, attendee._id
                 self.attendees.append(attendee._id)
         self.save()
 
     def remove_attendees(self, attendees):
         """Remove specified people from the attendees list."""
         for attendee in attendees:
-            if attendee in self.attendees:
+            if attendee._id in self.attendees:
                 self.attendees.remove(attendee._id)
         self.save()
 
     def mark_results(self, successful, failed, noshow):
         """Record the results of a training session."""
         for whoever in successful:
-            if whoever not in self.passed:
+            if whoever._id not in self.passed:
                 self.passed.append(whoever._id)
         for whoever in failed:
-            if whoever not in self.failed:
+            if whoever._id not in self.failed:
                 self.failed.append(whoever._id)
         for whoever in noshow:
-            if whoever not in self.noshow:
+            if whoever._id not in self.noshow:
                 self.noshow.append(whoever._id)
         self.save()
 
