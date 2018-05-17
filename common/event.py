@@ -71,15 +71,15 @@ class Event(object):
         accum = "<" + self.event_type
         accum += "_event at " + str(self.start) # todo: don't print time if it's all zeroes, just print date
         if self.hosts and self.hosts != []:
-            accum += " with " + ",".join([person.Person.find(host_id).name()
+            accum += " with " + ", ".join([person.Person.find(host_id).name()
                                           for host_id in self.hosts
                                           if host_id is not None]).encode('utf-8')
         if self.equipment and self.equipment != []:
-            accum += " on " + ",".join([Equipment_type.find(e).name for e in self.equipment_types])
+            accum += " on " + ", ".join([Equipment_type.find(e).name for e in self.equipment_types])
         if len(self.passed) > 0:
-            accum += " passing " + ",".join([person.Person.find(who).name() for who in self.passed])
+            accum += " passing " + ", ".join([person.Person.find(who).name() for who in self.passed])
         elif len(self.attendees) > 0:
-            accum += " attending " + ",".join([person.Person.find(who).name() for who in self.attendees])
+            accum += " attending " + ", ".join([person.Person.find(who).name() for who in self.attendees])
         accum += ">"
         return accum
 
@@ -173,6 +173,7 @@ class Event(object):
         if event_datetime < datetime.now() and not allow_past:
             return None, "Cannot create a past event"
         template_dict = Event.find_template(template_name)
+        # print "instantiate_template: template_dict is", template_dict
         host_prerequisites = Event._preprocess_conditions_(template_dict.get('host_prerequisites', ['member']),
                                                            equipment_types)
         for host in hosts:
@@ -186,6 +187,7 @@ class Event(object):
                          event_datetime,
                          hosts,
                          title=title,
+                         attendees=[], # Possibly a python bug? if I don't force this to empty, it keeps accumulating. Very odd.
                          equipment_types=equipment_types)
         instance.__dict__.update(template_dict)
         instance.host_prerequisites = host_prerequisites

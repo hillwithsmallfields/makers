@@ -13,6 +13,7 @@ import importer
 import person
 import event
 import equipment_type
+import timeline
 
 def random_user_activities(equipments, green_templates):
     for whoever in person.Person.list_all_people():
@@ -39,15 +40,18 @@ def random_user_activities(equipments, green_templates):
                     template = random.choice(possible_templates)
                     event_datetime = datetime.now() + timedelta(random.randrange(-30,30))
                     print whoever.name(), "wants to instantiate", template, "at", event_datetime
-                    event.Event.instantiate_template(template['event_type'],
-                                                     [random.choice(my_trainer_classes)],
-                                                     [whoever],
-                                                     event_datetime,
-                                                     allow_past=True)
+                    new_event, problem = event.Event.instantiate_template(template['event_type'],
+                                                                          [random.choice(my_trainer_classes)],
+                                                                          [whoever],
+                                                                          event_datetime,
+                                                                          allow_past=True)
+                    if not problem:
+                        print "new event is", new_event
+                        new_event.publish()
             # todo: sign up for training at random
         else:
             "no membership found for", whoever
-          
+
 def make_training_event_template(eqty):
     return { 'event_type': 'user training',
              'title': eqty.name + ' user training',
@@ -61,9 +65,10 @@ def print_heading(text):
     print '-'*len(text)
 
 def show_person(directory, somebody):
-    old_stdout = sys.stdout
     name, known_as = database.person_name(somebody)
-    sys.stdout = open(os.path.join(directory, name.replace(' ', '_') + ".txt"), 'w')
+    if directory:
+        old_stdout = sys.stdout
+        sys.stdout = open(os.path.join(directory, name.replace(' ', '_') + ".txt"), 'w')
     print_heading(name)
     print somebody
     print "Known as", known_as
@@ -92,9 +97,9 @@ def show_person(directory, somebody):
         for tyname in sorted(keyed_types.keys()):
             ty = keyed_types[tyname]
             buttons = []
-            if not (somebody.is_owner(ty._id) or somebody.has_requested_training(ty._id, 'owner')):
+            if not (somebody.is_owner(ty._id) or somebody.has_requested_training([ty._id], 'owner')):
                 buttons.append("[Request owner training]")
-            if not (somebody.is_trainer(ty._id) or somebody.has_requested_training(ty._id, 'trainer')):
+            if not (somebody.is_trainer(ty._id) or somebody.has_requested_training([ty._id], 'trainer')):
                 buttons.append("[Request trainer training]")
             print tyname, ' '*(30-len(tyname)), " ".join(buttons)
             all_remaining_types -= their_equipment_types
@@ -114,7 +119,7 @@ def show_person(directory, somebody):
         print "keyed_types are", keyed_types
         for tyname in sorted(keyed_types.keys()):
             ty = keyed_types[tyname]
-            print ty, tyname, somebody.has_requested_training(ty._id, 'user') # todo: the has_requested_training isn't working
+            print ty, tyname, somebody.has_requested_training([ty._id], 'user') # todo: the has_requested_training isn't working
         #     if not somebody.has_requested_training(ty._id, 'user'):
         #         print tyname, ' '*(30-len(tyname)), "[Request training]"
         for tyname in sorted([ ty.name.replace('_', ' ').capitalize() for ty in all_remaining_types ]):
@@ -139,8 +144,9 @@ def show_person(directory, somebody):
 
     print_heading("personal data for API")
     print json.dumps(somebody.api_personal_data(), indent=4)
-    sys.stdout.close()
-    sys.stdout = old_stdout
+    if directory:
+        sys.stdout.close()
+        sys.stdout = old_stdout
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -153,23 +159,48 @@ if __name__ == "__main__":
     parser.add_argument("-b", "--templates", default="event_templates")
     parser.add_argument("--delete-existing", action='store_true')
     parser.add_argument("-v", "--verbose", action='store_true')
+    parser.add_argument("-q", "--quick", action='store_true')
     args = parser.parse_args()
+
     print "importing from spreadsheet files"
     importer.import0(args)
+
     print "import complete, running random user behaviour"
     all_types = equipment_type.Equipment_type.list_equipment_types()
     green_templates = [ make_training_event_template(eqty) for eqty in equipment_type.Equipment_type.list_equipment_types('green') ]
     print "green templates are", green_templates
     random_user_activities(all_types, green_templates)
-    # print "scanning list of people"
-    # for whoever in person.Person.list_all_people():
-    #     show_person("user-pages", whoever)
-    print "listing members"
-    for whoever in person.Person.list_all_members():
-        show_person("member-pages", whoever)
-    # todo: show the timeline of scheduled events
-    print "Listing equipment types"
-    print "Equipment types are:", all_types
+
+    guinea_pig = random.choice(person.Person.list_all_members())
+    chosen_tool = random.choice(equipment_type.Equipment_type.list_equipment_types())
+    roles = ['user', 'owner', 'trainer']
+    print "Using", guinea_pig.name()[0], "as guinea pig, with tool", chosen_tool
+    print_heading("Guinea pig before tests")
+    show_person("before", guinea_pig)
+    for adding_role in roles:
+        print "    About to add request", adding_role, chosen_tool
+        for checking_role in roles:
+            print "        Have they already got", checking_role, "?"
+            print "        ", guinea_pig.has_requested_training([chosen_tool._id], checking_role)
+        guinea_pig.add_training_request(adding_role, [chosen_tool])
+        print "    Added request", adding_role, chosen_tool
+        for checking_role in roles:
+            print "        Have they now got", checking_role, "?"
+            print "        ", guinea_pig.has_requested_training([chosen_tool._id], checking_role)
+    print_heading("Guinea pig after tests")
+    show_person("after", guinea_pig)
+
+    if not args.quick:
+        print "listing members"
+        for whoever in person.Person.list_all_members():
+            show_person("member-pages", whoever)
+
+    print_heading("All events")
+    events = timeline.Timeline.create_timeline()
+    for event in events.events:
+        print event
+
+    print_heading("Equipment types")
     for eqtype in all_types:
         old_stdout = sys.stdout
         sys.stdout = open(os.path.join("equipment-type-pages", eqtype.name.replace(' ', '_') + ".txt"), 'w')
@@ -185,5 +216,6 @@ if __name__ == "__main__":
                 # print req.name()
         sys.stdout.close()
         sys.stdout = old_stdout
+
     with open("allfobs.json", 'w') as outfile:
         outfile.write(json.dumps(equipment_type.Equipment_type.API_all_equipment_fobs(), indent=4))

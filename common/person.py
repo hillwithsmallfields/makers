@@ -119,6 +119,17 @@ class Person(object):
         keyed = { req['request_date']: req for req in self.requests }
         return [ keyed[d] for d in sorted(keyed.keys()) ]
 
+    def has_requested_training(self, equipment_types, role):
+        # todo: I've seen it fail to show that someone has requested a training
+        event_type = database.role_training(role)
+        for req in self.requests:
+            if req['event_type'] != event_type:
+                continue
+            for eqty in req['equipment_types']:
+                if eqty in equipment_types:
+                    return req
+        return None
+
     def get_training_timeline(self):
         """Return the training data for this user,
         as a timeline of training events.
@@ -195,10 +206,8 @@ class Person(object):
         trained = None
         detrained = None
         equipment_id = equipment_type.Equipment_type.find(equipment_type_name)._id
-        # print "qualification on", equipment_type_name, "role", role, "for", self.name(), "?"
         for ev in self.get_training_events(event_type = database.role_training(role),
                                            when=when or datetime.now()):
-            # print "  is", equipment_id, "in", ev.equipment, "?"
             if equipment_id in ev.equipment:
                 trained = ev
                 break
@@ -208,7 +217,6 @@ class Person(object):
                 detrained = ev.start
                 break
         if detrained is None:
-            # print "not detrained, returning", trained
             return trained
         if trained is None or detrained.start > trained.start:
             return None
@@ -245,7 +253,6 @@ class Person(object):
 
     def satisfies_condition(self, condition, equipment_types):
         equiptype, role = condition.split(' ')
-        # print "satisfies_condition eq", equiptype, "role", role, "?"
         return self.qualification(equiptype, role)
 
     def satisfies_conditions(self, conditions, equipment_types):
@@ -253,20 +260,6 @@ class Person(object):
             if not self.satisfies_condition(condition, equipment_types):
                 return False
         return True
-
-    def has_requested_training(self, equipment_types, role):
-        # todo: I've seen it fail to show that someone has requested a training
-        event_type = database.role_training(role)
-        print "tr req for", self.name(), "on", equipment_types, "in", role, event_type
-        for req in self.requests:
-            if req['event_type'] != event_type:
-                continue
-                for eqty in req['equipment_types']:
-                    if eqty in equipment_types:
-                        print "yes, ", req
-                        return req
-        print "no"
-        return None
 
     def api_personal_data(self, detailed=False):
         """Get the data for a user, in a suitable form for the API.

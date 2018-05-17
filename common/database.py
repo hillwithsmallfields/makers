@@ -164,9 +164,12 @@ def get_events(event_type=None,
         query['start'] = {'$gt': as_far_back_as}
     if as_recently_as:
         query['end'] = {'$lt': as_far_back_as}
-    return [ event.Event.find_by_id(tr_event['_id'])
+    # print "get_events query", query
+    result = [ event.Event.find_by_id(tr_event['_id'])
              for tr_event in database[collection_names['events']].find(query).sort('start',
                                                                                    pymongo.DESCENDING) ]
+    # print "get_events result", result
+    return result
 
 def get_event_by_id(event_id):
     """Read the data for an event from the database."""
