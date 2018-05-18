@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from equipment_type import Equipment_type
 import configuration
 import database
+import event
 import person
 import re
 

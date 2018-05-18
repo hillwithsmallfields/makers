@@ -185,6 +185,11 @@ def save_event(this_event):
     # print "saving event", this_event
     database[collection_names['events']].save(this_event)
 
+# invitation replies
+
+def find_rsvp(rsvp_uuid):
+    return database[collection_names['people']].find_one({'invitations.'+rsvp_uuid: {'$exists': True}})
+
 # event templates
 
 def find_event_template(name):

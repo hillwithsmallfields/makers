@@ -4,6 +4,7 @@ import timeline
 import event
 import configuration
 import equipment_type
+import uuid
 from datetime import datetime
 
 # todo: induction input from jotform.com
@@ -29,6 +30,7 @@ class Person(object):
         self.training_requests_limit = None # normally comes from config but admins can override using this
         self.noshow_absolutions = 0
         self.available = 0xffffffff # bitmap of timeslots, lowest bit is Monday morning, etc
+        self.invitations = {}       # dict of uuid to event
         self.profile = {} # bag of stuff like skills, demographic info, foods they avoid
 
     def __str__(self):
@@ -84,6 +86,8 @@ class Person(object):
     def set_profile_field(self, *kwargs):
         """Set the fields and write them back to the database."""
         pass
+
+    # training and requests
 
     def get_training_requests_limit(self):
         return (self.training_requests_limit
@@ -178,6 +182,24 @@ class Person(object):
                  for e in trained.keys()
                  if (e not in detrained
                      or trained[e] > detrained[e])]
+
+    def mail_event_invitation(self, m_event_id, text_body):
+        """Mail the user about an event.
+        They get a link to click on to respond about whether they can attend."""
+        invitation_uuid = str(uuid.uuid4())
+        server_config = configuration.get_config()['server']
+        invitation_url = server_config['base_url'] + server_config['rsvp'] + invitation_uuid
+        self.invitations[invitation_uuid] = m_event_id
+        server.mailer(self.email, text_body.replace('$rsvp', invitation_url))
+
+    @staticmethod
+    def mailed_event_details(rsvp):
+        """Convert an RSVP UUID into a person and an event."""
+        who = database.find_rsvp(rsvp)
+        what = who['invitations'][rsvp]
+        return Person.find[who._id], Event.find_by_id(what)
+
+    # Conditions and qualifications
 
     def get_equipment_type_names(self, role):
         """Get the list of equipment types for which the user has a given role.
