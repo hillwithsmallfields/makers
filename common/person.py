@@ -1,9 +1,11 @@
 import database
 import timeline
-# from event import Event
 import event
 import configuration
 import equipment_type
+import uuid
+import os
+import makers_server
 from datetime import datetime
 
 # todo: induction input from jotform.com
@@ -29,6 +31,7 @@ class Person(object):
         self.training_requests_limit = None # normally comes from config but admins can override using this
         self.noshow_absolutions = 0
         self.available = 0xffffffff # bitmap of timeslots, lowest bit is Monday morning, etc
+        self.invitations = {}       # dict of uuid to event
         self.profile = {} # bag of stuff like skills, demographic info, foods they avoid
 
     def __str__(self):
@@ -84,6 +87,8 @@ class Person(object):
     def set_profile_field(self, *kwargs):
         """Set the fields and write them back to the database."""
         pass
+
+    # training and requests
 
     def get_training_requests_limit(self):
         return (self.training_requests_limit
@@ -178,6 +183,29 @@ class Person(object):
                  for e in trained.keys()
                  if (e not in detrained
                      or trained[e] > detrained[e])]
+
+    def mail_event_invitation(self, m_event, message_template_name):
+        """Mail the user about an event.
+        They get a link to click on to respond about whether they can attend."""
+        invitation_uuid = str(uuid.uuid4())
+        all_conf = configuration.get_config()
+        server_config = all_conf['server']
+        invitation_url = server_config['base_url'] + server_config['rsvp'] + invitation_uuid
+        self.invitations[invitation_uuid] = m_event._id
+        with open(os.path.join(all_conf['messages']['templates_directory'], message_template_name)) as msg_file:
+            makers_server.mailer(self.email,
+                          msg_file.read().replace('$rsvp',
+                                                  invitation_url).replace('$equipment',
+                                                                          m_event.equipment_types).replace('$date', m_event.start))
+
+    @staticmethod
+    def mailed_event_details(rsvp):
+        """Convert an RSVP UUID into a person and an event."""
+        who = database.find_rsvp(rsvp)
+        what = who['invitations'][rsvp]
+        return Person.find(who._id), event.Event.find_by_id(what)
+
+    # Conditions and qualifications
 
     def get_equipment_type_names(self, role):
         """Get the list of equipment types for which the user has a given role.

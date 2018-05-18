@@ -263,3 +263,10 @@ organization:
   # Being a trained user on the equipment class named here gives you
   # read access to the database; being an owner on it gives you write access
   database:    makespace_admin_db
+
+server:
+  base_url: https://admin.makespace.org/
+  rsvp:     rsvp/
+
+messages:
+  templates_directory: /usr/local/share/makers/message_templates
