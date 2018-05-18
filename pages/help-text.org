@@ -83,7 +83,6 @@
 
    - clear the flag that says you're a persistent non-attender of
      training
-   - increase the number of training requests you can have open
    - ban you from equipment or from the space itself, and cancel the
      ban (bans are represented as untraining events)
    - correct your training status by creating training/untraining
