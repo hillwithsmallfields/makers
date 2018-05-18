@@ -31,10 +31,3 @@ def timeslots_from_int(number):
     The lowest bit of the number is the first timeslot of the first day."""
     return [ _timeslots_from_dayparts_number(number >> (b*4))
              for b in range(0,7) ]
-
-if __name__ == "__main__":
-    my_number = 0x6744444
-    as_list = timeslots_from_int(my_number)
-    print as_list
-    back = timeslots_to_int(as_list)
-    print back == my_number
