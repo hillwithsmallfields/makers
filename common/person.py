@@ -1,6 +1,7 @@
 import database
 import timeline
 import event
+import equipment_type
 import configuration
 import equipment_type
 import uuid
@@ -192,11 +193,14 @@ class Person(object):
         server_config = all_conf['server']
         invitation_url = server_config['base_url'] + server_config['rsvp'] + invitation_uuid
         self.invitations[invitation_uuid] = m_event._id
+        substitutions = {'rsvp': invitation_url,
+                         'equipment_types': ', '.join([ equipment_type.Equipment_type.find_by_id(eqty).name
+                                                        for eqty
+                                                        in m_event.equipment_types ]),
+                         'date': str(m_event.start)}
         with open(os.path.join(all_conf['messages']['templates_directory'], message_template_name)) as msg_file:
             makers_server.mailer(self.email,
-                          msg_file.read().replace('$rsvp',
-                                                  invitation_url).replace('$equipment',
-                                                                          m_event.equipment_types).replace('$date', m_event.start))
+                                 msg_file.read() % substitutions)
 
     @staticmethod
     def mailed_event_details(rsvp):
