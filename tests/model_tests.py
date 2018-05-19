@@ -6,7 +6,7 @@ import os
 import random
 import sys
 from datetime import datetime, timedelta
-sys.path.append('common')
+sys.path.append('model')
 sys.path.append('utils')
 import database
 import importer
