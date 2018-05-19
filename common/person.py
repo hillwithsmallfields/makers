@@ -121,6 +121,11 @@ class Person(object):
         self.save()
         return True, None
 
+    def remove_training_request(self, role, equipment_types, when=None):
+        """Remove a training request."""
+        # todo: think about what to do with multiple equipment types
+        pass
+
     def get_training_requests(self):
         keyed = { req['request_date']: req for req in self.requests }
         return [ keyed[d] for d in sorted(keyed.keys()) ]
