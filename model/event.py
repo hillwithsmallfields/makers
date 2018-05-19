@@ -33,7 +33,6 @@ class Event(object):
                  hosts,
                  title=None,
                  attendees=[],
-                 signups=[],
                  event_duration=60,
                  equipment_types=[],
                  equipment=[]):
@@ -57,7 +56,6 @@ class Event(object):
         self.hosts = hosts         # _id of person
         self.attendance_limit = 30
         self.attendees = attendees # _id of person
-        self.signups = signups
         self.equipment_types = equipment_types
         self.equipment = equipment
         self._id = None
@@ -309,6 +307,15 @@ class Event(object):
             if whoever._id not in self.noshow:
                 self.noshow.append(whoever._id)
         self.save()
+
+    def dietary_avoidances_summary(self):
+        avoidances = {}
+        for person_id in self.attendees:
+            whoever = person.Person.find(person_id)
+            if whoever and 'avoidances' in whoever.profile:
+                avoids = ", ".join(sorted(whoever.profile['avoidances']))
+                avoidances[avoids] = avoidances.get(avoids, 0) + 1
+        return [ (avkey, avoidances[avkey]) for avkey in sorted(avoidances.keys()) ]
 
     def save_as_template(self, name):
         """Save this event as a named template."""

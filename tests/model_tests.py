@@ -44,6 +44,13 @@ def random_user_activities(equipments, green_templates):
                                                                           allow_past=True)
                     if not problem:
                         new_event.publish()
+            if random.random() < 0.1:
+                whoever.profile['avoidances'] = ['vegetarian']
+                if random.random() < 0.05:
+                    whoever.profile['avoidances'].append('gluten-free')
+                if random.random() < 0.05:
+                    whoever.profile['avoidances'].append('ketogenic')
+                whoever.save()
             # todo: sign up for training at random
         else:
             "no membership found for", whoever
@@ -182,7 +189,7 @@ if __name__ == "__main__":
     guinea_pig = random.choice(person.Person.list_all_members())
     chosen_tool = random.choice(equipment_type.Equipment_type.list_equipment_types())
     roles = ['user', 'owner', 'trainer']
-    print "Using", guinea_pig.name()[0], "as guinea pig, with tool", chosen_tool
+    print "Using", guinea_pig.name(), "as guinea pig, with tool", chosen_tool
     show_person("before", guinea_pig)
     for adding_role in roles:
         print "    About to add request", adding_role, chosen_tool
@@ -208,6 +215,17 @@ if __name__ == "__main__":
         if hosts is None:
             hosts = []
         print tl_event.start, tl_event.event_type, ", ".join([person.Person.find(ev_host).name() for ev_host in hosts if ev_host is not None])
+        old_stdout = sys.stdout
+        sys.stdout = open(os.path.join("event-pages", str(tl_event.start)), 'w')
+        print tl_event.event_type
+        print "For", tl_event.equipment_types
+        print "Hosted by", tl_event.hosts
+        print "Attendees", tl_event.attendees
+        avoidances = tl_event.dietary_avoidances_summary()
+        if avoidances and len(avoidances) > 0:
+            print "Dietary Avoidances Summary", avoidances
+        sys.stdout.close()
+        sys.stdout = old_stdout
 
     print "Listing equipment types"
     for eqtype in all_types:
