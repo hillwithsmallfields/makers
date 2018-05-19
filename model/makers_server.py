@@ -3,3 +3,7 @@
 def mailer(address, text):
     """Send a message to an address."""
     pass
+
+def generate_page(template, person, event):
+    """Generate a web page from a template."""
+    pass

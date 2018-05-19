@@ -172,6 +172,12 @@ class Event(object):
                     result.append(Equipment_type.find(onetype).name + " " + role)
         return result
 
+    def training_for_role(self):
+        """Return the role for which this event gives training."""
+        return (self.event_type[:-len("__training")]
+                if self.event_type.endswith("_training")
+                else None)
+
     @staticmethod
     def instantiate_template(template_name, equipment_types,
                              hosts, event_datetime, allow_past=False):

@@ -123,8 +123,14 @@ class Person(object):
 
     def remove_training_request(self, role, equipment_types, when=None):
         """Remove a training request."""
-        # todo: think about what to do with multiple equipment types
-        pass
+        event_type = database.role_training(role)
+        for req in self.requests:
+            if req['event_type'] != event_type:
+                continue
+            if equipment_type == req['equipment_types']:
+                self.requests.remove(req)
+                return True
+        return False
 
     def get_training_requests(self):
         keyed = { req['request_date']: req for req in self.requests }
