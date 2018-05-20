@@ -8,6 +8,7 @@ import sys
 from datetime import datetime, timedelta
 sys.path.append('model')
 sys.path.append('utils')
+import configuration
 import database
 import importer
 import person
@@ -15,7 +16,8 @@ import event
 import equipment_type
 import timeline
 
-interest_areas = ['wearables', 'electronics', 'robots', 'mechanical engineering', 'steampunk', 'optics']
+genconf = configuration.get_config()
+interest_areas = genconf['skill_areas']
 
 def random_user_activities(equipments, green_templates):
     for whoever in person.Person.list_all_people():
@@ -170,15 +172,18 @@ def show_person(directory, somebody):
                                                                       for ev_host in hosts
                                                                       if ev_host is not None])
 
-    print_heading("Skills and interests")
-    for (interest, level) in somebody.get_interests().iteritems():
-        print interest + ' '*(24 - len(interest)), ["none", "would like to learn", "already learnt", "can teach"][level]
-                
-    print_heading("personal data for API")
-    print json.dumps(somebody.api_personal_data(), indent=4)
-    if directory:
-        sys.stdout.close()
-        sys.stdout = old_stdout
+    interests = somebody.get_interests()
+    if len(interests) > 0:
+        print_heading("Skills and interests")
+        for (interest, level) in interests.iteritems():
+            print "debug:", interest.encode('utf-8'), level
+            print interest.encode('utf-8') + ' '*(24 - len(interest)), ["none", "would like to learn", "already learnt", "can teach"][level]
+
+        print_heading("personal data for API")
+        print json.dumps(somebody.api_personal_data(), indent=4)
+        if directory:
+            sys.stdout.close()
+            sys.stdout = old_stdout
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -235,7 +240,7 @@ if __name__ == "__main__":
         old_stdout = sys.stdout
         sys.stdout = open(os.path.join("event-pages", str(tl_event.start)), 'w')
         print tl_event.event_type
-        print "For", ", ".join ([ eqtyob.name()
+        print "For", ", ".join ([ eqtyob.name
                                   for eqtyob in [ equipment_type.Equipment_type.find_by_id(eqty)
                                                   for eqty in tl_event.equipment_types ]
                        if eqtyob is not None ])
@@ -243,9 +248,12 @@ if __name__ == "__main__":
         print "Attendees", names(tl_event.attendees)
         avoidances = tl_event.dietary_avoidances_summary()
         if avoidances and len(avoidances) > 0:
-            print "Dietary Avoidances Summary", avoidances
+            print "Dietary Avoidances Summary:", avoidances
+            for avpair in avoidances:
+                print avpair[0] + ' '*(24 - len(avpair[0])), avpair[1]
         if tl_event.interest_areas:
             print "Interest areas:", ", ".join(tl_event.interest_areas)
+            print "Possibly interested:", names(tl_event.possibly_interested_people())
         sys.stdout.close()
         sys.stdout = old_stdout
 

@@ -309,13 +309,19 @@ class Event(object):
                 self.noshow.append(whoever._id)
         self.save()
 
-    def dietary_avoidances_summary(self):
+    def dietary_avoidances(self):
+        """Return the dietary avoidance data as a dictionary of avoidance to number of advoidents."""
         avoidances = {}
         for person_id in self.attendees:
             whoever = person.Person.find(person_id)
             if whoever and 'avoidances' in whoever.profile:
                 avoids = ", ".join(sorted(whoever.profile['avoidances']))
                 avoidances[avoids] = avoidances.get(avoids, 0) + 1
+        return avoidances
+
+    def dietary_avoidances_summary(self):
+        """Return the dietary avoidance data as an alphabetically sorted list of pairs of avoidance to number of advoidents."""
+        avoidances = self.dietary_avoidances()
         return [ (avkey, avoidances[avkey]) for avkey in sorted(avoidances.keys()) ]
 
     def possibly_interested_people(self):

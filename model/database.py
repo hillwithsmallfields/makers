@@ -264,7 +264,9 @@ def get_training_queue(role, equipment_types):
                                         'equipment_types': { '$in': equipment_types } } } }).sort('requests.request_date', pymongo.ASCENDING) ]
 
 def find_interested_people(interests):
-    return database[collection_names['people']].find({'profile.interests': {'$in': interests}})
+    return [ someone['_id']
+             for someone
+             in database[collection_names['people']].find({'profile.interests': {'$in': interests}}) ]
 
 # misc
 
