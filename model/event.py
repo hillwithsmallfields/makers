@@ -65,6 +65,7 @@ class Event(object):
         self.host_prerequisites = []
         self.attendee_prerequisites = []
         self.location = None
+        self.interest_areas = []
 
     def __str__(self):
         accum = "<" + self.event_type
@@ -317,6 +318,9 @@ class Event(object):
                 avoidances[avoids] = avoidances.get(avoids, 0) + 1
         return [ (avkey, avoidances[avkey]) for avkey in sorted(avoidances.keys()) ]
 
+    def possibly_interested_people(self):
+        return database.find_interested_people(self.interest_areas)
+    
     def save_as_template(self, name):
         """Save this event as a named template."""
         pass

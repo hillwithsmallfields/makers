@@ -297,6 +297,21 @@ class Person(object):
                 return False
         return True
 
+    def get_interests(self):
+        return self.profile.get('interests', {})
+
+    def add_interest(self, interest, level):
+        """Interest levels are:
+        0: no interest
+        1: would like to learn
+        2: already learnt
+        3: can teach"""
+        if 'interests' in self.profile:
+            self.profile['interests'][interest] = level
+        else:
+            self.profile['interests'] = {interest: level}
+        self.save()
+    
     def api_personal_data(self, detailed=False):
         """Get the data for a user, in a suitable form for the API.
         With an optional flag, get more detail."""

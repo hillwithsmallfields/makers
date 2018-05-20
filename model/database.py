@@ -263,6 +263,9 @@ def get_training_queue(role, equipment_types):
                                         # todo: check the sort spec (it seems to work but I'm not sure it looks right)
                                         'equipment_types': { '$in': equipment_types } } } }).sort('requests.request_date', pymongo.ASCENDING) ]
 
+def find_interested_people(interests):
+    return database[collection_names['people']].find({'profile.interests': {'$in': interests}})
+
 # misc
 
 def role_training(role):

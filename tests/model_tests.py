@@ -15,6 +15,8 @@ import event
 import equipment_type
 import timeline
 
+interest_areas = ['wearables', 'electronics', 'robots', 'mechanical engineering', 'steampunk', 'optics']
+
 def random_user_activities(equipments, green_templates):
     for whoever in person.Person.list_all_people():
         membership = whoever.is_member()
@@ -43,6 +45,9 @@ def random_user_activities(equipments, green_templates):
                                                                           event_datetime,
                                                                           allow_past=True)
                     if not problem:
+                        new_event.interest_areas = []
+                        for i in range(0, random.randrange(0,3)):
+                            new_event.interest_areas.append(random.choice(interest_areas))
                         new_event.publish()
             if random.random() < 0.1:
                 whoever.profile['avoidances'] = ['vegetarian']
@@ -51,6 +56,9 @@ def random_user_activities(equipments, green_templates):
                 if random.random() < 0.05:
                     whoever.profile['avoidances'].append('ketogenic')
                 whoever.save()
+            for x in range(0, random.randrange(0, 3)):
+                whoever.add_interest(random.choice(interest_areas),
+                                     random.randrange(1, 3))
             # todo: sign up for training at random
         else:
             "no membership found for", whoever
@@ -67,6 +75,11 @@ def print_heading(text):
     print text
     print '-'*len(text)
 
+def names(ids):
+    return ", ".join([obj.name()
+                      for obj in [person.Person.find(id) for id in ids]
+                      if obj is not None])
+    
 def show_person(directory, somebody):
     name, known_as = database.person_name(somebody)
     if directory:
@@ -157,6 +170,10 @@ def show_person(directory, somebody):
                                                                       for ev_host in hosts
                                                                       if ev_host is not None])
 
+    print_heading("Skills and interests")
+    for (interest, level) in somebody.get_interests().iteritems():
+        print interest + ' '*(24 - len(interest)), ["none", "would like to learn", "already learnt", "can teach"][level]
+                
     print_heading("personal data for API")
     print json.dumps(somebody.api_personal_data(), indent=4)
     if directory:
@@ -218,12 +235,17 @@ if __name__ == "__main__":
         old_stdout = sys.stdout
         sys.stdout = open(os.path.join("event-pages", str(tl_event.start)), 'w')
         print tl_event.event_type
-        print "For", tl_event.equipment_types
-        print "Hosted by", tl_event.hosts
-        print "Attendees", tl_event.attendees
+        print "For", ", ".join ([ eqtyob.name()
+                                  for eqtyob in [ equipment_type.Equipment_type.find_by_id(eqty)
+                                                  for eqty in tl_event.equipment_types ]
+                       if eqtyob is not None ])
+        print "Hosted by", names(tl_event.hosts)
+        print "Attendees", names(tl_event.attendees)
         avoidances = tl_event.dietary_avoidances_summary()
         if avoidances and len(avoidances) > 0:
             print "Dietary Avoidances Summary", avoidances
+        if tl_event.interest_areas:
+            print "Interest areas:", ", ".join(tl_event.interest_areas)
         sys.stdout.close()
         sys.stdout = old_stdout
 
