@@ -248,7 +248,7 @@ database:
     names:           MakespaceNames
     people:          MakespacePeople
     equipment_types: MakespaceEquipmentTypes
-    equipment:       MakespaceEquipment
+    machines :       MakespaceMachines
     events:          MakespaceEvents
     event_templates: MakespaceEventTemplates
     timelines:       MakepaceTimelines

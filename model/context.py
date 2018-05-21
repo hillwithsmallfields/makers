@@ -39,15 +39,16 @@ class Context:
         if Context.my_context is None:
             Context.my_context = Context()
             # todo: talk to django to get the login context
+            # Context.my_context.setup_context(get_id(django.getloggedinuser()))
         return Context.my_context
 
     def can_read_for(self, equipment):
         return (self.admin
                 or self.auditor
-                or equipment in self.roles['trainer']
-                or equipment in self.roles['owner'])
+                or (equipment and (equipment in self.roles['trainer']
+                                  or equipment in self.roles['owner'])))
 
     def can_write_for(self, equipment):
         return (self.admin
-                or equipment in self.roles['trainer']
-                or equipment in self.roles['owner'])
+                or (equipment and (equipment in self.roles['trainer']
+                                   or equipment in self.roles['owner'])))

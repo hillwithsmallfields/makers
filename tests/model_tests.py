@@ -77,10 +77,61 @@ def print_heading(text):
     print text
     print '-'*len(text)
 
-def names(ids):
-    return ", ".join([obj.name()
+def list_equipment_types_to_files(all_types):
+    print "Listing equipment types"
+    for eqtype in all_types:
+        old_stdout = sys.stdout
+        sys.stdout = open(os.path.join("equipment-type-pages", eqtype.name.replace(' ', '_') + ".txt"), 'w')
+        print "  users", [ user.name() for user in eqtype.get_trained_users() ]
+        print "  owners",  [ user.name() for user in eqtype.get_owners() ]
+        print "  trainers",  [ user.name() for user in eqtype.get_trainers() ]
+        print "  enabled fobs", json.dumps(eqtype.API_enabled_fobs(), indent=4)
+        for role in ['user', 'owner', 'trainer']:
+            requests = database.get_people_awaiting_training(role, [eqtype._id])
+            print_heading(role + " requests")
+            for req in requests:
+                print "  ", req
+                # print req.name()
+        sys.stdout.close()
+        sys.stdout = old_stdout
+
+def names(ids, role):
+    return ", ".join([obj.name(context_role=role)
                       for obj in [person.Person.find(id) for id in ids]
                       if obj is not None])
+
+def list_all_events():
+    print_heading("All events")
+    events = timeline.Timeline.create_timeline()
+    for tl_event in events.events:
+        hosts = tl_event.hosts
+        if hosts is None:
+            hosts = []
+        print tl_event.start, tl_event.event_type, ", ".join([person.Person.find(ev_host).name(context_role='host',
+                                                                                               context_equipment=tl_event.equipment_types)
+                                                              for ev_host in hosts
+                                                              if ev_host is not None])
+        old_stdout = sys.stdout
+        sys.stdout = open(os.path.join("event-pages", str(tl_event.start)), 'w')
+        print tl_event.event_type
+        print "For", ", ".join ([ eqtyob.name
+                                  for eqtyob in [ equipment_type.Equipment_type.find_by_id(eqty)
+                                                  for eqty in tl_event.equipment_types ]
+                       if eqtyob is not None ])
+        print "Hosted by", names(tl_event.hosts, 'host')
+        print "Attendees", names(tl_event.attendees, 'attendee')
+        avoidances = tl_event.dietary_avoidances_summary()
+        if avoidances and len(avoidances) > 0:
+            print "Dietary Avoidances Summary:"
+            for avpair in avoidances:
+                print avpair[0] + ' '*(48 - len(avpair[0])), avpair[1]
+        if tl_event.interest_areas:
+            print "Interest areas:", ", ".join(tl_event.interest_areas)
+            possibles = tl_event.possibly_interested_people()
+            if len(possibles) > 0:
+                print "Possibly interested:", names(possibles)
+        sys.stdout.close()
+        sys.stdout = old_stdout
     
 def show_person(directory, somebody):
     name, known_as = database.person_name(somebody)
@@ -129,23 +180,17 @@ def show_person(directory, somebody):
             for tyname in sorted([ ty.name.replace('_', ' ').capitalize() for ty in their_equipment_types ]):
                 print tyname, ' '*(30-len(tyname)), button
             all_remaining_types -= their_equipment_types
+    my_training_requests = somebody.get_training_requests()
+    my_request_names = [ req['equipment_types'] for req in my_training_requests ]
     if len(all_remaining_types) > 0:
         print_heading("Other equipment")
-        # todo: fix this, it has stopped listing anything
-        # print "all_remaining_types are", all_remaining_types
         keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in all_remaining_types }
-        # print "keyed_types are", keyed_types
-        # for tyname in sorted(keyed_types.keys()):
-        #     ty = keyed_types[tyname]
-        #     print ty, tyname, somebody.has_requested_training([ty._id], 'user') # todo: the has_requested_training isn't working
-        #     if not somebody.has_requested_training(ty._id, 'user'):
-        #         print tyname, ' '*(30-len(tyname)), "[Request training]"
-        for tyname in sorted([ ty.name.replace('_', ' ').capitalize() for ty in all_remaining_types ]):
-            # todo: filter out request button for equipment for which the user already has a request
-            print tyname, ' '*(30-len(tyname)), "[Request training]"
+        for tyname in sorted(keyed_types.keys()):
+            # todo: the suppression of the button isn't working
+            print tyname, ' '*(30-len(tyname)), "" if keyed_types[tyname].name in my_request_names else "[Request training]"
 
     print_heading("Training requests")
-    for req in somebody.get_training_requests():
+    for req in my_training_requests:
         print req['request_date'], req['event_type'], [equipment_type.Equipment_type.find(reqeq).name for reqeq in req['equipment_types']]
 
     print_heading("Create events")
@@ -176,16 +221,36 @@ def show_person(directory, somebody):
     if len(interests) > 0:
         print_heading("Skills and interests")
         for (interest, level) in interests.iteritems():
-            print "debug:", interest.encode('utf-8'), level
+            # print "debug:", interest.encode('utf-8'), level
             print interest.encode('utf-8') + ' '*(24 - len(interest)), ["none", "would like to learn", "already learnt", "can teach"][level]
 
-        print_heading("personal data for API")
+        print_heading("Personal data for API (short)")
         print json.dumps(somebody.api_personal_data(), indent=4)
+        print_heading("Personal data for API (full)")
+        print json.dumps(somebody.api_personal_data(True), indent=4)
         if directory:
             sys.stdout.close()
             sys.stdout = old_stdout
 
-if __name__ == "__main__":
+def test_training_requests():
+    guinea_pig = random.choice(person.Person.list_all_members())
+    chosen_tool = random.choice(equipment_type.Equipment_type.list_equipment_types())
+    roles = ['user', 'owner', 'trainer']
+    print "Using", guinea_pig.name(), "as guinea pig, with tool", chosen_tool
+    show_person("before", guinea_pig)
+    for adding_role in roles:
+        print "    About to add request", adding_role, chosen_tool
+        for checking_role in roles:
+            print "        Have they already got", checking_role, "?"
+            print "        ", guinea_pig.has_requested_training([chosen_tool._id], checking_role)
+        guinea_pig.add_training_request(adding_role, [chosen_tool])
+        print "    Added request", adding_role, chosen_tool
+        for checking_role in roles:
+            print "        Have they now got", checking_role, "?"
+            print "        ", guinea_pig.has_requested_training([chosen_tool._id], checking_role)
+    show_person("after", guinea_pig)
+
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-y", "--equipment-types", default="equipment-types.csv")
     parser.add_argument("-e", "--equipment", default="equipment.csv")
@@ -208,71 +273,19 @@ if __name__ == "__main__":
     print "green templates are", green_templates
     random_user_activities(all_types, green_templates)
 
-    guinea_pig = random.choice(person.Person.list_all_members())
-    chosen_tool = random.choice(equipment_type.Equipment_type.list_equipment_types())
-    roles = ['user', 'owner', 'trainer']
-    print "Using", guinea_pig.name(), "as guinea pig, with tool", chosen_tool
-    show_person("before", guinea_pig)
-    for adding_role in roles:
-        print "    About to add request", adding_role, chosen_tool
-        for checking_role in roles:
-            print "        Have they already got", checking_role, "?"
-            print "        ", guinea_pig.has_requested_training([chosen_tool._id], checking_role)
-        guinea_pig.add_training_request(adding_role, [chosen_tool])
-        print "    Added request", adding_role, chosen_tool
-        for checking_role in roles:
-            print "        Have they now got", checking_role, "?"
-            print "        ", guinea_pig.has_requested_training([chosen_tool._id], checking_role)
-    show_person("after", guinea_pig)
+    test_training_requests()
 
     if not args.quick:
         print "listing members"
         for whoever in person.Person.list_all_members():
             show_person("member-pages", whoever)
 
-    print_heading("All events")
-    events = timeline.Timeline.create_timeline()
-    for tl_event in events.events:
-        hosts = tl_event.hosts
-        if hosts is None:
-            hosts = []
-        print tl_event.start, tl_event.event_type, ", ".join([person.Person.find(ev_host).name() for ev_host in hosts if ev_host is not None])
-        old_stdout = sys.stdout
-        sys.stdout = open(os.path.join("event-pages", str(tl_event.start)), 'w')
-        print tl_event.event_type
-        print "For", ", ".join ([ eqtyob.name
-                                  for eqtyob in [ equipment_type.Equipment_type.find_by_id(eqty)
-                                                  for eqty in tl_event.equipment_types ]
-                       if eqtyob is not None ])
-        print "Hosted by", names(tl_event.hosts)
-        print "Attendees", names(tl_event.attendees)
-        avoidances = tl_event.dietary_avoidances_summary()
-        if avoidances and len(avoidances) > 0:
-            print "Dietary Avoidances Summary:", avoidances
-            for avpair in avoidances:
-                print avpair[0] + ' '*(24 - len(avpair[0])), avpair[1]
-        if tl_event.interest_areas:
-            print "Interest areas:", ", ".join(tl_event.interest_areas)
-            print "Possibly interested:", names(tl_event.possibly_interested_people())
-        sys.stdout.close()
-        sys.stdout = old_stdout
+    list_all_events()
 
-    print "Listing equipment types"
-    for eqtype in all_types:
-        old_stdout = sys.stdout
-        sys.stdout = open(os.path.join("equipment-type-pages", eqtype.name.replace(' ', '_') + ".txt"), 'w')
-        print "  users", [ user.name() for user in eqtype.get_trained_users() ]
-        print "  owners",  [ user.name() for user in eqtype.get_owners() ]
-        print "  trainers",  [ user.name() for user in eqtype.get_trainers() ]
-        print "  enabled fobs", json.dumps(eqtype.API_enabled_fobs(), indent=4)
-        for role in ['user', 'owner', 'trainer']:
-            requests = database.get_training_queue(role, [eqtype._id])
-            print_heading(role + " requests")
-            for req in requests:
-                print "  ", req
-                # print req.name()
-        sys.stdout.close()
-        sys.stdout = old_stdout
+    list_equipment_types_to_files(all_types)
 
     with open("allfobs.json", 'w') as outfile:
         outfile.write(json.dumps(equipment_type.Equipment_type.API_all_equipment_fobs(), indent=4))
+
+if __name__ == "__main__":
+    main()

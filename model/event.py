@@ -122,7 +122,7 @@ class Event(object):
                                                  event_dict['hosts'],
                                                  equipment_types=event_dict['equipment_types'])
         e = Event.events_by_id[event_id]
-        e.__dict__.update(event_dict) # todo: sort out whether I need to re-read this in case of database changes
+        e.__dict__.update(event_dict) # todo: sort out whether I need to re-read this in case of database changes --- I probably should, although I don't know how to detect it changing; OTOH these programs are probably all going to be transient, not daemons
         return e
 
     def get_details(self):
@@ -330,6 +330,13 @@ class Event(object):
     def save_as_template(self, name):
         """Save this event as a named template."""
         pass
+
+    def event_as_json(self):
+        result = {'start': str(self.start), 'end': str(self.end),
+                  'event_type': self.event_type,
+                  'equipment_types': [ Equipment_type.find_by_id(eqty).name for eqty in self.equipment_types ] }
+        # todo: add hosts if their privacy setting permit it
+        return result
 
 def as_id(event):
     """Given an event or id, return the id."""

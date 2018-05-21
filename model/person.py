@@ -13,7 +13,6 @@ from datetime import datetime
 # todo: suppress equipment access for non-members
 # todo: admin to change training request dates
 
-
 class Person(object):
 
     people_by_id = {}
@@ -65,10 +64,10 @@ class Person(object):
         p.__dict__.update(data)
         return p
 
-    def name(self):
+    def name(self, context_role=None, context_equipment=None):
         """Return the person's name, unless they've requested anonymity."""
         # todo: add admin override of anonymity
-        formal, _ = database.person_name(self.link_id)
+        formal, _ = database.person_name(self.link_id, role_viewed=context_role, equipment=context_equipment)
         return formal.encode('utf-8')
 
     def nickname(self):
@@ -85,9 +84,10 @@ class Person(object):
         self.fob = newfob
         self.save()
 
-    def set_profile_field(self, *kwargs):
+    def set_profile_field(self, **kwargs):
         """Set the fields and write them back to the database."""
-        pass
+        self.profile.update(kwargs)
+        self.save()
 
     # training and requests
 
@@ -96,12 +96,18 @@ class Person(object):
                 or int(configuration.get_config()['training']['default_max_requests']))
 
     def set_training_requests_limit(self, limit):
+        """Set this person's open training request limit.
+        If set to None, the system-wide defalt, from the config file, will be used."""
         self.training_requests_limit = limit
+        self.save()
 
     def absolve_noshows(self):
-        self.noshow_absolutions = (len(self.get_training_events('yser_training', result='noshow'))
+        """Administrator action to allow a user to continue to sign up for training,
+        despite having been recorded as repeatedly wasting training slots."""
+        self.noshow_absolutions = (len(self.get_training_events('user_training', result='noshow'))
                                    + len(self.get_training_events('owner_training', result='noshow'))
                                    + len(self.get_training_events('trainer_training', result='noshow')))
+        self.save()
 
     def add_training_request(self, role, equipment_types, when=None):
         """Register a a training request for one or more equipment types.
@@ -130,6 +136,7 @@ class Person(object):
             if equipment_type == req['equipment_types']:
                 self.requests.remove(req)
                 return True
+            self.save()
         return False
 
     def get_training_requests(self):
@@ -146,15 +153,6 @@ class Person(object):
                 if eqty in equipment_types:
                     return req
         return None
-
-    def get_training_timeline(self):
-        """Return the training data for this user,
-        as a timeline of training events.
-        What is stored in the user record is just the _id of the timeline,
-        because timelines are stored as records in their own right."""
-        # todo: stop storing the timeline as such, and generate it by searching the database
-        # return timeline.Timeline.find_by_id(self.training)
-        pass
 
     def get_training_events(self, event_type='user_training', when=None,  result='passed'):
         """Return the training data for this user,
@@ -325,4 +323,15 @@ class Person(object):
             personal_data['membership_number'] = int(self.membership_number)
         if self.fob:
             personal_data['fob'] = int(self.fob)
+        if detailed:
+            tr_hist = {}
+            for role in ['user', 'owner', 'trainer']:
+                for tr_ev in self.get_training_events(event_type = database.role_training(role)):
+                    tr_hist[tr_ev.start] = tr_ev.event_as_json()
+                for untr_ev in self.get_training_events(event_type = database.role_untraining(role)):
+                    tr_hist[untr_ev.start] = untr_ev.event_as_json()
+            personal_data['training_history'] = [ tr_hist[evdate] for evdate in sorted(tr_hist.keys()) ]
+            # todo: add the training sessions they have hosted
+            # todo: add non-training sessions they've attended or hosted
+            # todo: add device use history, once we start logging that
         return personal_data

@@ -27,7 +27,7 @@ def database_init(config, delete_existing=False):
         # I think these are wrong
         database.drop_collection(collection_names['people'])
         database.drop_collection(collection_names['equipment_types'])
-        database.drop_collection(collection_names['equipment'])
+        database.drop_collection(collection_names['machines'])
         database.drop_collection(collection_names['events'])
         database.drop_collection(collection_names['event_templatess'])
 
@@ -52,7 +52,8 @@ def get_person_dict(identification):
 # record, so that privacy protection can be applied.
 
 def person_name(whoever,
-                equipment=None, role_viewed=None):
+                role_viewed=None,
+                equipment=None):
     """Return the formal and informal names of a person, or not, if they're anonymous.
     Always use this to get someone's name; this way, anonymity is handled for you.
     For events, if you're being viewed in the host role, you can't be anonymous (for now)."""
@@ -125,11 +126,6 @@ def get_all_person_dicts():
 
 def save_person(somebody):
     database[collection_names['people']].save(somebody)
-
-def get_people_awaiting_training(event_type, equipment_types):
-    query = {'training_requests': {'$elem_match': {'event_type': event_type,
-                                                   'equipment_types': {'$in': equipment_types}}}}
-    return [ who for who in database[collection_names['people']].find(query) ]
 
 # Events
 
@@ -238,12 +234,16 @@ def get_eqtype_events(equipment_type, event_type):
 
 # Equipment
 
-def get_machine(name):
+def get_machine_dict(name):
     """Read the data for a machine from the database."""
-    collection = database[collection_names['equipment']]
+    collection = database[collection_names['machines']]
     return (collection.find_one({'name': name})
             or collection.find_one({'_id': name}))
 
+def get_machine_dicts_for_type(eqty):
+    """Read the data for machines of a given type from the database."""
+    return [ machine for machine in database[collection_names['machines']].find({'equipment_type': eqty}) ]
+           
 def add_machine(name, equipment_type,
                 location=None, acquired=None):
     data = {'name': name,
@@ -252,21 +252,28 @@ def add_machine(name, equipment_type,
         data['location'] = location
     if acquired:
         data['acquired'] = acquired
-    database[collection_names['equipment']].insert(data)
+    database[collection_names['machines']].insert(data)
 
 # training requests
 
-def get_training_queue(role, equipment_types):
-    # todo: wrap this in a higher level that converts these to 'person' objects
-    return [ somebody for somebody in database[collection_names['people']].find(
-        { 'requests': { '$elemMatch': { 'event_type': role_training(role),
-                                        # todo: check the sort spec (it seems to work but I'm not sure it looks right)
-                                        'equipment_types': { '$in': equipment_types } } } }).sort('requests.request_date', pymongo.ASCENDING) ]
+def get_people_awaiting_training(event_type, equipment_types):
+    return [ who['_id'] for who in
+             database[collection_names['people']]
+             .find({'training_requests': {'$elemMatch':
+                                          {'event_type': event_type,
+                                           'equipment_types': {'$in': equipment_types}}}})
+             .sort('requests.request_date', pymongo.ASCENDING) ]
 
 def find_interested_people(interests):
+    print "Looking for people with interests", interests
     return [ someone['_id']
              for someone
-             in database[collection_names['people']].find({'profile.interests': {'$in': interests}}) ]
+             # I don't think that works, but db.MakespacePeople.find({'profile.interests.Lifehacking': 2}) gets some
+             # $elemMatch may help
+             in database[collection_names['people']].find({'profile.interests': {
+                 # '$elemMatch':
+                 '$in':
+                 interests}}) ]
 
 # misc
 

@@ -2,7 +2,8 @@
 
 def mailer(address, text):
     """Send a message to an address."""
-    pass
+    with open("/tmp/mailings", 'w+') as outfile:
+        outfile.write("\nTo: " + address + "\n\n" + text)
 
 def generate_page(template, person, event):
     """Generate a web page from a template."""
