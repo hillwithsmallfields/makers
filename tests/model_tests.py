@@ -47,6 +47,7 @@ def random_user_activities(equipments, green_templates):
                                                                           event_datetime,
                                                                           allow_past=True)
                     if not problem:
+                        new_event.catered = (random.random() < 0.5)
                         new_event.interest_areas = []
                         for i in range(0, random.randrange(0,3)):
                             new_event.interest_areas.append(random.choice(interest_areas))
@@ -121,7 +122,7 @@ def list_all_events():
         print "Hosted by", names(tl_event.hosts, 'host')
         print "Attendees", names(tl_event.attendees, 'attendee')
         avoidances = tl_event.dietary_avoidances_summary()
-        if avoidances and len(avoidances) > 0:
+        if tl_event.catered and avoidances and len(avoidances) > 0:
             print "Dietary Avoidances Summary:"
             for avpair in avoidances:
                 print avpair[0] + ' '*(48 - len(avpair[0])), avpair[1]
@@ -181,13 +182,15 @@ def show_person(directory, somebody):
                 print tyname, ' '*(30-len(tyname)), button
             all_remaining_types -= their_equipment_types
     my_training_requests = somebody.get_training_requests()
-    my_request_names = [ req['equipment_types'] for req in my_training_requests ]
+    my_individual_training_requests = []
+    for req in my_training_requests: # each stored training request is for a list of equipment types
+        my_individual_training_requests += req['equipment_types']
+    my_request_names = [ equipment_type.Equipment_type.find_by_id(req).name for req in my_individual_training_requests ]
     if len(all_remaining_types) > 0:
         print_heading("Other equipment")
         keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in all_remaining_types }
         for tyname in sorted(keyed_types.keys()):
-            # todo: the suppression of the button isn't working
-            print tyname, ' '*(30-len(tyname)), "" if keyed_types[tyname].name in my_request_names else "[Request training]"
+            print tyname, ' '*(30-len(tyname)), "[Cancel training request]" if keyed_types[tyname].name in my_request_names else "[Request training]"
 
     print_heading("Training requests")
     for req in my_training_requests:
