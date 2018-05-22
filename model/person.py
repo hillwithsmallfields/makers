@@ -64,14 +64,12 @@ class Person(object):
 
     def name(self, context_role=None, context_equipment=None):
         """Return the person's name, unless they've requested anonymity."""
-        # todo: add admin override of anonymity
         formal, _ = database.person_name(self.link_id, role_viewed=context_role, equipment=context_equipment)
         return formal.encode('utf-8')
 
     def nickname(self):
         """Return the person's nickname, unless they've requested anonymity."""
-        # todo: add admin override of anonymity
-        _, informal = database.person_name(self.link_id)
+        _, informal = database.person_name(self.link_id, role_viewed=context_role, equipment=context_equipment)
         return informal.encode('utf-8')
 
     def save(self):
@@ -157,7 +155,6 @@ class Person(object):
         return [ keyed[d] for d in sorted(keyed.keys()) ]
 
     def has_requested_training(self, equipment_types, role):
-        # todo: I've seen it fail to show that someone has requested a training
         event_type = database.role_training(role)
         for req in self.requests:
             if req['event_type'] != event_type:
@@ -167,10 +164,13 @@ class Person(object):
                     return req
         return None
 
-    def get_training_events(self, event_type='user_training', when=None,  result='passed'):
+    def get_training_events(self,
+                            event_type='user_training',
+                            when=None,
+                            result='passed'):
         """Return the training data for this user,
         as a list of training events."""
-        # todo: handle the when parameter
+        # todo: handle the when parameter; I think there is a bug in database.get_events such that it doesn't find the training if we pass that argument on
         return database.get_events(event_type=event_type,
                                    person_field=result,
                                    person_id=self._id,

@@ -162,6 +162,7 @@ def get_events(event_type=None,
         query[person_field] = {'$in': [person_id]}
     if not include_hidden:
         query['status'] = 'published'
+    # todo: I think there is a bug in the time handling, as shown when I use it from person.get_training_events as called from model_test.py
     if as_far_back_as:
         query['start'] = {'$gt': as_far_back_as}
     if as_recently_as:

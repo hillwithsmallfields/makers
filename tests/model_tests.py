@@ -194,7 +194,7 @@ def show_person(directory, somebody):
 
     print_heading("Training requests")
     for req in my_training_requests:
-        print req['request_date'], req['event_type'], [equipment_type.Equipment_type.find(reqeq).name for reqeq in req['equipment_types']]
+        print req['request_date'], req['event_type'].replace('_', ' '), ", ".join([equipment_type.Equipment_type.find(reqeq).name for reqeq in req['equipment_types']])
 
     print_heading("Create events")
     for evtitle in sorted([ ev['title'].replace('$', 'some ').capitalize() for ev in event.Event.list_templates([somebody], their_equipment_types) ]):
