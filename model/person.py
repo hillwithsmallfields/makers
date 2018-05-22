@@ -3,7 +3,6 @@ import timeline
 import event
 import equipment_type
 import configuration
-import equipment_type
 import machine
 import uuid
 import os
@@ -351,7 +350,8 @@ class Person(object):
         name, known_as = database.person_name(self)
         personal_data = {'name': name,
                          'qualified': self.get_qualifications()}
-        # todo: add date joined
+        membership = self.is_member()
+        personal_data['member_since'] = str(membership.start) # todo: trim this to date only
         if known_as:
             personal_data['known_as'] = known_as
         if self.membership_number:
@@ -359,6 +359,15 @@ class Person(object):
         if self.fob:
             personal_data['fob'] = int(self.fob)
         if detailed:
+            for field, title in [('hosts', 'hosting_events'), ('attendees', 'attending_events')]:
+                my_events = timeline.Timeline.create_timeline(person_field=field, person_id=self._id).events
+                if len(my_events) > 0:
+                    my_event_api_data = [ { 'start': str(tl_event.start),
+                                            'type': str(tl_event.event_type),
+                                            'equipment_types': [ equipment_type.Equipment_type.find_by_id(eqty).name
+                                                                    for eqty in tl_event.equipment_types]} for tl_event in my_events ]
+                    personal_data[title] = my_event_api_data
+
             tr_hist = {}
             for role in ['user', 'owner', 'trainer']:
                 for tr_ev in self.get_training_events(event_type = database.role_training(role)):
@@ -367,6 +376,4 @@ class Person(object):
                     tr_hist[untr_ev.start] = untr_ev.event_as_json()
             personal_data['training_history'] = [ tr_hist[evdate] for evdate in sorted(tr_hist.keys()) ]
             personal_data['machine_log'] = [ [ str(entry[0]), entry[1].name ] for entry in self.get_log() ]
-            # todo: add the training sessions they have hosted
-            # todo: add non-training sessions they've attended or hosted
         return personal_data

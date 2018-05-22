@@ -181,6 +181,7 @@ def show_person(directory, somebody):
             for tyname in sorted([ ty.name.replace('_', ' ').capitalize() for ty in their_equipment_types ]):
                 print tyname, ' '*(30-len(tyname)), button
             all_remaining_types -= their_equipment_types
+
     my_training_requests = somebody.get_training_requests()
     my_individual_training_requests = []
     for req in my_training_requests: # each stored training request is for a list of equipment types
@@ -225,7 +226,7 @@ def show_person(directory, somebody):
         print_heading("Skills and interests")
         for (interest, level) in interests.iteritems():
             # print "debug:", interest.encode('utf-8'), level
-            print interest.encode('utf-8') + ' '*(24 - len(interest)), ["none", "would like to learn", "already learnt", "can teach"][level]
+            print interest.encode('utf-8') + ' '*(48 - len(interest)), ["none", "would like to learn", "already learnt", "can teach"][level]
 
         print_heading("Personal data for API (short)")
         print json.dumps(somebody.api_personal_data(), indent=4)
