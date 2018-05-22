@@ -254,6 +254,9 @@ def add_machine(name, equipment_type,
         data['acquired'] = acquired
     database[collection_names['machines']].insert(data)
 
+def save_machine(something):
+    database[collection_names['machines']].save(something)
+
 # training requests
 
 def get_people_awaiting_training(event_type, equipment_types):

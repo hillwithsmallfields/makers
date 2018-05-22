@@ -1,4 +1,6 @@
 import database
+import datetime
+import person
 
 class Machine(object):
 
@@ -10,12 +12,15 @@ class Machine(object):
         self.name = name
         self.equipment_type = equipment_type
         self.status = 'unknown'
+        self.status_detail = None
         self.maintenance_history = []
         self.maintenance_due = None
         self.Location = None
         self.brand = None
         self.model = None
+        self.serial_number = None
         self.acquired = None
+        self.reservations = []
 
     @staticmethod
     def find(name):
@@ -45,21 +50,33 @@ class Machine(object):
         Machine.machine_by_name[data['name']] = c
         return c
 
-    def get_equipment_type(self):
-        """Return the equipment type of this machine.
-        Users, owners and trainers are reached through this, as they
-        are related to all machine of the same type rather than to a
-        specific instance."""
-        pass
+    def save(self):
+        """Save the machine to the database."""
+        database.save_machine(self.__dict__)
 
-    def get_maintenance_status(self):
+    def get_status(self):
         """Return whether the machine is working, possibly with some detail."""
-        pass
+        return (self.status, self.status_detail)
 
-    def set_maintenance_status(self, flag, detail):
+    def set_status(self, flag, detail):
         """Indicate whether the machine is working."""
-        pass
+        self.status = flag
+        self.status_detail = detail
+        self.save()
 
-    def user_allowed(self, person):
+    def user_allowed(self, who):
         """Indicate whether a particular person is allowed to use this machine."""
-        pass
+        return person.Person.find(who).qualification(self.name)
+
+    def reserve(starting_at, ending_at, for_whom, reason):
+        """Reserve the machine (e.g. for a training session)."""
+        self.reservations = sorted(self.reservations + [[starting_at, ending_at, for_whom, reason]], lambda res: res[0])
+        self.save()
+
+    def reserved(when=datetime.now()):
+        """Return whether the machine is reserved (e.g. for a training session).
+        The result is a description of the reservation."""
+        for res in self.reservations:
+            if res[0] < when and res[1] > when:
+                return res
+        return None
