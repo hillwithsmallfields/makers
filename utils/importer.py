@@ -33,7 +33,6 @@ def import_role_file(role, csv_file, verbose):
                 continue
             trainer = Person.find(row.get('Trainer', "Joe Bloggs"))
             trainer_id = trainer._id if trainer else None
-            # todo: record that the trainer is trained as a trainer --- maybe read the trainers list first
             equipment_type_names = row['Equipment'].split(';')
             equipment_type_ids = [ Equipment_type.find(typename)._id
                                    for typename in equipment_type_names ]
@@ -129,6 +128,7 @@ def import0(args):
                 print "inducted is", inducted, "with training", inducted.get_training_events()
 
     import_role_file('owner', args.owners, verbose)
+    # read the trainers before the people they train:
     import_role_file('trainer', args.trainers, verbose)
     import_role_file('user', args.users, verbose)
     import_template_file(args.templates)
