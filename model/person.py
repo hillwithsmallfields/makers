@@ -4,6 +4,7 @@ import event
 import equipment_type
 import configuration
 import equipment_type
+import machine
 import uuid
 import os
 import makers_server
@@ -317,6 +318,8 @@ class Person(object):
                 return False
         return True
 
+    # Interests and skills
+
     def get_interests(self):
         return self.profile.get('interests', {})
 
@@ -331,6 +334,16 @@ class Person(object):
         else:
             self.profile['interests'] = {interest: level}
         self.save()
+
+    # machine use
+
+    def get_log_raw(self):
+        return database.get_user_log(self._id)
+
+    def get_log(self):
+        return [ (str(entry['start']), machine.Machine.find(entry['machine'])) for entry in self.get_log_raw() ]
+
+    # API
 
     def api_personal_data(self, detailed=False):
         """Get the data for a user, in a suitable form for the API.
@@ -353,7 +366,7 @@ class Person(object):
                 for untr_ev in self.get_training_events(event_type = database.role_untraining(role)):
                     tr_hist[untr_ev.start] = untr_ev.event_as_json()
             personal_data['training_history'] = [ tr_hist[evdate] for evdate in sorted(tr_hist.keys()) ]
+            personal_data['machine_log'] = [ [ str(entry[0]), entry[1].name ] for entry in self.get_log() ]
             # todo: add the training sessions they have hosted
             # todo: add non-training sessions they've attended or hosted
-            # todo: add device use history, once we start logging that
         return personal_data

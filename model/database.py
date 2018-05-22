@@ -244,7 +244,7 @@ def get_machine_dict(name):
 def get_machine_dicts_for_type(eqty):
     """Read the data for machines of a given type from the database."""
     return [ machine for machine in database[collection_names['machines']].find({'equipment_type': eqty}) ]
-           
+
 def add_machine(name, equipment_type,
                 location=None, acquired=None):
     data = {'name': name,
@@ -259,7 +259,13 @@ def save_machine(something):
     database[collection_names['machines']].save(something)
 
 def log_machine_use(machine, person, when):
-    database[collection_names['machine_logs']].insert([when, machine, person])
+    database[collection_names['machine_logs']].insert({'start': when, 'machine': machine, 'user': person})
+
+def get_machine_log(machine):
+    return [ entry for entry in database[collection_names['machine_logs']].find({'machine': machine}).sort('start', pymongo.DESCENDING) ]
+
+def get_user_log(user):
+    return [ entry for entry in database[collection_names['machine_logs']].find({'user': user}).sort('start', pymongo.DESCENDING) ]
 
 # training requests
 
