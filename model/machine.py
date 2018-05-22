@@ -64,10 +64,6 @@ class Machine(object):
         self.status_detail = detail
         self.save()
 
-    def user_allowed(self, who):
-        """Indicate whether a particular person is allowed to use this machine."""
-        return person.Person.find(who).qualification(self.name)
-
     def reserve(starting_at, ending_at, for_whom, reason):
         """Reserve the machine (e.g. for a training session)."""
         self.reservations = sorted(self.reservations + [[starting_at, ending_at, for_whom, reason]], lambda res: res[0])
@@ -80,3 +76,15 @@ class Machine(object):
             if res[0] < when and res[1] > when:
                 return res
         return None
+
+    def user_allowed(self, who):
+        """Indicate whether a particular person is allowed to use this machine."""
+        res = self.reserved()
+        person_obj = person.Person.find(who)
+        if res:
+            return person_obj._id == res[2]
+        return person_obj.qualification(self.name)
+
+    def log_use(self, who, when=datetime.now()):
+        """Log that a particular user has used this machine."""
+        database.log_machine_use(self.name, person.Person.find(who)._id, when)

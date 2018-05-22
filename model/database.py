@@ -257,6 +257,9 @@ def add_machine(name, equipment_type,
 def save_machine(something):
     database[collection_names['machines']].save(something)
 
+def log_machine_use(machine, person, when):
+    database[collection_names['machine_logs']].insert([when, machine, person])
+
 # training requests
 
 def get_people_awaiting_training(event_type, equipment_types):
