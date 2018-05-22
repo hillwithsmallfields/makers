@@ -10,8 +10,6 @@ import makers_server
 from datetime import datetime
 
 # todo: induction input from jotform.com
-# todo: suppress equipment access for non-members
-# todo: admin to change training request dates
 
 class Person(object):
 
@@ -127,7 +125,7 @@ class Person(object):
         self.save()
         return True, None
 
-    def remove_training_request(self, role, equipment_types, when=None):
+    def remove_training_request(self, role, equipment_types):
         """Remove a training request."""
         event_type = database.role_training(role)
         for req in self.requests:
@@ -135,6 +133,21 @@ class Person(object):
                 continue
             if equipment_type == req['equipment_types']:
                 self.requests.remove(req)
+                return True
+            self.save()
+        return False
+
+    def alter_training_request_date(self, role, equipment_types, new_date):
+        """Alter the date of a training request.
+        This is to allow administrators to backdate training requests
+        if a user convinces them that they have a good case for jumping
+        the queue."""
+        event_type = database.role_training(role)
+        for req in self.requests:
+            if req['event_type'] != event_type:
+                continue
+            if equipment_type == req['equipment_types']:
+                req['request_date'] = new_date
                 return True
             self.save()
         return False
@@ -174,26 +187,6 @@ class Person(object):
         """List the people who have requested a particular type of training."""
         return database.get_people_awaiting_training(event_type, equipment_types)
 
-    def get_equipment_types(self, role, when=None):
-        """Get the list of the equipment_classes for which the person has the specified role."""
-        # todo: pass the when parameter on
-        trained = {}
-        detrained = {}
-        equipments = {}
-        for ev in self.get_training_events(event_type = database.role_training(role),
-                                           when=when or datetime.now()):
-            for eq in ev.equipment:
-                trained[eq] = ev.start
-                equipments[eq] = eq
-        for ev in self.get_training_events(event_type = database.role_untraining(role),
-                                           when=when or datetime.now()):
-            for eq in ev.equipment:
-                detrained[eq] = ev.start
-        return [ equipment_type.Equipment_type.find_by_id(equipments[e])
-                 for e in trained.keys()
-                 if (e not in detrained
-                     or trained[e] > detrained[e])]
-
     def mail_event_invitation(self, m_event, message_template_name):
         """Mail the user about an event.
         They get a link to click on to respond about whether they can attend."""
@@ -220,6 +213,25 @@ class Person(object):
 
     # Conditions and qualifications
 
+    def get_equipment_types(self, role, when=None):
+        """Get the list of the equipment_classes for which the person has the specified role."""
+        trained = {}
+        detrained = {}
+        equipments = {}
+        for ev in self.get_training_events(event_type = database.role_training(role),
+                                           when=when or datetime.now()):
+            for eq in ev.equipment:
+                trained[eq] = ev.start
+                equipments[eq] = eq
+        for ev in self.get_training_events(event_type = database.role_untraining(role),
+                                           when=when or datetime.now()):
+            for eq in ev.equipment:
+                detrained[eq] = ev.start
+        return [ equipment_type.Equipment_type.find_by_id(equipments[e])
+                 for e in trained.keys()
+                 if (e not in detrained
+                     or trained[e] > detrained[e])]
+
     def get_equipment_type_names(self, role):
         """Get the list of equipment types for which the user has a given role.
         Aimed mostly at the JSON API."""
@@ -234,7 +246,9 @@ class Person(object):
                 quals[role] = quals.get(role, []) + q
         return quals
 
-    def qualification(self, equipment_type_name, role, when=None):
+    def qualification(self, equipment_type_name, role,
+                      when=None,
+                      skip_membership_check=False):
         """Return whether the user is qualified for a role on an equipment class.
         The result is the event that qualified them."""
         trained = None
@@ -254,11 +268,19 @@ class Person(object):
             return trained
         if trained is None or detrained.start > trained.start:
             return None
+        # skip_membership_check is for avoiding further recursion in the call to is_member.
+        # Qualification to use equipment isn't cancelled immediately someone stops being a
+        # member, so that if they restore their membership before the training is counted
+        # as stale, the training can be retained as valid.  So in checking whether someone
+        # can use a piece of equipment, we much also check that they are a member.
+        if (not skip_membership_check) and (not self.is_member()):
+            return None
         return trained
 
     def is_member(self):
         """Return whether the person is a member."""
-        return self.qualification(configuration.get_config()['organization']['name'], 'user')
+        return self.qualification(configuration.get_config()['organization']['name'], 'user',
+                                  skip_membership_check=True)
 
     def is_administrator(self):
         """Return whether the person is an admin."""
