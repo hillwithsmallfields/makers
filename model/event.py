@@ -65,6 +65,7 @@ class Event(object):
         self.host_prerequisites = []
         self.attendee_prerequisites = []
         self.location = None
+        self.catered = False
         self.interest_areas = []
 
     def __str__(self):

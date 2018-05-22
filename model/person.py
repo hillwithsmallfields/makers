@@ -331,7 +331,7 @@ class Person(object):
         else:
             self.profile['interests'] = {interest: level}
         self.save()
-    
+
     def api_personal_data(self, detailed=False):
         """Get the data for a user, in a suitable form for the API.
         With an optional flag, get more detail."""
