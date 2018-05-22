@@ -58,8 +58,7 @@ class Equipment_type(object):
 
     def get_machines(self):
         """List the individual machines of an equipment type."""
-        # todo: search the equipment collection
-        pass
+        return [ machine['_id'] for machine in database.get_machine_dicts_for_type(self._id) ]
 
     def get_people(self, role):
         """Return the trained users, owners, or trainers of an equipment type."""

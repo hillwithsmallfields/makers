@@ -83,9 +83,10 @@ def list_equipment_types_to_files(all_types):
     for eqtype in all_types:
         old_stdout = sys.stdout
         sys.stdout = open(os.path.join("equipment-type-pages", eqtype.name.replace(' ', '_') + ".txt"), 'w')
-        print "  users", [ user.name() for user in eqtype.get_trained_users() ]
-        print "  owners",  [ user.name() for user in eqtype.get_owners() ]
-        print "  trainers",  [ user.name() for user in eqtype.get_trainers() ]
+        print "  users", ", ".join([ user.name() for user in eqtype.get_trained_users() ])
+        print "  owners",  ", ".join([ user.name() for user in eqtype.get_owners() ])
+        print "  trainers",  ", ".join([ user.name() for user in eqtype.get_trainers() ])
+        print "  machines",  ", ".join([ machine.Machine.find_by_id(mc).name for mc in eqtype.get_machines() ])
         print "  enabled fobs", json.dumps(eqtype.API_enabled_fobs(), indent=4)
         for role in ['user', 'owner', 'trainer']:
             requests = database.get_people_awaiting_training(role, [eqtype._id])
@@ -217,7 +218,7 @@ def show_person(directory, somebody):
                 hosts = tl_event.hosts
                 if hosts is None:
                     hosts = []
-                print tl_event.start, tl_event.event_type, ", ".join([person.Person.find(ev_host).name()
+                print tl_event.start, tl_event.event_type + " "*(24-len(tl_event.event_type)), ", ".join([person.Person.find(ev_host).name()
                                                                       for ev_host in hosts
                                                                       if ev_host is not None])
 
@@ -225,16 +226,15 @@ def show_person(directory, somebody):
     if len(interests) > 0:
         print_heading("Skills and interests")
         for (interest, level) in interests.iteritems():
-            # print "debug:", interest.encode('utf-8'), level
             print interest.encode('utf-8') + ' '*(48 - len(interest)), ["none", "would like to learn", "already learnt", "can teach"][level]
 
-        print_heading("Personal data for API (short)")
-        print json.dumps(somebody.api_personal_data(), indent=4)
-        print_heading("Personal data for API (full)")
-        print json.dumps(somebody.api_personal_data(True), indent=4)
-        if directory:
-            sys.stdout.close()
-            sys.stdout = old_stdout
+    print_heading("Personal data for API (short)")
+    print json.dumps(somebody.api_personal_data(), indent=4)
+    print_heading("Personal data for API (full)")
+    print json.dumps(somebody.api_personal_data(True), indent=4)
+    if directory:
+        sys.stdout.close()
+        sys.stdout = old_stdout
 
 def test_training_requests():
     guinea_pig = random.choice(person.Person.list_all_members())
