@@ -82,6 +82,8 @@ def import0(args):
         print "loading equipment types"
     with open(args.equipment_types) as types_file:
         for row in csv.DictReader(types_file):
+            if verbose:
+                print "Adding equipment type", row
             database.add_equipment_type(row['name'],
                                         row['training_category'],
                                         row['manufacturer'])
@@ -90,6 +92,8 @@ def import0(args):
         print "loading equipment"
     with open(args.equipment) as machines_file:
         for row in csv.DictReader(machines_file):
+            if verbose:
+                print "Adding machine", row
             database.add_machine(row['name'],
                                  row['equipment_type'],
                                  row['location'],
@@ -108,6 +112,7 @@ def import0(args):
                                 {'membership_number': member_no})
             added = Person.find(row['Name'])
             added.set_fob(row.get('Fob', None))
+            # todo: find or create a training event to match row['Date inducted']
             if verbose:
                 print "added person record", added
             inductor = Person.find(row['Inductor'])

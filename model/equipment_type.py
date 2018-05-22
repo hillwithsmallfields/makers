@@ -54,7 +54,9 @@ class Equipment_type(object):
 
     @staticmethod
     def API_all_equipment_fobs():
-        return { eqt.name: eqt.API_enabled_fobs() for eqt in Equipment_type.list_equipment_types() }
+        return { eqt.name: enabled_fobs
+                 for enabled_fobs in [ eqt.API_enabled_fobs() for eqt in Equipment_type.list_equipment_types() ]
+                 if len(enabled_fobs) > 0 }
 
     def get_machines(self):
         """List the individual machines of an equipment type."""

@@ -38,8 +38,6 @@ class Event(object):
                  equipment=[]):
         """Create an event of a given type and datetime.
         The current user is added as a host.
-        The event type names a template to build the event from.
-        An event template is an event which is copied.
         The event is not saved and scheduled yet."""
         # self.details = get_event_template(event_type)
         self.title = title
@@ -70,7 +68,11 @@ class Event(object):
 
     def __str__(self):
         accum = "<" + self.event_type
-        accum += "_event at " + str(self.start) # todo: don't print time if it's all zeroes, just print date
+        starting = self.start
+        if starting.hour == 0 and starting.minute == 0 and starting.second == 0:
+            accum += "_event on " + str(starting.date())
+        else:
+            accum += "_event at " + str(starting)
         if self.hosts and self.hosts != []:
             accum += " with " + ", ".join([person.Person.find(host_id).name()
                                           for host_id in self.hosts
@@ -90,7 +92,6 @@ class Event(object):
     @staticmethod
     def find(event_type, event_datetime, hosts, equipment_types):
         event_datetime = as_time(event_datetime)
-        # print "Event.find", event_type, event_datetime, hosts, equipment_types
         event_dict = database.get_event(event_type, event_datetime,
                                         hosts,
                                         equipment_types,
@@ -98,18 +99,14 @@ class Event(object):
         if event_dict is None:
             return None
         event_id = event_dict['_id']
-        # print "event_id from db layer is", event_id, "dict is", event_dict
         if event_id not in Event.events_by_id:
             new_event_object = Event(event_type, event_datetime,
                                      hosts,
                                      attendees=[], # I don't know why I need to make this explicit, but if I don't, it keeps including all the previous ones
                                      equipment_types=equipment_types)
-            # print "adding new Event", new_event_object, "for that id", event_id, "to events_by_id"
             Event.events_by_id[event_id] = new_event_object
         e = Event.events_by_id[event_id]
-        # print "got", e, "from events_by_id with", len(e.attendees), "attendees"
         e.__dict__.update(event_dict)
-        # print "updated it to", e, "with", len(e.attendees), "attendees"
         return e
 
     @staticmethod
@@ -123,7 +120,7 @@ class Event(object):
                                                  event_dict['hosts'],
                                                  equipment_types=event_dict['equipment_types'])
         e = Event.events_by_id[event_id]
-        e.__dict__.update(event_dict) # todo: sort out whether I need to re-read this in case of database changes --- I probably should, although I don't know how to detect it changing; OTOH these programs are probably all going to be transient, not daemons
+        e.__dict__.update(event_dict)
         return e
 
     def get_details(self):
@@ -333,9 +330,14 @@ class Event(object):
         pass
 
     def event_as_json(self):
-        result = {'start': str(self.start), 'end': str(self.end),
-                  'event_type': self.event_type,
+        result = {'event_type': self.event_type,
                   'equipment_types': [ Equipment_type.find_by_id(eqty).name for eqty in self.equipment_types ] }
+        starting = self.start
+        if starting.hour == 0 and starting.minute == 0 and starting.second == 0:
+            result['date'] = str(starting.date())
+        else:
+            result['start'] = str(starting)
+            result['end'] = str(self.end)
         # todo: add hosts if their privacy setting permit it
         return result
 

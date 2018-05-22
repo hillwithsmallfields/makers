@@ -203,12 +203,12 @@ def show_person(directory, somebody):
         print "[ Create", evtitle, "]"
     # todo: show events signed up for
 
-    # todo: fix these
-    # if somebody.is_auditor() or somebody.is_admin():
-    #     print "[User list]"
+    if somebody.is_auditor() or somebody.is_administrator():
+        print_heading("Administrative actions")
+        print "[User list]"
 
-    # if somebody.is_admin():
-    #     print "[Create special event]"
+        if somebody.is_administrator():
+            print "[Create special event]"
 
     for field, title in [('hosts', 'hosting'), ('attendees', 'attending')]:
         my_events = timeline.Timeline.create_timeline(person_field=field, person_id=somebody._id).events
@@ -226,7 +226,7 @@ def show_person(directory, somebody):
     if len(interests) > 0:
         print_heading("Skills and interests")
         for (interest, level) in interests.iteritems():
-            print interest.encode('utf-8') + ' '*(48 - len(interest)), ["none", "would like to learn", "already learnt", "can teach"][level]
+            print interest.encode('utf-8') + ' '*(72 - len(interest)), ["none", "would like to learn", "already learnt", "can teach"][level]
 
     print_heading("Personal data for API (short)")
     print json.dumps(somebody.api_personal_data(), indent=4)

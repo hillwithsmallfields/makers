@@ -9,7 +9,7 @@ metal_lathe,red
 warco_mill,red,Warco
 model_mill,red,Warco
 makespace,red
-admin_database,red
+makespace_admin_db,red
 vinyl_cutter,amber
 janome_423,amber
 fine_metalwork,amber
