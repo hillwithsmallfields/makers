@@ -1,0 +1,3 @@
+#!/bin/bash
+./blank
+tests/model_tests.py
