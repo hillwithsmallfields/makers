@@ -99,7 +99,8 @@ def list_equipment_types_to_files(all_types):
         print "  machines",  ", ".join([ machine.Machine.find_by_id(mc).name for mc in eqtype.get_machines() ])
         print "  enabled fobs", json.dumps(eqtype.API_enabled_fobs(), indent=4)
         for role in ['user', 'owner', 'trainer']:
-            requests = database.get_people_awaiting_training(role, [eqtype._id])
+            # todo: this doesn't seem to be producing anything
+            requests = database.get_people_awaiting_training(database.role_training(role), [eqtype._id])
             print_heading(role + " requests")
             for req in requests:
                 print "  ", req
@@ -307,10 +308,13 @@ def main():
         for whoever in person.Person.list_all_members():
             show_person("member-pages", whoever)
 
+    print "listing events"
     list_all_events()
 
+    print "listing equipment types"
     list_equipment_types_to_files(all_types)
 
+    print "writing machine controller local cache data"
     with open("allfobs.json", 'w') as outfile:
         outfile.write(json.dumps(equipment_type.Equipment_type.API_all_equipment_fobs(), indent=4))
 

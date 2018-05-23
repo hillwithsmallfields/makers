@@ -270,12 +270,16 @@ def get_user_log(user):
 # training requests
 
 def get_people_awaiting_training(event_type, equipment_types):
-    return [ who['_id'] for who in
+    # todo: this isn't finding anything, it seems
+    print "Looking for requests for", event_type, "on", equipment_types
+    result = [ who['_id'] for who in
              database[collection_names['people']]
              .find({'training_requests': {'$elemMatch':
                                           {'event_type': event_type,
                                            'equipment_types': {'$in': equipment_types}}}})
              .sort('requests.request_date', pymongo.ASCENDING) ]
+    print "found", result
+    return result
 
 def find_interested_people(interests):
     print "Looking for people with interests", interests
