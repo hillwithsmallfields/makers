@@ -56,6 +56,7 @@ class Equipment_type(object):
     def API_all_equipment_fobs():
         return { eqt.name: enabled_fobs
                  for enabled_fobs in [ eqt.API_enabled_fobs() for eqt in Equipment_type.list_equipment_types() ]
+                 # todo: this has stopped listing all but one equipment type
                  if len(enabled_fobs) > 0 }
 
     def get_machines(self):

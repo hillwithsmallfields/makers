@@ -15,14 +15,20 @@ import person
 import event
 import equipment_type
 import timeline
+import timeslots
 
 genconf = configuration.get_config()
 interest_areas = genconf['skill_areas']
+
+evening_timeslots = timeslots.timeslots_to_int([[False,False,True]]*7)
+weekend_timeslots = timeslots.timeslots_to_int([[False,False,False]]* 5 + [[True,True,True]]*2)
+evening_and_weekend_timeslots = evening_timeslots | weekend_timeslots
 
 def random_user_activities(equipments, green_templates):
     for whoever in person.Person.list_all_people():
         membership = whoever.is_member()
         if membership:
+            whoever.available = evening_timeslots if random.random() < 0.2 else evening_and_weekend_timeslots
             date_joined = membership.start
             for i in range(1, random.randrange(1, 4)):
                 request_date = date_joined + timedelta(random.randrange(7, 56), 0)
@@ -121,6 +127,7 @@ def list_all_events():
                                                   for eqty in tl_event.equipment_types ]
                        if eqtyob is not None ])
         print "Hosted by", names(tl_event.hosts, 'host')
+        # todo: some stuff from around here is not appearing
         print "Attendees", names(tl_event.attendees, 'attendee')
         avoidances = tl_event.dietary_avoidances_summary()
         if tl_event.catered and avoidances and len(avoidances) > 0:
@@ -134,7 +141,17 @@ def list_all_events():
                 print "Possibly interested:", names(possibles)
         sys.stdout.close()
         sys.stdout = old_stdout
-    
+
+def show_timeslots(avail):
+    ts_config = configuration.get_config()['timeslots']
+    days = ts_config['days']
+    max_day_chars = reduce(max, map(len, days))
+    times = ts_config['times']
+    max_time_chars = reduce(max, map(len, times))
+    print " " * max_day_chars, " ".join([ time + " " * (max_time_chars - len(time)) for time in times])
+    for (day, day_slots) in zip(days, timeslots.timeslots_from_int(avail)):
+        print day + " " * (max_day_chars - len(day)), " " * (max_time_chars/3), " ".join([ (("[*]" if slot else "[ ]") + (" " * (max_time_chars - 3))) for slot in day_slots[0:3] ])
+        
 def show_person(directory, somebody):
     name, known_as = database.person_name(somebody)
     if directory:
@@ -146,6 +163,8 @@ def show_person(directory, somebody):
     print "Id", somebody._id
     if somebody.fob:
         print "Fob:", somebody.fob
+    print_heading("Available")
+    show_timeslots(somebody.available)
     training = { ev.start: ev for ev in (somebody.get_training_events(event_type='user_training')
                                          + somebody.get_training_events(event_type='owner_training')
                                          + somebody.get_training_events(event_type='trainer_training')) }
