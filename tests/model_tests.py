@@ -24,6 +24,10 @@ evening_timeslots = timeslots.timeslots_to_int([[False,False,True]]*7)
 weekend_timeslots = timeslots.timeslots_to_int([[False,False,False]]* 5 + [[True,True,True]]*2)
 evening_and_weekend_timeslots = evening_timeslots | weekend_timeslots
 
+print "evening_timeslots:", timeslots.timeslots_from_int(evening_timeslots)
+print "weekend_timeslots:", timeslots.timeslots_from_int(weekend_timeslots)
+print "evening_and_weekend_timeslots:", timeslots.timeslots_from_int(evening_and_weekend_timeslots)
+
 def random_user_activities(equipments, green_templates):
     for whoever in person.Person.list_all_people():
         membership = whoever.is_member()
@@ -121,8 +125,8 @@ def list_all_events():
                                                               if ev_host is not None])
         old_stdout = sys.stdout
         sys.stdout = open(os.path.join("event-pages", str(tl_event.start)), 'w')
-        print tl_event.event_type
-        print "For", ", ".join ([ eqtyob.name
+        print "Event type", tl_event.event_type
+        print "For equipment types", ", ".join ([ eqtyob.name
                                   for eqtyob in [ equipment_type.Equipment_type.find_by_id(eqty)
                                                   for eqty in tl_event.equipment_types ]
                        if eqtyob is not None ])
