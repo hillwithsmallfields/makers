@@ -7,7 +7,7 @@ import event
 import person
 import re
 
-# todo: event templates to have after-effect fields
+# todo: event templates to have after-effect fields, so that cancellation of membership can schedule cancellation of equipment training
 
 fulltime = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}:[0-9]{2}")
 
