@@ -1,8 +1,17 @@
 from person import Person
 import configuration
 
+def set_context_from_django(context):
+    # todo: talk to django to get the login context
+    # Context.my_context.setup_context(get_id(django.getloggedinuser()))
+    pass
+
 class Context:
 
+    """The viewing context of the logged-in user.
+    This, and other users' visibility settings, determine when they can 
+    see other users' names."""
+    
     my_context = None
 
     def __init__(self):
@@ -33,13 +42,29 @@ class Context:
         self.admin = (self.auditor
                       or org in self.roles['owner']
                       or org in self.roles['trainer'])
-
+        
     @staticmethod
-    def get_context():
+    def get_context(callback=set_context_from_django):
         if Context.my_context is None:
             Context.my_context = Context()
-            # todo: talk to django to get the login context
-            # Context.my_context.setup_context(get_id(django.getloggedinuser()))
+            if callback:
+                callback(Context.my_context)
+                Context.my_context.cache_context()
+        return Context.my_context
+        
+    @staticmethod
+    def change_context(callback=set_context_from_django):
+        if Context.my_context is None:
+            Context.my_context = Context()
+        else:
+            Context.my_context.link_id = None
+            Context.my_context.viewing_person = None
+            Context.my_context.roles = {}
+            Context.my_context.admin = False
+            Context.my_context.auditor = False
+        if callback:
+            callback(Context.my_context)
+            Context.my_context.cache_context()
         return Context.my_context
 
     def can_read_for(self, equipment):

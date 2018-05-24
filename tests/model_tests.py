@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 sys.path.append('model')
 sys.path.append('utils')
 import configuration
+import context
 import database
 import importer
 import person
@@ -27,6 +28,9 @@ evening_and_weekend_timeslots = evening_timeslots | weekend_timeslots
 print "evening_timeslots:", timeslots.timeslots_from_int(evening_timeslots)
 print "weekend_timeslots:", timeslots.timeslots_from_int(weekend_timeslots)
 print "evening_and_weekend_timeslots:", timeslots.timeslots_from_int(evening_and_weekend_timeslots)
+
+def set_context_as_admin(context):
+    context.add_role('owner', configuration.get_config()['organization']['database'])
 
 def random_user_activities(equipments, green_templates):
     for whoever in person.Person.list_all_people():
@@ -113,39 +117,42 @@ def names(ids, role):
                       for obj in [person.Person.find(id) for id in ids]
                       if obj is not None])
 
+def show_event(tl_event):
+    hosts = tl_event.hosts
+    if hosts is None:
+        hosts = []
+    print tl_event.start, tl_event.event_type, ", ".join([person.Person.find(ev_host).name(context_role='host',
+                                                                                           context_equipment=tl_event.equipment_types)
+                                                          for ev_host in hosts
+                                                          if ev_host is not None])
+    old_stdout = sys.stdout
+    sys.stdout = open(os.path.join("event-pages", str(tl_event.start)), 'w')
+    print "Event type", tl_event.event_type
+    print "For equipment types", ", ".join ([ eqtyob.name
+                              for eqtyob in [ equipment_type.Equipment_type.find_by_id(eqty)
+                                              for eqty in tl_event.equipment_types ]
+                   if eqtyob is not None ])
+    print "Hosted by", names(tl_event.hosts, 'host')
+    # todo: some stuff from around here is not appearing
+    print "Attendees", names(tl_event.attendees, 'attendee')
+    avoidances = tl_event.dietary_avoidances_summary()
+    if tl_event.catered and avoidances and len(avoidances) > 0:
+        print "Dietary Avoidances Summary:"
+        for avpair in avoidances:
+            print avpair[0] + ' '*(48 - len(avpair[0])), avpair[1]
+    if tl_event.interest_areas:
+        print "Interest areas:", ", ".join(tl_event.interest_areas)
+        possibles = tl_event.possibly_interested_people()
+        if len(possibles) > 0:
+            print "Possibly interested:", names(possibles)
+    sys.stdout.close()
+    sys.stdout = old_stdout
+
 def list_all_events():
     print_heading("All events")
     events = timeline.Timeline.create_timeline()
     for tl_event in events.events:
-        hosts = tl_event.hosts
-        if hosts is None:
-            hosts = []
-        print tl_event.start, tl_event.event_type, ", ".join([person.Person.find(ev_host).name(context_role='host',
-                                                                                               context_equipment=tl_event.equipment_types)
-                                                              for ev_host in hosts
-                                                              if ev_host is not None])
-        old_stdout = sys.stdout
-        sys.stdout = open(os.path.join("event-pages", str(tl_event.start)), 'w')
-        print "Event type", tl_event.event_type
-        print "For equipment types", ", ".join ([ eqtyob.name
-                                  for eqtyob in [ equipment_type.Equipment_type.find_by_id(eqty)
-                                                  for eqty in tl_event.equipment_types ]
-                       if eqtyob is not None ])
-        print "Hosted by", names(tl_event.hosts, 'host')
-        # todo: some stuff from around here is not appearing
-        print "Attendees", names(tl_event.attendees, 'attendee')
-        avoidances = tl_event.dietary_avoidances_summary()
-        if tl_event.catered and avoidances and len(avoidances) > 0:
-            print "Dietary Avoidances Summary:"
-            for avpair in avoidances:
-                print avpair[0] + ' '*(48 - len(avpair[0])), avpair[1]
-        if tl_event.interest_areas:
-            print "Interest areas:", ", ".join(tl_event.interest_areas)
-            possibles = tl_event.possibly_interested_people()
-            if len(possibles) > 0:
-                print "Possibly interested:", names(possibles)
-        sys.stdout.close()
-        sys.stdout = old_stdout
+        show_event(tl_event)
 
 def show_timeslots(avail):
     ts_config = configuration.get_config()['timeslots']
@@ -158,7 +165,9 @@ def show_timeslots(avail):
         print day + " " * (max_day_chars - len(day)), " " * (max_time_chars/3), " ".join([ (("[*]" if slot else "[ ]") + (" " * (max_time_chars - 3))) for slot in day_slots[0:3] ])
         
 def show_person(directory, somebody):
-    name, known_as = database.person_name(somebody)
+    name = somebody.name()
+    known_as = somebody.nickname()
+    email = somebody.get_email()
     if directory:
         old_stdout = sys.stdout
         sys.stdout = open(os.path.join(directory, name.replace(' ', '_') + ".txt"), 'w')
@@ -295,6 +304,8 @@ def main():
     print "importing from spreadsheet files"
     importer.import0(args)
 
+    context.Context.change_context(set_context_as_admin)
+    
     print "import complete, running random user behaviour"
     all_types = equipment_type.Equipment_type.list_equipment_types()
     green_templates = [ make_training_event_template(eqty) for eqty in equipment_type.Equipment_type.list_equipment_types('green') ]

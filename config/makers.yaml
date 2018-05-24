@@ -266,6 +266,7 @@ organization:
   database:    makespace_admin_db
 
 server:
+  mailhost: makespace.org
   base_url: https://admin.makespace.org/
   rsvp:     rsvp/
 
