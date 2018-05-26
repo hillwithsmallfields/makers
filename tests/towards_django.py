@@ -91,50 +91,50 @@ def show_person(directory, somebody):
         print_heading("Equipment used")
         print used
 
-    my_training_requests = somebody.get_training_requests()
-    my_individual_training_requests = []
-    for req in my_training_requests: # each stored training request is for a list of equipment types
-        my_individual_training_requests += req['equipment_types']
-    my_request_names = [ equipment_type.Equipment_type.find_by_id(req).name for req in my_individual_training_requests ]
-    if len(all_remaining_types) > 0:
-        print_heading("Other equipment")
-        keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in all_remaining_types }
-        for tyname in sorted(keyed_types.keys()):
-            print tyname, ' '*(30-len(tyname)), "[Cancel training request]" if keyed_types[tyname].name in my_request_names else "[Request training]"
+    # my_training_requests = somebody.get_training_requests()
+    # my_individual_training_requests = []
+    # for req in my_training_requests: # each stored training request is for a list of equipment types
+    #     my_individual_training_requests += req['equipment_types']
+    # my_request_names = [ equipment_type.Equipment_type.find_by_id(req).name for req in my_individual_training_requests ]
+    # if len(all_remaining_types) > 0:
+    #     print_heading("Other equipment")
+    #     keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in all_remaining_types }
+    #     for tyname in sorted(keyed_types.keys()):
+    #         print tyname, ' '*(30-len(tyname)), "[Cancel training request]" if keyed_types[tyname].name in my_request_names else "[Request training]"
 
-    print_heading("Training requests")
-    for req in my_training_requests:
-        print req['request_date'], req['event_type'].replace('_', ' '), ", ".join([equipment_type.Equipment_type.find(reqeq).name for reqeq in req['equipment_types']])
+    # print_heading("Training requests")
+    # for req in my_training_requests:
+    #     print req['request_date'], req['event_type'].replace('_', ' '), ", ".join([equipment_type.Equipment_type.find(reqeq).name for reqeq in req['equipment_types']])
 
-    # print_heading("Create events")
-    # for evtitle in sorted([ ev['title'].replace('$', 'some ').capitalize() for ev in event.Event.list_templates([somebody], their_equipment_types) ]):
-    #     print "[ Create", evtitle, "]"
-    # # todo: show events signed up for
+    # # print_heading("Create events")
+    # # for evtitle in sorted([ ev['title'].replace('$', 'some ').capitalize() for ev in event.Event.list_templates([somebody], their_equipment_types) ]):
+    # #     print "[ Create", evtitle, "]"
+    # # # todo: show events signed up for
 
-    if somebody.is_auditor() or somebody.is_administrator():
-        print_heading("Administrative actions")
-        print "[User list]"
+    # if somebody.is_auditor() or somebody.is_administrator():
+    #     print_heading("Administrative actions")
+    #     print "[User list]"
 
-        if somebody.is_administrator():
-            print "[Create special event]"
+    #     if somebody.is_administrator():
+    #         print "[Create special event]"
 
-    for field, title in [('hosts', 'hosting'), ('attendees', 'attending')]:
-        my_events = timeline.Timeline.create_timeline(person_field=field, person_id=somebody._id).events
-        if len(my_events) > 0:
-            print_heading("Events I'm " + title)
-            for tl_event in my_events:
-                hosts = tl_event.hosts
-                if hosts is None:
-                    hosts = []
-                print tl_event.start, tl_event.event_type + " "*(24-len(tl_event.event_type)), ", ".join([person.Person.find(ev_host).name()
-                                                                      for ev_host in hosts
-                                                                      if ev_host is not None])
+    # for field, title in [('hosts', 'hosting'), ('attendees', 'attending')]:
+    #     my_events = timeline.Timeline.create_timeline(person_field=field, person_id=somebody._id).events
+    #     if len(my_events) > 0:
+    #         print_heading("Events I'm " + title)
+    #         for tl_event in my_events:
+    #             hosts = tl_event.hosts
+    #             if hosts is None:
+    #                 hosts = []
+    #             print tl_event.start, tl_event.event_type + " "*(24-len(tl_event.event_type)), ", ".join([person.Person.find(ev_host).name()
+    #                                                                   for ev_host in hosts
+    #                                                                   if ev_host is not None])
 
-    interests = somebody.get_interests()
-    if len(interests) > 0:
-        print_heading("Skills and interests")
-        for (interest, level) in interests.iteritems():
-            print interest.encode('utf-8') + ' '*(72 - len(interest)), ["none", "would like to learn", "already learnt", "can teach"][level]
+    # interests = somebody.get_interests()
+    # if len(interests) > 0:
+    #     print_heading("Skills and interests")
+    #     for (interest, level) in interests.iteritems():
+    #         print interest.encode('utf-8') + ' '*(72 - len(interest)), ["none", "would like to learn", "already learnt", "can teach"][level]
 
     print_heading("Personal data for API (short)")
     print json.dumps(somebody.api_personal_data(), indent=4)
