@@ -7,20 +7,26 @@ sys.path.append('common')
 import csv, random, datetime, configuration
 
 surnames = ["Bernard", "Brown", "Clarke", "Davies", "Dubois", "Evans",
+            # "Kamiński", "Müller", "Wiśniewski", "Wójcik", # with accented characters
             "Fischer", "Green", "Hall", "Jackson", "Johnson", "Jones",
-            "Kamiński", "Kelmendi", "Kowalczyk", "Kowalski", "Lewandowski",
-            "Maes", "Maler", "Martin", "Meyer", "Müller", "Nowak", "Roberts",
+            "Kelmendi", "Kowalczyk", "Kowalski", "Lewandowski",
+            "Maes", "Maler", "Martin", "Meyer", "Nowak", "Roberts",
+            "MacDonald", "O Shea", "Palinson", "Fortescue", "McEoin",
             "Robinson", "Schmidt", "Schneider", "Smith", "Altdorf",
+            "Martin", "Earl", "StClair", "Farquhar", "Levi", "Albrecht",
             "Neumann", "Johansson", "Jansson", "Svensson", "Carey",
             "Armstrong", "Lejeune", "Young", "Jung", "Taylor", "Green",
             "Hinton", "Bond", "Farmer", "Palmer", "Thompson", "Virtanen",
-            "Wagner", "Walker", "White", "Williams", "Wilson", "Wiśniewski",
-            "Wood", "Wright", "Wójcik"]
+            "Wagner", "Walker", "White", "Williams", "Wilson",
+            "Wood", "Wright"]
 
 forenames = ["Alexandru", "Alice", "Andrei", "Anna", "Charlie", "Charlotte",
-             "Chloé", "David", "Emma", "Gabriel", "George", "Harry", "Inès",
-             "Jack", "Jacob", "John", "Louise", "Léa", "Noah", "Oliver",
+             # "Chloé", "Inès", "Léa", # with accented characters
+             "David", "Emma", "Gabriel", "George", "Harry",
+             "Jack", "Jacob", "John", "Louise", "Noah", "Oliver",
              "Timothy", "Tina", "Tania", "Gavin", "Roger", "Ivan",
+             "Wilhelmina", "Wilhelm", "Victor", "Victoria",
+             "Carlos", "Ewan", "Eoin", "Caomhghin", "Donncha",
              "Oscar", "Sarah", "Thomas", "Anthony", "Christine", "Antonia",
              "Mark", "Judith", "Daniel", "Adam", "Catherine", "Silvia",
              "Quentin", "Robert", "Rupert", "Gwendoline", "Amanda",
@@ -49,7 +55,8 @@ member_fields = ['Member no',
                  'Enabled by',
                  'Date expired',
                  'Fob disabled on (date)',
-                 'Fob disabled by (name)']
+                 'Fob disabled by (name)',
+                 'Fob']
 
 trained_fields = ['Equipment', 'Name', 'Date', 'Trainer']
 
@@ -111,7 +118,8 @@ def main():
                    'Code': random.choice(animals)+random.choice(furniture),
                    'Code returned?': "Yes",
                    'Fob enabled & e-mail sent on': induction_date+datetime.timedelta(random.randrange(1,4)),
-                   'Enabled by': random.choice(inductors) if len(inductors) > 0 else inductor
+                   'Enabled by': random.choice(inductors) if len(inductors) > 0 else inductor,
+                   'Fob': random.randrange(10000000, 99999999)
             }
             # decreasing probability that they've left
             if random.randrange(member_no) < 24:

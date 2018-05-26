@@ -1,0 +1,168 @@
+* Makespace database user profile
+
+** General
+
+   Given name:
+   Family name:
+   Known as (if different from given name):
+   Email:
+   Postal address:
+   Mobile (optional):
+
+   [ ] Step-free access needed
+
+** Privacy level
+
+   You can control your visibility on this site; please select a
+   level.  On the whole, your name will appear less than it did when
+   we were using the wiki and meetup.com.
+
+   Your visibility will be different for the public (non-logged-in
+   users), logged-in members in general, and in contexts in which your
+   name is specifically relevant.
+
+   - ( ) Shameless self-publicist / keen networker
+
+     Your name will appear on public sections of the site, including
+     being listed as signed up for events.  This is similar to the
+     privacy level provided by the old system of meetup.com and the
+     wiki, i.e. none.
+
+   - ( ) Open
+
+     Your name will appear publicly only as the host of events you are
+     hosting.  It will be visible as signed up for events only to
+     logged-in users.
+
+     Also, for equipment that can display the name of the current user
+     (typically 3-D printers), your name will appear on the
+     equipment's display while you're using the equipment.
+
+   - ( ) Shy and retiring
+
+     Your name will not appear on publicly-visible pages, nor for
+     logged-in users in general, except as an event host or an
+     equipment owner or trainer.  However, event hosts will be able to
+     see your name on the list of people who have signed up for an
+     event, and equipment owners and trainers will be able to see on
+     the lists of users, owners and trainers for their equipment
+     types.
+
+     For equipment that can display the name of the current user, your
+     name will appear on the display while you're using it.
+     
+   - ( ) Anonymous
+
+     Your name will not be visible except to yourself and to the
+     database admins; in other contexts, it will be replaced by your
+     membership number.
+
+     This is probably not very good for community-building, so we hope
+     it won't be used unnecessarily, but we've made it available just
+     in case.
+
+     For equipment that can display the name of the current user, your
+     membership number will appear on the display while you're using it.
+
+   Please note that all profile information is visible to the database
+   admins and auditors (read-only admins); they can't really do their
+   tasks without it.
+
+** Interest and skill areas
+
+   Knowing your interest areas is useful both for planning and for
+   outreach.  Like the general demographic information, we're
+   interested to know, but if you think it's none of our business,
+   please feel welcome to skip it.
+
+   For each area, there are four levels you can select:
+
+   0. Not interested.
+
+   1. I would like to learn about / be trained in this.
+
+   2. I am already doing this.
+
+   3. I am confident to help teach / train others in this.
+
+   We can also use this information to mail you when events tagged with
+   these areas are created:
+
+   [ ] Please contact me about training in my level 1 areas.
+
+   [ ] Please contact me about general events in my level 2 areas.
+   
+   [ ] Please contact me if looking for people to talk in my level 3 areas.
+
+   - Biohacking
+   - Civic engineering
+   - Clothes-making and modification
+   - Electro-mechanical engineering
+   - Electronic engineering
+   - Environmental science
+   - Fine arts
+   - Flying things (drones, model aircraft, HAB, rocketry)
+   - Historic technology
+   - Home automation
+   - Jewellery and ornament making
+   - Lifehacking
+   - Mechanical engineering
+   - Metalwork
+   - Optics
+   - Pottery
+   - Programming (general)
+   - Programming (embedded)
+   - Renewables
+   - Sculpture and carving
+   - Sewing, knitting, chrocheting, macramé, weaving, spinning etc
+   - Steampunk
+   - STEM outreach and public engagement
+   - Wearable computing
+   - Woodwork
+
+** Meeting requirements and preferences
+
+   For events for which food is provided, if people tell us what they
+   don't eat, we can make sure we include suitable proportions of
+   non-default foods.  If you don't want to provide this information,
+   you'll probably get counted in for peperoni pizza.  This
+   information will only be shown to event hosts, and only anonymously
+   (the hosts' view of the event page will include show how many of
+   each requirement combination there are).  Of course, database
+   admins can see the information; they can see all information.
+
+   - gluten-free
+   - halal
+   - ketogenic (low-carb)
+   - kosher
+   - nut-free
+   - vegan
+   - vegetarian
+   - other
+
+** Demographics
+
+   We would like to gather some demographic information, to help to
+   guide our outreach and monitor its effectiveness.  We will use this
+   information in aggregate form only.  Please feel welcome to leave
+   any or all of this unanswered if you don't think it's any of our
+   business.
+
+   - birth year
+   - gender
+   - education: school / tech college / uni degree / masters /
+     doctorate
+   - subject area studied most
+   - occupation
+   - is there much connection with your education / occupation and
+     your makespace membership?
+
+** Accessing your information
+
+   You can access your information either through this web page, or
+   via a JSON API using the following links, for which you must get
+   an authentication token:
+
+   - <operational information link> 
+   - <full information link>
+   - <get authentication token>

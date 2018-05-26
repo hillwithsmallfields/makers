@@ -1,0 +1,7 @@
+event_type:             user training
+title:                  $equipment user training
+attendance_limit:       6
+host_prerequisites:
+  - $equipment trainer
+attendee_prerequisites:
+  - member

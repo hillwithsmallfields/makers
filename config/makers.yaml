@@ -203,12 +203,43 @@ training_classes:
     training_required: No
     training_available: No
 
+training:
+  default_max_requests: 3
+  no_shows_limit:       2
+    
 page:
   stylesheet:   config/makers.css
   style_inline: True
   preamble:     <p>Top navigation bar etc will go here.</p>
   postamble:    <p>Bottom navigation bar etc will go here.</p>
   motd_file:    config/motd.html
+
+skill_areas:
+  - Biohacking
+  - Civic engineering
+  - Clothes-making and modification
+  - Electro-mechanical engineering
+  - Electronic engineering
+  - Environmental science
+  - Fine arts
+  - Flying things (drones, model aircraft, HAB, rocketry)
+  - Historic technology
+  - Home automation
+  - Jewellery and ornament making
+  - Lifehacking
+  - Mechanical engineering
+  - Metalwork
+  - Optics
+  - Pottery
+  - Programming (general)
+  - Programming (embedded)
+  - Renewables
+  - Sculpture and carving
+  - Sewing, knitting, chrocheting, macrame, weaving, spinning etc
+  - Steampunk
+  - STEM outreach and public engagement
+  - Wearable computing
+  - Woodwork
 
 database:
   URI: mongodb://localhost/
@@ -217,8 +248,10 @@ database:
     names:           MakespaceNames
     people:          MakespacePeople
     equipment_types: MakespaceEquipmentTypes
-    equipment:       MakespaceEquipment
+    machines:        MakespaceMachines
+    machine_logs:    MakespaceMachineLogs
     events:          MakespaceEvents
+    event_templates: MakespaceEventTemplates
     timelines:       MakepaceTimelines
 
 # The names in this section indicate which equipment class names
@@ -231,3 +264,11 @@ organization:
   # Being a trained user on the equipment class named here gives you
   # read access to the database; being an owner on it gives you write access
   database:    makespace_admin_db
+
+server:
+  mailhost: makespace.org
+  base_url: https://admin.makespace.org/
+  rsvp:     rsvp/
+
+messages:
+  templates_directory: /usr/local/share/makers/message_templates
