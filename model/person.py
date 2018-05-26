@@ -25,7 +25,8 @@ class Person(object):
         self.known_as = None
         self.membership_number = None
         self.fob = None
-        self.training = None
+        self.past_fobs = []
+        # self.training = None # remove?
         self.requests = []      # list of dict with 'request_date', 'equipment_types' (as _id), 'event_type'
         self.training_requests_limit = None # normally comes from config but admins can override using this
         self.noshow_absolutions = 0
@@ -74,7 +75,7 @@ class Person(object):
         return (viewing_context.can_read_for(context_equipment) # whether the viewing user is owner/trainer on that equipment
                 and (visible_by_consent == True
                      or (visible_by_consent == 'logged-in' and viewing_context.viewing_person != None)))
-        
+
     def name(self, context_role=None, context_equipment=None):
         """Return the person's name, unless they've requested anonymity."""
         if self.visible(context_role=None, context_equipment=None):
@@ -104,12 +105,13 @@ class Person(object):
 
     def set_visibility(self, context, level):
         self.visibility[context] = level
-    
+
     def save(self):
         """Save the person to the database."""
         database.save_person(self.__dict__)
 
     def set_fob(self, newfob):
+        # todo: keep the old fob values in another field
         self.fob = newfob
         self.save()
 
@@ -380,6 +382,7 @@ class Person(object):
     def api_personal_data(self, detailed=False):
         """Get the data for a user, in a suitable form for the API.
         With an optional flag, get more detail."""
+        # todo: allow 'detailed' to be a list of fields you want
         name, known_as = database.person_name(self)
         personal_data = {'name': name,
                          'qualified': self.get_qualifications()}

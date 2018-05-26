@@ -2,7 +2,7 @@
 # -*- coding: utf8
 
 import sys
-sys.path.append('common')
+sys.path.append('model')
 
 import csv, random, datetime, configuration
 

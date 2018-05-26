@@ -9,9 +9,9 @@ def set_context_from_django(context):
 class Context:
 
     """The viewing context of the logged-in user.
-    This, and other users' visibility settings, determine when they can 
+    This, and other users' visibility settings, determine when they can
     see other users' names."""
-    
+
     my_context = None
 
     def __init__(self):
@@ -42,7 +42,7 @@ class Context:
         self.admin = (self.auditor
                       or org in self.roles['owner']
                       or org in self.roles['trainer'])
-        
+
     @staticmethod
     def get_context(callback=set_context_from_django):
         if Context.my_context is None:
@@ -51,7 +51,7 @@ class Context:
                 callback(Context.my_context)
                 Context.my_context.cache_context()
         return Context.my_context
-        
+
     @staticmethod
     def change_context(callback=set_context_from_django):
         if Context.my_context is None:
@@ -67,13 +67,13 @@ class Context:
             Context.my_context.cache_context()
         return Context.my_context
 
-    def can_read_for(self, equipment):
+    def can_read_for(self, equipment_type):
         return (self.admin
                 or self.auditor
-                or (equipment and (equipment in self.roles['trainer']
-                                  or equipment in self.roles['owner'])))
+                or (equipment_type and (equipment_type in self.roles['trainer']
+                                  or equipment_type in self.roles['owner'])))
 
-    def can_write_for(self, equipment):
+    def can_write_for(self, equipment_type):
         return (self.admin
-                or (equipment and (equipment in self.roles['trainer']
-                                   or equipment in self.roles['owner'])))
+                or (equipment_type and (equipment_type in self.roles['trainer']
+                                   or equipment_type in self.roles['owner'])))
