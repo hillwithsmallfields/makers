@@ -30,6 +30,7 @@ forenames = ["Alexandru", "Alice", "Andrei", "Anna", "Charlie", "Charlotte",
              "Oscar", "Sarah", "Thomas", "Anthony", "Christine", "Antonia",
              "Mark", "Judith", "Daniel", "Adam", "Catherine", "Silvia",
              "Quentin", "Robert", "Rupert", "Gwendoline", "Amanda",
+             "Pearce", "Pierce", "Piers", "Richard", "Dave", "Austin",
              "Miranda", "Jan", "Janet", "Susan"]
 
 animals = ["Fox", "Mongoose", "Lizard", "Bat", "Mouse", "Raptor"]

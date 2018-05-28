@@ -27,7 +27,7 @@ class Person(object):
         self.fob = None
         self.past_fobs = []
         # self.training = None # remove?
-        self.requests = []      # list of dict with 'request_date', 'equipment_types' (as _id), 'event_type'
+        self.training_requests = []      # list of dict with 'request_date', 'equipment_types' (as _id), 'event_type'
         self.training_requests_limit = None # normally comes from config but admins can override using this
         self.noshow_absolutions = 0
         self.available = 0xffffffff # bitmap of timeslots, lowest bit is Monday morning, etc
@@ -152,20 +152,20 @@ class Person(object):
         if ((len(self.get_training_events(role_training, result='noshow')) - self.noshow_absolutions)
             >= int(configuration.get_config()['training']['no_shows_limit'])):
             return False, "Too many no-shows"
-        self.requests.append({'request_date': when or datetime.now(),
-                              'equipment_types': [ equipment_type.Equipment_type.find(eqt)._id for eqt in equipment_types],
-                              'event_type': role_training})
+        self.training_requests.append({'request_date': when or datetime.now(),
+                                       'equipment_types': [ equipment_type.Equipment_type.find(eqt)._id for eqt in equipment_types],
+                                       'event_type': role_training})
         self.save()
         return True, None
 
     def remove_training_request(self, role, equipment_types):
         """Remove a training request."""
         event_type = database.role_training(role)
-        for req in self.requests:
+        for req in self.training_requests:
             if req['event_type'] != event_type:
                 continue
             if equipment_type == req['equipment_types']:
-                self.requests.remove(req)
+                self.training_requests.remove(req)
                 return True
             self.save()
         return False
@@ -176,7 +176,7 @@ class Person(object):
         if a user convinces them that they have a good case for jumping
         the queue."""
         event_type = database.role_training(role)
-        for req in self.requests:
+        for req in self.training_requests:
             if req['event_type'] != event_type:
                 continue
             if equipment_type == req['equipment_types']:
@@ -186,12 +186,12 @@ class Person(object):
         return False
 
     def get_training_requests(self):
-        keyed = { req['request_date']: req for req in self.requests }
+        keyed = { req['request_date']: req for req in self.training_requests }
         return [ keyed[d] for d in sorted(keyed.keys()) ]
 
     def has_requested_training(self, equipment_types, role):
         event_type = database.role_training(role)
-        for req in self.requests:
+        for req in self.training_requests:
             if req['event_type'] != event_type:
                 continue
             for eqty in req['equipment_types']:

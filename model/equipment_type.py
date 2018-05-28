@@ -99,18 +99,21 @@ class Equipment_type(object):
     def API_enabled_fobs(self):
         return [ user.fob for user in self.get_trained_users() ]
 
-    def request_training(self, person):
+    def request_training(self, whoever):
         """Note that a person has requested training on this equipment type.
         The data is actually stored with the person's record, not the
         equipment type record, so this is just a secondary
         presentation of the action."""
-        person.add_training_request(role, [self])
+        whoever.add_training_request(role, [self])
 
-    def cancel_training_request(self, person):
+    def cancel_training_request(self, whoever):
         """Note that a person has cancelled their request for training on this equipment type.
         The data is actually stored with the person's record, not the
         equipment type record, so this is just a secondary
         presentation of the action."""
-        person.remove_training_request(role, [self])
+        whoever.remove_training_request(role, [self])
 
-
+    def get_training_requests(self, role='user'):
+        return { y._id: y.training_requests
+                 for y in [ person.Person.find(x)
+                            for x in database.get_people_awaiting_training(database.role_training(role), [self._id])]}

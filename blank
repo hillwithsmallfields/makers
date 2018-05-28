@@ -10,5 +10,5 @@ db.MakespaceMachineLogs.drop()
 db.MakespaceEventTemplates.drop()
 db.MakepaceTimelines.drop()
 EOS
-mkdir -p user-pages member-pages equipment-type-pages equipment-pages event-pages
+mkdir -p user-pages member-pages equipment-type-pages equipment-pages event-pages hack-pages
 rm -f user-pages/* member-pages/* equipment-type-pages/* equipment-pages/* event-pages/* hack-pages/* allfobs.json

@@ -15,6 +15,7 @@ import importer
 import person
 import event
 import equipment_type
+import machine
 import timeline
 import timeslots
 
@@ -52,6 +53,9 @@ def show_person(directory, somebody):
     #                        if host_id is not None])
     #     print "  ", session.date, ev_type, ' '*(20-len(ev_type)), equip, ' '*(30 - len(equip)), hosts
 
+    server_config = configuration.get_config()['server']
+    server_base = server_config['base_url']
+    machine_base = server_base + server_config['machines']
 
     all_remaining_types = equipment_type.Equipment_type.list_equipment_types()
 
@@ -64,9 +68,19 @@ def show_person(directory, somebody):
         for tyrawname in sorted(their_responsible_types.keys()):
             tyname = tyrawname.replace('_', ' ').capitalize()
             ty = their_responsible_types[tyrawname]
-            responsibles.append({'name': tyname,
-                                 'owner': somebody.is_owner(ty) is not None,
-                                 'trainer': somebody.is_trainer(ty) is not None})
+            responsibles.append({'type': tyname,
+                                 'is_owner': somebody.is_owner(ty) is not None,
+                                 'is_trainer': somebody.is_trainer(ty) is not None,
+                                 'training': {
+                                     # todo: handle all types of training requests?
+                                     'pending_requests': len(ty.get_training_requests(role='user')),
+                                     'next_training_events': [ ],
+                                     'has_more_training_events': False},
+                                 'equipment': [ { 'name': mc.name,
+                                                  'url': machine_base + mc.name,
+                                                  'status': mc.status}
+                                                for mc in [ machine.Machine.find_by_id(machine_id)
+                                                            for machine_id in ty.get_machines() ]]})
             if ty in all_remaining_types:
                 all_remaining_types.remove(ty)
         print_heading("Equipment responsibilities")

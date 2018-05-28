@@ -269,6 +269,7 @@ server:
   mailhost: makespace.org
   base_url: https://admin.makespace.org/
   rsvp:     rsvp/
+  machines: equipment/
 
 messages:
   templates_directory: /usr/local/share/makers/message_templates
