@@ -130,7 +130,7 @@ def get_event(event_type, event_datetime, hosts, equipment, create=True):
 
 def get_events(event_type=None,
                person_field=None, person_id=None,
-               as_far_back_as=None, as_recently_as=None,
+               earliest=None, latest=None,
                include_hidden=False):
     """Get events matching various requirements."""
     query = {}
@@ -141,10 +141,10 @@ def get_events(event_type=None,
     if not include_hidden:
         query['status'] = 'published'
     # todo: I think there is a bug in the time handling, as shown when I use it from person.get_training_events as called from model_test.py
-    if as_far_back_as:
-        query['start'] = {'$gt': as_far_back_as}
-    if as_recently_as:
-        query['end'] = {'$lt': as_recently_as}
+    if earliest:
+        query['start'] = {'$gt': earliest}
+    if latest:
+        query['end'] = {'$lt': latest}
     # print "get_events query", query
     result = [ event.Event.find_by_id(tr_event['_id'])
                for tr_event in database[collection_names['events']].find(query).sort('start',
@@ -206,10 +206,16 @@ def list_equipment_types(training_category=None):
         query['training_category'] = training_category
     return [ et for et in database[collection_names['equipment_types']].find(query) ]
 
-def get_eqtype_events(equipment_type, event_type):
+def get_eqtype_events(equipment_type, event_type, earliest=None, latest=None):
+    query = {'event_type': event_type,
+             'equipment_types': {'$in': [equipment_type]}}
+    # todo: debug earliest and latest
+    # if earliest:
+    #     query['start'] = {'$gt': earliest}
+    # if latest:
+    #     query['end'] = {'$lt': latest}
     return [ event.Event.find_by_id(tr_event['_id'])
-             for tr_event in database[collection_names['events']].find({'event_type': event_type,
-                                                                        'equipment_types': {'$in': [equipment_type]}}).sort('start', pymongo.DESCENDING) ]
+             for tr_event in database[collection_names['events']].find(query).sort('start', pymongo.DESCENDING) ]
 
 # Equipment
 

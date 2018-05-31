@@ -210,7 +210,7 @@ class Person(object):
                                    person_field=result,
                                    person_id=self._id,
                                    include_hidden=True
-                                   # ,as_recently_as=when
+                                   # ,latest=when
         )
 
     def add_training(self, tr_event):

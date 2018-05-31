@@ -56,6 +56,7 @@ def show_person(directory, somebody):
     server_config = configuration.get_config()['server']
     server_base = server_config['base_url']
     machine_base = server_base + server_config['machines']
+    event_base = server_base + server_config['events']
 
     all_remaining_types = equipment_type.Equipment_type.list_equipment_types()
 
@@ -68,13 +69,17 @@ def show_person(directory, somebody):
         for tyrawname in sorted(their_responsible_types.keys()):
             tyname = tyrawname.replace('_', ' ').capitalize()
             ty = their_responsible_types[tyrawname]
+            print "machines", ty.get_machines()
             responsibles.append({'type': tyname,
                                  'is_owner': somebody.is_owner(ty) is not None,
                                  'is_trainer': somebody.is_trainer(ty) is not None,
                                  'training': {
                                      # todo: handle all types of training requests?
                                      'pending_requests': len(ty.get_training_requests(role='user')),
-                                     'next_training_events': [ ],
+                                     'next_training_events': [ {'title': ev.title,
+                                                                'date': ev.start,
+                                                                'url': event_base + str(ev._id)}
+                                                                for ev in ty.get_training_events('user', earliest=datetime.now())],
                                      'has_more_training_events': False},
                                  'equipment': [ { 'name': mc.name,
                                                   'url': machine_base + mc.name,

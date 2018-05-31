@@ -244,17 +244,17 @@ class Event(object):
     @staticmethod
     def future_events():
         """List the events which have not yet started."""
-        return None
+        return None             # todo: implement future_events
 
     @staticmethod
     def present_events():
         """List the events which have started but not finished."""
-        return None
+        return None             # todo: implement present_events
 
     @staticmethod
     def past_events():
         """List the events which have finished."""
-        return None
+        return None             # todo: implement past_events
 
     def get_hosts(self):
         """Return the list of people hosting the event."""
@@ -324,7 +324,7 @@ class Event(object):
 
     def possibly_interested_people(self):
         return database.find_interested_people(self.interest_areas)
-    
+
     def save_as_template(self, name):
         """Save this event as a named template."""
         pass

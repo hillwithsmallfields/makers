@@ -117,3 +117,7 @@ class Equipment_type(object):
         return { y._id: y.training_requests
                  for y in [ person.Person.find(x)
                             for x in database.get_people_awaiting_training(database.role_training(role), [self._id])]}
+
+    def get_training_events(self, role, earliest=None, latest=None):
+        """Return a list of training events for this type of equipment."""
+        return database.get_eqtype_events(self._id, database.role_training(role), earliest, latest)
