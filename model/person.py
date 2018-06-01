@@ -26,7 +26,6 @@ class Person(object):
         self.membership_number = None
         self.fob = None
         self.past_fobs = []
-        # self.training = None # remove?
         self.training_requests = []      # list of dict with 'request_date', 'equipment_types' (as _id), 'event_type'
         self.training_requests_limit = None # normally comes from config but admins can override using this
         self.noshow_absolutions = 0
@@ -111,7 +110,8 @@ class Person(object):
         database.save_person(self.__dict__)
 
     def set_fob(self, newfob):
-        # todo: keep the old fob values in another field
+        if self.fob:
+            self.past_fobs.append(self.fob)
         self.fob = newfob
         self.save()
 

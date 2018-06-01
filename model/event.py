@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 from equipment_type import Equipment_type
 import configuration
+import context
 import database
 import event
 import person
@@ -342,7 +343,17 @@ class Event(object):
         else:
             result['start'] = str(starting)
             result['end'] = str(self.end)
-        # todo: add hosts if their privacy setting permit it
+        hosts = []
+        logged_in = context.Context.get_context().viewing_person is not None
+        for h in self.hosts:
+            host = person.Person.find(h)
+            if host is None:
+                continue
+            visibility = host.visibility.get('host', False)
+            if visibility == True or (visibility == 'logged-in' and logged_in):
+                hosts.append(host)
+        if len(hosts) > 0:
+            result['hosts'] = hosts
         return result
 
 def as_id(event):
