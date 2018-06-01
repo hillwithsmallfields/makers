@@ -242,19 +242,23 @@ class Event(object):
         self.save()
 
     @staticmethod
-    def future_events():
+    def future_events(**kwargs):
         """List the events which have not yet started."""
-        return None             # todo: implement future_events
+        return database.get_events(earliest=datetime.now(),
+                                   **kwargs)
 
     @staticmethod
-    def present_events():
+    def present_events(**kwargs):
         """List the events which have started but not finished."""
-        return None             # todo: implement present_events
+        return database.get_events(earliest=datetime.now(),
+                                   latest=datetime.now(),
+                                   **kwargs)
 
     @staticmethod
-    def past_events():
+    def past_events(**kwargs):
         """List the events which have finished."""
-        return None             # todo: implement past_events
+        return database.get_events(latest=datetime.now(),
+                                   **kwargs)
 
     def get_hosts(self):
         """Return the list of people hosting the event."""

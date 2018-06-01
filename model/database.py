@@ -140,15 +140,13 @@ def get_events(event_type=None,
         query[person_field] = {'$in': [person_id]}
     if not include_hidden:
         query['status'] = 'published'
-    # todo: I think there is a bug in the time handling, as shown when I use it from person.get_training_events as called from model_test.py
     if earliest:
         query['start'] = {'$gt': earliest}
     if latest:
         query['end'] = {'$lt': latest}
-    # print "get_events query", query
     result = [ event.Event.find_by_id(tr_event['_id'])
                for tr_event in database[collection_names['events']].find(query).sort('start',
-                                                                                     pymongo.DESCENDING) ]
+                                                                                     pymongo.ASCENDING) ]
     # print "get_events result", result
     return result
 
@@ -209,11 +207,10 @@ def list_equipment_types(training_category=None):
 def get_eqtype_events(equipment_type, event_type, earliest=None, latest=None):
     query = {'event_type': event_type,
              'equipment_types': {'$in': [equipment_type]}}
-    # todo: debug earliest and latest
-    # if earliest:
-    #     query['start'] = {'$gt': earliest}
-    # if latest:
-    #     query['end'] = {'$lt': latest}
+    if earliest:
+        query['start'] = {'$gt': earliest}
+    if latest:
+        query['end'] = {'$lt': latest}
     return [ event.Event.find_by_id(tr_event['_id'])
              for tr_event in database[collection_names['events']].find(query).sort('start', pymongo.DESCENDING) ]
 

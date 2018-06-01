@@ -93,7 +93,6 @@ def print_heading(text):
     print '-'*len(text)
 
 def list_equipment_types_to_files(all_types):
-    print "Listing equipment types"
     for eqtype in all_types:
         old_stdout = sys.stdout
         sys.stdout = open(os.path.join("equipment-type-pages", eqtype.name.replace(' ', '_') + ".txt"), 'w')
@@ -154,6 +153,30 @@ def list_all_events():
     for tl_event in events.events:
         show_event(tl_event)
 
+def test_event_time_filtering():
+    events = timeline.Timeline.create_timeline()
+    event_list = events.events
+    event_count = len(event_list)
+    early_split = event_list[event_count/3].start
+    mid_split = event_list[event_count/2].start
+    late_split = event_list[2*(event_count)/3].start
+    print "total events", event_count
+    print "early_split is", early_split
+    print "mid_split is", mid_split
+    print "late_split is", late_split
+    first_half = timeline.Timeline.create_timeline(latest=mid_split)
+    second_half = timeline.Timeline.create_timeline(earliest=mid_split)
+    first_third = timeline.Timeline.create_timeline(latest=early_split)
+    middle_third = timeline.Timeline.create_timeline(earliest=early_split, latest=late_split)
+    last_third = timeline.Timeline.create_timeline(earliest=late_split)
+    print "first_half", len(first_half.events)
+    print "second_half", len(second_half.events)
+    print "first_third", len(first_third.events)
+    print "middle_third", len(middle_third.events)
+    print "last_third", len(last_third.events)
+    print "shortfall by halving:", event_count - (len(first_half.events) + len(second_half.events))
+    print "shortfall by thirding:", event_count - (len(first_third.events) + len(middle_third.events) + len(last_third.events))
+
 def show_timeslots(avail):
     ts_config = configuration.get_config()['timeslots']
     days = ts_config['days']
@@ -163,7 +186,7 @@ def show_timeslots(avail):
     print " " * max_day_chars, " ".join([ time + " " * (max_time_chars - len(time)) for time in times])
     for (day, day_slots) in zip(days, timeslots.timeslots_from_int(avail)):
         print day + " " * (max_day_chars - len(day)), " " * (max_time_chars/3), " ".join([ (("[*]" if slot else "[ ]") + (" " * (max_time_chars - 3))) for slot in day_slots[0:3] ])
-        
+
 def show_person(directory, somebody):
     name = somebody.name()
     known_as = somebody.nickname()
@@ -179,9 +202,12 @@ def show_person(directory, somebody):
         print "Fob:", somebody.fob
     print_heading("Available")
     show_timeslots(somebody.available)
-    training = { ev.start: ev for ev in (somebody.get_training_events(event_type='user_training')
-                                         + somebody.get_training_events(event_type='owner_training')
-                                         + somebody.get_training_events(event_type='trainer_training')) }
+    training = { ev.start: ev for ev in (somebody.get_training_events(event_type='user_training',
+                                                                      when=datetime.now())
+                                         + somebody.get_training_events(event_type='owner_training',
+                                                                        when=datetime.now())
+                                         + somebody.get_training_events(event_type='trainer_training',
+                                                                        when=datetime.now())) }
     print_heading("Training attended")
     for tr_date in sorted(training.keys()):
         session = training[tr_date]
@@ -299,18 +325,26 @@ def main():
     parser.add_argument("--delete-existing", action='store_true')
     parser.add_argument("-v", "--verbose", action='store_true')
     parser.add_argument("-q", "--quick", action='store_true')
+    parser.add_argument("-x", "--existing", "--no-import", action='store_true')
     args = parser.parse_args()
 
-    print "importing from spreadsheet files"
-    importer.import0(args)
+    config = configuration.get_config()
 
     context.Context.change_context(set_context_as_admin)
-    
+
+    if not args.existing:
+        print "importing from spreadsheet files"
+        importer.import0(args)
+    else:
+        database.database_init(config, args.delete_existing)
+
     print "import complete, running random user behaviour"
     all_types = equipment_type.Equipment_type.list_equipment_types()
     green_templates = [ make_training_event_template(eqty) for eqty in equipment_type.Equipment_type.list_equipment_types('green') ]
     print "green templates are", green_templates
-    random_user_activities(all_types, green_templates)
+
+    if not args.existing:
+        random_user_activities(all_types, green_templates)
 
     test_training_requests()
 
@@ -321,6 +355,9 @@ def main():
 
     print "listing events"
     list_all_events()
+
+    print "testing event time filtering"
+    test_event_time_filtering()
 
     print "listing equipment types"
     list_equipment_types_to_files(all_types)

@@ -205,13 +205,11 @@ class Person(object):
                             result='passed'):
         """Return the training data for this user,
         as a list of training events."""
-        # todo: handle the when parameter; I think there is a bug in database.get_events such that it doesn't find the training if we pass that argument on
         return database.get_events(event_type=event_type,
                                    person_field=result,
                                    person_id=self._id,
-                                   include_hidden=True
-                                   # ,latest=when
-        )
+                                   include_hidden=True,
+                                   latest=when)
 
     def add_training(self, tr_event):
         """Add the event to the appropriate role list of the person's events, and write it back to the database."""
