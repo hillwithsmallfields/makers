@@ -1,4 +1,4 @@
-import context
+import access_permissions
 import database
 import timeline
 import event
@@ -64,46 +64,46 @@ class Person(object):
         p.__dict__.update(data)
         return p
 
-    def visible(self, context_role=None, context_equipment=None):
-        viewing_context = context.Context.get_context()
-        if (self == viewing_context.viewing_person
-            or viewing_context.admin
-            or viewing_context.auditor):
+    def visible(self, access_permissions_role=None, access_permissions_equipment=None):
+        viewing_access_permissions = access_permissions.Access_Permissions.get_access_permissions()
+        if (self == viewing_access_permissions.viewing_person
+            or viewing_access_permissions.admin
+            or viewing_access_permissions.auditor):
             return True
-        visible_by_consent = self.visibility.get(context_role, False)
-        return (viewing_context.can_read_for(context_equipment) # whether the viewing user is owner/trainer on that equipment
+        visible_by_consent = self.visibility.get(access_permissions_role, False)
+        return (viewing_access_permissions.can_read_for(access_permissions_equipment) # whether the viewing user is owner/trainer on that equipment
                 and (visible_by_consent == True
-                     or (visible_by_consent == 'logged-in' and viewing_context.viewing_person != None)))
+                     or (visible_by_consent == 'logged-in' and viewing_access_permissions.viewing_person != None)))
 
-    def name(self, context_role=None, context_equipment=None):
+    def name(self, access_permissions_role=None, access_permissions_equipment=None):
         """Return the person's name, unless they've requested anonymity."""
-        if self.visible(context_role=None, context_equipment=None):
+        if self.visible(access_permissions_role=None, access_permissions_equipment=None):
             formal, _ = database.person_name(self.link_id)
             return formal.encode('utf-8')
         else:
             return ("member_"+str(self.membership_number)).encode('utf-8')
 
-    def nickname(self, context_role=None, context_equipment=None):
+    def nickname(self, access_permissions_role=None, access_permissions_equipment=None):
         """Return the person's nickname, unless they've requested anonymity."""
-        if self.visible(context_role=None, context_equipment=None):
+        if self.visible(access_permissions_role=None, access_permissions_equipment=None):
             _, informal = database.person_name(self.link_id)
             return informal.encode('utf-8')
         else:
             return ("member_"+str(self.membership_number)).encode('utf-8')
 
-    def get_email(self, context_role=None, context_equipment=None):
+    def get_email(self, access_permissions_role=None, access_permissions_equipment=None):
         """Return the person's email, unless they've requested anonymity."""
-        if self.visible(context_role=None, context_equipment=None):
-            email = database.person_email(self.link_id, context.Context.get_context().viewing_person)
+        if self.visible(access_permissions_role=None, access_permissions_equipment=None):
+            email = database.person_email(self.link_id, access_permissions.Access_Permissions.get_access_permissions().viewing_person)
             return email.encode('utf-8')
         else:
             return ("member_"+str(self.membership_number)+"@"+configuration.get_config()['server']['mailhost']).encode('utf-8')
 
-    def get_visibility(self, context):
-        return self.visibility[context]
+    def get_visibility(self, access_permissions):
+        return self.visibility[access_permissions]
 
-    def set_visibility(self, context, level):
-        self.visibility[context] = level
+    def set_visibility(self, access_permissions, level):
+        self.visibility[access_permissions] = level
 
     def save(self):
         """Save the person to the database."""

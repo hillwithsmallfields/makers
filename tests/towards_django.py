@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 sys.path.append('model')
 sys.path.append('utils')
 import configuration
-import context
+import access_permissions
 import database
 import importer
 import person

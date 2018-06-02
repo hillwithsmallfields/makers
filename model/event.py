@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 from equipment_type import Equipment_type
 import configuration
-import context
+import access_permissions
 import database
 import event
 import person
@@ -344,7 +344,7 @@ class Event(object):
             result['start'] = str(starting)
             result['end'] = str(self.end)
         hosts = []
-        logged_in = context.Context.get_context().viewing_person is not None
+        logged_in = access_permissions.Access_Permissions.get_access_permissions().viewing_person is not None
         for h in self.hosts:
             host = person.Person.find(h)
             if host is None:

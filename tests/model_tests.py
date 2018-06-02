@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 sys.path.append('model')
 sys.path.append('utils')
 import configuration
-import context
+import access_permissions
 import database
 import importer
 import person
@@ -29,8 +29,8 @@ print "evening_timeslots:", timeslots.timeslots_from_int(evening_timeslots)
 print "weekend_timeslots:", timeslots.timeslots_from_int(weekend_timeslots)
 print "evening_and_weekend_timeslots:", timeslots.timeslots_from_int(evening_and_weekend_timeslots)
 
-def set_context_as_admin(context):
-    context.add_role('owner', configuration.get_config()['organization']['database'])
+def set_access_permissions_as_admin(access_permissions):
+    access_permissions.add_role('owner', configuration.get_config()['organization']['database'])
 
 def random_user_activities(equipments, green_templates):
     for whoever in person.Person.list_all_people():
@@ -112,7 +112,7 @@ def list_equipment_types_to_files(all_types):
         sys.stdout = old_stdout
 
 def names(ids, role):
-    return ", ".join([obj.name(context_role=role)
+    return ", ".join([obj.name(access_permissions_role=role)
                       for obj in [person.Person.find(id) for id in ids]
                       if obj is not None])
 
@@ -120,8 +120,8 @@ def show_event(tl_event):
     hosts = tl_event.hosts
     if hosts is None:
         hosts = []
-    print tl_event.start, tl_event.event_type, ", ".join([person.Person.find(ev_host).name(context_role='host',
-                                                                                           context_equipment=tl_event.equipment_types)
+    print tl_event.start, tl_event.event_type, ", ".join([person.Person.find(ev_host).name(access_permissions_role='host',
+                                                                                           access_permissions_equipment=tl_event.equipment_types)
                                                           for ev_host in hosts
                                                           if ev_host is not None])
     old_stdout = sys.stdout
@@ -330,7 +330,7 @@ def main():
 
     config = configuration.get_config()
 
-    context.Context.change_context(set_context_as_admin)
+    access_permissions.Access_Permissions.change_access_permissions(set_access_permissions_as_admin)
 
     if not args.existing:
         print "importing from spreadsheet files"

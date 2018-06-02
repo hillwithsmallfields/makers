@@ -1,18 +1,18 @@
 from person import Person
 import configuration
 
-def set_context_from_django(context):
+def set_access_permissions_from_django(context):
     # todo: talk to django to get the login context
-    # Context.my_context.setup_context(get_id(django.getloggedinuser()))
+    # Access_Permissions.my_access_permissions.setup_access_permissions(get_id(django.getloggedinuser()))
     pass
 
-class Context:
+class Access_Permissions(object):
 
-    """The viewing context of the logged-in user.
+    """The viewing access_permissions of the logged-in user.
     This, and other users' visibility settings, determine when they can
     see other users' names."""
 
-    my_context = None
+    my_access_permissions = None
 
     def __init__(self):
         self.link_id = None
@@ -26,16 +26,16 @@ class Context:
     def add_role(self, role, equipment):
         self.roles[role].append(equipment)
 
-    def setup_context(self, link_id):
+    def setup_access_permissions(self, link_id):
         self.link_id = link_id
         self.viewing_person = Person.find(link_id)
         for role in self.roles.keys():
             for equipment in self.viewing_person.get_equipment_classes(role):
                 self.add_role(role, equipment._id)
-        self.cache_context()
+        self.cache_access_permissions()
 
-    def cache_context(self):
-        """Cache some context information.
+    def cache_access_permissions(self):
+        """Cache some access_permissions information.
         Call this after you've finished adding roles with add_role()."""
         org = configuration.get_config()['organization']['database']
         self.auditor = org in self.roles['user']
@@ -44,28 +44,28 @@ class Context:
                       or org in self.roles['trainer'])
 
     @staticmethod
-    def get_context(callback=set_context_from_django):
-        if Context.my_context is None:
-            Context.my_context = Context()
+    def get_access_permissions(callback=set_access_permissions_from_django):
+        if Access_Permissions.my_access_permissions is None:
+            Access_Permissions.my_access_permissions = Access_Permissions()
             if callback:
-                callback(Context.my_context)
-                Context.my_context.cache_context()
-        return Context.my_context
+                callback(Access_Permissions.my_access_permissions)
+                Access_Permissions.my_access_permissions.cache_access_permissions()
+        return Access_Permissions.my_access_permissions
 
     @staticmethod
-    def change_context(callback=set_context_from_django):
-        if Context.my_context is None:
-            Context.my_context = Context()
+    def change_access_permissions(callback=set_access_permissions_from_django):
+        if Access_Permissions.my_access_permissions is None:
+            Access_Permissions.my_access_permissions = Access_Permissions()
         else:
-            Context.my_context.link_id = None
-            Context.my_context.viewing_person = None
-            Context.my_context.roles = {}
-            Context.my_context.admin = False
-            Context.my_context.auditor = False
+            Access_Permissions.my_access_permissions.link_id = None
+            Access_Permissions.my_access_permissions.viewing_person = None
+            Access_Permissions.my_access_permissions.roles = {}
+            Access_Permissions.my_access_permissions.admin = False
+            Access_Permissions.my_access_permissions.auditor = False
         if callback:
-            callback(Context.my_context)
-            Context.my_context.cache_context()
-        return Context.my_context
+            callback(Access_Permissions.my_access_permissions)
+            Access_Permissions.my_access_permissions.cache_access_permissions()
+        return Access_Permissions.my_access_permissions
 
     def can_read_for(self, equipment_type):
         return (self.admin
