@@ -38,8 +38,9 @@ def random_user_activities(equipments, green_templates):
         if membership:
             whoever.available = evening_timeslots if random.random() < 0.2 else evening_and_weekend_timeslots
             date_joined = membership.start
-            for i in range(1, random.randrange(1, 4)):
-                request_date = date_joined + timedelta(random.randrange(7, 56), 0)
+            for i in range(1, random.randrange(1, 12)):
+                days_since_joining = (datetime.now() - date_joined).days
+                request_date = date_joined + timedelta(random.randrange(7, days_since_joining + 56), 0)
                 equip = random.choice(equipments)
                 role = 'user'
                 if whoever.qualification(equip, role):
@@ -217,7 +218,7 @@ def show_person(directory, somebody):
         hosts =  ",".join([person.Person.find(host_id).name()
                            for host_id in session.hosts
                            if host_id is not None])
-        print "  ", session.date, ev_type, ' '*(20-len(ev_type)), equip, ' '*(30 - len(equip)), hosts
+        print "  ", event.timestring(session.date), ev_type, ' '*(20-len(ev_type)), equip, ' '*(30 - len(equip)), hosts
     all_remaining_types = set(equipment_type.Equipment_type.list_equipment_types())
 
     their_equipment_types = set(somebody.get_equipment_types('user'))
@@ -255,7 +256,7 @@ def show_person(directory, somebody):
 
     print_heading("Training requests")
     for req in my_training_requests:
-        print req['request_date'], req['event_type'].replace('_', ' '), ", ".join([equipment_type.Equipment_type.find(reqeq).name for reqeq in req['equipment_types']])
+        print event.timestring(req['request_date']), req['event_type'].replace('_', ' '), ", ".join([equipment_type.Equipment_type.find(reqeq).name for reqeq in req['equipment_types']])
 
     print_heading("Create events")
     for evtitle in sorted([ ev['title'].replace('$', 'some ').capitalize() for ev in event.Event.list_templates([somebody], their_equipment_types) ]):
@@ -269,17 +270,42 @@ def show_person(directory, somebody):
         if somebody.is_administrator():
             print "[Create special event]"
 
-    for field, title in [('hosts', 'hosting'), ('attendees', 'attending')]:
-        my_events = timeline.Timeline.create_timeline(person_field=field, person_id=somebody._id).events
-        if len(my_events) > 0:
-            print_heading("Events I'm " + title)
-            for tl_event in my_events:
-                hosts = tl_event.hosts
-                if hosts is None:
-                    hosts = []
-                print tl_event.start, tl_event.event_type + " "*(24-len(tl_event.event_type)), ", ".join([person.Person.find(ev_host).name()
-                                                                      for ev_host in hosts
-                                                                      if ev_host is not None])
+    known_events =[]
+
+    for in_future in [True, False]:
+        for field, title in [('hosts',
+                              ('will be hosting' if in_future else 'have hosted')),
+                             ('attendees',
+                              ('will be attending' if in_future else 'have attended'))]:
+            my_events = (timeline.Timeline.future_events(person_field=field, person_id=somebody._id).events
+                         if in_future
+                         else timeline.Timeline.past_events(person_field=field, person_id=somebody._id).events)
+            if len(my_events) > 0:
+                print_heading("Events I " + title)
+                for tl_event in my_events:
+                    known_events.append(tl_event)
+                    hosts = tl_event.hosts
+                    if hosts is None:
+                        hosts = []
+                    print event.timestring(tl_event.start), tl_event.event_type + " "*(24-len(tl_event.event_type)), ", ".join([person.Person.find(ev_host).name()
+                                                                          for ev_host in hosts
+                                                                          if ev_host is not None])
+
+    pending_events = [ ev
+                       for ev in timeline.Timeline.future_events().events
+                       if ev not in known_events ]
+
+    if len(pending_events) > 0:
+        print_heading("Other future events")
+        for pending_event in pending_events:
+            hosts = pending_event.hosts
+            if hosts is None:
+                hosts = []
+            if somebody._id in hosts:
+                continue
+            print event.timestring(pending_event.start), pending_event.event_type + " "*(24-len(pending_event.event_type)), ", ".join([person.Person.find(ev_host).name()
+                                                                                                                     for ev_host in hosts
+                                                                                                                     if ev_host is not None]), "[Sign up]"
 
     interests = somebody.get_interests()
     if len(interests) > 0:

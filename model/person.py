@@ -396,10 +396,7 @@ class Person(object):
             for field, title in [('hosts', 'hosting_events'), ('attendees', 'attending_events')]:
                 my_events = timeline.Timeline.create_timeline(person_field=field, person_id=self._id).events
                 if len(my_events) > 0:
-                    my_event_api_data = [ { 'start': str(tl_event.start if (tl_event.start.hour != 0
-                                                                            or tl_event.start.minute !=0
-                                                                            or tl_event.start.second != 0)
-                                                         else tl_event.start.date()),
+                    my_event_api_data = [ { 'start': event.timestring(tl_event.start),
                                             'type': str(tl_event.event_type),
                                             'equipment_types': [ equipment_type.Equipment_type.find_by_id(eqty).name
                                                                     for eqty in tl_event.equipment_types]} for tl_event in my_events ]

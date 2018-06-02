@@ -24,6 +24,16 @@ def as_time(clue):
                         else None)))
 
 
+def timestring(when):
+    if when.hour == 0 and when.minute == 0 and when.second == 0:
+        return str(when.date())
+    else:
+        when.replace(microsecond=0)
+        if when.second >= 59:
+            when.replace(minute=when.minute + 1)
+            when.replace(second=0)
+        return str(when)[:16]
+
 class Event(object):
 
     # keep a hash of events so each one is only in memory once
@@ -68,12 +78,7 @@ class Event(object):
         self.interest_areas = []
 
     def __str__(self):
-        accum = "<" + self.event_type
-        starting = self.start
-        if starting.hour == 0 and starting.minute == 0 and starting.second == 0:
-            accum += "_event on " + str(starting.date())
-        else:
-            accum += "_event at " + str(starting)
+        accum = "<" + self.event_type + "_event " + timestring(self.start)
         if self.hosts and self.hosts != []:
             accum += " with " + ", ".join([person.Person.find(host_id).name()
                                           for host_id in self.hosts
@@ -241,25 +246,6 @@ class Event(object):
         """Stop the event appearing in the list of scheduled events."""
         self.status = 'concealed'
         self.save()
-
-    @staticmethod
-    def future_events(**kwargs):
-        """List the events which have not yet started."""
-        return database.get_events(earliest=datetime.now(),
-                                   **kwargs)
-
-    @staticmethod
-    def present_events(**kwargs):
-        """List the events which have started but not finished."""
-        return database.get_events(earliest=datetime.now(),
-                                   latest=datetime.now(),
-                                   **kwargs)
-
-    @staticmethod
-    def past_events(**kwargs):
-        """List the events which have finished."""
-        return database.get_events(latest=datetime.now(),
-                                   **kwargs)
 
     def get_hosts(self):
         """Return the list of people hosting the event."""
