@@ -41,9 +41,9 @@
 
    There are some special classes of "equipment":
 
-   - being an inducted member is represented by having been trained on
-     "makespace" (and being an inductor is represented by having been
-     trained as a Makespace trainer).
+   - being an inducted member of the hackerspace is represented by
+     having been trained on "makespace" (and being an inductor is
+     represented by having been trained as a hackerspace trainer).
 
    - being a database admin is represented by having been trained as
      an owner of the "database" equipment (and being an auditor, which
@@ -94,7 +94,8 @@
 
    We use your data primarily to keep track of who can use each type
    of equipment and schedule each type of event, and secondarily for
-   other administrative tasks.
+   other administrative tasks.  Later, we will also use it to keep
+   track of equipment use.
 
    As our number of members grows, we are outgrowing our old model of
    being a small group who know each other, and also the

@@ -103,11 +103,10 @@ def list_equipment_types_to_files(all_types):
         print "  machines",  ", ".join([ machine.Machine.find_by_id(mc).name for mc in eqtype.get_machines() ])
         print "  enabled fobs", json.dumps(eqtype.API_enabled_fobs(), indent=4)
         for role in ['user', 'owner', 'trainer']:
-            # todo: this doesn't seem to be producing anything
-            requests = database.get_people_awaiting_training(database.role_training(role), [eqtype._id])
+            requests = eqtype.get_training_requests()
             print_heading(role + " requests")
-            for req in requests:
-                print "  ", req
+            for req_person, req_req in requests.iteritems():
+                print "  ", person.Person.find(req_person), req_req
                 # print req.name()
         sys.stdout.close()
         sys.stdout = old_stdout
@@ -149,10 +148,14 @@ def show_event(tl_event):
     sys.stdout = old_stdout
 
 def list_all_events():
+    old_stdout = sys.stdout
+    sys.stdout = open(os.path.join("event-pages", "index.txt"), 'w')
     print_heading("All events")
     events = timeline.Timeline.create_timeline()
     for tl_event in events.events:
         show_event(tl_event)
+    sys.stdout.close()
+    sys.stdout = old_stdout
 
 def test_event_time_filtering():
     events = timeline.Timeline.create_timeline()
@@ -339,6 +342,16 @@ def test_training_requests():
             print "        ", guinea_pig.has_requested_training([chosen_tool._id], checking_role)
     show_person("after", guinea_pig)
 
+def make_admin_people_index(members):
+    sorting = { n[-1] + ", " + n[0]: m for n, m in [ (member.name().split(), member) for member in members ] }
+    print "sorting is", sorting
+    old_stdout = sys.stdout
+    sys.stdout = open(os.path.join("member-pages", "index.txt"), 'w')
+    for name in sorted(sorting.keys()):
+        print sorting[name]
+    sys.stdout.close()
+    sys.stdout = old_stdout
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-y", "--equipment-types", default="equipment-types.csv")
@@ -376,8 +389,10 @@ def main():
 
     if not args.quick:
         print "listing members"
-        for whoever in person.Person.list_all_members():
+        all_members = person.Person.list_all_members()
+        for whoever in all_members:
             show_person("member-pages", whoever)
+        make_admin_people_index(all_members)
 
     print "listing events"
     list_all_events()
@@ -391,6 +406,8 @@ def main():
     print "writing machine controller local cache data"
     with open("allfobs.json", 'w') as outfile:
         outfile.write(json.dumps(equipment_type.Equipment_type.API_all_equipment_fobs(), indent=4))
+
+    # todo: write /usr/lib/aliases format file
 
 if __name__ == "__main__":
     main()
