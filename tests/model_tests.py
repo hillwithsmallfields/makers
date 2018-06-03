@@ -358,6 +358,16 @@ def make_admin_people_index(members):
     sys.stdout.close()
     sys.stdout = old_stdout
 
+def write_mail_aliases(eq_types):
+    old_stdout = sys.stdout
+    sys.stdout = open("mail-aliases", 'w')
+    for eqty in eq_types:
+        for role in ['user', 'trainer', 'owner']:
+            print eqty.name+"-"+role+"s:", ",".join([whoever.get_email() for whoever in eqty.get_people(role)])
+    sys.stdout.close()
+    sys.stdout = old_stdout
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-y", "--equipment-types", default="equipment-types.csv")
@@ -413,7 +423,7 @@ def main():
     with open("allfobs.json", 'w') as outfile:
         outfile.write(json.dumps(equipment_type.Equipment_type.API_all_equipment_fobs(), indent=4))
 
-    # todo: write /usr/lib/aliases format file
+    write_mail_aliases(all_types)
 
 if __name__ == "__main__":
     main()
