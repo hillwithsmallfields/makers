@@ -75,6 +75,7 @@ class Event(object):
         self.attendee_prerequisites = []
         self.location = None
         self.catered = False
+        self.alchohol_authorized = False
         self.interest_areas = []
 
     def __str__(self):
