@@ -17,12 +17,8 @@ class Person(object):
     people_by_id = {}
 
     def __init__(self):
-        self.email = None
         self._id = None
         self.link_id = None
-        self.surname = None
-        self.given_name = None
-        self.known_as = None
         self.membership_number = None
         self.fob = None
         self.past_fobs = []
@@ -234,7 +230,7 @@ class Person(object):
                                                         in m_event.equipment_types ]),
                          'date': str(m_event.start)}
         with open(os.path.join(all_conf['messages']['templates_directory'], message_template_name)) as msg_file:
-            makers_server.mailer(self.email,
+            makers_server.mailer(self.get_email(),
                                  msg_file.read() % substitutions)
 
     @staticmethod
