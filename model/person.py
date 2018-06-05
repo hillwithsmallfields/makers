@@ -14,6 +14,30 @@ from datetime import datetime
 
 class Person(object):
 
+    """The Person class describes a person, typically but not necessarily a member.
+
+    Some of the informtation that you might expect to be here is
+    actually stored elsewhere, but you can access some of that through
+    the methods of this class.
+
+    In particular, what equipment a person is trained (authorized) to
+    use is stored implictly, in the Events collection of the database,
+    because a person is seen as trained if they have successfully
+    attended a training event of the appropriate type.
+
+    Also, a person's name and email address are not stored in the
+    object, but accessed through methods.  This is because regulations
+    require access to personally identifying information to be
+    controlled, and the context for which a name is required must be
+    given so that we can tell whether the information can be given in
+    that context.
+
+    The normal way to get a Person object is with the class method
+    'find', which takes some kind of clue as to who you're looking
+    for: name, email address, fob code, or mongodb ObjectId.
+
+    """
+
     people_by_id = {}
 
     def __init__(self):
@@ -67,7 +91,7 @@ class Person(object):
             or viewing_access_permissions.auditor):
             return True
         visible_by_consent = self.visibility.get(access_permissions_role, False)
-        return (viewing_access_permissions.can_read_for(access_permissions_equipment) # whether the viewing user is owner/trainer on that equipment
+        return (viewing_access_permissions.can_read_for(access_permissions_equipment) # whether the viewing person is owner/trainer on that equipment
                 and (visible_by_consent == True
                      or (visible_by_consent == 'logged-in' and viewing_access_permissions.viewing_person != None)))
 
@@ -119,6 +143,8 @@ class Person(object):
     # training and requests
 
     def get_training_requests_limit(self):
+        """Get this person's open training request limit.
+        If set to None, the system-wide defalt, from the config file, will be used."""
         return (self.training_requests_limit
                 or int(configuration.get_config()['training']['default_max_requests']))
 
@@ -129,7 +155,7 @@ class Person(object):
         self.save()
 
     def absolve_noshows(self):
-        """Administrator action to allow a user to continue to sign up for training,
+        """Administrator action to allow a person to continue to sign up for training,
         despite having been recorded as repeatedly wasting training slots."""
         self.noshow_absolutions = (len(self.get_training_events('user_training', result='noshow'))
                                    + len(self.get_training_events('owner_training', result='noshow'))
@@ -169,7 +195,7 @@ class Person(object):
     def alter_training_request_date(self, role, equipment_types, new_date):
         """Alter the date of a training request.
         This is to allow administrators to backdate training requests
-        if a user convinces them that they have a good case for jumping
+        if a person convinces them that they have a good case for jumping
         the queue."""
         event_type = database.role_training(role)
         for req in self.training_requests:
@@ -186,6 +212,8 @@ class Person(object):
         return [ keyed[d] for d in sorted(keyed.keys()) ]
 
     def has_requested_training(self, equipment_types, role):
+        """Return whether the person has an unfulfilled training request
+        for a given equipment and role."""
         event_type = database.role_training(role)
         for req in self.training_requests:
             if req['event_type'] != event_type:
@@ -199,7 +227,7 @@ class Person(object):
                             event_type='user_training',
                             when=None,
                             result='passed'):
-        """Return the training data for this user,
+        """Return the training data for this person,
         as a list of training events."""
         return database.get_events(event_type=event_type,
                                    person_field=result,
@@ -217,7 +245,7 @@ class Person(object):
         return database.get_people_awaiting_training(event_type, equipment_types)
 
     def mail_event_invitation(self, m_event, message_template_name):
-        """Mail the user about an event.
+        """Mail the person about an event.
         They get a link to click on to respond about whether they can attend."""
         invitation_uuid = str(uuid.uuid4())
         all_conf = configuration.get_config()
@@ -262,7 +290,7 @@ class Person(object):
                      or trained[e] > detrained[e])]
 
     def get_equipment_type_names(self, role):
-        """Get the list of equipment types for which the user has a given role.
+        """Get the list of equipment types for which the person has a given role.
         Aimed mostly at the JSON API."""
         return [ eq.name for eq in self.get_equipment_types(role) ]
 
@@ -278,7 +306,7 @@ class Person(object):
     def qualification(self, equipment_type_name, role,
                       when=None,
                       skip_membership_check=False):
-        """Return whether the user is qualified for a role on an equipment class.
+        """Return whether the person is qualified for a role on an equipment class.
         The result is the event that qualified them."""
         trained = None
         detrained = None
@@ -337,10 +365,20 @@ class Person(object):
         return self.qualification(equipment_class, 'trainer')
 
     def satisfies_condition(self, condition, equipment_types):
+        """Takes a string describing one condition, and check the person meets that requirement.
+        Sample strings are "laser-cutter user" and "mill trainer"."""
         equiptype, role = condition.split(' ')
         return self.qualification(equiptype, role)
 
     def satisfies_conditions(self, conditions, equipment_types):
+        """Takes a list of strings describing one or more conditions, and check the person meets those requirements.
+
+        This is used from Event.instantiate_template, to check whether
+        the suggested hosts for an event have the necessary conditions
+        (such as being trainers on equipment they plan to give
+        training on).
+
+        """
         for condition in conditions:
             if not self.satisfies_condition(condition, equipment_types):
                 return False
@@ -374,7 +412,7 @@ class Person(object):
     # API
 
     def api_personal_data(self, detailed=False):
-        """Get the data for a user, in a suitable form for the API.
+        """Get the data for a person, in a suitable form for the API.
         With an optional flag, get more detail."""
         # todo: allow 'detailed' to be a list of fields you want
         name, known_as = database.person_name(self)

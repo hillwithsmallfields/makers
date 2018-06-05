@@ -4,7 +4,6 @@ from equipment_type import Equipment_type
 import configuration
 import access_permissions
 import database
-import event
 import person
 import re
 
@@ -35,6 +34,32 @@ def timestring(when):
         return str(when)[:16]
 
 class Event(object):
+
+    """The event class is used for past, present and future events.
+
+    Past events form the connection between people and equipment
+    types, by keeping the record of who has attended what kinds of
+    training.
+
+    Future events are used to inform people about what is coming up.
+
+    Training events are what the whole system is centred around, but,
+    having got an Event class, we also use it for all other kinds of
+    events, such as talks and socials.
+
+    Events have equipment types associated with them; since more than
+    one type of equipment can be covered in a single training session,
+    it is a list of equipment types, rather than a single type.
+
+    As well as training events, there can also be untraining events,
+    to cancel training; this is used to ban people from using
+    equipment that they've misused.
+
+    Events are normally created by instantiating event templates, and
+    existing events can be found from the database using the class
+    methods 'find' and 'find_by_id'.
+
+    """
 
     # keep a hash of events so each one is only in memory once
     events_by_id = {}

@@ -3,6 +3,14 @@ import person
 
 class Equipment_type(object):
 
+    """An Equipment_type is the unit of what people can be trained on.
+
+    The normal way to get an Equipment_type object is through the
+    class methods 'find' (which takes a name) and 'find_by_id', which
+    takes a mongodb ObjectId.
+
+    """
+
     types_by_id = {}
     types_by_name = {}
 
@@ -67,7 +75,7 @@ class Equipment_type(object):
         untraining = database.get_eqtype_events(self._id, database.role_untraining(role))
         trained = {}
         detrained = {}
-        # working our way back in time, we want only the most recent relevant event of eavh type
+        # working our way back in time, we want only the most recent relevant event of each type
         for ev in training:
             for trained_person in ev.passed:
                 if trained_person not in trained:
