@@ -4,6 +4,18 @@ import person
 
 class Machine(object):
 
+    """The data about an individual piece of equipment.
+
+    Each piece of equipment has an equipment_type, and training grants
+    access to all equipment of the same type.  The Machine class
+    describes the individual instances, for status reporting, location
+    description etc.  Although by policy Makespace doesn't allow users
+    to book equipment for their use, equipment can be reserved for
+    events, in particular training and maintenance.  These
+    reservations are held in the Event object, not the Machine object.
+
+    """
+
     machine_by_id = {}
     machine_by_name = {}
 
@@ -20,7 +32,6 @@ class Machine(object):
         self.model = None
         self.serial_number = None
         self.acquired = None
-        self.reservations = []
 
     @staticmethod
     def find(name):
@@ -91,4 +102,3 @@ class Machine(object):
 
     def get_log(self):
         return database.get_machine_log(self._id)
-    

@@ -6,6 +6,7 @@ import access_permissions
 import database
 import person
 import re
+import timeslots
 
 # todo: event templates to have after-effect fields, so that cancellation of membership can schedule cancellation of equipment training
 
@@ -59,6 +60,8 @@ class Event(object):
     existing events can be found from the database using the class
     methods 'find' and 'find_by_id'.
 
+    Event templates haven't quite made it into being an object class
+    of their own; for now, they are just dictionaries.
     """
 
     # keep a hash of events so each one is only in memory once
@@ -73,7 +76,9 @@ class Event(object):
                  equipment_types=[],
                  equipment=[]):
         """Create an event of a given type and datetime.
+
         The current user is added as a host.
+
         The event is not saved and scheduled yet."""
         # self.details = get_event_template(event_type)
         self.title = title
@@ -91,7 +96,7 @@ class Event(object):
         self.attendance_limit = 30
         self.attendees = attendees # _id of person
         self.equipment_types = equipment_types
-        self.equipment = equipment
+        self.equipment = equipment # list of Machine, by ObjectId
         self._id = None
         self.passed = []   # _id of person
         self.failed = []   # _id of person
@@ -123,6 +128,7 @@ class Event(object):
 
     @staticmethod
     def find(event_type, event_datetime, hosts, equipment_types):
+        """Find an event by giving enough information to describe it."""
         event_datetime = as_time(event_datetime)
         event_dict = database.get_event(event_type, event_datetime,
                                         hosts,
@@ -143,6 +149,7 @@ class Event(object):
 
     @staticmethod
     def find_by_id(event_id):
+        """Find an event by its ObjectId."""
         event_dict = database.get_event_by_id(event_id)
         if event_dict is None:
             return None
@@ -169,14 +176,24 @@ class Event(object):
 
     @staticmethod
     def find_template(template_name):
+        """Get an event template, by name."""
         return database.find_event_template(template_name)
 
     @staticmethod
+    def write_template(template_name, template_dict):
+        """Save an event template, to a given name."""
+        template_dict['title'] = template_name
+        database.add_template(template_dict)
+
+    @staticmethod
     def _preprocess_conditions_(raw_conds, equipment_types):
-        """Typical conditions are an equipment type name followed by a role,
+        """Make some substitutions in condition descriptions of event templates.
+
+        Typical conditions are an equipment type name followed by a role,
         such as "laser_cutter user" or "bandsaw owner".  The special equipment
         type name "$equipment" is expanded to all the equipment in the
         equipment_types argument.
+
         Also, a condition can be any of the strings "member", "admin",
         "auditor", or "director", which are given configuration-dependent expansions."""
         result = []
@@ -211,18 +228,29 @@ class Event(object):
     def instantiate_template(template_name, equipment_types,
                              hosts, event_datetime, allow_past=False):
         """Instantiate a template, or explain the first reason to refuse to do so.
-        Results are the resulting event instance, and the error; one of these will be None."""
+
+        Event templates are stored in a separate database collection.
+        They can define the fields 'host_prerequisites',
+        'attendee_prerequisites', 'title', 'event_type'; any other
+        fields in them will be copied into the dictionary representing
+        the event.
+
+        Results are the resulting event instance, and the error; one of these will be None.
+
+        """
         if event_datetime < datetime.now() and not allow_past:
             return None, "Cannot create a past event"
         template_dict = Event.find_template(template_name)
         # print "instantiate_template: template_dict is", template_dict
-        host_prerequisites = Event._preprocess_conditions_(template_dict.get('host_prerequisites', ['member']),
+        host_prerequisites = Event._preprocess_conditions_(template_dict.get('host_prerequisites',
+                                                                             ['member']),
                                                            equipment_types)
         for host in hosts:
             person_obj = person.Person.find(host)
             if not person_obj.satisfies_conditions(host_prerequisites, equipment_types):
                 return None, person_obj.name() + " is not qualified to host this event"
-        attendee_prerequisites = Event._preprocess_conditions_(template_dict.get('attendee_prerequisites', []),
+        attendee_prerequisites = Event._preprocess_conditions_(template_dict.get('attendee_prerequisites',
+                                                                                 []),
                                                                equipment_types)
         title = template_dict['title'].replace("$equipment",
                                                ", ".join([Equipment_type.find(eqty).name
@@ -233,35 +261,41 @@ class Event(object):
                          title=title,
                          attendees=[],
                          equipment_types=equipment_types)
-        instance.__dict__.update(template_dict)
+        for k, v in template_dict.iteritems():
+            if instance.__dict__.get(k, None) is None:
+                instance.__dict__[k] = v
         instance.host_prerequisites = host_prerequisites
         instance.attendee_prerequisites = attendee_prerequisites
         return instance, None
 
     @staticmethod
     def _all_hosts_suitable_(template_dict, hosts, equipment_types):
+        """Check that all the suggested hosts for an event are suitably qualified.
+
+        For example, a training event should specify that all its hosts are trainers."""
         host_conds = Event._preprocess_conditions_(template_dict.get('host_prerequisites', ['member']),
                                                    equipment_types)
-        # print "checking", hosts, "against", template_dict, "using conditions", host_conds
         for host in hosts:
             x = person.Person.find(host)
             if not x.satisfies_conditions(host_conds, equipment_types):
-                # print x, "does not satisfy", host_conds
                 return False
         return True
 
     @staticmethod
     def list_templates(hosts, equipment_types):
-        """Return the list of event templates for which all the specified hosts
-        have all the hosting prerequisites."""
+        """Return the list of event templates for which all the specified hosts have all the hosting prerequisites.
+
+        The normal use of this will be with a single host specified,
+        to generate the list of events that a user can create, on
+        their dashboard page."""
         return [ template for template in database.list_event_templates()
                  if Event._all_hosts_suitable_(template, hosts, equipment_types) ]
 
     def notify_interested_people(self):
-        timeslot = as_timeslot(self.start)
-        for person in person.awaiting_training(self.event_type, self.equipment_types):
-            if person.available & timeslot:
-                person.notify(self)
+        event_timeslot_bitmap = timeslots.time_to_timeslot(self.start)
+        for whoever in person.Person.awaiting_training(self.event_type, self.equipment_types):
+            if whoever.available & event_timeslot_bitmap:
+                whoever.notify(self)
 
     def publish(self):
         """Make the event appear in the list of scheduled events."""

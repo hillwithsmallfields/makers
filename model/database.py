@@ -172,7 +172,9 @@ def list_event_templates():
     return [ template for template in database[collection_names['event_templates']].find({}) ]
 
 def add_template(template):
-    database[collection_names['event_templates']].insert(template)
+    database[collection_names['event_templates']].update({'title': template['title']},
+                                                         template,
+                                                         upsert=True)
 
 # Access permissions
 
