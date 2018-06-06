@@ -182,10 +182,8 @@ def test_event_time_filtering():
     print "shortfall by thirding:", event_count - (len(first_third.events) + len(middle_third.events) + len(last_third.events))
 
 def show_timeslots(avail):
-    ts_config = configuration.get_config()['timeslots']
-    days = ts_config['days']
+    days, _, times = timeslots.get_slots_conf()
     max_day_chars = reduce(max, map(len, days))
-    times = ts_config['times']
     max_time_chars = reduce(max, map(len, times))
     print " " * max_day_chars, " ".join([ time + " " * (max_time_chars - len(time)) for time in times])
     for (day, day_slots) in zip(days, timeslots.timeslots_from_int(avail)):
@@ -386,6 +384,17 @@ def main():
     config = configuration.get_config()
 
     access_permissions.Access_Permissions.change_access_permissions(set_access_permissions_as_admin)
+
+    days, slots, order = timeslots.get_slots_conf()
+    print "periods are", slots, "in order", order
+
+    test_time_to_timeslot = False
+    if test_time_to_timeslot:
+        for day in range(1, 8):
+            for hour in range(0, 24):
+                when = datetime(2000, 1, day, hour)
+                slot_bitmap = timeslots.time_to_timeslot(when)
+                print "day", days[when.weekday()], "hour", hour, "slot", "%x" % slot_bitmap
 
     if not args.existing:
         print "importing from spreadsheet files"

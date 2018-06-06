@@ -72,10 +72,10 @@ timeslots:
     - Friday
     - Saturday
     - Sunday
-  times:
-    - morning
-    - afternoon
-    - evening
+  periods:
+    morning: 07:00 -- 12:30
+    afternoon: 13:00 -- 18:00
+    evening: 18:30 -- 22:00
 
 # There'll be a template system for instantiating events for people to
 # sign up to.  'requirement' describes the condition for being
