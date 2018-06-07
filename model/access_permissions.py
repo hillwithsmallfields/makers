@@ -9,10 +9,13 @@ def set_access_permissions_from_django(context):
 class Access_Permissions(object):
 
     """The viewing access_permissions of the logged-in user.
-    This, and other users' visibility settings, determine when they can
-    see other users' names."""
 
-    my_access_permissions = None
+    This, and other users' visibility settings, determine when they can
+    see other users' names.
+
+    This data is calculated when first used, and cached statically."""
+
+    my_access_permissions = None # static cache of permissions
 
     def __init__(self):
         self.link_id = None
@@ -24,9 +27,13 @@ class Access_Permissions(object):
         self.auditor = False
 
     def add_role(self, role, equipment):
+        """Register that you have a particular role on a type of equipment.
+
+        Normally used from setup_access_permissions."""
         self.roles[role].append(equipment)
 
     def setup_access_permissions(self, link_id):
+        """Look through a person's roles and set up their permissions accordingly."""
         self.link_id = link_id
         self.viewing_person = Person.find(link_id)
         for role in self.roles.keys():
@@ -36,6 +43,7 @@ class Access_Permissions(object):
 
     def cache_access_permissions(self):
         """Cache some access_permissions information.
+
         Call this after you've finished adding roles with add_role()."""
         org = configuration.get_config()['organization']['database']
         self.auditor = org in self.roles['user']
@@ -45,6 +53,12 @@ class Access_Permissions(object):
 
     @staticmethod
     def get_access_permissions(callback=set_access_permissions_from_django):
+        """Get the access permissions for the current user.
+
+        A callback is used to get user-specific information from
+        the web framework.
+
+        The permission data is cached, so this can be used lightly."""
         if Access_Permissions.my_access_permissions is None:
             Access_Permissions.my_access_permissions = Access_Permissions()
             if callback:
@@ -54,6 +68,9 @@ class Access_Permissions(object):
 
     @staticmethod
     def change_access_permissions(callback=set_access_permissions_from_django):
+        """Change the access permissions, as if changing user.
+
+        Mostly useful for testing programs to check privacy handling."""
         if Access_Permissions.my_access_permissions is None:
             Access_Permissions.my_access_permissions = Access_Permissions()
         else:
@@ -68,12 +85,14 @@ class Access_Permissions(object):
         return Access_Permissions.my_access_permissions
 
     def can_read_for(self, equipment_type):
+        """Return whether this user can see other users' data, in the context of a given equipment type."""
         return (self.admin
                 or self.auditor
                 or (equipment_type and (equipment_type in self.roles['trainer']
                                   or equipment_type in self.roles['owner'])))
 
     def can_write_for(self, equipment_type):
+        """Return whether this user can alter other users' data, in the context of a given equipment type."""
         return (self.admin
                 or (equipment_type and (equipment_type in self.roles['trainer']
                                    or equipment_type in self.roles['owner'])))
