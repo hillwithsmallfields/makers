@@ -8,13 +8,14 @@ import sys
 from datetime import datetime, timedelta
 sys.path.append('model')
 sys.path.append('utils')
-import configuration
 import access_permissions
+import configuration
 import database
-import importer
-import person
-import event
 import equipment_type
+import event
+import importer
+import machine
+import person
 import timeline
 import timeslots
 
@@ -189,6 +190,26 @@ def show_timeslots(avail):
     for (day, day_slots) in zip(days, timeslots.timeslots_from_int(avail)):
         print day + " " * (max_day_chars - len(day)), " " * (max_time_chars/3), " ".join([ (("[*]" if slot else "[ ]") + (" " * (max_time_chars - 3))) for slot in day_slots[0:3] ])
 
+def show_all_machine_status():
+    print_heading("Machine status")
+    for eqty in equipment_types.Equipment_types.list_equipment_types():
+        print "  ", eqty.name
+        for machine_id in eqty.get_machines():
+            mc = machine.Machine.find_by_id(machine_id)
+            print "    ", machine.name, machine.get_status()
+
+def show_events(title, events_timeline):
+    if len(events_timeline.events) > 0:
+        print title + configuration.get_config().['organization']['name']
+        for ev in events_timeline.events:
+            print ev
+
+def show_current_events():
+    show_events("Now on in ", timeline.Timeline.present_events())
+
+def show_coming_events():
+    show_events("Next events at ", timeline.Timeline.future_events())
+
 def show_person(directory, somebody):
     name = somebody.name()
     known_as = somebody.nickname()
@@ -305,8 +326,8 @@ def show_person(directory, somebody):
             if somebody._id in hosts:
                 continue
             print event.timestring(pending_event.start), pending_event.event_type + " "*(24-len(pending_event.event_type)), ", ".join([person.Person.find(ev_host).name()
-                                                                                                                     for ev_host in hosts
-                                                                                                                     if ev_host is not None]), "[Sign up]"
+                                                                                                                                       for ev_host in hosts
+                                                                                                                                       if ev_host is not None]), "[Sign up]"
 
     interests = somebody.get_interests()
     if len(interests) > 0:
@@ -361,10 +382,11 @@ def write_mail_aliases(eq_types):
     sys.stdout = open("mail-aliases", 'w')
     for eqty in eq_types:
         for role in ['user', 'trainer', 'owner']:
-            print eqty.name+"-"+role+"s:", ",".join([whoever.get_email() for whoever in eqty.get_people(role)])
+            people_in_role = eqty.get_people(role)
+            if len(people_in_role) > 0:
+                print eqty.name+"-"+role+"s:", ",".join([whoever.get_email() for whoever in people_in_role])
     sys.stdout.close()
     sys.stdout = old_stdout
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -431,6 +453,11 @@ def main():
     print "writing machine controller local cache data"
     with open("allfobs.json", 'w') as outfile:
         outfile.write(json.dumps(equipment_type.Equipment_type.API_all_equipment_fobs(), indent=4))
+
+    show_current_events()
+    show_coming_events()
+
+    show_all_machine_status()
 
     write_mail_aliases(all_types)
 

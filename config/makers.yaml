@@ -261,6 +261,7 @@ organization:
   # Being trained on the equipment class named here means being
   # inducted; being a trainer on it means being an inductor.
   name:        makespace
+  title:       Makespace
   # Being a trained user on the equipment class named here gives you
   # read access to the database; being an owner on it gives you write access
   database:    makespace_admin_db
