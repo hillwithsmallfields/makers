@@ -84,40 +84,75 @@ class Person(object):
         p.__dict__.update(data)
         return p
 
-    def visible(self, access_permissions_role=None, access_permissions_equipment=None):
+    def visible(self,
+                access_permissions_role=None,
+                access_permissions_event=None,
+                access_permissions_equipment=None):
+        """Return whether this person's personal information, such as their name, is visible in a given context.
+
+        The context may be given as a role (whether the viewing user
+        is acting as an event host, for example), an event (to tell
+        whether the host can see the attendees), and an equipment type
+        (to tell whether the viewing user is an owner or trainer on
+        that equipment, which may give them name viewing rights)."""
+        # This line gets the information for the person logged in (the
+        # "viewing person"), which is not necessarily the Person
+        # object passed in as self:
         viewing_access_permissions = access_permissions.Access_Permissions.get_access_permissions()
         if (self == viewing_access_permissions.viewing_person
             or viewing_access_permissions.admin
             or viewing_access_permissions.auditor):
             return True
         visible_by_consent = self.visibility.get(access_permissions_role, False)
-        return (viewing_access_permissions.can_read_for(access_permissions_equipment) # whether the viewing person is owner/trainer on that equipment
+        return (viewing_access_permissions
+                .viewing_person.can_read_for(self,
+                                             # whether the viewing person is owner/trainer on that equipment:
+                                             equipment_type=access_permissions_equipment,
+                                             event=access_permissions_event)
                 and (visible_by_consent == True
-                     or (visible_by_consent == 'logged-in' and viewing_access_permissions.viewing_person != None)))
+                     or (visible_by_consent == 'logged-in'
+                         and viewing_access_permissions.viewing_person != None)))
 
-    def name(self, access_permissions_role=None, access_permissions_equipment=None):
+    def name(self,
+             access_permissions_event=None,
+             access_permissions_role=None,
+             access_permissions_equipment=None):
         """Return the person's name, unless they've requested anonymity."""
-        if self.visible(access_permissions_role=None, access_permissions_equipment=None):
+        if self.visible(access_permission_event=access_permission_event,
+                        access_permissions_role=None,
+                        access_permissions_equipment=None):
             formal, _ = database.person_name(self.link_id)
             return formal.encode('utf-8')
         else:
             return ("member_"+str(self.membership_number)).encode('utf-8')
 
-    def nickname(self, access_permissions_role=None, access_permissions_equipment=None):
+    def nickname(self,
+                 access_permissions_event=None,
+                 access_permissions_role=None,
+                 access_permissions_equipment=None):
         """Return the person's nickname, unless they've requested anonymity."""
-        if self.visible(access_permissions_role=None, access_permissions_equipment=None):
+        if self.visible(access_permission_event=access_permission_event,
+                        access_permissions_role=None,
+                        access_permissions_equipment=None):
             _, informal = database.person_name(self.link_id)
             return informal.encode('utf-8')
         else:
             return ("member_"+str(self.membership_number)).encode('utf-8')
 
-    def get_email(self, access_permissions_role=None, access_permissions_equipment=None):
+    def get_email(self,
+                  access_permissions_event=None,
+                  access_permissions_role=None,
+                  access_permissions_equipment=None):
         """Return the person's email, unless they've requested anonymity."""
-        if self.visible(access_permissions_role=None, access_permissions_equipment=None):
-            email = database.person_email(self.link_id, access_permissions.Access_Permissions.get_access_permissions().viewing_person)
+        if self.visible(access_permission_event=access_permission_event,
+                        access_permissions_role=None,
+                        access_permissions_equipment=None):
+            email = database.person_email(self.link_id,
+                                          access_permissions.Access_Permissions.get_access_permissions().viewing_person)
             return email.encode('utf-8')
         else:
-            return ("member_"+str(self.membership_number)+"@"+configuration.get_config()['server']['mailhost']).encode('utf-8')
+            return ("member_"+str(self.membership_number)
+                    +"@"+configuration.get_config()['server']['mailhost']).encode('utf-8')
 
     def get_visibility(self, access_permissions):
         return self.visibility[access_permissions]

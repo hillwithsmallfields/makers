@@ -84,15 +84,25 @@ class Access_Permissions(object):
             Access_Permissions.my_access_permissions.cache_access_permissions()
         return Access_Permissions.my_access_permissions
 
-    def can_read_for(self, equipment_type):
-        """Return whether this user can see other users' data, in the context of a given equipment type."""
+    def can_read_for(self, other, event=None, equipment_type=None):
+        """Return whether this user can see another user's data, in the context of an event and an equipment type."""
         return (self.admin
                 or self.auditor
-                or (equipment_type and (equipment_type in self.roles['trainer']
-                                  or equipment_type in self.roles['owner'])))
+                or other.visibility['general'] == True
+                or (equipment_type is not None
+                    and (equipment_type in self.roles['owner']
+                         or (equipment_type in self.roles['trainer']
+                             and event is not None
+                             and self.viewing_person._id in event.hosts
+                             and other._id in event.attendees
+                             and other.visibility['attendee'] is not False))))
 
-    def can_write_for(self, equipment_type):
-        """Return whether this user can alter other users' data, in the context of a given equipment type."""
+    def can_write_for(self, other, event=None, equipment_type=None):
+        """Return whether this user can alter other users' data, in the context of an event and an equipment type."""
         return (self.admin
-                or (equipment_type and (equipment_type in self.roles['trainer']
-                                   or equipment_type in self.roles['owner'])))
+                or (equipment_type is not None
+                    and (equipment_type in self.roles['owner']
+                         or (equipment_type in self.roles['trainer']
+                             and event is not None
+                             and self.viewing_person._id in event.hosts
+                             and other._id in event.attendees))))
