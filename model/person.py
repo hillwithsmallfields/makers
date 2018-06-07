@@ -118,7 +118,7 @@ class Person(object):
              access_permissions_role=None,
              access_permissions_equipment=None):
         """Return the person's name, unless they've requested anonymity."""
-        if self.visible(access_permission_event=access_permission_event,
+        if self.visible(access_permissions_event=access_permissions_event,
                         access_permissions_role=None,
                         access_permissions_equipment=None):
             formal, _ = database.person_name(self.link_id)
@@ -131,7 +131,7 @@ class Person(object):
                  access_permissions_role=None,
                  access_permissions_equipment=None):
         """Return the person's nickname, unless they've requested anonymity."""
-        if self.visible(access_permission_event=access_permission_event,
+        if self.visible(access_permissions_event=access_permissions_event,
                         access_permissions_role=None,
                         access_permissions_equipment=None):
             _, informal = database.person_name(self.link_id)
@@ -144,7 +144,7 @@ class Person(object):
                   access_permissions_role=None,
                   access_permissions_equipment=None):
         """Return the person's email, unless they've requested anonymity."""
-        if self.visible(access_permission_event=access_permission_event,
+        if self.visible(access_permissions_event=access_permissions_event,
                         access_permissions_role=None,
                         access_permissions_equipment=None):
             email = database.person_email(self.link_id,

@@ -192,7 +192,7 @@ def show_timeslots(avail):
 
 def show_all_machine_status():
     print_heading("Machine status")
-    for eqty in equipment_types.Equipment_types.list_equipment_types():
+    for eqty in equipment_type.Equipment_type.list_equipment_types():
         print "  ", eqty.name
         for machine_id in eqty.get_machines():
             mc = machine.Machine.find_by_id(machine_id)
@@ -200,7 +200,7 @@ def show_all_machine_status():
 
 def show_events(title, events_timeline):
     if len(events_timeline.events) > 0:
-        print title + configuration.get_config().['organization']['name']
+        print title + configuration.get_config()['organization']['name']
         for ev in events_timeline.events:
             print ev
 
