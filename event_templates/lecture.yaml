@@ -1,6 +1,7 @@
 event_type:            lecture
 title:                 Lecture
 attendance_limit:      60
+duration:              120
 host_prerequisites:
   - member
 

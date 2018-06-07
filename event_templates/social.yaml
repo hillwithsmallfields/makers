@@ -1,5 +1,6 @@
 event_type:            social
 title:                 Social
+duration:              180
 attendance_limit:      100
 host_prerequisites:
   - director

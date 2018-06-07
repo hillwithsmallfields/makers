@@ -19,10 +19,10 @@ class Machine(object):
     machine_by_id = {}
     machine_by_name = {}
 
-    def __init__(self, name, equipment_type):
+    def __init__(self, name):
         """Set up a machine's data, from its name."""
         self.name = name
-        self.equipment_type = equipment_type
+        self.equipment_type = None # an Object_Id
         self.status = 'unknown'
         self.status_detail = None
         self.maintenance_history = []
@@ -42,7 +42,7 @@ class Machine(object):
         data = database.get_machine_dict(name)
         if data is None:
             return None
-        c = Machine()
+        c = Machine(name)
         c.__dict__.update(data)
         Machine.machine_by_id[data['_id']] = c
         Machine.machine_by_name[data['name']] = c
@@ -55,7 +55,7 @@ class Machine(object):
         data = database.get_machine_dict(id)
         if data is None:
             return None
-        c = Machine()
+        c = Machine(data['name'])
         c.__dict__.update(data)
         Machine.machine_by_id[data['_id']] = c
         Machine.machine_by_name[data['name']] = c

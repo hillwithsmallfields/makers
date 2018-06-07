@@ -95,7 +95,7 @@ def import0(args):
             if verbose:
                 print "Adding machine", row
             database.add_machine(row['name'],
-                                 row['equipment_type'],
+                                 Equipment_type.find(row['equipment_type'])._id,
                                  row['location'],
                                  row['acquired'])
 

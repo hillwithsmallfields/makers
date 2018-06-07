@@ -264,6 +264,7 @@ class Event(object):
         for k, v in template_dict.iteritems():
             if instance.__dict__.get(k, None) is None:
                 instance.__dict__[k] = v
+        instance.end = instance.start + timedelta(0, 60 * int(template_dict.get('duration', '120')))
         instance.host_prerequisites = host_prerequisites
         instance.attendee_prerequisites = attendee_prerequisites
         return instance, None

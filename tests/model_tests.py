@@ -33,6 +33,24 @@ print "evening_and_weekend_timeslots:", timeslots.timeslots_from_int(evening_and
 def set_access_permissions_as_admin(access_permissions):
     access_permissions.add_role('owner', configuration.get_config()['organization']['database'])
 
+def setup_random_event(possible_templates, event_datetime, eqtypes, attendees, verbose=False):
+    new_event, problem = event.Event.instantiate_template(random.choice(possible_templates)['event_type'],
+                                                          eqtypes,
+                                                          attendees,
+                                                          event_datetime,
+                                                          allow_past=True)
+    if not problem:
+        new_event.catered = (random.random() < 0.5)
+        new_event.interest_areas = []
+        for i in range(0, random.randrange(0,3)):
+            new_event.interest_areas.append(random.choice(interest_areas))
+        if verbose:
+            print "Created event", new_event
+        new_event.publish()
+    else:
+        if verbose:
+            print "Failed to create event"
+
 def random_user_activities(equipments, green_templates):
     for whoever in person.Person.list_all_people():
         membership = whoever.is_member()
@@ -55,19 +73,8 @@ def random_user_activities(equipments, green_templates):
             if len(my_trainer_types) > 0:
                 possible_templates = green_templates + event.Event.list_templates([whoever], my_trainer_types)
                 for i in range(1, random.randrange(1, 3)):
-                    template = random.choice(possible_templates)
                     event_datetime = datetime.now() + timedelta(random.randrange(-30,30))
-                    new_event, problem = event.Event.instantiate_template(template['event_type'],
-                                                                          [random.choice(my_trainer_types)._id],
-                                                                          [whoever._id],
-                                                                          event_datetime,
-                                                                          allow_past=True)
-                    if not problem:
-                        new_event.catered = (random.random() < 0.5)
-                        new_event.interest_areas = []
-                        for i in range(0, random.randrange(0,3)):
-                            new_event.interest_areas.append(random.choice(interest_areas))
-                        new_event.publish()
+                    setup_random_event(possible_templates, event_datetime, [random.choice(my_trainer_types)._id], [whoever._id])
             if random.random() < 0.1:
                 whoever.profile['avoidances'] = ['vegetarian']
                 if random.random() < 0.05:
@@ -196,13 +203,14 @@ def show_all_machine_status():
         print "  ", eqty.name
         for machine_id in eqty.get_machines():
             mc = machine.Machine.find_by_id(machine_id)
-            print "    ", machine.name, machine.get_status()
+            status, detail = mc.get_status()
+            print "    ", mc.name, status, detail or ""
 
 def show_events(title, events_timeline):
     if len(events_timeline.events) > 0:
-        print title + configuration.get_config()['organization']['name']
+        print_heading(title + configuration.get_config()['organization']['name'])
         for ev in events_timeline.events:
-            print ev
+            print event.timestring(ev.start), ev.title, "with", ", ".join([person.Person.find(ev_host).name() for ev_host in ev.hosts])
 
 def show_current_events():
     show_events("Now on in ", timeline.Timeline.present_events())
@@ -426,7 +434,8 @@ def main():
 
     print "import complete, running random user behaviour"
     all_types = equipment_type.Equipment_type.list_equipment_types()
-    green_templates = [ make_training_event_template(eqty) for eqty in equipment_type.Equipment_type.list_equipment_types('green') ]
+    green_equipment = equipment_type.Equipment_type.list_equipment_types('green')
+    green_templates = [ make_training_event_template(eqty) for eqty in green_equipment ]
     print "green templates are", green_templates
 
     if not args.existing:
@@ -453,6 +462,20 @@ def main():
     print "writing machine controller local cache data"
     with open("allfobs.json", 'w') as outfile:
         outfile.write(json.dumps(equipment_type.Equipment_type.API_all_equipment_fobs(), indent=4))
+
+    # make sure there are some events going on right now, for show_current_events to show:
+    # todo: find why it's failing to create these events, then fix it, then see whether the "current event" code is working
+    everybody = person.Person.list_all_people()
+    for _ in range(1, random.randrange(3, 7)):
+        event_datetime = datetime.now()
+        event_datetime = event_datetime.replace(hour=event_datetime.hour-random.randrange(0,2), minute=0, second=0, microsecond=0)
+        print "Making current event starting at", event_datetime
+        setup_random_event(green_templates,
+                           event_datetime,
+                           [random.choice(green_equipment)._id],
+                           [random.choice(everybody)._id],
+                           verbose=True)
+
 
     show_current_events()
     show_coming_events()

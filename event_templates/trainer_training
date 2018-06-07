@@ -1,5 +1,6 @@
 event_type:             trainer training
 title:                  $equipment trainer training
+duration:               150
 attendance_limit:       2
 host_prerequisites:
   - $equipment trainer

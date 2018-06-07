@@ -1,5 +1,6 @@
 event_type:             owner training
 title:                  $equipment owner training
+duration:               90
 attendance_limit:       2
 host_prerequisites:
   - $equipment owner
