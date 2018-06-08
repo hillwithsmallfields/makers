@@ -1,9 +1,24 @@
 from nevow import flat
 from nevow import tags as T
 
+import person
+
+def eqty_row(ty):
+    return ty                   # todo: create a row from this
+
 def person_page_contents(who, viewer):
+    role_eqtys = {}
+    for role in ['user', 'owner', 'trainer']:
+        role_types = who.get_equipment_types(role)
+        if len(role_types) > 0:
+            role_ty_dict = { ty.name.replace('_', ' ').capitalize(): ty
+                             for ty in role_types }
+            role_eqtys[role] = [ eqty_row(role_ty_dict[k]) for k in sorted(keys(role_ty_dict)) ]
     return [T.h2["Personal details"],
             T.div(_class="personaldetails")[
+                T.table(_class="personaldetails")[
+                    T.tr[T.th["Name"], T.td[who.name()]],
+                    T.tr[T.Th["email"], T.td[who.get_email()]]
                 # todo: address etc to go here
                 ],
             T.h2["Availability"],

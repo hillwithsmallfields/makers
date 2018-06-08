@@ -252,8 +252,8 @@ def show_person(directory, somebody):
     all_remaining_types = set(equipment_type.Equipment_type.list_equipment_types())
 
     their_equipment_types = set(somebody.get_equipment_types('user'))
-    keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in their_equipment_types }
     if len(their_equipment_types) > 0:
+        keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in their_equipment_types }
         print_heading("User")
         for tyname in sorted(keyed_types.keys()):
             ty = keyed_types[tyname]
