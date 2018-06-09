@@ -1,0 +1,3 @@
+#!/bin/bash
+./blank
+tests/nevow_tests.py
