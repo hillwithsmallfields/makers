@@ -1,5 +1,6 @@
 from nevow import flat
 from nevow import tags as T
+import timeslots
 
 import person
 
@@ -14,6 +15,7 @@ def person_page_contents(who, viewer):
             role_ty_dict = { ty.name.replace('_', ' ').capitalize(): ty
                              for ty in role_types }
             role_eqtys[role] = [ eqty_row(role_ty_dict[k]) for k in sorted(role_ty_dict.keys()) ]
+    days, _, times = timeslots.get_slots_conf()
     return [T.h2["Personal details"],
             T.div(class_="personaldetails")[
                 T.table(class_="personaldetails")[
@@ -23,7 +25,21 @@ def person_page_contents(who, viewer):
                 ],
             T.h2["Availability"],
                 T.div(class_="availability")[
-                    "todo: availability table to go here"
+                    T.form(action="updateavail") [
+                    T.table(class_="availability")[
+                        T.tr[T.th["Day"], T.th["Morning"], T.th["Afternoon"], T.th["Evening"], T.th["Other"]],
+                        [ [ T.tr [ T.th[day], [
+                            T.td[
+                                T.input(type="checkbox", name="avail",
+                                        value=day+t, checked="checked")
+                                 if b else
+                                T.input(type="checkbox", name="avail",
+                                        value=day+t)
+                            ]
+                            for t, b in zip(['M', 'A', 'E', 'O'], day_slots) ] ] ]
+                          for (day, day_slots) in zip(days, timeslots.timeslots_from_int(who.available)) ]
+                    ],
+                        T.input(type="submit", value="Update")]
                 ],
             T.h2["Equipment responsibilities"],
                 T.div(class_="responsibilities")[
