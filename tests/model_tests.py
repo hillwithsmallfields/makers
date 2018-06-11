@@ -300,7 +300,7 @@ def show_person(directory, somebody):
         if somebody.is_administrator():
             print "[Create special event]"
 
-    known_events =[]
+    known_events = []
 
     for in_future in [True, False]:
         for field, title in [('hosts',

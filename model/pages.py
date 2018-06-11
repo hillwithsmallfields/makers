@@ -9,7 +9,7 @@ def page_string(title, content):
     """Make up a complete page as a string."""
     conf = configuration.get_config()
     page_conf = conf['page']
-    preamble = page_conf['preamble']
+    preamble = page_conf.get('preamble', '')
     motd = ""
     motd_file = page_conf['motd_file']
     if os.path.exists(motd_file):
@@ -23,7 +23,7 @@ def page_string(title, content):
                 style_text = '<style type="text/css">' + sf.read() + '</style>'
         else:
             style_text = '<link rel="stylesheet" type="text/css" href="' + stylesheet_name + '">'
-    postamble = page_conf['postamble']
+    postamble = page_conf.get('postamble' '')
     return flat.flatten(T.html[T.head[T.raw(style_text),
                                       T.title[title]],
                                # todo: set the encoding

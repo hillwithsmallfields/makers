@@ -226,7 +226,9 @@ def get_machine_dict(name):
 
 def get_machine_dicts_for_type(eqty):
     """Read the data for machines of a given type from the database."""
-    return [ machine for machine in database[collection_names['machines']].find({'equipment_type': eqty}) ]
+    result = [ machine for machine in database[collection_names['machines']].find({'equipment_type': eqty}) ]
+    print "Looking for machines of type", eqty, "and got", result
+    return result
 
 def add_machine(name, equipment_type,
                 location=None, acquired=None):

@@ -210,8 +210,8 @@ training:
 page:
   stylesheet:   config/makers.css
   style_inline: True
-  preamble:     <p>Top navigation bar etc will go here.</p>
-  postamble:    <p>Bottom navigation bar etc will go here.</p>
+  # preamble:     <p>Top navigation bar etc will go here.</p>
+  # postamble:    <p>Bottom navigation bar etc will go here.</p>
   motd_file:    config/motd.html
 
 skill_areas:
@@ -260,11 +260,14 @@ database:
 organization:
   # Being trained on the equipment class named here means being
   # inducted; being a trainer on it means being an inductor.
-  name:        makespace
-  title:       Makespace
+  name:          makespace
+  title:         Makespace
   # Being a trained user on the equipment class named here gives you
   # read access to the database; being an owner on it gives you write access
-  database:    makespace_admin_db
+  database:      makespace_admin_db
+  # Being a trained user on the equipment class named here gives you
+  # write access to the announcements system
+  announcements: noticeboard
 
 server:
   mailhost: makespace.org
@@ -272,6 +275,7 @@ server:
   rsvp:     rsvp/
   machines: equipment/
   events:   event/
+  userapi:  api/users/
 
 messages:
   templates_directory: /usr/local/share/makers/message_templates
