@@ -32,6 +32,7 @@ def responsibilities(who, typename, keyed_types):
                                       class_="negbutton")["Cancel owner training request"]))]]]
 
 def availform(available):
+    days, _, times = timeslots.get_slots_conf()
     return (T.div(class_="availability")
             [T.form(action="updateavail")
              [T.table(class_="availability")
@@ -49,32 +50,32 @@ def availform(available):
                        for t, b in zip(['M', 'A', 'E', 'O'], day_slots)]]]
                 for (day, day_slots) in zip(days,
                                             timeslots.timeslots_from_int(available))]],
-              T.input(type="submit", value="Update")]])
+              T.input(type="submit", value="Update availability")]])
 
 def eventlist(evlist):
-    return T.dl[[[T.dt[event.Event.timestring(ev.start)],
+    return T.dl[[[T.dt[event.timestring(ev.start)],
                   T.dd[ev.event_type # todo: add title, hosts if allowed, attendees if allowed, etc
                   ]] for ev in evlist]]
 
 def person_page_contents(who, viewer):
-    days, _, times = timeslots.get_slots_conf()
     result = [T.h2["Personal details"],
               T.div(class_="personaldetails")[
-                  T.table(class_="personaldetails")[
-                      T.tr[T.th["Name"], T.td[who.name()]],
-                      T.tr[T.th["email"], T.td[who.get_email()]],
+                  T.form(action="updatedetails")[T.table(class_="personaldetails")[
+                      T.tr[T.th["Name"], T.td[T.input(type="text", value=who.name())]],
+                      T.tr[T.th["email"], T.td[T.input(type="email", value=who.get_email())]],
                       T.tr[T.th["Membership number"], T.td[str(who.membership_number)]],
                       T.tr[T.th["link-id"], T.td[str(who.link_id)]],
                       T.tr[T.th[""], T.td["address etc to go here"]]],
+                                                 T.input(type="submit", value="Update details")],
                   T.h2["Availability"],
                   availform(who.available)]]
     their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
     if len(their_responsible_types) > 0:
         keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in their_responsible_types }
         result += [T.h2["Equipment responsibilities"],
-                   T.div(class_="resps")[T.dl[T.dt[name],
-                                              T.dd[responsibilities(who, name, keyed_types)]
-                                                for name in sorted(keyed_types.keys())]]]
+                   T.div(class_="resps")[T.dl[[[T.dt[name],
+                                               T.dd[responsibilities(who, name, keyed_types)]]
+                                               for name in sorted(keyed_types.keys())]]]]
     their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
     if len(their_equipment_types) > 0:
         keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in their_equipment_types }
@@ -87,13 +88,13 @@ def person_page_contents(who, viewer):
                            -their_equipment_types)
     if len(all_remaining_types) > 0:
         result += [T.h2["Other equipment"],
-                   T.dl[[T.dt[eqty.name].replace('_', ' ').capitalize(),
-                       T.dd[T.a(href="request?type=%s&role=user"%eqty.name,
-                                class_="button")["Request training"]
-                           if not who.has_requested_training(eqty._id, 'user')
-                           else T.a(href="canreq?type=%s&role=user"%eqty.name,
-                                    class_="button")["Cancel training request"]]]
-                        for eqty in all_remaining_types]]
+                   T.dl[[[T.dt[eqty.name.replace('_', ' ').capitalize()],
+                          T.dd[T.a(href="request?type=%s&role=user"%eqty.name,
+                                   class_="button")["Request training"]
+                               if not who.has_requested_training([eqty._id], 'user')
+                               else T.a(href="canreq?type=%s&role=user"%eqty.name,
+                                        class_="negbutton")["Cancel training request"]]]
+                         for eqty in all_remaining_types]]]
     if len(who.training_requests) > 0:
         len_training = len("_training")
         keyed_requests = { req['request_date']: req for req in who.training_requests }
@@ -103,7 +104,9 @@ def person_page_contents(who, viewer):
                                                    [T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
                                                          T.td[", ".join([equipment_type.Equipment_type.find_by_id(id).name.replace('_', ' ').capitalize()
                                                                          for id in req['equipment_types']])],
-                                                         T.td[str(req['event_type'])[:-len_training]]]
+                                                         T.td[str(req['event_type'])[:-len_training]],
+                                                         T.a(href="canreq?type=%s&role=user"%".".join(req['equipment_types']),
+                                                             class_="negbutton")["Cancel training request"]]
                                                     for req in sorted_requests]]]]
 
     known_events = []
