@@ -8,12 +8,14 @@ import timeline
 import timeslots
 import datetime
 
+server_conf = None
+
 def machinelist(eqty, who, as_owner=False):
     """Make a list of machines, with appropriate detail for each."""
     if eqty is None:
         return []
     mclist = eqty.get_machines()
-    return ([T.dl[[[T.dt[machine.name],
+    return ([T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['machines']+machine.name)[machine.name]],
                     T.dd[T.dl[T.dt["Status"], T.dd[machine.status],
                               [T.dt["Schedule maintenance"],
                                T.dd[T.form(action="schedmaint")[T.input(type="datetime", name="when"),
@@ -84,7 +86,7 @@ def availform(available):
 
 def eventlist(evlist, with_signup=False):
     return T.dl[[[T.dt[event.timestring(ev.start)],
-                  T.dd[ev.title or "Untitled",
+                  T.dd[T.a(href=server_conf['base_url']+server_conf['events']+str(ev._id))[ev.title or "Untitled"],
                        " ",
                        ev.event_type,
                        " on ",
@@ -95,6 +97,8 @@ def eventlist(evlist, with_signup=False):
                   ]] for ev in evlist]]
 
 def person_page_contents(who, viewer):
+    global server_conf
+    server_conf = configuration.get_config()['server']
     result = [T.h2["Personal details"],
               T.div(class_="personaldetails")[
                   T.form(action="updatedetails")[T.table(class_="personaldetails")[
@@ -110,7 +114,7 @@ def person_page_contents(who, viewer):
     if len(their_responsible_types) > 0:
         keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in their_responsible_types }
         result += [T.h2["Equipment responsibilities"],
-                   T.div(class_="resps")[T.dl[[[T.dt[name],
+                   T.div(class_="resps")[T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name]],
                                                T.dd[responsibilities(who, name, keyed_types)]]
                                                for name in sorted(keyed_types.keys())]]]]
     their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
@@ -120,7 +124,7 @@ def person_page_contents(who, viewer):
                         for ty in their_equipment_types }
         result += [T.h2["Equipment trained on"],
                    T.div(class_="trainedon")[
-                       T.dl[[[T.dt[name],
+                       T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name]],
                               T.dd[ # todo: add when they were trained, and by whom
                                   "Since ", event.timestring(keyed_types[name][1].start),
                                   T.br,
@@ -140,7 +144,7 @@ def person_page_contents(who, viewer):
                            -their_equipment_types)
     if len(all_remaining_types) > 0:
         result += [T.h2["Other equipment"],
-                   T.dl[[[T.dt[eqty.name.replace('_', ' ').capitalize()],
+                   T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+eqty.name)[eqty.name.replace('_', ' ').capitalize()]],
                           T.dd[T.a(href="request?type=%s&role=user"%eqty.name,
                                    class_="button")["Request training"]
                                if not who.has_requested_training([eqty._id], 'user')
@@ -202,10 +206,7 @@ def person_page_contents(who, viewer):
                             T.li[T.a(href="intervene", class_="adminbutton")["Intervention (special event)"]]
                             if who.is_administrator() else ""]]
 
-    server_conf = configuration.get_config()['server']
     userapilink = server_conf['base_url']+server_conf['userapi']+who.link_id
     result += [T.h2["API links"],
-               T.div(class_="apilinks")[
-                   "Your user API link is ", T.a(href=userapilink)[userapilink]
-               ]]
+               T.div(class_="apilinks")["Your user API link is ", T.a(href=userapilink)[userapilink]]]
     return result

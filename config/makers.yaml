@@ -274,6 +274,7 @@ server:
   base_url: https://admin.makespace.org/
   rsvp:     rsvp/
   machines: equipment/
+  types:    types/
   events:   event/
   userapi:  api/users/
 

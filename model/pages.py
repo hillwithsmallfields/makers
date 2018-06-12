@@ -23,7 +23,7 @@ def page_string(title, content):
                 style_text = '<style type="text/css">' + sf.read() + '</style>'
         else:
             style_text = '<link rel="stylesheet" type="text/css" href="' + stylesheet_name + '">'
-    postamble = page_conf.get('postamble' '')
+    postamble = page_conf.get('postamble', '')
     return flat.flatten(T.html[T.head[T.raw(style_text),
                                       T.title[title]],
                                # todo: set the encoding
