@@ -7,13 +7,32 @@ import timeline
 import timeslots
 import datetime
 
+def machinelist(eqty, who, as_owner=False):
+    """Make a list of machines, with appropriate detail for each."""
+    return [T.dl[[[T.dt[machine.name],
+                  T.dd[T.dl[T.dt["Status"], T.dd[machine.status],
+                            [T.dt["Schedule maintenance"],
+                             T.dd[T.form(action="schedmaint")[T.input(type="datetime", name="when"),
+                                                              T.input(type="hidden", name="type", value=eqty.name),
+                                                              T.input(type="hidden", name="submitter", value=who._id),
+                                           T.input(type="submit", value="Schedule")]]]
+                            if as_owner else []]]]
+                  for machine in eqty.get_machines()]]]
+
 def responsibilities(who, typename, keyed_types):
     is_owner = who.is_owner(keyed_types[typename])
     is_trainer = who.is_trainer(keyed_types[typename])
-    return [T.dl[T.dt["Owner"
+    return [T.dl[T.dt["Machines"],
+                 T.dd[machinelist(equipment_type.Equipment_type.find(typename),
+                                  who, is_owner)],
+                 T.dt["Owner"
                       if is_owner
                       else "Not yet an owner"],
-                 T.dd[((T.a(href="schedmaint?type=%s"%typename, class_="button")["Schedule maintenance"])
+                 T.dd[(T.form(action="schedtrain")[T.input(type="datetime", name="when"),
+                                                    T.input(type="hidden", name="role", value="Owner training"),
+                                                    T.input(type="hidden", name="type", value=typename),
+                                                    T.input(type="hidden", name="submitter", value=who._id),
+                                                    T.input(type="submit", value="Schedule owner training")]
                        if is_owner
                        else ((T.a(href="request?type=%s&role=owner"%typename,
                                   class_="button")["Request owner training"])
@@ -23,13 +42,18 @@ def responsibilities(who, typename, keyed_types):
                  T.dt["Trainer"
                       if is_trainer
                       else "Not yet a trainer"],
-                 T.dd[((T.a(href="schedtrain?type=%s"%typename, class_="button")["Schedule training"])
+                 T.dd[((T.form(action="schedtrain")[T.input(type="datetime", name="when"),
+                                                    T.input(type="radio", name="role", value="User training"),
+                                                    T.input(type="radio", name="role", value="Trainer training"),
+                                                    T.input(type="hidden", name="type", value=typename),
+                                                    T.input(type="hidden", name="submitter", value=who._id),
+                                                    T.input(type="submit", value="Schedule training")]
                        if is_trainer
                        else (T.a(href="request?type=%s&role=trainer"%typename,
-                                 class_="button")["Request owner training"]
-                             if not who.has_requested_training([keyed_types[typename]._id], 'owner')
+                                 class_="button")["Request trainer training"]
+                             if not who.has_requested_training([keyed_types[typename]._id], 'trainer')
                              else T.a(href="canreq?type=%s&role=trainer"%typename,
-                                      class_="negbutton")["Cancel owner training request"]))]]]
+                                      class_="negbutton")["Cancel trainer training request"]))]]]
 
 def availform(available):
     days, _, times = timeslots.get_slots_conf()
@@ -52,9 +76,12 @@ def availform(available):
                                             timeslots.timeslots_from_int(available))]],
               T.input(type="submit", value="Update availability")]])
 
-def eventlist(evlist):
+def eventlist(evlist, with_signup=False):
     return T.dl[[[T.dt[event.timestring(ev.start)],
-                  T.dd[ev.event_type # todo: add title, hosts if allowed, attendees if allowed, etc
+                  T.dd[ev.event_type,
+                       T.a(href="signup?id=%s"%ev._id,
+                           class_="button")["Sign up"]
+                       # todo: add title, hosts if allowed, attendees if allowed, etc, and signup button
                   ]] for ev in evlist]]
 
 def person_page_contents(who, viewer):
@@ -81,8 +108,18 @@ def person_page_contents(who, viewer):
         keyed_types = { ty.name.replace('_', ' ').capitalize(): ty for ty in their_equipment_types }
         result += [T.h2["Equipment trained on"],
                    T.div(class_="trainedon")[
-                       # todo: add owner/trainer training request/cancel buttons
-                       T.ul[[T.li[name] for name in sorted(keyed_types.keys())]]]]
+                       T.dl[[[T.dt[name],
+                              T.dd[T.a(href="request?type=%s&role=trainer"%eqty.name,
+                                       class_="button")["Request trainer training"]
+                               if not who.has_requested_training([eqty._id], 'trainer')
+                               else T.a(href="canreq?type=%s&role=user"%eqty.name,
+                                        class_="negbutton")["Cancel trainer training request"],
+                                   T.a(href="request?type=%s&role=owner"%eqty.name,
+                                       class_="button")["Request owner training"]
+                               if not who.has_requested_training([eqty._id], 'owner')
+                               else T.a(href="canreq?type=%s&role=owner"%eqty.name,
+                                        class_="negbutton")["Cancel owner training request"]]]
+                             for name in sorted(keyed_types.keys())]]]]
     all_remaining_types = ((set(equipment_type.Equipment_type.list_equipment_types())
                             -their_responsible_types)
                            -their_equipment_types)
@@ -109,24 +146,47 @@ def person_page_contents(who, viewer):
                                                              class_="negbutton")["Cancel training request"]]
                                                     for req in sorted_requests]]]]
 
-    known_events = []
-
     hosting = timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events
 
     if len(hosting) > 0:
         result += [T.h2["Events I'm hosting"],
-                   T.div(class_="hostingevents")[
-                       eventlist(hosting)]]
+                   T.div(class_="hostingevents")[eventlist(hosting)]]
 
-    result += [T.h2["Events signed up for"],
-               T.div(class_="signedevents")[
-                   "todo: list of events signed up for to go here"
-               ],
-            T.h2["Events I can sign up for"],
-               T.div(class_="availableevents")[
-                   "todo: list of available events to go here"
-               ],
-            T.h2["API links"],
+    attending = timeline.Timeline.future_events(person_field='attendees', person_id=who._id).events
+
+    if len(attending) > 0:
+        result += [T.h2["Events I'm attending"],
+                   T.div(class_="attendingingevents")[eventlist(attending)]]
+
+    hosted = timeline.Timeline.past_events(person_field='hosts', person_id=who._id).events
+
+    if len(hosting) > 0:
+        result += [T.h2["Events I have hosted"],
+                   T.div(class_="hostedevents")[eventlist(hosted)]]
+
+    attended = timeline.Timeline.past_events(person_field='attendees', person_id=who._id).events
+
+    if len(attended) > 0:
+        result += [T.h2["Events I have attended"],
+                   T.div(class_="attendedingevents")[eventlist(attended)]]
+
+    known_events = hosting + attending + hosted + attended
+
+    available_events = [ev
+                        for ev in timeline.Timeline.future_events()
+                        if ev not in known_events]
+
+    if len(available_events) > 0:
+        result += [T.h2["Events I can sign up for"],
+                   T.div(class_="availableevents")[eventlist(availableevents, True)]]
+
+    if who.is_administrator() or who.is_auditor():
+            result += [T.h2(class_="admin")["Admin actions"],
+                       T.ul[T.li[T.a(href="userlist", class_="adminbutton")["User list"]],
+                            T.li[T.a(href="intervene", class_="adminbutton")["Intervention (special event)"]]
+                            if who.is_administrator() else ""]]
+
+    result += [T.h2["API links"],
                T.div(class_="apilinks")[
                    "todo: api links to go here"
                ]]
