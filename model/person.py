@@ -43,6 +43,7 @@ class Person(object):
     def __init__(self):
         self._id = None
         self.link_id = None
+        self.api_authorization = None
         self.membership_number = None
         self.fob = None
         self.past_fobs = []

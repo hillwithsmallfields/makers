@@ -107,7 +107,7 @@ def names(ids, role):
 def show_person(directory, somebody):
     name = somebody.name()
     with open(os.path.join(directory, name.replace(' ', '_') + ".html"), 'w') as pagefile:
-        pagefile.write(pages.page_string("Dashboard",
+        pagefile.write(pages.page_string("Dashboard for "+name,
                                          person_page.person_page_contents(somebody, somebody)))
 
 def main():

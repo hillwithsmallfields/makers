@@ -50,6 +50,10 @@ th.daylabel {
     text-align: right;
 }
 
+th.ralabel {
+    text-align: right;
+}
+
 .button {
     border:        1px;
     border-style:  outset;
