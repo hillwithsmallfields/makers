@@ -17,6 +17,7 @@ class Equipment_type(object):
     def __init__(self):
         """Set up an equipment type structure."""
         self.name = None
+        self.presentation_name = None
         self.training_category = None
         self.manufacturer = None
         self._id = None
@@ -64,6 +65,10 @@ class Equipment_type(object):
     def API_all_equipment_fobs():
         pairs = [ (eqt.name, eqt.API_enabled_fobs()) for eqt in Equipment_type.list_equipment_types() ]
         return { name: fobs for (name,fobs) in pairs if len(fobs) > 0 }
+
+    def pretty_name(self):
+        """Return the presentation version of the name of the type."""
+        return self.presentation_name or self.name.replace('_', ' ').capitalize()
 
     def get_machines(self):
         """List the individual machines of an equipment type."""
