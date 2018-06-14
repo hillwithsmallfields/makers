@@ -73,6 +73,14 @@ def availform(available):
                                             timeslots.timeslots_from_int(available))]],
               T.input(type="submit", value="Update availability")]])
 
+def general_equipment_list(these_types):
+    keyed_types = {eqty.name: eqty for eqty in these_types}
+    return T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
+                  T.dd[page_pieces.machinelist(keyed_types[name],
+                                               who, False),
+                       page_pieces.toggle_request(name, 'user', who.has_requested_training([keyed_types[name]._id], 'user'))]]
+                         for name in sorted(keyed_types.keys())]]
+
 def machinelist(eqty, who, as_owner=False):
     """Make a list of machines, with appropriate detail for each."""
     # todo: this, or something underneath it, isn't working

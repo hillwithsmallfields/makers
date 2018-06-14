@@ -70,14 +70,6 @@ def responsibilities(who, typename, keyed_types):
                        else page_pieces.toggle_request(typename, 'trainer',
                                                        has_requested_trainer_training))]]]
 
-def general_equipment_list(these_types):
-    keyed_types = {eqty.name: eqty for eqty in these_types}
-    return T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
-                  T.dd[page_pieces.machinelist(keyed_types[name],
-                                               who, False),
-                       page_pieces.toggle_request(name, 'user', who.has_requested_training([keyed_types[name]._id], 'user'))]]
-                         for name in sorted(keyed_types.keys())]]
-
 def equipment_trained_on(who, equipment_types):
     keyed_types = { ty.pretty_name(): (ty, who.qualification(ty.name, 'user'))
                     for ty in equipment_types }
@@ -136,7 +128,7 @@ def person_page_contents(who, viewer):
                             -their_responsible_types)
                            -their_equipment_types)
     if len(all_remaining_types) > 0:
-        result += [T.h2["Other equipment"], general_equipment_list(all_remaining_types)]
+        result += [T.h2["Other equipment"], page_pieces.general_equipment_list(all_remaining_types)]
 
     if len(who.training_requests) > 0:
         result += [T.h2["Training requests"], training_requests_section(who)]
