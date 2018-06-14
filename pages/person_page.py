@@ -23,29 +23,29 @@ def responsibilities(who, typename, keyed_types):
                       if is_owner
                       else "Not yet an owner"+(" but has requested owner training" if has_requested_owner_training else "")],
                  T.dd[(page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
-                                                 T.input(type="hidden", name="role", value="owner"),
-                                                 T.input(type="hidden", name="type", value=typename)],
-                                           "Schedule owner training")
+                                                             T.input(type="hidden", name="role", value="owner"),
+                                                             T.input(type="hidden", name="type", value=typename)],
+                                                       "Schedule owner training")
                        if is_owner
                        else page_pieces.toggle_request(typename, 'owner',
-                                           has_requested_owner_training))],
+                                                       has_requested_owner_training))],
                  T.dt["Trainer"
                       if is_trainer
                       else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
                  T.dd[(page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
-                                                 "User training: ", T.input(type="radio",
-                                                                            name="role",
-                                                                            value="user",
-                                                                            checked="checked"), T.br,
-                                                 "Trainer training: ", T.input(type="radio",
-                                                                               name="role",
-                                                                               value="trainer"), T.br,
-                                                 T.input(type="hidden", name="type", value=typename),
-                                                 T.input(type="hidden", name="type", value=typename)],
-                                           "Schedule training")
+                                                             "User training: ", T.input(type="radio",
+                                                                                        name="role",
+                                                                                        value="user",
+                                                                                        checked="checked"), T.br,
+                                                             "Trainer training: ", T.input(type="radio",
+                                                                                           name="role",
+                                                                                           value="trainer"), T.br,
+                                                             T.input(type="hidden", name="type", value=typename),
+                                                             T.input(type="hidden", name="type", value=typename)],
+                                                       "Schedule training")
                        if is_trainer
                        else page_pieces.toggle_request(typename, 'trainer',
-                                           has_requested_trainer_training))]]]
+                                                       has_requested_trainer_training))]]]
 
 def person_page_contents(who, viewer):
     global server_conf
@@ -80,47 +80,47 @@ def person_page_contents(who, viewer):
                    T.div(class_="resps")[T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
                                                 T.dd[responsibilities(who, name, keyed_types)]]
                                                for name in sorted(keyed_types.keys())]]]]
-        their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
-        if len(their_equipment_types) > 0:
-            keyed_types = { ty.name.replace('_', ' ').capitalize(): (ty,
-                                                                     who.qualification(ty.name, 'user'))
-                            for ty in their_equipment_types }
-            result += [T.h2["Equipment trained on"],
-                       T.div(class_="trainedon")[
-                           T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name]],
-                                  T.dd[ # todo: add when they were trained, and by whom
-                                      "Since ", event.timestring(keyed_types[name][1].start), T.br,
-                                      page_pieces.toggle_request(name, 'trainer',
-                                                                 who.has_requested_training([keyed_types[name][0]._id], 'trainer')),
-                                      page_pieces.toggle_request(name, 'owner',
-                                                                 who.has_requested_training([keyed_types[name][0]._id], 'owner')),
-                                      page_pieces.machinelist(keyed_types[name],
-                                                              who, False)]]
-                                 for name in sorted(keyed_types.keys())]]]]
-            all_remaining_types = ((set(equipment_type.Equipment_type.list_equipment_types())
-                                    -their_responsible_types)
-                                   -their_equipment_types)
-            if len(all_remaining_types) > 0:
-                keyed_types = {eqty.name: eqty for eqty in all_remaining_types}
-                result += [T.h2["Other equipment"],
-                           T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
-                                  T.dd[page_pieces.machinelist(keyed_types[name],
-                                                               who, False),
-                                       page_pieces.toggle_request(name, 'user', who.has_requested_training([keyed_types[name]._id], 'user'))]]
-                                 for name in sorted(keyed_types.keys())]]]
-            if len(who.training_requests) > 0:
-                len_training = len("_training")
-                keyed_requests = {req['request_date']: req for req in who.training_requests}
-                sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
-                result += [T.h2["Training requests"],
-                           T.div(class_="requested")[T.table()[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]],
-                                                               [T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
-                                                                     T.td[", ".join([equipment_type.Equipment_type.find_by_id(id).name.replace('_', ' ').capitalize()
-                                                                                     for id in req['equipment_types']])],
-                                                                     T.td[str(req['event_type'])[:-len_training]],
-                                                                     T.td[page_pieces.cancel_button(",".join(map(str, req['equipment_types'])),
-                                                                                                    'user', "Cancel training request")]]
-                                                                for req in sorted_requests]]]]
+    their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
+    if len(their_equipment_types) > 0:
+        keyed_types = { ty.name.replace('_', ' ').capitalize(): (ty,
+                                                                 who.qualification(ty.name, 'user'))
+                        for ty in their_equipment_types }
+        result += [T.h2["Equipment trained on"],
+                   T.div(class_="trainedon")[
+                       T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name]],
+                              T.dd[ # todo: add when they were trained, and by whom
+                                  "Since ", event.timestring(keyed_types[name][1].start), T.br,
+                                  page_pieces.toggle_request(name, 'trainer',
+                                                             who.has_requested_training([keyed_types[name][0]._id], 'trainer')),
+                                  page_pieces.toggle_request(name, 'owner',
+                                                             who.has_requested_training([keyed_types[name][0]._id], 'owner')),
+                                  page_pieces.machinelist(keyed_types[name],
+                                                          who, False)]]
+                             for name in sorted(keyed_types.keys())]]]]
+    all_remaining_types = ((set(equipment_type.Equipment_type.list_equipment_types())
+                            -their_responsible_types)
+                           -their_equipment_types)
+    if len(all_remaining_types) > 0:
+        keyed_types = {eqty.name: eqty for eqty in all_remaining_types}
+        result += [T.h2["Other equipment"],
+                   T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
+                          T.dd[page_pieces.machinelist(keyed_types[name],
+                                                       who, False),
+                               page_pieces.toggle_request(name, 'user', who.has_requested_training([keyed_types[name]._id], 'user'))]]
+                         for name in sorted(keyed_types.keys())]]]
+    if len(who.training_requests) > 0:
+        len_training = len("_training")
+        keyed_requests = {req['request_date']: req for req in who.training_requests}
+        sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
+        result += [T.h2["Training requests"],
+                   T.div(class_="requested")[T.table()[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]],
+                                                       [T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
+                                                             T.td[", ".join([equipment_type.Equipment_type.find_by_id(id).name.replace('_', ' ').capitalize()
+                                                                             for id in req['equipment_types']])],
+                                                             T.td[str(req['event_type'])[:-len_training]],
+                                                             T.td[page_pieces.cancel_button(",".join(map(str, req['equipment_types'])),
+                                                                                            'user', "Cancel training request")]]
+                                                        for req in sorted_requests]]]]
 
     hosting = timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events
 
