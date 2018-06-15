@@ -342,8 +342,10 @@ class Person(object):
     def qualification(self, equipment_type_name, role,
                       when=None,
                       skip_membership_check=False):
-        """Return whether the person is qualified for a role on an equipment class.
-        The result is the event that qualified them."""
+        """Return whether the person is qualified for a role on an equipment type.
+        The first result is the event that qualified them, or None if they are not
+        qualified or if their qualification is suspended.
+        A second result gives their latest ban or suspension on this equipment type."""
         trained = None
         detrained = None
         equipment_id = equipment_type.Equipment_type.find(equipment_type_name)._id
@@ -358,17 +360,17 @@ class Person(object):
                 detrained = ev.start
                 break
         if detrained is None:
-            return trained
+            return trained, None
         if trained is None or detrained.start > trained.start:
-            return None
+            return None, detrained
         # skip_membership_check is for avoiding further recursion in the call to is_member.
         # Qualification to use equipment isn't cancelled immediately someone stops being a
         # member, so that if they restore their membership before the training is counted
         # as stale, the training can be retained as valid.  So in checking whether someone
         # can use a piece of equipment, we much also check that they are a member.
         if (not skip_membership_check) and (not self.is_member()):
-            return None
-        return trained
+            return None, None
+        return trained, detrained
 
     def is_member(self):
         """Return whether the person is a member."""
