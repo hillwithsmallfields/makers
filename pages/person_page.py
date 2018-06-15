@@ -55,6 +55,7 @@ def responsibilities(who, typename, keyed_types):
                  T.dt["Trainer"
                       if is_trainer
                       else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
+                 # todo: count the training requests for this type, and perhaps what times are most popular
                  T.dd[(page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
                                                              "User training: ", T.input(type="radio",
                                                                                         name="role",
@@ -71,6 +72,7 @@ def responsibilities(who, typename, keyed_types):
                                                        has_requested_trainer_training))]]]
 
 def equipment_trained_on(who, equipment_types):
+    # todo: handle bans/suspensions, with admin-only buttons to unsuspend them
     keyed_types = { ty.pretty_name(): (ty, who.qualification(ty.name, 'user'))
                     for ty in equipment_types }
     return T.div(class_="trainedon")[
@@ -81,6 +83,7 @@ def equipment_trained_on(who, equipment_types):
                                               who.has_requested_training([keyed_types[name][0]._id], 'trainer')),
                    page_pieces.toggle_request(name, 'owner',
                                               who.has_requested_training([keyed_types[name][0]._id], 'owner')),
+                   # todo: add admin-only buttons for suspending qualifications
                    page_pieces.machinelist(keyed_types[name],
                                            who, False)]]
                              for name in sorted(keyed_types.keys())]]]
