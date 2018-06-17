@@ -24,6 +24,7 @@ def page_string(title, content):
         else:
             style_text = '<link rel="stylesheet" type="text/css" href="' + stylesheet_name + '">'
     postamble = page_conf.get('postamble', '')
+    # print "Flattening", content
     return flat.flatten(T.html[T.head[T.raw(style_text),
                                       T.title[title]],
                                # todo: set the encoding

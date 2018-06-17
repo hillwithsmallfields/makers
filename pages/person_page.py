@@ -1,4 +1,3 @@
-from nevow import flat
 from nevow import tags as T
 import configuration
 import equipment_type
@@ -75,16 +74,18 @@ def equipment_trained_on(who, equipment_types):
     # todo: handle bans/suspensions, with admin-only buttons to unsuspend them
     keyed_types = { ty.pretty_name(): (ty, who.qualification(ty.name, 'user'))
                     for ty in equipment_types }
+    # print "keyed_types are", keyed_types
+    # print "sorted(keyed_types.keys()) is", sorted(keyed_types.keys())
     return T.div(class_="trainedon")[
         T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name]],
                T.dd[ # todo: add when they were trained, and by whom
-                   "Since ", event.timestring(keyed_types[name][1].start), T.br,
+                   "Since ", event.timestring(keyed_types[name][1][0].start), T.br,
                    page_pieces.toggle_request(name, 'trainer',
                                               who.has_requested_training([keyed_types[name][0]._id], 'trainer')),
                    page_pieces.toggle_request(name, 'owner',
                                               who.has_requested_training([keyed_types[name][0]._id], 'owner')),
                    # todo: add admin-only buttons for suspending qualifications
-                   page_pieces.machinelist(keyed_types[name],
+                   page_pieces.machinelist(keyed_types[name][0],
                                            who, False)]]
                              for name in sorted(keyed_types.keys())]]]
 
@@ -131,7 +132,7 @@ def person_page_contents(who, viewer):
                             -their_responsible_types)
                            -their_equipment_types)
     if len(all_remaining_types) > 0:
-        result += [T.h2["Other equipment"], page_pieces.general_equipment_list(all_remaining_types)]
+        result += [T.h2["Other equipment"], page_pieces.general_equipment_list(who, all_remaining_types)]
 
     if len(who.training_requests) > 0:
         result += [T.h2["Training requests"], training_requests_section(who)]
@@ -169,7 +170,7 @@ def person_page_contents(who, viewer):
                    admin_section(viewer)]
 
     userapilink = page_pieces.section_link("userapi", who.link_id, who.link_id)
-    api_link = ["Your user API link is ", T.a(href=userapilink)[userapilink]]
+    api_link = ["Your user API link is ", userapilink]
     if who.api_authorization is None:
         api_link += [T.br,
                      "You will need to register to get API access authorization.",

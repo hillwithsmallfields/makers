@@ -1,4 +1,5 @@
 import database
+import machine
 import person
 
 class Equipment_type(object):
@@ -72,7 +73,7 @@ class Equipment_type(object):
 
     def get_machines(self):
         """List the individual machines of an equipment type."""
-        return [ machine['_id'] for machine in database.get_machine_dicts_for_type(self._id) ]
+        return [ machine.Machine.find_by_id(mc['_id']) for mc in database.get_machine_dicts_for_type(self._id) ]
 
     def get_people(self, role):
         """Return the trained users, owners, or trainers of an equipment type."""

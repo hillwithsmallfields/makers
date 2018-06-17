@@ -373,7 +373,7 @@ class Person(object):
         return trained, detrained
 
     def is_member(self):
-        """Return whether the person is a member."""
+        """Return whether the person is a member, and whether they have a suspension on their membership."""
         return self.qualification(configuration.get_config()['organization']['name'], 'user',
                                   skip_membership_check=True)
 

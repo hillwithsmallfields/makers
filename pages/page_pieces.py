@@ -3,6 +3,7 @@ from nevow import tags as T
 import configuration
 import equipment_type
 import event
+import machine
 import person
 import timeline
 import timeslots
@@ -73,12 +74,12 @@ def availform(available):
                                             timeslots.timeslots_from_int(available))]],
               T.input(type="submit", value="Update availability")]])
 
-def general_equipment_list(these_types):
+def general_equipment_list(who, these_types):
     keyed_types = {eqty.name: eqty for eqty in these_types}
     return T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
-                  T.dd[page_pieces.machinelist(keyed_types[name],
-                                               who, False),
-                       page_pieces.toggle_request(name, 'user', who.has_requested_training([keyed_types[name]._id], 'user'))]]
+                  T.dd[machinelist(keyed_types[name],
+                                   who, False),
+                       toggle_request(name, 'user', who.has_requested_training([keyed_types[name]._id], 'user'))]]
                          for name in sorted(keyed_types.keys())]]
 
 def machinelist(eqty, who, as_owner=False):
@@ -87,15 +88,15 @@ def machinelist(eqty, who, as_owner=False):
     if eqty is None:
         return []
     mclist = eqty.get_machines()
-    return ([T.dl[[[T.dt[machine_link(machine.name)],
-                    T.dd[T.dl[T.dt["Status"], T.dd[machine.status],
+    return ([T.dl[[[T.dt[machine_link(device.name)],
+                    T.dd[T.dl[T.dt["Status"], T.dd[device.status],
                               [T.dt["Schedule maintenance"],
                                T.dd[schedule_event_form(who,
-                                                        [T.input(type="hidden", name="machine", value=machine.name),
+                                                        [T.input(type="hidden", name="machine", value=device.name),
                                                          T.input(type="hidden", name="event_type", value="maintenance")],
                                                         "Schedule maintenance")]]
                               if as_owner else []]]]
-                   for machine in mclist]]]
+                   for device in mclist]]]
             if mclist
             else [])
 

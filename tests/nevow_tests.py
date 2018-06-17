@@ -6,9 +6,11 @@ import os
 import random
 import sys
 from datetime import datetime, timedelta
+
 sys.path.append('model')
 sys.path.append('utils')
 sys.path.append('pages')
+
 import access_permissions
 import configuration
 import database
@@ -18,9 +20,11 @@ import importer
 import machine
 import pages
 import person
-import person_page
 import timeline
 import timeslots
+
+import equipment_type_list_page
+import person_page
 
 genconf = configuration.get_config()
 interest_areas = genconf['skill_areas']
@@ -57,9 +61,9 @@ def setup_random_event(possible_templates, event_datetime, eqtypes, attendees, v
 def random_user_activities(equipments, green_templates):
     for whoever in person.Person.list_all_people():
         membership = whoever.is_member()
-        if membership:
+        if membership[0]:
             whoever.available = evening_timeslots if random.random() < 0.2 else evening_and_weekend_timeslots
-            date_joined = membership.start
+            date_joined = membership[0].start
             for i in range(1, random.randrange(1, 12)):
                 days_since_joining = (datetime.now() - date_joined).days
                 request_date = date_joined + timedelta(random.randrange(7, days_since_joining + 56), 0)
@@ -110,6 +114,15 @@ def show_person(directory, somebody):
         pagefile.write(pages.page_string("Dashboard for "+name,
                                          person_page.person_page_contents(somebody, somebody)))
 
+def show_equipment_types():
+    with open(os.path.join("equipment-type-pages", "equipment-type-index.html"), 'w') as pagefile:
+        pagefile.write(pages.page_string("Equipment types by category",
+                                         [equipment_type_list_page.equipment_type_list_section(training_category)
+                                          for training_category in ['green', 'amber', 'red']]))
+    for eqty in equipment_type.Equipment_type.list_equipment_types(None):
+        with open(os.path.join("equipment-type-pages", eqty.name + ".html"), 'w') as pagefile:
+            pagefile.write(pages.page_string(eqty.pretty_name(), "placeholder"))
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-y", "--equipment-types", default="equipment-types.csv")
@@ -152,6 +165,8 @@ def main():
         all_members = person.Person.list_all_members()
         for whoever in all_members:
             show_person("member-pages", whoever)
+
+    show_equipment_types()
 
 if __name__ == "__main__":
     main()
