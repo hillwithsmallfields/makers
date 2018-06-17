@@ -99,7 +99,7 @@ def training_requests_section(who):
                                                      T.td[str(req['event_type'])[:-len_training]],
                                                      T.td[page_pieces.cancel_button(",".join(map(str, req['equipment_types'])),
                                                                                     'user', "Cancel training request")]]
-                                                        for req in sorted_requests]]]]
+                                                        for req in sorted_requests]]]
 
 
 def admin_section(viewer):
