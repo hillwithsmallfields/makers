@@ -54,6 +54,10 @@ th.ralabel {
     text-align: right;
 }
 
+ul.compactlist {
+    display: inline;
+}
+
 .button {
     border:        1px;
     border-style:  outset;

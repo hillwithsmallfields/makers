@@ -24,6 +24,7 @@ import timeline
 import timeslots
 
 import equipment_type_list_page
+import equipment_type_page
 import person_page
 
 genconf = configuration.get_config()
@@ -121,7 +122,7 @@ def show_equipment_types():
                                           for training_category in ['green', 'amber', 'red']]))
     for eqty in equipment_type.Equipment_type.list_equipment_types(None):
         with open(os.path.join("equipment-type-pages", eqty.name + ".html"), 'w') as pagefile:
-            pagefile.write(pages.page_string(eqty.pretty_name(), "placeholder"))
+            pagefile.write(pages.page_string(eqty.pretty_name(), equipment_type_page.equipment_type_section(eqty)))
 
 def main():
     parser = argparse.ArgumentParser()

@@ -27,7 +27,7 @@ class Machine(object):
         self.status_detail = None
         self.maintenance_history = []
         self.maintenance_due = None
-        self.Location = None
+        self.location = None
         self.brand = None
         self.model = None
         self.serial_number = None
