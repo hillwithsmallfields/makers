@@ -5,7 +5,7 @@ import json
 import os
 import random
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, date, time, timedelta
 sys.path.append('model')
 sys.path.append('utils')
 import access_permissions
@@ -53,7 +53,8 @@ def setup_random_event(possible_templates, event_datetime, eqtypes, attendees, v
 
 def random_user_activities(equipments, green_templates):
     for whoever in person.Person.list_all_people():
-        membership = whoever.is_member()
+        membership = whoever.is_member()[0]
+        # print "membership for", whoever, "is", membership
         if membership:
             whoever.available = evening_timeslots if random.random() < 0.2 else evening_and_weekend_timeslots
             date_joined = membership.start
@@ -108,7 +109,8 @@ def list_equipment_types_to_files(all_types):
         print "  users", ", ".join([ user.name() for user in eqtype.get_trained_users() ])
         print "  owners",  ", ".join([ user.name() for user in eqtype.get_owners() ])
         print "  trainers",  ", ".join([ user.name() for user in eqtype.get_trainers() ])
-        print "  machines",  ", ".join([ machine.Machine.find_by_id(mc).name for mc in eqtype.get_machines() ])
+        print "  ** eqtype.get_machines() is", eqtype.get_machines()
+        print "  machines",  ", ".join([ mc.name for mc in eqtype.get_machines() ])
         print "  enabled fobs", json.dumps(eqtype.API_enabled_fobs(), indent=4)
         for role in ['user', 'owner', 'trainer']:
             requests = eqtype.get_training_requests()
@@ -201,8 +203,7 @@ def show_all_machine_status():
     print_heading("Machine status")
     for eqty in equipment_type.Equipment_type.list_equipment_types():
         print "  ", eqty.name
-        for machine_id in eqty.get_machines():
-            mc = machine.Machine.find_by_id(machine_id)
+        for mc in eqty.get_machines():
             status, detail = mc.get_status()
             print "    ", mc.name, status, detail or ""
 
@@ -476,6 +477,17 @@ def main():
                            [random.choice(everybody)._id],
                            verbose=True)
 
+    # make sure there are some future events
+
+    for _ in range(1, random.randrange(128, 512)):
+        event_date = datetime.combine(datetime.now().date() + timedelta(random.randint(1, 60)),
+                                      time(random.randint(17, 19), 15 * random.randint(0,3)))
+        print "Making future event starting at", event_datetime
+        setup_random_event(green_templates,
+                           event_datetime,
+                           [random.choice(green_equipment)._id],
+                           [random.choice(everybody)._id],
+                           verbose=True)
 
     show_current_events()
     show_coming_events()
