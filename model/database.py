@@ -7,6 +7,7 @@ import configuration
 import event
 import json
 import os
+# import machine
 import person
 import pymongo
 import uuid
@@ -220,6 +221,8 @@ def get_eqtype_events(equipment_type, event_type, earliest=None, latest=None):
 
 def get_machine_dict(name):
     """Read the data for a machine from the database."""
+    # if isinstance(name, machine.Machine):
+    #     name = name._id
     collection = database[collection_names['machines']]
     return (collection.find_one({'name': name})
             or collection.find_one({'_id': name}))

@@ -368,7 +368,7 @@ class Person(object):
         # member, so that if they restore their membership before the training is counted
         # as stale, the training can be retained as valid.  So in checking whether someone
         # can use a piece of equipment, we much also check that they are a member.
-        if (not skip_membership_check) and (not self.is_member()):
+        if (not skip_membership_check) and (not self.is_member()[0]):
             return None, None
         return trained, detrained
 
@@ -456,7 +456,7 @@ class Person(object):
         name, known_as = database.person_name(self)
         personal_data = {'name': name,
                          'qualified': self.get_qualifications()}
-        membership = self.is_member()
+        membership = self.is_member()[0]
         personal_data['member_since'] = str(membership.start.date())
         if known_as:
             personal_data['known_as'] = known_as

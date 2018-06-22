@@ -255,18 +255,28 @@ class Event(object):
         title = template_dict['title'].replace("$equipment",
                                                ", ".join([Equipment_type.find(eqty).name
                                                           for eqty in equipment_types]))
+
         instance = Event(template_dict['event_type'],
                          event_datetime,
                          hosts,
                          title=title,
                          attendees=[],
                          equipment_types=equipment_types)
+
+        instance_dict = database.get_event(template_dict['event_type'],
+                                           event_datetime,
+                                           hosts,
+                                           equipment_types, True)
+
+        instance.__dict__.update(instance_dict)
+
         for k, v in template_dict.iteritems():
             if instance.__dict__.get(k, None) is None:
                 instance.__dict__[k] = v
         instance.end = instance.start + timedelta(0, 60 * int(template_dict.get('duration', '120')))
         instance.host_prerequisites = host_prerequisites
         instance.attendee_prerequisites = attendee_prerequisites
+        instance.save()
         return instance, None
 
     @staticmethod
