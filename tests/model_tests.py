@@ -443,6 +443,19 @@ def main():
 
     test_training_requests()
 
+    # make sure there are some events going on right now, for show_current_events to show:
+    # todo: find why it's failing to create these events, then fix it, then see whether the "current event" code is working
+    everybody = person.Person.list_all_people()
+    for _ in range(1, random.randrange(3, 7)):
+        event_datetime = datetime.now()
+        event_datetime = event_datetime.replace(hour=event_datetime.hour-random.randrange(0,2), minute=0, second=0, microsecond=0)
+        print "Making current event starting at", event_datetime
+        setup_random_event(green_templates,
+                           event_datetime,
+                           [random.choice(green_equipment)._id],
+                           [random.choice(everybody)._id],
+                           verbose=True)
+
     if not args.quick:
         print "listing members"
         all_members = person.Person.list_all_members()
@@ -462,19 +475,6 @@ def main():
     print "writing machine controller local cache data"
     with open("allfobs.json", 'w') as outfile:
         outfile.write(json.dumps(equipment_type.Equipment_type.API_all_equipment_fobs(), indent=4))
-
-    # make sure there are some events going on right now, for show_current_events to show:
-    # todo: find why it's failing to create these events, then fix it, then see whether the "current event" code is working
-    everybody = person.Person.list_all_people()
-    for _ in range(1, random.randrange(3, 7)):
-        event_datetime = datetime.now()
-        event_datetime = event_datetime.replace(hour=event_datetime.hour-random.randrange(0,2), minute=0, second=0, microsecond=0)
-        print "Making current event starting at", event_datetime
-        setup_random_event(green_templates,
-                           event_datetime,
-                           [random.choice(green_equipment)._id],
-                           [random.choice(everybody)._id],
-                           verbose=True)
 
 
     show_current_events()

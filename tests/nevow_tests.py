@@ -161,6 +161,37 @@ def main():
     if not args.existing:
         random_user_activities(all_types, green_templates)
 
+    # make sure there are some events going on right now
+    # todo: find why it's failing to create these events, then fix it, then see whether the "current event" code is working
+    everybody = person.Person.list_all_people()
+    for _ in range(1, random.randrange(3, 7)):
+        event_datetime = datetime.now()
+        event_datetime = event_datetime.replace(hour=event_datetime.hour-random.randrange(0,2), minute=0, second=0, microsecond=0)
+        print "Making current event starting at", event_datetime
+        setup_random_event(green_templates,
+                           event_datetime,
+                           [random.choice(green_equipment)._id],
+                           [random.choice(everybody)._id],
+                           verbose=True)
+        print "There are now", len(timeline.Timeline.present_events().events), "present events"
+
+    # make sure there are some future events
+    # todo: find why it's failing to create these events, then fix it, then see whether the "future event" code is working
+    everybody = person.Person.list_all_people()
+    for _ in range(1, random.randrange(24, 48)):
+        event_datetime = datetime.now()
+        event_datetime = event_datetime.replace(hour=19, minute=0, second=0, microsecond=0) + timedelta(random.randrange(1, 21))
+        print "Making future event starting at", event_datetime
+        setup_random_event(green_templates,
+                           event_datetime,
+                           [random.choice(green_equipment)._id],
+                           [random.choice(everybody)._id],
+                           verbose=True)
+        print "There are now", len(timeline.Timeline.future_events().events), "future events and", len(timeline.Timeline.past_events().events), "past events"
+
+    print "present events are", timeline.Timeline.present_events().events
+    print "future events are", timeline.Timeline.future_events().events
+
     if not args.quick:
         print "listing members"
         all_members = person.Person.list_all_members()
