@@ -92,15 +92,17 @@ class Event(object):
         self.status = 'draft'
         # It would be nice to use Python sets for these,
         # but then we'd have to convert them for loading and saving in mongo.
-        self.hosts = hosts         # _id of person
+        self.hosts = hosts         # [_id of person]
         self.attendance_limit = 30
-        self.attendees = attendees # _id of person
+        self.attendees = attendees # [_id of person]
+        self.invited = []          # {_id of person: timestamp of invitation}
+        self.declined = []         # [_id of person]
         self.equipment_types = equipment_types
         self.equipment = equipment # list of Machine, by ObjectId
         self._id = None
-        self.passed = []   # _id of person
-        self.failed = []   # _id of person
-        self.noshow = []   # _id of person
+        self.passed = []   # [_id of person]
+        self.failed = []   # [_id of person]
+        self.noshow = []   # [_id of person]
         self.host_prerequisites = []
         self.attendee_prerequisites = []
         self.location = None
@@ -302,11 +304,28 @@ class Event(object):
         return [ template for template in database.list_event_templates()
                  if Event._all_hosts_suitable_(template, hosts, equipment_types) ]
 
-    def notify_interested_people(self):
+    def available_interested_people(self):
         event_timeslot_bitmap = timeslots.time_to_timeslot(self.start)
-        for whoever in person.Person.awaiting_training(self.event_type, self.equipment_types):
-            if whoever.available & event_timeslot_bitmap:
-                whoever.notify(self)
+        [whoever
+         for whoever in person.Person.awaiting_training(self.event_type, self.equipment_types)
+         if whoever.available & event_timeslot_bitmap]
+
+    def invite_available_interested_people(self):
+        """Send event invitations to the relevant people.
+        These are those who:
+          - have expressed an interest
+          - have indicated they may be available at that time
+          - have not yet been invited, or have replied to an invitation."""
+        if len(self.attendees) < self.attendance_limit:
+            potentials = [whoever for whoever in self.available_interested_people()
+                          if (whoever._id not in self.attendees
+                              and whoever._id not in self.declined)]
+            if len(potentials) > self.attendance_limit:
+                potentials = potentials[:self.attendance_limit]
+            for whoever in potentials:
+                if whoever._id not in self.invited:
+                    whoever.notify(self)
+                    self.invited[whoever._id] = datetime.now()
 
     def publish(self):
         """Make the event appear in the list of scheduled events."""

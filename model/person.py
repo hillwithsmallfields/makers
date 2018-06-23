@@ -278,7 +278,9 @@ class Person(object):
     @staticmethod
     def awaiting_training(event_type, equipment_types):
         """List the people who have requested a particular type of training."""
-        return database.get_people_awaiting_training(event_type, equipment_types)
+        return map(find,
+                   database.get_people_awaiting_training(event_type,
+                                                         equipment_types))
 
     def mail_event_invitation(self, m_event, message_template_name):
         """Mail the person about an event.
