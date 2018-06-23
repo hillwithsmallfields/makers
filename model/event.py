@@ -95,8 +95,9 @@ class Event(object):
         self.hosts = hosts         # [_id of person]
         self.attendance_limit = 30
         self.invitation_accepted = invitation_accepted # [_id of person]
-        self.invited = []          # {_id of person: timestamp of invitation}
+        self.invited = {}          # {_id of person: timestamp of invitation}
         self.invitation_declined = []         # [_id of person]
+        self.invitation_timeout = 3           # days
         self.equipment_types = equipment_types
         self.equipment = equipment # list of Machine, by ObjectId
         self._id = None
@@ -316,6 +317,7 @@ class Event(object):
           - have expressed an interest
           - have indicated they may be available at that time
           - have not yet been invited, or have replied to an invitation."""
+        self.auto_expire_non_replied_invitations()
         if len(self.invitation_accepted) < self.attendance_limit:
             potentials = [whoever for whoever in self.available_interested_people()
                           if (whoever._id not in self.invitation_accepted
@@ -392,6 +394,14 @@ class Event(object):
             if attendee._id in self.invitation_declined:
                 self.invitation_declined.remove(attendee._id)
         self.save()
+
+    def auto_expire_non_replied_invitations(self):
+        cutoff = datetime.now() - timedelta(self.invitation_timeout,0)
+        for who, when in self.invited.iteritems():
+            if when < cutoff:
+                if (who._id not in self.invitation_accepted
+                    and who._id not in self.invitation_declined):
+                    self.invitation_declined.append(who._id)
 
     def mark_results(self, successful, failed, noshow):
         """Record the results of a training session."""
