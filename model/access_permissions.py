@@ -94,7 +94,7 @@ class Access_Permissions(object):
                          or (equipment_type in self.roles['trainer']
                              and event is not None
                              and self.viewing_person._id in event.hosts
-                             and other._id in event.attendees
+                             and other._id in event.invitation_accepted
                              and other.visibility['attendee'] is not False))))
 
     def can_write_for(self, other, event=None, equipment_type=None):
@@ -105,4 +105,4 @@ class Access_Permissions(object):
                          or (equipment_type in self.roles['trainer']
                              and event is not None
                              and self.viewing_person._id in event.hosts
-                             and other._id in event.attendees))))
+                             and other._id in event.invitation_accepted))))

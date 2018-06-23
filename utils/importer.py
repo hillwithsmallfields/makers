@@ -43,7 +43,7 @@ def import_role_file(role, csv_file, verbose):
                                         [trainer_id],
                                         equipment_type_ids)
             training_event.publish()
-            training_event.add_attendees([tr_person])
+            training_event.add_invitation_accepted([tr_person])
             training_event.mark_results([tr_person], [], [])
             checkback = Person.find(row['Name'])
             if verbose:
@@ -124,7 +124,7 @@ def import0(args):
                                           row['Date inducted'],
                                           [inductor_id],
                                           [Equipment_type.find(config['organization']['name'])._id])
-            induction_event.add_attendees([added])
+            induction_event.add_invitation_accepted([added])
             induction_event.mark_results([added], [], [])
             # print "induction event is now", induction_event
             added.add_training(induction_event)

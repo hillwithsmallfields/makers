@@ -71,7 +71,7 @@ class Event(object):
                  event_datetime,
                  hosts,
                  title=None,
-                 attendees=[],
+                 invitation_accepted=[],
                  event_duration=60,
                  equipment_types=[],
                  equipment=[]):
@@ -94,9 +94,9 @@ class Event(object):
         # but then we'd have to convert them for loading and saving in mongo.
         self.hosts = hosts         # [_id of person]
         self.attendance_limit = 30
-        self.attendees = attendees # [_id of person]
+        self.invitation_accepted = invitation_accepted # [_id of person]
         self.invited = []          # {_id of person: timestamp of invitation}
-        self.declined = []         # [_id of person]
+        self.invitation_declined = []         # [_id of person]
         self.equipment_types = equipment_types
         self.equipment = equipment # list of Machine, by ObjectId
         self._id = None
@@ -120,8 +120,8 @@ class Event(object):
             accum += " on " + ", ".join([Equipment_type.find(e).name for e in self.equipment_types])
         if len(self.passed) > 0:
             accum += " passing " + ", ".join([person.Person.find(who).name() for who in self.passed])
-        elif len(self.attendees) > 0:
-            accum += " attending " + ", ".join([person.Person.find(who).name() for who in self.attendees])
+        elif len(self.invitation_accepted) > 0:
+            accum += " attending " + ", ".join([person.Person.find(who).name() for who in self.invitation_accepted])
         accum += ">"
         return accum
 
@@ -142,7 +142,7 @@ class Event(object):
         if event_id not in Event.events_by_id:
             new_event_object = Event(event_type, event_datetime,
                                      hosts,
-                                     attendees=[], # I don't know why I need to make this explicit, but if I don't, it keeps including all the previous ones
+                                     invitation_accepted=[], # I don't know why I need to make this explicit, but if I don't, it keeps including all the previous ones
                                      equipment_types=equipment_types)
             Event.events_by_id[event_id] = new_event_object
         e = Event.events_by_id[event_id]
@@ -262,7 +262,7 @@ class Event(object):
                          event_datetime,
                          hosts,
                          title=title,
-                         attendees=[],
+                         invitation_accepted=[],
                          equipment_types=equipment_types)
 
         instance_dict = database.get_event(template_dict['event_type'],
@@ -316,10 +316,10 @@ class Event(object):
           - have expressed an interest
           - have indicated they may be available at that time
           - have not yet been invited, or have replied to an invitation."""
-        if len(self.attendees) < self.attendance_limit:
+        if len(self.invitation_accepted) < self.attendance_limit:
             potentials = [whoever for whoever in self.available_interested_people()
-                          if (whoever._id not in self.attendees
-                              and whoever._id not in self.declined)]
+                          if (whoever._id not in self.invitation_accepted
+                              and whoever._id not in self.invitation_declined)]
             if len(potentials) > self.attendance_limit:
                 potentials = potentials[:self.attendance_limit]
             for whoever in potentials:
@@ -355,24 +355,42 @@ class Event(object):
                 self.hosts.remove(host._id)
         self.save()
 
-    def get_attendees(self):
+    def get_invitation_accepted(self):
         """Return the list of people attending the event."""
-        return [ person.Person.find(at_id) for at_id in self.attendees ]
+        return [ person.Person.find(at_id) for at_id in self.invitation_accepted ]
 
-    def add_attendees(self, attendees):
-        """Add specified people to the attendees list."""
-        # print "event", self._id, "adding", attendees, "to", self.attendees, "?"
-        for attendee in attendees:
-            if attendee._id not in self.attendees:
+    def add_invitation_accepted(self, invitation_accepted):
+        """Add specified people to the invitation_accepted list."""
+        # print "event", self._id, "adding", invitation_accepted, "to", self.invitation_accepted, "?"
+        for attendee in invitation_accepted:
+            if attendee._id not in self.invitation_accepted:
                 # print "yes, adding", attendee, attendee._id
-                self.attendees.append(attendee._id)
+                self.invitation_accepted.append(attendee._id)
+        self.remove_invitation_declined(invitation_accepted)
         self.save()
 
-    def remove_attendees(self, attendees):
-        """Remove specified people from the attendees list."""
-        for attendee in attendees:
-            if attendee._id in self.attendees:
-                self.attendees.remove(attendee._id)
+    def remove_invitation_accepted(self, invitation_accepted):
+        """Remove specified people from the invitation_accepted list."""
+        for attendee in invitation_accepted:
+            if attendee._id in self.invitation_accepted:
+                self.invitation_accepted.remove(attendee._id)
+        self.save()
+
+    def add_invitation_declined(self, invitation_declined):
+        """Add specified people to the invitation_declined list."""
+        # print "event", self._id, "adding", invitation_declined, "to", self.invitation_declined, "?"
+        for attendee in invitation_declined:
+            if attendee._id not in self.invitation_declined:
+                # print "yes, adding", attendee, attendee._id
+                self.invitation_declined.append(attendee._id)
+        self.remove_invitation_accepted(invitation_declined)
+        self.save()
+
+    def remove_invitation_declined(self, invitation_declined):
+        """Remove specified people from the invitation_declined list."""
+        for attendee in invitation_declined:
+            if attendee._id in self.invitation_declined:
+                self.invitation_declined.remove(attendee._id)
         self.save()
 
     def mark_results(self, successful, failed, noshow):
@@ -391,7 +409,7 @@ class Event(object):
     def dietary_avoidances(self):
         """Return the dietary avoidance data as a dictionary of avoidance to number of advoidents."""
         avoidances = {}
-        for person_id in self.attendees:
+        for person_id in self.invitation_accepted:
             whoever = person.Person.find(person_id)
             if whoever and 'avoidances' in whoever.profile:
                 avoids = ", ".join(sorted(whoever.profile['avoidances']))

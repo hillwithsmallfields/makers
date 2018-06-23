@@ -124,7 +124,7 @@ def get_event(event_type, event_datetime, hosts, equipment, create=True):
                                                          'event_type': event_type})
         # print "result of db insert is", x
         new_event = get_event(event_type, event_datetime, hosts, equipment, False)
-        # print "returned from recursion, database new event is", new_event['_id'], "with", len(new_event.get('attendees', [])), "attendees"
+        # print "returned from recursion, database new event is", new_event['_id'], "with", len(new_event.get('invitation_accepted', [])), "invitation_accepted"
         return new_event
     # print "database found event already", found['_id']
     return found

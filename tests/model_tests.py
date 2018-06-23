@@ -33,10 +33,10 @@ print "evening_and_weekend_timeslots:", timeslots.timeslots_from_int(evening_and
 def set_access_permissions_as_admin(access_permissions):
     access_permissions.add_role('owner', configuration.get_config()['organization']['database'])
 
-def setup_random_event(possible_templates, event_datetime, eqtypes, attendees, verbose=False):
+def setup_random_event(possible_templates, event_datetime, eqtypes, invitation_accepted, verbose=False):
     new_event, problem = event.Event.instantiate_template(random.choice(possible_templates)['event_type'],
                                                           eqtypes,
-                                                          attendees,
+                                                          invitation_accepted,
                                                           event_datetime,
                                                           allow_past=True)
     if not problem:
@@ -143,7 +143,7 @@ def show_event(tl_event):
                    if eqtyob is not None ])
     print "Hosted by", names(tl_event.hosts, 'host')
     # todo: some stuff from around here is not appearing
-    print "Attendees", names(tl_event.attendees, 'attendee')
+    print "Invitation_Accepted", names(tl_event.invitation_accepted, 'attendee')
     avoidances = tl_event.dietary_avoidances_summary()
     if tl_event.catered and avoidances and len(avoidances) > 0:
         print "Dietary Avoidances Summary:"

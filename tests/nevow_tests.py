@@ -41,10 +41,10 @@ print "evening_and_weekend_timeslots:", timeslots.timeslots_from_int(evening_and
 def set_access_permissions_as_admin(access_permissions):
     access_permissions.add_role('owner', configuration.get_config()['organization']['database'])
 
-def setup_random_event(possible_templates, event_datetime, eqtypes, attendees, verbose=False):
+def setup_random_event(possible_templates, event_datetime, eqtypes, invitation_accepted, verbose=False):
     new_event, problem = event.Event.instantiate_template(random.choice(possible_templates)['event_type'],
                                                           eqtypes,
-                                                          attendees,
+                                                          invitation_accepted,
                                                           event_datetime,
                                                           allow_past=True)
     if not problem:
