@@ -326,7 +326,7 @@ class Event(object):
                 potentials = potentials[:self.attendance_limit]
             for whoever in potentials:
                 if whoever._id not in self.invited:
-                    whoever.notify(self)
+                    whoever.mail_event_invitation(self, "training_invitation")
                     self.invited[whoever._id] = datetime.now()
 
     def publish(self):

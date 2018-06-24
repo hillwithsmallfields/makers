@@ -291,6 +291,7 @@ class Person(object):
         invitation_url = server_config['base_url'] + server_config['rsvp'] + invitation_uuid
         self.invitations[invitation_uuid] = m_event._id
         substitutions = {'rsvp': invitation_url,
+                         'queue_position': len(m_event.invited),
                          'equipment_types': ', '.join([ equipment_type.Equipment_type.find_by_id(eqty).name
                                                         for eqty
                                                         in m_event.equipment_types ]),

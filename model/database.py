@@ -162,7 +162,7 @@ def save_event(this_event):
 # invitation replies
 
 def find_rsvp(rsvp_uuid):
-    return database[collection_names['people']].find_one({'invitations.'+rsvp_uuid: {'$exists': True}})
+    return database[collection_names['people']].find_one({'invitations.'+rsvp_uuid: {'$exists': True}})['_id']
 
 # event templates
 

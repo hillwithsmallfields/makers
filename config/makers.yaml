@@ -270,14 +270,16 @@ organization:
   announcements: noticeboard
 
 server:
-  mailhost: makespace.org
-  base_url: https://admin.makespace.org/
-  rsvp:     rsvp/
-  machines: equipment/
-  types:    equipment-type/
-  events:   event/
-  admin:    admin/
-  userapi:  api/users/
+  mailhost:       makespace.org
+  base_url:       https://makers.makespace.org/
+  update_profile: update_profile/
+  rsvp_form:      rsvp_form/
+  rsvp:           rsvp/
+  machines:       equipment/
+  types:          equipment-type/
+  events:         event/
+  admin:          admin/
+  userapi:        api/users/
 
 messages:
   templates_directory: /usr/local/share/makers/message_templates
