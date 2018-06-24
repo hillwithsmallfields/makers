@@ -275,6 +275,7 @@ server:
   update_profile: update_profile/
   rsvp_form:      rsvp_form/
   rsvp:           rsvp/
+  users:          users/
   machines:       equipment/
   types:          equipment-type/
   events:         event/
