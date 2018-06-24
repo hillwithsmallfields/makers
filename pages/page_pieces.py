@@ -72,6 +72,8 @@ def availform(available):
                        for t, b in zip(['M', 'A', 'E', 'O'], day_slots)]]]
                 for (day, day_slots) in zip(days,
                                             timeslots.timeslots_from_int(available))]],
+              # todo: write receiver for this
+              # todo: on changing availability, re-run invite_available_interested_people on the equipment types for which this person has a training request outstanding
               T.input(type="submit", value="Update availability")]])
 
 def general_equipment_list(who, these_types, detailed=False):
