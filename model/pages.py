@@ -34,6 +34,11 @@ def page_string(title, content):
                                       content,
                                       T.raw(postamble)]])
 
+def expandable_section(section_id, section_tree):
+    # from https://stackoverflow.com/questions/16308779/how-can-i-hide-show-a-div-when-a-button-is-clicked
+    return [T.button(onclick="toggle_visibility(section_id);")["Toggle"],
+            T.div(id=section_id)[section_tree]]
+
 def test_page_section(title, content):
     """Make a section of the overall test page."""
     return [T.h2[title], content]

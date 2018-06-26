@@ -210,7 +210,7 @@ training:
 page:
   stylesheet:   config/makers.css
   style_inline: True
-  # preamble:     <p>Top navigation bar etc will go here.</p>
+  preamble:     <script type="text/javascript"> function toggle_visibility(id) { var e = document.getElementById(id); if(e.style.display == 'block') e.style.display = 'none'; else e.style.display = 'block'; }</script>
   # postamble:    <p>Bottom navigation bar etc will go here.</p>
   motd_file:    config/motd.html
 
@@ -282,6 +282,7 @@ server:
   events:         event/
   admin:          admin/
   userapi:        api/users/
+  head_preamble:  head.html
 
 messages:
   templates_directory: /usr/local/share/makers/message_templates
