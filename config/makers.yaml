@@ -272,6 +272,7 @@ organization:
 server:
   mailhost:       makespace.org
   base_url:       https://makers.makespace.org/
+  login:          login
   update_profile: update_profile/
   rsvp_form:      rsvp_form/
   rsvp:           rsvp/

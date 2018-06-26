@@ -112,3 +112,6 @@ def eventlist(evlist, with_signup=False):
                        signup_button(ev._id, "Sign up") if with_signup else ""
                        # todo: add title, hosts if allowed, attendees
                   ]] for ev in evlist]]
+
+def announcements_section():
+    return T.div[T.p["Placeholder."]]
