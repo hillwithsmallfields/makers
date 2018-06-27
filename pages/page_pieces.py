@@ -56,7 +56,8 @@ def schedule_event_form(who, extras, button_text):
 def availform(available):
     days, _, times = timeslots.get_slots_conf()
     return (T.div(class_="availability")
-            [T.form(action="updateavail")
+            [T.form(action="updateavail",
+                    method="POST")
              [T.table(class_="availability")
               [T.tr[T.th(class_="daylabel")["Day"],
                     T.th["Morning"],

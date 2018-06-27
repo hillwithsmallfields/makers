@@ -27,7 +27,8 @@ def invitation_response_form_page(rsvp_uuid):
                              for obj in event_responding.hosts
                              if obj is not None])
             + "."],
-        T.form(action=form_act)[
+        T.form(action=form_act,
+               method='POST')[
             T.input(type="hidden",
                     name="rsvp_uuid",
                     value=rsvp_uuid),
