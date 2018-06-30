@@ -25,7 +25,7 @@ SECRET_KEY = 'w69sqpmjfxnt0arni+(()j5jlzxm#(3!*edxs_@h(#srixrf$$'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['fragaria', 'js64.twilightparadox.com']
+ALLOWED_HOSTS = ['fragaria', 'js64.twilightparadox.com', '127.0.0.1']
 
 
 # Application definition
@@ -75,10 +75,20 @@ WSGI_APPLICATION = 'makers.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'makers',
+        'USER': 'makersuser',
+        'PASSWORD': 'PGPASSWORD',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
 
 
 # Password validation
@@ -118,3 +128,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
