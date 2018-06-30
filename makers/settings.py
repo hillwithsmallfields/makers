@@ -25,7 +25,7 @@ SECRET_KEY = 'w69sqpmjfxnt0arni+(()j5jlzxm#(3!*edxs_@h(#srixrf$$'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['fragaria', 'js64.twilightparadox.com']
 
 
 # Application definition
