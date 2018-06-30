@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SOURCE=${$1-$(pwd)}
+SOURCE=${1-$(pwd)}
 DESTINATION=${2-/var/www/makers}
 
 echo Installing from $SOURCE to $DESTINATION
