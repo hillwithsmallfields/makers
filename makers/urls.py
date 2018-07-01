@@ -15,7 +15,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('dashboard/', include('dashboard.urls')),
+    path('equiptypes/', include('equiptypes.urls')),
+    path('equipment/', include('equipment.urls')),
+    path('events/', include('events.urls')),
+    path('', RedirectView.as_view(url='/dashboard/'))
 ]
+
+# from https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/skeleton_website|:
+# Use static() to add url mapping to serve static files during development (only)
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

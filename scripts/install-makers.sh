@@ -9,6 +9,11 @@ echo copying python files
 cp $SOURCE/makers/*.py $DESTINATION/makers
 echo copying scripts
 cp $SOURCE/scripts/* $DESTINATION/scripts
+echo Copying apps
+for APP in $SOURCE/apps
+do
+    cp -r $APP $DESTINATION
+done
 echo poking password
 $SOURCE/scripts/setpassword
 echo activating venv
