@@ -19,6 +19,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls import include
 
+import dashboard.views
+import equiptypes.views
+import equipment.views
+import events.views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('dashboard/', include('dashboard.urls')),
