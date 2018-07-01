@@ -29,4 +29,5 @@ exec /var/www/makers_venv/bin/gunicorn ${DJANGO_WSGI_MODULE}:application \
   --name $NAME \
   --workers $NUM_WORKERS \
   --user $USER \
-  --bind=unix:$SOCKFILE
+  --bind 0.0.0.0:8000
+#   --bind=unix:$SOCKFILE

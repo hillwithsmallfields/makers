@@ -1,4 +1,4 @@
 #!/bin/bash
 # Copy To Test Server
 SERVER=fragaria
-rsync $HOME/open-projects/makers/ $SERVER:$HOME/makers
+rsync -av $HOME/open-projects/makers/ $SERVER:$HOME/makers
