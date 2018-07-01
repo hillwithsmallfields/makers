@@ -13,7 +13,7 @@ server_conf = None
 def profile_section(who, viewer):
     form_act = server_conf["update_profile"]
     return T.div(class_="personal_profile")[
-        T.form(action=form_act
+        T.form(action=form_act,
                method='POST')[T.table(class_="personaldetails")[
                    T.tr[T.th(class_="ralabel")["Name"], T.td[T.input(type="text",
                                                                      name="name",
