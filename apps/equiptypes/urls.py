@@ -5,5 +5,5 @@ from . import views
 
 
 urlpatterns = [
-    path('', equiptypes.public_index, name='index')
+    path('', views.public_index, name='index')
 ]
