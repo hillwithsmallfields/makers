@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import sys
 sys.path.append('common')
 
@@ -29,7 +31,7 @@ def import_role_file(role, csv_file, verbose):
         for row in csv.DictReader(users_file):
             tr_person = Person.find(row['Name'])
             if tr_person is None:
-                print "Could not find", row['Name'], "to add training"
+                print("Could not find", row['Name'], "to add training")
                 continue
             trainer = Person.find(row.get('Trainer', "Joe Bloggs"))
             trainer_id = trainer._id if trainer else None
@@ -37,7 +39,7 @@ def import_role_file(role, csv_file, verbose):
             equipment_type_ids = [ Equipment_type.find(typename)._id
                                    for typename in equipment_type_names ]
             if verbose:
-                print "equipment", equipment_type_names, equipment_type_ids
+                print("equipment", equipment_type_names, equipment_type_ids)
             training_event = Event.find(database.role_training(role),
                                         row['Date'],
                                         [trainer_id],
@@ -47,7 +49,7 @@ def import_role_file(role, csv_file, verbose):
             training_event.mark_results([tr_person], [], [])
             checkback = Person.find(row['Name'])
             if verbose:
-                print "checkback is", checkback, "with training events", checkback.get_training_events()
+                print("checkback is", checkback, "with training events", checkback.get_training_events())
 
 def import_main(verbose=True):
     # todo: convert all dates to datetime.datetime as mentioned in http://api.mongodb.com/python/current/examples/datetimes.html
@@ -70,7 +72,7 @@ def import0(args):
     db_config = config['database']
     collection_names = db_config['collections']
     if verbose:
-        print "collection names are", collection_names
+        print("collection names are", collection_names)
     database.database_init(config, args.delete_existing)
 
     # todo: fix these
@@ -79,21 +81,21 @@ def import0(args):
     # and so on for the other collections?
 
     if verbose:
-        print "loading equipment types"
+        print("loading equipment types")
     with open(args.equipment_types) as types_file:
         for row in csv.DictReader(types_file):
             if verbose:
-                print "Adding equipment type", row
+                print("Adding equipment type", row)
             database.add_equipment_type(row['name'],
                                         row['training_category'],
                                         row['manufacturer'])
 
     if verbose:
-        print "loading equipment"
+        print("loading equipment")
     with open(args.equipment) as machines_file:
         for row in csv.DictReader(machines_file):
             if verbose:
-                print "Adding machine", row
+                print("Adding machine", row)
             database.add_machine(row['name'],
                                  Equipment_type.find(row['equipment_type'])._id,
                                  row['location'],
@@ -114,10 +116,10 @@ def import0(args):
             added.set_fob(row.get('Fob', None))
             # todo: find or create a training event to match row['Date inducted']
             if verbose:
-                print "added person record", added
+                print("added person record", added)
             inductor = Person.find(row['Inductor'])
             if verbose:
-                print "inductor is", inductor
+                print("inductor is", inductor)
             inductor_id = inductor._id
             # todo: record that the inductor is trained as an inducotr
             induction_event = Event.find('user_training',
@@ -126,11 +128,11 @@ def import0(args):
                                           [Equipment_type.find(config['organization']['name'])._id])
             induction_event.add_invitation_accepted([added])
             induction_event.mark_results([added], [], [])
-            # print "induction event is now", induction_event
+            # print("induction event is now", induction_event)
             added.add_training(induction_event)
             inducted = Person.find(row['Name'])
             if verbose:
-                print "inducted is", inducted, "with training", inducted.get_training_events()
+                print("inducted is", inducted, "with training", inducted.get_training_events())
 
     import_role_file('owner', args.owners, verbose)
     # read the trainers before the people they train:
