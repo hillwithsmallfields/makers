@@ -5,6 +5,15 @@ DESTINATION=${2-/var/www/makers}
 
 echo Installing from $SOURCE to $DESTINATION
 
+echo Copying config files
+sudo bash <<EOF
+mkdir -p /usr/local/share/makers
+chmod a+rx /usr/local/share/makers
+cp $SOURCE/config/makers.yaml /usr/local/share/makers/makers.yaml
+cp $SOURCE/config/makers.css /usr/local/share/makers/makers.css
+chmod a+r /usr/local/share/makers/*
+EOF
+
 echo copying python files
 cp $SOURCE/makers/*.py $DESTINATION/makers
 echo copying scripts
