@@ -12,6 +12,10 @@ def public_index(request):
     <head><title>Public page placeholder</title></head>
     <body><h1>Public page placeholder</h1>
     <p>This is where the public landing page will go, with a login box.</p>
+    <h2>Path</h2>
+    <pre>"""
+                        + ':'.join(sys.path)
+                        + """</pre>
     </body>
     </html>
     """)

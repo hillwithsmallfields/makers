@@ -3,7 +3,7 @@
 from __future__ import print_function
 
 import sys
-sys.path.append('common')
+sys.path.append('model')
 
 from event import Event
 from person import Person

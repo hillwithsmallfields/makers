@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SOURCE=${1-$USER/makers}
+SOURCE=${1-$USER/open-projects/makers}
 DESTINATION=${2-/var/www/makers}
 
 echo Installing from $SOURCE to $DESTINATION

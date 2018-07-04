@@ -1,4 +1,4 @@
-from person import Person
+import person
 import configuration
 
 def set_access_permissions_from_django(context):
@@ -35,7 +35,7 @@ class Access_Permissions(object):
     def setup_access_permissions(self, link_id):
         """Look through a person's roles and set up their permissions accordingly."""
         self.link_id = link_id
-        self.viewing_person = Person.find(link_id)
+        self.viewing_person = person.Person.find(link_id)
         for role in self.roles.keys():
             for equipment in self.viewing_person.get_equipment_classes(role):
                 self.add_role(role, equipment._id)

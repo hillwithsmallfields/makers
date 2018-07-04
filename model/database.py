@@ -3,6 +3,8 @@
 # Support functions for the modules intended to support the UI.
 # The UI probably shouldn't call anything in this file directly.
 
+from __future__ import print_function
+
 import configuration
 import event
 import json
@@ -20,7 +22,7 @@ def database_init(config, delete_existing=False):
     global client, database, collection_names
     db_config = config['database']
     collection_names = db_config['collections']
-    print "collection names are", collection_names
+    print("collection names are", collection_names)
     client = pymongo.MongoClient(db_config['URI'])
     database = client[db_config['database_name']]
     if delete_existing:
@@ -40,7 +42,7 @@ def get_person_dict(identification):
     if isinstance(identification, person.Person):
         return identification.__dict__
     collection = database[collection_names['people']]
-    # print "get_person_dict lookup", identification
+    # print("get_person_dict lookup", identification)
     return (collection.find_one({'_id': identification})
             or collection.find_one({'link_id': identification})
             or collection.find_one({'fob': identification})
@@ -110,23 +112,23 @@ def save_person(somebody):
 
 def get_event(event_type, event_datetime, hosts, equipment, create=True):
     """Read the data for an event from the database."""
-    # print "Database looking for event", "hosts:", hosts, "date", event_datetime, "event_type:", event_type, "equipment", equipment
+    # print("Database looking for event", "hosts:", hosts, "date", event_datetime, "event_type:", event_type, "equipment", equipment)
     found = database[collection_names['events']].find_one({'hosts': {'$in': hosts},
                                                            'date': event_datetime,
                                                            'event_type': event_type,
                                                            'equipment': equipment})
     if found is None and create:
-        # print "making new event in database"
-        # print "get_event recursing"
+        # print("making new event in database")
+        # print("get_event recursing")
         x = database[collection_names['events']].insert({'hosts': hosts,
                                                          'date': event_datetime,
                                                          'equipment': equipment,
                                                          'event_type': event_type})
-        # print "result of db insert is", x
+        # print("result of db insert is", x)
         new_event = get_event(event_type, event_datetime, hosts, equipment, False)
-        # print "returned from recursion, database new event is", new_event['_id'], "with", len(new_event.get('invitation_accepted', [])), "invitation_accepted"
+        # print("returned from recursion, database new event is", new_event['_id'], "with", len(new_event.get('invitation_accepted', [])), "invitation_accepted")
         return new_event
-    # print "database found event already", found['_id']
+    # print("database found event already", found['_id'])
     return found
 
 def get_events(event_type=None,
@@ -148,7 +150,7 @@ def get_events(event_type=None,
     result = [ event.Event.find_by_id(tr_event['_id'])
                for tr_event in database[collection_names['events']].find(query).sort('start',
                                                                                      pymongo.ASCENDING) ]
-    # print "get_events result", result
+    # print("get_events result", result)
     return result
 
 def get_event_by_id(event_id):
@@ -156,7 +158,7 @@ def get_event_by_id(event_id):
     return database[collection_names['events']].find_one({'_id': event_id})
 
 def save_event(this_event):
-    # print "saving event", this_event
+    # print("saving event", this_event)
     database[collection_names['events']].save(this_event)
 
 # invitation replies
@@ -230,7 +232,7 @@ def get_machine_dict(name):
 def get_machine_dicts_for_type(eqty):
     """Read the data for machines of a given type from the database."""
     result = [ machine for machine in database[collection_names['machines']].find({'equipment_type': eqty}) ]
-    # print "Looking for machines of type", eqty, "and got", result
+    # print("Looking for machines of type", eqty, "and got", result)
     return result
 
 def add_machine(name, equipment_type,
@@ -266,7 +268,7 @@ def get_people_awaiting_training(event_type, equipment_types):
              .sort('training_requests.request_date', pymongo.ASCENDING) ]
 
 def find_interested_people(interests):
-    print "Looking for people with interests", interests
+    print("Looking for people with interests", interests)
     return [ someone['_id']
              for someone
              # I don't think that works, but db.MakespacePeople.find({'profile.interests.Lifehacking': 2}) gets some
