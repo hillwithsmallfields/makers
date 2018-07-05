@@ -1,3 +1,8 @@
 #!/bin/bash
 ./blank
+VENV=/var/www/makers_venv/bin/activate
+if [ -f $VENV ]
+then
+    source $VENV
+fi
 tests/nevow_tests.py

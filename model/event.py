@@ -20,7 +20,7 @@ def as_time(clue):
                   else (datetime.strptime(clue, "%Y-%m-%dT%H:%M:%S"
                                           if fulltime.match(clue)
                                           else "%Y-%m-%d")
-                        if isinstance(clue, basestring)
+                        if isinstance(clue, str)
                         else None)))
 
 
