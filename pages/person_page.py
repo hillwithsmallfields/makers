@@ -1,4 +1,3 @@
-from nevow import tags as T
 import configuration
 import equipment_type
 import event
@@ -7,11 +6,36 @@ import person
 import timeline
 import timeslots
 import datetime
+from yattag import Doc
 
 server_conf = None
 
 def profile_section(who, viewer):
     form_act = server_conf["update_profile"]
+    doc, tag, text = Doc().tagtext()
+    with tag('div', klass="personal_profile"):
+        with tag('form',
+                 action=form_act,
+                 method='POST'):
+            with tag('table',
+                     klass='personaldetails'):
+                with tag('tr'):
+                    with tag('th', klass='ralabel'):
+                        text("Name")
+                    with tag('td'):
+                        doc.stag('input',
+                                 type='text',
+                                 name='name',
+                                 value=who.name())
+                with tag('tr'):
+                    with tag('th', klass='ralabel'):
+                        text("email")
+                    with tag('td'):
+                        doc.stag('input',
+                                 type='email',
+                                 name='email',
+                                 value=who.get_email())
+
     return T.div(class_="personal_profile")[
         T.form(action=form_act,
                method='POST')[T.table(class_="personaldetails")[
@@ -39,6 +63,7 @@ def responsibilities(who, typename, keyed_types):
     has_requested_owner_training = who.has_requested_training([keyed_types[typename]._id], 'owner')
     is_trainer = who.is_trainer(keyed_types[typename])
     has_requested_trainer_training = who.has_requested_training([keyed_types[typename]._id], 'trainer')
+    doc, tag, text = Doc().tagtext()
     return [T.dl[T.dt["Machines"],
                  T.dd[page_pieces.machinelist(equipment_type.Equipment_type.find(typename),
                                               who, is_owner)],
@@ -77,6 +102,7 @@ def equipment_trained_on(who, equipment_types):
                     for ty in equipment_types }
     # print "keyed_types are", keyed_types
     # print "sorted(keyed_types.keys()) is", sorted(keyed_types.keys())
+    doc, tag, text = Doc().tagtext()
     return T.div(class_="trainedon")[
         T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name]],
                T.dd[ # todo: add when they were trained, and by whom
@@ -94,6 +120,7 @@ def training_requests_section(who):
     len_training = len("_training")
     keyed_requests = {req['request_date']: req for req in who.training_requests}
     sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
+    doc, tag, text = Doc().tagtext()
     return T.div(class_="requested")[T.table()[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]],
                                                [T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
                                                      T.td[", ".join([equipment_type.Equipment_type.find_by_id(id).pretty_name()
@@ -105,6 +132,7 @@ def training_requests_section(who):
 
 
 def admin_section(viewer):
+    doc, tag, text = Doc().tagtext()
     return T.ul[T.li[page_pieces.section_link('admin', "userlist", "User list")],
                 T.li[page_pieces.section_link('admin', "intervene", "Create intervention event")]
                         if viewer.is_administrator() else ""]
@@ -113,6 +141,7 @@ def person_page_contents(who, viewer):
     global server_conf
     server_conf = configuration.get_config()['server']
     page_pieces.set_server_conf()
+    doc, tag, text = Doc().tagtext()
 
     result = [T.h2["Personal profile"],
               profile_section(who, viewer)]
