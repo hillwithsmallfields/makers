@@ -5,4 +5,4 @@ if [ -f $VENV ]
 then
     source $VENV
 fi
-tests/nevow_tests.py
+tests/page_tests.py

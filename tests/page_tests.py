@@ -1,4 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+
+from __future__ import print_function
 
 import argparse
 import json
@@ -34,9 +36,9 @@ evening_timeslots = timeslots.timeslots_to_int([[False,False,True]]*7)
 weekend_timeslots = timeslots.timeslots_to_int([[False,False,False]]* 5 + [[True,True,True]]*2)
 evening_and_weekend_timeslots = evening_timeslots | weekend_timeslots
 
-print "evening_timeslots:", timeslots.timeslots_from_int(evening_timeslots)
-print "weekend_timeslots:", timeslots.timeslots_from_int(weekend_timeslots)
-print "evening_and_weekend_timeslots:", timeslots.timeslots_from_int(evening_and_weekend_timeslots)
+print("evening_timeslots:", timeslots.timeslots_from_int(evening_timeslots))
+print("weekend_timeslots:", timeslots.timeslots_from_int(weekend_timeslots))
+print("evening_and_weekend_timeslots:", timeslots.timeslots_from_int(evening_and_weekend_timeslots))
 
 def set_access_permissions_as_admin(access_permissions):
     access_permissions.add_role('owner', configuration.get_config()['organization']['database'])
@@ -53,11 +55,11 @@ def setup_random_event(possible_templates, event_datetime, eqtypes, invitation_a
         for i in range(0, random.randrange(0,3)):
             new_event.interest_areas.append(random.choice(interest_areas))
         if verbose:
-            print "Created event", new_event
+            print("Created event", new_event)
         new_event.publish()
     else:
         if verbose:
-            print "Failed to create event"
+            print("Failed to create event")
 
 def random_user_activities(equipments, green_templates):
     for whoever in person.Person.list_all_people():
@@ -144,19 +146,19 @@ def main():
     access_permissions.Access_Permissions.change_access_permissions(set_access_permissions_as_admin)
 
     days, slots, order = timeslots.get_slots_conf()
-    print "periods are", slots, "in order", order
+    print("periods are", slots, "in order", order)
 
     if not args.existing:
-        print "importing from spreadsheet files"
+        print("importing from spreadsheet files")
         importer.import0(args)
     else:
         database.database_init(config, args.delete_existing)
 
-    print "import complete, running random user behaviour"
+    print("import complete, running random user behaviour")
     all_types = equipment_type.Equipment_type.list_equipment_types()
     green_equipment = equipment_type.Equipment_type.list_equipment_types('green')
     green_templates = [ make_training_event_template(eqty) for eqty in green_equipment ]
-    print "green templates are", green_templates
+    print("green templates are", green_templates)
 
     if not args.existing:
         random_user_activities(all_types, green_templates)
@@ -167,13 +169,13 @@ def main():
     for _ in range(1, random.randrange(3, 7)):
         event_datetime = datetime.now()
         event_datetime = event_datetime.replace(hour=event_datetime.hour-random.randrange(0,2), minute=0, second=0, microsecond=0)
-        print "Making current event starting at", event_datetime
+        print("Making current event starting at", event_datetime)
         setup_random_event(green_templates,
                            event_datetime,
                            [random.choice(green_equipment)._id],
                            [random.choice(everybody)._id],
                            verbose=True)
-        print "There are now", len(timeline.Timeline.present_events().events), "present events"
+        print("There are now", len(timeline.Timeline.present_events().events), "present events")
 
     # make sure there are some future events
     # todo: find why it's failing to create these events, then fix it, then see whether the "future event" code is working
@@ -181,19 +183,19 @@ def main():
     for _ in range(1, random.randrange(24, 48)):
         event_datetime = datetime.now()
         event_datetime = event_datetime.replace(hour=19, minute=0, second=0, microsecond=0) + timedelta(random.randrange(1, 21))
-        print "Making future event starting at", event_datetime
+        print("Making future event starting at", event_datetime)
         setup_random_event(green_templates,
                            event_datetime,
                            [random.choice(green_equipment)._id],
                            [random.choice(everybody)._id],
                            verbose=True)
-        print "There are now", len(timeline.Timeline.future_events().events), "future events and", len(timeline.Timeline.past_events().events), "past events"
+        print("There are now", len(timeline.Timeline.future_events().events), "future events and", len(timeline.Timeline.past_events().events), "past events")
 
-    print "present events are", timeline.Timeline.present_events().events
-    print "future events are", timeline.Timeline.future_events().events
+    print("present events are", timeline.Timeline.present_events().events)
+    print("future events are", timeline.Timeline.future_events().events)
 
     if not args.quick:
-        print "listing members"
+        print("listing members")
         all_members = person.Person.list_all_members()
         for whoever in all_members:
             show_person("member-pages", whoever)
