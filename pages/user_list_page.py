@@ -1,7 +1,7 @@
+from nevow import tags as T
 import access_permissions
 import configuration
 import person
-from yattag import Doc
 
 serverconf=None
 
@@ -22,16 +22,9 @@ def user_list_section(include_non_members=False, filter_fn=None):
     people = person.Person.list_all_people() if include_non_members else person.Person.list_all_members()
     if filter_fn:
         people = [someone for someone in people if filter_fn(someone)]
-    doc, tag, text = Doc().tagtext()
     if permissions.auditor or permissions.admin:
-        with tag('ul'):
-            for who in people:
-                with tag('li'):
-                    with tag('a', href=users_base+who.link_id):
-                        text(who.name())
+        return T.ul[[T.li[T.a(href=users_base+who.link_id)[who.name()]] for who in people]]
     else:
-        with tag('p'):
-            text("There are "+str(len(people))
-                   + (" people" if include_non_members else " members")
-                   + " in the database.")
-    return doc.getvalue()
+        return T.p["There are "+str(len(people))
+                   +(" people" if include_non_members else " members")
+                   +" in the database."]
