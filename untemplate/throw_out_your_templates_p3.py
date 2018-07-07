@@ -647,7 +647,6 @@ class Example(object):
             self.input_encoding).serialize(self.content)
         print(output.encode(get_default_encoding()))
 
-
 ## put some html tags in the module scope to make the examples less
 ## verbose:
 class _GetAttrDict(dict):

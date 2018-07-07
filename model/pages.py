@@ -1,11 +1,23 @@
 #!/usr/bin/python
 
-from nevow import flat
-from nevow import tags as T
+import throw_out_your_templates_p3 as untemplate
 import configuration
 import os
 
-def page_string(title, content):
+class HtmlPage(object):
+    def __init__(self, name, content,
+                 visitor_map=untemplate.examples_vmap,
+                 input_encoding='utf-8'):
+        self.name = name
+        self.content = content
+        self.visitor_map = visitor_map
+        self.input_encoding = input_encoding
+
+    def to_string(self):
+        return untemplate.Serializer(self.visitor_map,
+                                     self.input_encoding).serialize(self.content).encode('utf-8')
+
+def page_string(page_title, content):
     """Make up a complete page as a string."""
     conf = configuration.get_config()
     page_conf = conf['page']
@@ -25,14 +37,11 @@ def page_string(title, content):
             style_text = '<link rel="stylesheet" type="text/css" href="' + stylesheet_name + '">'
     postamble = page_conf.get('postamble', '')
     # print "Flattening", content
-    return flat.flatten(T.html[T.head[T.raw(style_text),
-                                      T.title[title]],
-                               # todo: set the encoding
-                               # todo: include a stylesheet as set in the config file
-                               T.body[T.raw(preamble),
-                                      T.h1[title],
-                                      content,
-                                      T.raw(postamble)]])
+    return HtmlPage(page_title,
+                    untemplate.HTML5Doc([untemplate.safe_unicode(style_text+preamble),
+                                         content,
+                                         untemplate.safe_unicode(postamble)],
+                                        head=head[title[page_title]])).to_string()
 
 def expandable_section(section_id, section_tree):
     # from https://stackoverflow.com/questions/16308779/how-can-i-hide-show-a-div-when-a-button-is-clicked
