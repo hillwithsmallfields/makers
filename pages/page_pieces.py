@@ -1,5 +1,6 @@
-from nevow import flat
-from nevow import tags as T
+# from nevow import flat
+# from nevow import tags as T
+from throw_out_your_templates_p3 import htmltags as T
 import configuration
 import equipment_type
 import event

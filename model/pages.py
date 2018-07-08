@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import throw_out_your_templates_p3 as untemplate
+from throw_out_your_templates_p3 import htmltags as T
 import configuration
 import os
 
@@ -41,7 +42,7 @@ def page_string(page_title, content):
                     untemplate.HTML5Doc([untemplate.safe_unicode(style_text+preamble),
                                          content,
                                          untemplate.safe_unicode(postamble)],
-                                        head=head[title[page_title]])).to_string()
+                                        head=T.head[T.title[page_title]])).to_string()
 
 def expandable_section(section_id, section_tree):
     # from https://stackoverflow.com/questions/16308779/how-can-i-hide-show-a-div-when-a-button-is-clicked
