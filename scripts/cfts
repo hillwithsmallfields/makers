@@ -1,0 +1,4 @@
+#!/bin/bash
+# Copy From Test Server
+SERVER=fragaria
+rsync -av $SERVER:$HOME/open-projects/makers/ $HOME/open-projects/makers/from-pi

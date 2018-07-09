@@ -1,4 +1,3 @@
-# from nevow import tags as T
 from throw_out_your_templates_p3 import htmltags as T
 import configuration
 import equipment_type

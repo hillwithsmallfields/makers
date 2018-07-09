@@ -8,6 +8,7 @@ import os
 import random
 import sys
 from datetime import datetime, timedelta
+import time
 
 sys.path.append('model')
 sys.path.append('utils')
@@ -56,19 +57,22 @@ def setup_random_event(possible_templates, event_datetime, eqtypes, invitation_a
         for i in range(0, random.randrange(0,3)):
             new_event.interest_areas.append(random.choice(interest_areas))
         if verbose:
-            print("Created event", new_event)
+            print("Created event", str(new_event))
         new_event.publish()
     else:
         if verbose:
             print("Failed to create event")
 
-def random_user_activities(equipments, green_templates):
-    for whoever in person.Person.list_all_people():
+def random_user_activities(equipments, green_templates, verbose):
+    for whoever in person.Person.list_all_people()[:64]:
         membership = whoever.is_member()
         if membership[0]:
+            whoname = whoever.name()
             whoever.available = evening_timeslots if random.random() < 0.2 else evening_and_weekend_timeslots
             date_joined = membership[0].start
-            for i in range(1, random.randrange(1, 12)):
+            n_requests = random.randrange(1, 12)
+            print(whoname, "making", n_requests, "requests")
+            for i in range(1, n_requests):
                 days_since_joining = (datetime.now() - date_joined).days
                 request_date = date_joined + timedelta(random.randrange(7, days_since_joining + 56), 0)
                 equip = random.choice(equipments)
@@ -83,7 +87,9 @@ def random_user_activities(equipments, green_templates):
             my_trainer_types = whoever.get_equipment_types('trainer')
             if len(my_trainer_types) > 0:
                 possible_templates = green_templates + event.Event.list_templates([whoever], my_trainer_types)
-                for i in range(1, random.randrange(1, 3)):
+                n_events = random.randrange(1, 3)
+                print(whoname, "making", n_events, "events")
+                for i in range(1, n_events):
                     event_datetime = datetime.now() + timedelta(random.randrange(-30,30))
                     setup_random_event(possible_templates, event_datetime, [random.choice(my_trainer_types)._id], [whoever._id])
             if random.random() < 0.1:
@@ -142,6 +148,8 @@ def main():
     parser.add_argument("-x", "--existing", "--no-import", action='store_true')
     args = parser.parse_args()
 
+    start_time = time.time()
+
     config = configuration.get_config()
 
     access_permissions.Access_Permissions.change_access_permissions(set_access_permissions_as_admin)
@@ -155,19 +163,27 @@ def main():
     else:
         database.database_init(config, args.delete_existing)
 
-    print("import complete, running random user behaviour")
+    stage_time = time.time()
+
+    print("import complete, running random user behaviour at", int(stage_time-start_time), "seconds")
     all_types = equipment_type.Equipment_type.list_equipment_types()
     green_equipment = equipment_type.Equipment_type.list_equipment_types('green')
     green_templates = [ make_training_event_template(eqty) for eqty in green_equipment ]
     print("green templates are", green_templates)
 
     if not args.existing:
-        random_user_activities(all_types, green_templates)
+        random_user_activities(all_types, green_templates, args.verbose)
+
+    this_time = time.time()
+    print("Completed main random behaviour in", int(this_time-stage_time), "seconds")
+    stage_time = this_time
 
     # make sure there are some events going on right now
     # todo: find why it's failing to create these events, then fix it, then see whether the "current event" code is working
     everybody = person.Person.list_all_people()
-    for _ in range(1, random.randrange(3, 7)):
+    n_current = random.randrange(3, 7)
+    print("Creating", n_current, "current events")
+    for _ in range(1, n_current):
         event_datetime = datetime.now()
         event_datetime = event_datetime.replace(hour=event_datetime.hour-random.randrange(0,2), minute=0, second=0, microsecond=0)
         print("Making current event starting at", event_datetime)
@@ -180,8 +196,9 @@ def main():
 
     # make sure there are some future events
     # todo: find why it's failing to create these events, then fix it, then see whether the "future event" code is working
-    everybody = person.Person.list_all_people()
-    for _ in range(1, random.randrange(24, 48)):
+    n_future = random.randrange(24, 48)
+    print("Creating", n_future, "future events")
+    for _ in range(1, n_future):
         event_datetime = datetime.now()
         event_datetime = event_datetime.replace(hour=19, minute=0, second=0, microsecond=0) + timedelta(random.randrange(1, 21))
         print("Making future event starting at", event_datetime)

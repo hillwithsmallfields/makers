@@ -1,4 +1,4 @@
-from nevow import tags as T
+from throw_out_your_templates_p3 import htmltags as T
 import configuration
 import equipment_type
 
@@ -9,7 +9,7 @@ def equipment_type_list_section(training_category):
     if serverconf == None:
         serverconf = configuration.get_config()['server']
     eqtys = equipment_type.Equipment_type.list_equipment_types(training_category)
-    print "training_category is", training_category, "and its types are", eqtys
+    print("training_category is", training_category, "and its types are", eqtys)
     return [T.h2[(training_category or "all").capitalize() + " equipment types"],
             [T.dl[[[T.dt[T.a(href=serverconf['types']+eqty.name)[eqty.pretty_name()]],
                     T.dd[T.dl[T.dt["Machines"],

@@ -45,12 +45,13 @@ def get_slots_conf():
     if day_order is None:
         day_order = slotconf['days']
     if periods is None:
-        periods = { pname: map(lambda pair: datetime.time(pair[0], pair[1]),
+        periods = { pname: [ pval for pval in
+                             map(lambda pair: datetime.time(pair[0], pair[1]),
                                [ [ int(x) for x in slot.strip().split(':') ]
-                                 for slot in pdescr.split('--') ])
-                    for pname, pdescr in slotconf['periods'].iteritems() }
+                                 for slot in pdescr.split('--') ]) ]
+                    for pname, pdescr in slotconf['periods'].items() }
     if period_order is None:
-        tmp = { startend[0]: name for name, startend in periods.iteritems() }
+        tmp = { startend[0]: name for name, startend in periods.items() }
         period_order = [ tmp[tm] for tm in sorted(tmp.keys()) ] + ['other']
     return day_order, periods, period_order
 
@@ -59,7 +60,7 @@ def time_to_timeslot(when):
     days, times, order = get_slots_conf()
     timeofday = when.time()
     timename = 'other'
-    for pname, ppair in times.iteritems():
+    for pname, ppair in times.items():
         if timeofday >= ppair[0] and timeofday <= ppair[1]:
             timename = pname
     time_slot_number = order.index(timename)

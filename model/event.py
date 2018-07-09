@@ -116,7 +116,7 @@ class Event(object):
         if self.hosts and self.hosts != []:
             accum += " with " + ", ".join([person.Person.find(host_id).name()
                                           for host_id in self.hosts
-                                          if host_id is not None]).encode('utf-8')
+                                          if host_id is not None]) # .encode('utf-8')
         if self.equipment and self.equipment != []:
             accum += " on " + ", ".join([Equipment_type.find(e).name for e in self.equipment_types])
         if len(self.passed) > 0:
@@ -273,7 +273,7 @@ class Event(object):
 
         instance.__dict__.update(instance_dict)
 
-        for k, v in template_dict.iteritems():
+        for k, v in template_dict.items():
             if instance.__dict__.get(k, None) is None:
                 instance.__dict__[k] = v
         instance.end = instance.start + timedelta(0, 60 * int(template_dict.get('duration', '120')))
@@ -397,7 +397,7 @@ class Event(object):
 
     def auto_expire_non_replied_invitations(self):
         cutoff = datetime.now() - timedelta(self.invitation_timeout,0)
-        for who, when in self.invited.iteritems():
+        for who, when in self.invited.items():
             if when < cutoff:
                 if (who._id not in self.invitation_accepted
                     and who._id not in self.invitation_declined):
