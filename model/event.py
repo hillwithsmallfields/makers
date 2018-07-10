@@ -116,7 +116,7 @@ class Event(object):
         if self.hosts and self.hosts != []:
             accum += " with " + ", ".join([person.Person.find(host_id).name()
                                           for host_id in self.hosts
-                                          if host_id is not None]) # .encode('utf-8')
+                                          if host_id is not None])
         if self.equipment and self.equipment != []:
             accum += " on " + ", ".join([Equipment_type.find(e).name for e in self.equipment_types])
         if len(self.passed) > 0:

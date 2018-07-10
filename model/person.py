@@ -123,9 +123,9 @@ class Person(object):
                         access_permissions_role=None,
                         access_permissions_equipment=None):
             formal, _ = database.person_name(self.link_id)
-            return formal # .encode('utf-8')
+            return formal
         else:
-            return ("member_"+str(self.membership_number)) # .encode('utf-8')
+            return ("member_"+str(self.membership_number))
 
     def nickname(self,
                  access_permissions_event=None,
@@ -136,9 +136,9 @@ class Person(object):
                         access_permissions_role=None,
                         access_permissions_equipment=None):
             _, informal = database.person_name(self.link_id)
-            return informal # .encode('utf-8')
+            return informal
         else:
-            return ("member_"+str(self.membership_number)) # .encode('utf-8')
+            return ("member_"+str(self.membership_number))
 
     def get_email(self,
                   access_permissions_event=None,
@@ -150,10 +150,10 @@ class Person(object):
                         access_permissions_equipment=None):
             email = database.person_email(self.link_id,
                                           access_permissions.Access_Permissions.get_access_permissions().viewing_person)
-            return email # .encode('utf-8')
+            return email
         else:
             return ("member_"+str(self.membership_number)
-                    +"@"+configuration.get_config()['server']['mailhost']) # .encode('utf-8')
+                    +"@"+configuration.get_config()['server']['mailhost'])
 
     def get_visibility(self, access_permissions):
         return self.visibility[access_permissions]

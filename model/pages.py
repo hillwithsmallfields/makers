@@ -16,7 +16,7 @@ class HtmlPage(object):
 
     def to_string(self):
         return untemplate.Serializer(self.visitor_map,
-                                     self.input_encoding).serialize(self.content).encode('utf-8')
+                                     self.input_encoding).serialize(self.content)
 
 def page_string(page_title, content):
     """Make up a complete page as a string."""
@@ -36,6 +36,7 @@ def page_string(page_title, content):
                 style_text = '<style type="text/css">' + sf.read() + '</style>'
         else:
             style_text = '<link rel="stylesheet" type="text/css" href="' + stylesheet_name + '">'
+    # todo: put the motd into the preamble
     postamble = page_conf.get('postamble', '')
     # print "Flattening", content
     return HtmlPage(page_title,
