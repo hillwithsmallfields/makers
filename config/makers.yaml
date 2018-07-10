@@ -208,8 +208,8 @@ training:
   no_shows_limit:       2
     
 page:
-  stylesheet:   config/makers.css
-  script_file:  config/makers.js
+  stylesheet:   /usr/local/share/makers/makers.css
+  script_file:  /usr/local/share/makers/makers.js
   style_inline: True
   # preamble:     
   # postamble:  <p>Bottom navigation bar etc will go here.</p>
