@@ -3,6 +3,7 @@
 
 # Copyright (c) 2007-present, Damn Simple Solutions Ltd.
 # All rights reserved.
+# Modified for Python 3 by John Sturdy 2018
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are

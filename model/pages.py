@@ -6,6 +6,7 @@ import configuration
 import os
 
 class HtmlPage(object):
+
     def __init__(self, name, content,
                  visitor_map=untemplate.examples_vmap,
                  input_encoding='utf-8'):
@@ -18,11 +19,44 @@ class HtmlPage(object):
         return untemplate.Serializer(self.visitor_map,
                                      self.input_encoding).serialize(self.content)
 
+class SectionalPage(object):
+
+    """A page which can be rendered as tabs and possibly other styles."""
+
+    def __init__(self, name, top_content):
+        self.name = name
+        self.top_content = top_content
+        self.sections = {}
+        self.presentation_names = {}
+        self.index = []
+
+    def add_section(self, name, content):
+        section_id = name.replace(' ', '_')
+        self.sections[id] = content
+        self.presentation_names[id] = name
+        self.index.append(id)
+
+    def to_string(self):
+        index = [T.div(klass="tab"),
+                 [[T.button(klass="tablinks",
+                            onclick="openTab(event, '" + sec_id + "')")[self.presentation_names[id]]
+                   for sec_id in self.index]]]
+        tabs = [[T.div(klass="tabcontent" id=sec_id)[self.sections[sec_id]]]
+                   for sec_id in self.index]
+        return page_string(self.name,
+                           self.top_content + index + tabs)
+
 def page_string(page_title, content):
     """Make up a complete page as a string."""
     conf = configuration.get_config()
     page_conf = conf['page']
     preamble = page_conf.get('preamble', '')
+    script_file = page_conf['script_file']
+    script_body = ""
+    if os.path.exists(script_file):
+        with open(script_file) as mfile:
+            script_body = mfile.read()
+    script_text = """<script type="text/javascript">""" + script_body + """</script>"""
     motd = ""
     motd_file = page_conf['motd_file']
     if os.path.exists(motd_file):
@@ -40,7 +74,9 @@ def page_string(page_title, content):
     postamble = page_conf.get('postamble', '')
     # print "Flattening", content
     return HtmlPage(page_title,
-                    untemplate.HTML5Doc([untemplate.safe_unicode(style_text+preamble),
+                    untemplate.HTML5Doc([untemplate.safe_unicode(style_text
+                                                                 + script_text
+                                                                 + preamble),
                                          content,
                                          untemplate.safe_unicode(postamble)],
                                         head=T.head[T.title[page_title]])).to_string()

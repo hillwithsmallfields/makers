@@ -81,3 +81,35 @@ ul.compactlist {
     padding:       0.25em;
     background:    #ffa500;
 }
+
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+.tab button {
+    background-color: #ffb510;
+    color:          #004000;
+    float: left;
+    border: 1px solid #008000;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+
+.tab button:hover {
+    background-color: #ffb510;
+}
+
+.tab button.active {
+    background-color: #ffa500;
+}
+
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}

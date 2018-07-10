@@ -15,6 +15,8 @@ sys.path.append('utils')
 sys.path.append('pages')
 sys.path.append('untemplate')
 
+print("Using load path", ':'.join(sys.path))
+
 import access_permissions
 import configuration
 import database
