@@ -80,6 +80,7 @@ def availform(available):
 
 def general_equipment_list(who, these_types, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
+    # todo: use h3 titles instead of dl and dt, at least as an option
     return T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
                   T.dd[machinelist(keyed_types[name],
                                    who, False) if detailed else "",
@@ -105,6 +106,7 @@ def machinelist(eqty, who, as_owner=False):
             else [])
 
 def eventlist(evlist, with_signup=False):
+    # todo: make this produce a table or similar, at least as an option
     return T.dl[[[T.dt[event.timestring(ev.start)],
                   T.dd[T.a(href=server_conf['base_url']+server_conf['events']+str(ev._id))[ev.title or "Untitled"],
                        " ",

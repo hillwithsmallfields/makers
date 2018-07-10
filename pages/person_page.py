@@ -31,6 +31,7 @@ def profile_section(who, viewer):
                                         if viewer.is_administrator()
                                         else [str(who.fob)])]],
                    T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
+                   # todo: add address, mobile number, food preferences, demographics, etc
                    T.tr[T.th(class_="ralabel")[""], T.td["address etc to go here"]]],
                               T.input(type="submit", value="Update details")],
         T.h2["Availability"],
@@ -41,6 +42,7 @@ def responsibilities(who, typename, keyed_types):
     has_requested_owner_training = who.has_requested_training([keyed_types[typename]._id], 'owner')
     is_trainer = who.is_trainer(keyed_types[typename])
     has_requested_trainer_training = who.has_requested_training([keyed_types[typename]._id], 'trainer')
+    # todo: use H3 instead of dl and dt, at least as an option
     return [T.dl[T.dt["Machines"],
                  T.dd[page_pieces.machinelist(equipment_type.Equipment_type.find(typename),
                                               who, is_owner)],
@@ -177,6 +179,7 @@ def person_page_contents(who, viewer):
         page_data.add_section("Events I can sign up for",
                               T.div(class_="availableevents")[page_pieces.eventlist(available_events, True)])
 
+    # todo: I think this condition is giving false positives
     if viewer.is_administrator() or viewer.is_auditor():
         page_data.add_section("Admin actions",
                               admin_section(viewer))
