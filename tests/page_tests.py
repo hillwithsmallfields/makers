@@ -123,8 +123,7 @@ def names(ids, role):
 def show_person(directory, somebody):
     name = somebody.name()
     with open(os.path.join(directory, name.replace(' ', '_') + ".html"), 'w') as pagefile:
-        pagefile.write(pages.page_string("Dashboard for "+name,
-                                         person_page.person_page_contents(somebody, somebody)))
+        pagefile.write(person_page.person_page_contents(somebody, somebody).to_string())
 
 def show_equipment_types():
     with open(os.path.join("equipment-type-pages", "equipment-type-index.html"), 'w') as pagefile:

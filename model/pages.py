@@ -32,17 +32,16 @@ class SectionalPage(object):
 
     def add_section(self, name, content):
         section_id = name.replace(' ', '_')
-        self.sections[id] = content
-        self.presentation_names[id] = name
-        self.index.append(id)
+        self.sections[section_id] = [T.h2[name], content]
+        self.presentation_names[section_id] = name
+        self.index.append(section_id)
 
     def to_string(self):
-        index = [T.div(class_="tab"),
-                 [[T.button(class_="tablinks",
-                            onclick="openTab(event, '" + sec_id + "')")[self.presentation_names[id]]
-                   for sec_id in self.index]]]
-        tabs = [[T.div(class_="tabcontent", id=sec_id)[self.sections[sec_id]]]
-                   for sec_id in self.index]
+        index = [T.div(class_="tab")[[T.button(class_="tablinks",
+                                               onclick="openTab(event, '" + section_id + "')")[self.presentation_names[section_id]]
+                                      for section_id in self.index]]]
+        tabs = [[T.div(class_="tabcontent", id_=section_id)[self.sections[section_id]]]
+                   for section_id in self.index]
         return page_string(self.name,
                            self.top_content + index + tabs)
 
@@ -77,14 +76,15 @@ def page_string(page_title, content):
                     untemplate.HTML5Doc([untemplate.safe_unicode(style_text
                                                                  + script_text
                                                                  + preamble),
-                                         content,
+                                         T.body[T.h1[page_title],
+                                                content],
                                          untemplate.safe_unicode(postamble)],
                                         head=T.head[T.title[page_title]])).to_string()
 
 def expandable_section(section_id, section_tree):
     # from https://stackoverflow.com/questions/16308779/how-can-i-hide-show-a-div-when-a-button-is-clicked
     return [T.button(onclick="toggle_visibility(section_id);")["Toggle"],
-            T.div(id=section_id)[section_tree]]
+            T.div(id_=section_id)[section_tree]]
 
 def test_page_section(title, content):
     """Make a section of the overall test page."""

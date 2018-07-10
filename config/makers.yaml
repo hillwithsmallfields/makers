@@ -269,6 +269,9 @@ organization:
   # Being a trained user on the equipment class named here gives you
   # write access to the announcements system
   announcements: noticeboard
+  home_page:     http://www.makespace.org/
+  wiki:          http://wiki.makespace.org/
+  forum:         https://groups.google.com/forum/#!forum/cammakespace
 
 server:
   mailhost:       makespace.org

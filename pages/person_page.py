@@ -3,12 +3,14 @@ import configuration
 import equipment_type
 import event
 import page_pieces
+import pages
 import person
 import timeline
 import timeslots
 import datetime
 
 server_conf = None
+org_conf = None
 
 def profile_section(who, viewer):
     form_act = server_conf["update_profile"]
@@ -110,66 +112,74 @@ def admin_section(viewer):
                         if viewer.is_administrator() else ""]
 
 def person_page_contents(who, viewer):
-    global server_conf
-    server_conf = configuration.get_config()['server']
+    global server_conf, org_conf
+    all_conf = configuration.get_config()
+    server_conf = all_conf['server']
+    org_conf = all_conf['organization']
     page_pieces.set_server_conf()
 
-    result = [T.h1["User dashboard for " + who.name()],
-              T.h2["Personal profile"],
-              profile_section(who, viewer)]
+    page_data = pages.SectionalPage("User dashboard for " + who.name(),
+                                    # todo: put these into a central place, for use on most pages
+                                    [T.ul[T.li[T.a(href=org_conf['home_page'])["Home"]],
+                                          T.li[T.a(href=org_conf['wiki'])["Wiki"]],
+                                          T.li[T.a(href=org_conf['forum'])["Forum"]]]])
+
+    page_data.add_section("Personal profile", profile_section(who, viewer))
 
     their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
     if len(their_responsible_types) > 0:
         keyed_types = { ty.pretty_name(): ty for ty in their_responsible_types }
-        result += [T.h2["Equipment responsibilities"],
-                   T.div(class_="resps")[T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
-                                                T.dd[responsibilities(who, name, keyed_types)]]
-                                               for name in sorted(keyed_types.keys())]]]]
+        page_data.add_section("Equipment responsibilities",
+                              T.div(class_="resps")[T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
+                                                           T.dd[responsibilities(who, name, keyed_types)]]
+                                                          for name in sorted(keyed_types.keys())]]])
 
     their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
     if len(their_equipment_types) > 0:
-        result += [T.h2["Equipment trained on"], equipment_trained_on(who, their_equipment_types)]
+        page_data.add_section("Equipment trained on",
+                              equipment_trained_on(who, their_equipment_types))
 
     all_remaining_types = ((set(equipment_type.Equipment_type.list_equipment_types())
                             -their_responsible_types)
                            -their_equipment_types)
     if len(all_remaining_types) > 0:
-        result += [T.h2["Other equipment"], page_pieces.general_equipment_list(who, all_remaining_types)]
+        page_data.add_section("Other equipment",
+                              page_pieces.general_equipment_list(who, all_remaining_types))
 
     if len(who.training_requests) > 0:
-        result += [T.h2["Training requests"], training_requests_section(who)]
+        page_data.add_section("Training requests", training_requests_section(who))
 
     hosting = timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events
     if len(hosting) > 0:
-        result += [T.h2["Events I'm hosting"],
-                   T.div(class_="hostingevents")[page_pieces.eventlist(hosting)]]
+        page_data.add_section("Events I'm hosting",
+                              T.div(class_="hostingevents")[page_pieces.eventlist(hosting)])
 
     attending = timeline.Timeline.future_events(person_field='attendees', person_id=who._id).events
     if len(attending) > 0:
-        result += [T.h2["Events I'm attending"],
-                   T.div(class_="attendingingevents")[page_pieces.eventlist(attending)]]
+        page_data.add_section("Events I'm attending",
+                              T.div(class_="attendingingevents")[page_pieces.eventlist(attending)])
 
     hosted = timeline.Timeline.past_events(person_field='hosts', person_id=who._id).events
     if len(hosting) > 0:
-        result += [T.h2["Events I have hosted"],
-                   T.div(class_="hostedevents")[page_pieces.eventlist(hosted)]]
+        page_data.add_section("Events I have hosted",
+                              T.div(class_="hostedevents")[page_pieces.eventlist(hosted)])
 
     attended = timeline.Timeline.past_events(person_field='attendees', person_id=who._id).events
     if len(attended) > 0:
-        result += [T.h2["Events I have attended"],
-                   T.div(class_="attendedingevents")[page_pieces.eventlist(attended)]]
+        page_data.add_section("Events I have attended",
+                              T.div(class_="attendedingevents")[page_pieces.eventlist(attended)])
 
     known_events = hosting + attending + hosted + attended
     available_events = [ev
                         for ev in timeline.Timeline.future_events().events
                         if ev not in known_events]
     if len(available_events) > 0:
-        result += [T.h2["Events I can sign up for"],
-                   T.div(class_="availableevents")[page_pieces.eventlist(available_events, True)]]
+        page_data.add_section("Events I can sign up for",
+                              T.div(class_="availableevents")[page_pieces.eventlist(available_events, True)])
 
     if viewer.is_administrator() or viewer.is_auditor():
-        result += [T.h2(class_="admin")["Admin actions"],
-                   admin_section(viewer)]
+        page_data.add_section("Admin actions",
+                              admin_section(viewer))
 
     userapilink = page_pieces.section_link("userapi", who.link_id, who.link_id)
     api_link = ["Your user API link is ", userapilink]
@@ -178,7 +188,7 @@ def person_page_contents(who, viewer):
                      "You will need to register to get API access authorization.",
                      T.form(action=server_conf['base_url']+server_conf['userapi']+"authorize",
                             method='POST')[T.button(type="submit", value="authorize")["Get API authorization code"]]]
-    result += [T.h2["API links"],
-               T.div(class_="apilinks")[api_link]]
+    page_data.add_section("API links",
+                          T.div(class_="apilinks")[api_link])
 
-    return result
+    return page_data

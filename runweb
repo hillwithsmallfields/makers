@@ -5,4 +5,4 @@ if [ -f $VENV ]
 then
     source $VENV
 fi
-python3 tests/page_tests.py
+python3 tests/page_tests.py $*
