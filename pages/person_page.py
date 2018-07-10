@@ -114,7 +114,8 @@ def person_page_contents(who, viewer):
     server_conf = configuration.get_config()['server']
     page_pieces.set_server_conf()
 
-    result = [T.h2["Personal profile"],
+    result = [T.h1["User dashboard for " + who.name()],
+              T.h2["Personal profile"],
               profile_section(who, viewer)]
 
     their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
