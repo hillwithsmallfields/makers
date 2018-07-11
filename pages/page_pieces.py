@@ -81,11 +81,19 @@ def availform(available):
 def general_equipment_list(who, these_types, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
     # todo: use h3 titles instead of dl and dt, at least as an option
-    return T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
-                  T.dd[machinelist(keyed_types[name],
-                                   who, False) if detailed else "",
-                       toggle_request(name, 'user', who.has_requested_training([keyed_types[name]._id], 'user'))]]
-                         for name in sorted(keyed_types.keys())]]
+    if True:
+        holder = T.div
+        heading = T.h3
+        rest = T.div
+    else:
+        holder = T.dl
+        heading = T.dt
+        rest = T.dd
+    return holder[[[heading[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
+                    rest[machinelist(keyed_types[name],
+                                     who, False) if detailed else "",
+                         toggle_request(name, 'user', who.has_requested_training([keyed_types[name]._id], 'user'))]]
+                   for name in sorted(keyed_types.keys())]]
 
 def machinelist(eqty, who, as_owner=False):
     """Make a list of machines, with appropriate detail for each."""
@@ -106,16 +114,23 @@ def machinelist(eqty, who, as_owner=False):
             else [])
 
 def eventlist(evlist, with_signup=False):
-    # todo: make this produce a table or similar, at least as an option
-    return T.dl[[[T.dt[event.timestring(ev.start)],
-                  T.dd[T.a(href=server_conf['base_url']+server_conf['events']+str(ev._id))[ev.title or "Untitled"],
-                       " ",
+    if True:
+        return T.table(class_='event_table')[[[T.tr[T.th[ev.title or "Untitled"],
+                                                    T.td[event.timestring(ev.start)],
+                                                    T.td[ev.event_type],
+                                                    T.td[", ".join([equipment_type.Equipment_type.find(e).name for e in ev.equipment_types])],
+                                                    T.td[signup_button(ev._id, "Sign up") if with_signup else ""]
+                                                ]] for ev in evlist]]
+    else:
+        return T.dl[[[T.dt[event.timestring(ev.start)],
+                      T.dd[T.a(href=server_conf['base_url']+server_conf['events']+str(ev._id))[ev.title or "Untitled"],
+                           " ",
                        ev.event_type,
-                       " on ",
-                       ", ".join([equipment_type.Equipment_type.find(e).name for e in ev.equipment_types]),
-                       signup_button(ev._id, "Sign up") if with_signup else ""
-                       # todo: add title, hosts if allowed, attendees
-                  ]] for ev in evlist]]
+                           " on ",
+                           ", ".join([equipment_type.Equipment_type.find(e).name for e in ev.equipment_types]),
+                           signup_button(ev._id, "Sign up") if with_signup else ""
+                           # todo: add title, hosts if allowed, attendees
+                       ]] for ev in evlist]]
 
 def announcements_section():
     return T.div[T.p["Placeholder."]]
