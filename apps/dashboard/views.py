@@ -1,5 +1,8 @@
 from django.http import HttpResponse
 
+import sys
+import model.configuration as configuration
+
 # Create your views here.
 
 def public_index(request):
@@ -7,6 +10,7 @@ def public_index(request):
     View function for the landing page.
     """
     # based on https://docs.djangoproject.com/en/2.0/topics/http/views/
+    config_data = configuration.get_config()
     return HttpResponse("""
     <html>
     <head><title>Public page placeholder</title></head>
@@ -15,7 +19,11 @@ def public_index(request):
     <h2>Path</h2>
     <pre>"""
                         + ':'.join(sys.path)
-                        + """</pre>
-    </body>
+    + """
+    </pre>
+    <h2>Configuration</h2>
+    <pre>""" + str(config_data)
+    + """
+    </pre>    </body>
     </html>
     """)
