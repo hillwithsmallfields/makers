@@ -10,28 +10,24 @@ import sys
 from datetime import datetime, timedelta
 import time
 
-sys.path.append('model')
-sys.path.append('utils')
-sys.path.append('pages')
-sys.path.append('untemplate')
-
 print("Using load path", ':'.join(sys.path))
 
-import access_permissions
-import configuration
-import database
-import equipment_type
-import event
-import importer
-import machine
-import pages
-import person
-import timeline
-import timeslots
+import model.access_permissions
+import model.configuration
+import model.database
+import model.equipment_type
+import model.event
+import model.machine
+import model.pages
+import model.person
+import model.timeline
+import model.timeslots
 
-import equipment_type_list_page
-import equipment_type_page
-import person_page
+import pages.equipment_type_list_page
+import pages.equipment_type_page
+import pages.person_page
+
+import utils.importer
 
 genconf = configuration.get_config()
 interest_areas = genconf['skill_areas']
