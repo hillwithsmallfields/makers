@@ -1,19 +1,23 @@
 #!/bin/bash
 
-SOURCE=${1-$USER/open-projects/makers}
-DESTINATION=${2-/var/www/makers}
+# Enough overrides to let you install a testing version too, I hope:
+MAINCONF=${1-makers.yaml}
+SOURCE=${2-$USER/open-projects/makers}
+DESTINATION=${3-/var/www/makers}
+CONFDEST=${4-/usr/local/share/makers}
 
-echo Installing from $SOURCE to $DESTINATION
+echo Installing with config $MAINCONF from $SOURCE to $DESTINATION and $CONFDEST
 
 echo Copying config files
 sudo bash <<EOF
-mkdir -p /usr/local/share/makers
-chmod a+rx /usr/local/share/makers
-cp $SOURCE/config/makers.yaml /usr/local/share/makers/makers.yaml
-cp $SOURCE/config/makers.css /usr/local/share/makers/makers.css
-chmod a+r /usr/local/share/makers/*
+mkdir -p $CONFDEST
+chmod a+rx $CONFDEST
+cd $SOURCE/config/
+cp $MAINCONF makers.css makers.js $CONFDEST
+chmod a+r $CONFDEST/*
 EOF
 
+mkdir -p $DESTINATION
 echo copying python files
 cp $SOURCE/makers/*.py $DESTINATION/makers
 echo copying scripts
@@ -24,9 +28,16 @@ do
     echo Copying $APP to $DESTINATION
     cp -r $APP $DESTINATION
 done
+echo Copying common code
+for PART in model pages untemplate
+do
+    mkdir -p $DESTINATION/$PART
+    cp $SOURCE/$PART/*.py $DESTINATION/$PART
+done
 echo poking password
 $SOURCE/scripts/setpassword
 echo activating venv
 source /var/www/makers_venv/bin/activate
 echo setting up static files
 $DESTINATION/manage.py collectstatic --no-input --no-color
+echo makers installation complete
