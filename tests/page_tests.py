@@ -10,6 +10,8 @@ import sys
 from datetime import datetime, timedelta
 import time
 
+sys.path.append("/home/jcgs/open-projects/makers")
+
 print("Using load path", ':'.join(sys.path))
 
 import model.access_permissions

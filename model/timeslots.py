@@ -8,7 +8,7 @@
 # When an event is scheduled, it's then easy to search for who may be
 # able to make that time.
 
-import configuration
+import model.configuration as configuration
 import datetime
 
 def _timeslots_dayparts_to_int(day):

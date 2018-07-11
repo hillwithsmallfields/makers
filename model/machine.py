@@ -1,6 +1,6 @@
-import database
 import datetime
-import person
+import model.database
+import model.person
 
 class Machine(object):
 
@@ -39,7 +39,7 @@ class Machine(object):
             return name
         if name in Machine.machine_by_name:
             return Machine.machine_by_name[name]
-        data = database.get_machine_dict(name)
+        data = model.database.get_machine_dict(name)
         if data is None:
             return None
         c = Machine(name)
@@ -52,7 +52,7 @@ class Machine(object):
     def find_by_id(id):
         if id in Machine.machine_by_id:
             return Machine.machine_by_id[id]
-        data = database.get_machine_dict(id)
+        data = model.database.get_machine_dict(id)
         if data is None:
             return None
         c = Machine(data['name'])
@@ -63,7 +63,7 @@ class Machine(object):
 
     def save(self):
         """Save the machine to the database."""
-        database.save_machine(self.__dict__)
+        model.database.save_machine(self.__dict__)
 
     def get_status(self):
         """Return whether the machine is working, possibly with some detail."""
@@ -91,14 +91,14 @@ class Machine(object):
     def user_allowed(self, who):
         """Indicate whether a particular person is allowed to use this machine."""
         res = self.reserved()
-        person_obj = person.Person.find(who)
+        person_obj = model.person.Person.find(who)
         if res:
             return person_obj._id == res[2]
         return person_obj.qualification(self.name)
 
     def log_use(self, who, when=datetime.datetime.now()):
         """Log that a particular user has used this machine."""
-        database.log_machine_use(self._id, person.Person.find(who)._id, when)
+        model.database.log_machine_use(self._id, model.person.Person.find(who)._id, when)
 
     def get_log(self):
-        return database.get_machine_log(self._id)
+        return model.database.get_machine_log(self._id)

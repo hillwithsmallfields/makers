@@ -9,13 +9,11 @@ CONFDEST=${4-/usr/local/share/makers}
 echo Installing with config $MAINCONF from $SOURCE to $DESTINATION and $CONFDEST
 
 echo Copying config files
-sudo bash <<EOF
 mkdir -p $CONFDEST
 chmod a+rx $CONFDEST
 cd $SOURCE/config/
 cp $MAINCONF makers.css makers.js $CONFDEST
 chmod a+r $CONFDEST/*
-EOF
 
 mkdir -p $DESTINATION
 echo copying python files

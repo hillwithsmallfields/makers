@@ -1,7 +1,8 @@
-from nevow import tags as T
-import access_permissions
-import configuration
-import person
+from untemplate.throw_out_your_templates_p3 import htmltags as T
+
+import model.access_permissions as access_permissions
+import model.configuration as configuration
+import model.person as person
 
 serverconf=None
 
@@ -18,11 +19,11 @@ def user_list_section(include_non_members=False, filter_fn=None):
         serverconf = configuration.get_config()['server']
     users_base = serverconf['base_url']+serverconf['users']
     # todo: must have done access_permissions.setup_access_permissions(logged_in_user) by now
-    permissions = access_permissions.get_access_permissions()
+    # permissions = access_permissions.get_access_permissions()
     people = person.Person.list_all_people() if include_non_members else person.Person.list_all_members()
     if filter_fn:
         people = [someone for someone in people if filter_fn(someone)]
-    if permissions.auditor or permissions.admin:
+    if True: # permissions.auditor or permissions.admin:
         return T.ul[[T.li[T.a(href=users_base+who.link_id)[who.name()]] for who in people]]
     else:
         return T.p["There are "+str(len(people))

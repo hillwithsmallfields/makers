@@ -1,12 +1,12 @@
 # -*- coding: utf8
 from datetime import datetime, timedelta
-from equipment_type import Equipment_type
-import configuration
-import access_permissions
-import database
-import person
+import model.access_permissions
+import model.configuration
+import model.database
+import model.equipment_type
+import model.person
+import model.timeslots
 import re
-import timeslots
 
 # todo: event templates to have after-effect fields, so that cancellation of membership can schedule cancellation of equipment training
 
@@ -114,15 +114,15 @@ class Event(object):
     def __str__(self):
         accum = "<" + self.event_type + "_event " + timestring(self.start)
         if self.hosts and self.hosts != []:
-            accum += " with " + ", ".join([person.Person.find(host_id).name()
+            accum += " with " + ", ".join([model.person.Person.find(host_id).name()
                                           for host_id in self.hosts
                                           if host_id is not None])
         if self.equipment and self.equipment != []:
-            accum += " on " + ", ".join([Equipment_type.find(e).name for e in self.equipment_types])
+            accum += " on " + ", ".join([model.equipment_type.Equipment_type.find(e).name for e in self.equipment_types])
         if len(self.passed) > 0:
-            accum += " passing " + ", ".join([person.Person.find(who).name() for who in self.passed])
+            accum += " passing " + ", ".join([model.person.Person.find(who).name() for who in self.passed])
         elif len(self.invitation_accepted) > 0:
-            accum += " attending " + ", ".join([person.Person.find(who).name() for who in self.invitation_accepted])
+            accum += " attending " + ", ".join([model.person.Person.find(who).name() for who in self.invitation_accepted])
         accum += ">"
         return accum
 
@@ -133,7 +133,7 @@ class Event(object):
     def find(event_type, event_datetime, hosts, equipment_types):
         """Find an event by giving enough information to describe it."""
         event_datetime = as_time(event_datetime)
-        event_dict = database.get_event(event_type, event_datetime,
+        event_dict = model.database.get_event(event_type, event_datetime,
                                         hosts,
                                         equipment_types,
                                         create=True)
@@ -153,7 +153,7 @@ class Event(object):
     @staticmethod
     def find_by_id(event_id):
         """Find an event by its ObjectId."""
-        event_dict = database.get_event_by_id(event_id)
+        event_dict = model.database.get_event_by_id(event_id)
         if event_dict is None:
             return None
         if event_id not in Event.events_by_id:
@@ -175,18 +175,18 @@ class Event(object):
 
     def save(self):
         """Save the event to the database."""
-        database.save_event(self.__dict__)
+        model.database.save_event(self.__dict__)
 
     @staticmethod
     def find_template(template_name):
         """Get an event template, by name."""
-        return database.find_event_template(template_name)
+        return model.database.find_event_template(template_name)
 
     @staticmethod
     def write_template(template_name, template_dict):
         """Save an event template, to a given name."""
         template_dict['title'] = template_name
-        database.add_template(template_dict)
+        model.database.add_template(template_dict)
 
     @staticmethod
     def _preprocess_conditions_(raw_conds, equipment_types):
@@ -202,13 +202,13 @@ class Event(object):
         result = []
         for cond in raw_conds:
             if cond == "member":
-                result.append(configuration.get_config()['organization']['name'] + " user")
+                result.append(model.configuration.get_config()['organization']['name'] + " user")
             elif cond == "admin":
-                result.append(configuration.get_config()['database']['database_name'] + " owner")
+                result.append(model.configuration.get_config()['database']['database_name'] + " owner")
             elif cond == "auditor":
-                result.append(configuration.get_config()['database']['database_name'] + " user")
+                result.append(model.configuration.get_config()['database']['database_name'] + " user")
             elif cond == "director":
-                result.append(configuration.get_config()['organization']['name'] + " owner")
+                result.append(model.configuration.get_config()['organization']['name'] + " owner")
             elif ' ' not in cond:
                 # really all the others should be two words, but just pass the
                 # buck for now, someone might define a use for such a thing later
@@ -218,7 +218,7 @@ class Event(object):
                 for onetype in (equipment_types
                                 if equiptypes == "$equipment"
                                 else equiptypes.split(';')):
-                    result.append(Equipment_type.find(onetype).name + " " + role)
+                    result.append(model.equipment_type.Equipment_type.find(onetype).name + " " + role)
         return result
 
     def training_for_role(self):
@@ -249,14 +249,14 @@ class Event(object):
                                                                              ['member']),
                                                            equipment_types)
         for host in hosts:
-            person_obj = person.Person.find(host)
+            person_obj = model.person.Person.find(host)
             if not person_obj.satisfies_conditions(host_prerequisites, equipment_types):
                 return None, person_obj.name() + " is not qualified to host this event"
         attendee_prerequisites = Event._preprocess_conditions_(template_dict.get('attendee_prerequisites',
                                                                                  []),
                                                                equipment_types)
         title = template_dict['title'].replace("$equipment",
-                                               ", ".join([Equipment_type.find(eqty).name
+                                               ", ".join([model.equipment_type.Equipment_type.find(eqty).name
                                                           for eqty in equipment_types]))
 
         instance = Event(template_dict['event_type'],
@@ -266,7 +266,7 @@ class Event(object):
                          invitation_accepted=[],
                          equipment_types=equipment_types)
 
-        instance_dict = database.get_event(template_dict['event_type'],
+        instance_dict = model.database.get_event(template_dict['event_type'],
                                            event_datetime,
                                            hosts,
                                            equipment_types, True)
@@ -290,7 +290,7 @@ class Event(object):
         host_conds = Event._preprocess_conditions_(template_dict.get('host_prerequisites', ['member']),
                                                    equipment_types)
         for host in hosts:
-            x = person.Person.find(host)
+            x = model.person.Person.find(host)
             if not x.satisfies_conditions(host_conds, equipment_types):
                 return False
         return True
@@ -302,13 +302,13 @@ class Event(object):
         The normal use of this will be with a single host specified,
         to generate the list of events that a user can create, on
         their dashboard page."""
-        return [ template for template in database.list_event_templates()
+        return [ template for template in model.database.list_event_templates()
                  if Event._all_hosts_suitable_(template, hosts, equipment_types) ]
 
     def available_interested_people(self):
-        event_timeslot_bitmap = timeslots.time_to_timeslot(self.start)
+        event_timeslot_bitmap = model.timeslots.time_to_timeslot(self.start)
         [whoever
-         for whoever in person.Person.awaiting_training(self.event_type, self.equipment_types)
+         for whoever in model.person.Person.awaiting_training(self.event_type, self.equipment_types)
          if whoever.available & event_timeslot_bitmap]
 
     def invite_available_interested_people(self):
@@ -359,7 +359,7 @@ class Event(object):
 
     def get_invitation_accepted(self):
         """Return the list of people attending the event."""
-        return [ person.Person.find(at_id) for at_id in self.invitation_accepted ]
+        return [ model.person.Person.find(at_id) for at_id in self.invitation_accepted ]
 
     def add_invitation_accepted(self, invitation_accepted):
         """Add specified people to the invitation_accepted list."""
@@ -420,7 +420,7 @@ class Event(object):
         """Return the dietary avoidance data as a dictionary of avoidance to number of advoidents."""
         avoidances = {}
         for person_id in self.invitation_accepted:
-            whoever = person.Person.find(person_id)
+            whoever = model.person.Person.find(person_id)
             if whoever and 'avoidances' in whoever.profile:
                 avoids = ", ".join(sorted(whoever.profile['avoidances']))
                 avoidances[avoids] = avoidances.get(avoids, 0) + 1
@@ -432,7 +432,7 @@ class Event(object):
         return [ (avkey, avoidances[avkey]) for avkey in sorted(avoidances.keys()) ]
 
     def possibly_interested_people(self):
-        return database.find_interested_people(self.interest_areas)
+        return model.database.find_interested_people(self.interest_areas)
 
     def save_as_template(self, name):
         """Save this event as a named template."""
@@ -448,9 +448,9 @@ class Event(object):
             result['start'] = str(starting)
             result['end'] = str(self.end)
         hosts = []
-        logged_in = access_permissions.Access_Permissions.get_access_permissions().viewing_person is not None
+        logged_in = model.access_permissions.Access_Permissions.get_access_permissions().viewing_person is not None
         for h in self.hosts:
-            host = person.Person.find(h)
+            host = model.person.Person.find(h)
             if host is None:
                 continue
             visibility = host.visibility.get('host', False)

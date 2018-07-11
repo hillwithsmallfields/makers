@@ -1,5 +1,5 @@
 from datetime import datetime
-import database
+import model.database as database
 
 class Timeline(object):
 

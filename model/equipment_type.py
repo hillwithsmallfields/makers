@@ -1,6 +1,6 @@
-import database
-import machine
-import person
+import model.database
+import model.machine
+import model.person
 
 class Equipment_type(object):
 
@@ -35,7 +35,7 @@ class Equipment_type(object):
             return name
         if name in Equipment_type.types_by_name:
             return Equipment_type.types_by_name[name]
-        data = database.get_equipment_type_dict(name)
+        data = model.database.get_equipment_type_dict(name)
         if data is None:
             return None
         c = Equipment_type()
@@ -48,7 +48,7 @@ class Equipment_type(object):
     def find_by_id(id):
         if id in Equipment_type.types_by_id:
             return Equipment_type.types_by_id[id]
-        data = database.get_equipment_type_dict(id)
+        data = model.database.get_equipment_type_dict(id)
         if data is None:
             return None
         c = Equipment_type()
@@ -60,7 +60,7 @@ class Equipment_type(object):
     @staticmethod
     def list_equipment_types(training_category=None):
         return [ Equipment_type.find_by_id(et_dict['_id'])
-                 for et_dict in database.list_equipment_types(training_category) ]
+                 for et_dict in model.database.list_equipment_types(training_category) ]
 
     @staticmethod
     def API_all_equipment_fobs():
@@ -73,12 +73,12 @@ class Equipment_type(object):
 
     def get_machines(self):
         """List the individual machines of an equipment type."""
-        return [ machine.Machine.find_by_id(mc['_id']) for mc in database.get_machine_dicts_for_type(self._id) ]
+        return [ model.machine.Machine.find_by_id(mc['_id']) for mc in model.database.get_machine_dicts_for_type(self._id) ]
 
     def get_people(self, role):
         """Return the trained users, owners, or trainers of an equipment type."""
-        training = database.get_eqtype_events(self._id, database.role_training(role))
-        untraining = database.get_eqtype_events(self._id, database.role_untraining(role))
+        training = model.database.get_eqtype_events(self._id, model.database.role_training(role))
+        untraining = model.database.get_eqtype_events(self._id, model.database.role_untraining(role))
         trained = {}
         detrained = {}
         # working our way back in time, we want only the most recent relevant event of each type
@@ -90,7 +90,7 @@ class Equipment_type(object):
             for detrained_person in ev.passed:
                 if detrained_person not in detrained:
                     detrained[detrained_person] = ev
-        return [ person.Person.find(trained_person) for trained_person in trained.keys()
+        return [ model.person.Person.find(trained_person) for trained_person in trained.keys()
                  if (trained_person not in detrained
                      or trained[trained_person].start > detrained[trained_person].start) ]
 
@@ -129,9 +129,9 @@ class Equipment_type(object):
 
     def get_training_requests(self, role='user'):
         return { y._id: y.training_requests
-                 for y in [ person.Person.find(x)
-                            for x in database.get_people_awaiting_training(database.role_training(role), [self._id])]}
+                 for y in [ model.person.Person.find(x)
+                            for x in model.database.get_people_awaiting_training(model.database.role_training(role), [self._id])]}
 
     def get_training_events(self, role, earliest=None, latest=None):
         """Return a list of training events for this type of equipment."""
-        return database.get_eqtype_events(self._id, database.role_training(role), earliest, latest)
+        return model.database.get_eqtype_events(self._id, model.database.role_training(role), earliest, latest)

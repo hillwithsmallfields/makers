@@ -5,5 +5,6 @@ from . import views
 
 
 urlpatterns = [
-    path('', views.public_index, name='index')
+    path('', views.public_index, name='index'),
+    path('<who>', views.public_index, name='index')
 ]

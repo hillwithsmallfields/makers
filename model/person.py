@@ -1,14 +1,15 @@
-import access_permissions
-import database
-import timeline
-import event
-import equipment_type
-import configuration
-import machine
-import uuid
-import os
-import makers_server
+import model.access_permissions
+import model.configuration
+import model.database
+import model.equipment_type
+import model.event
+import model.machine
+import model.makers_server
+import model.timeline
+import model.person
 from datetime import datetime
+import os
+import uuid
 
 # todo: induction input from jotform.com
 
@@ -65,23 +66,23 @@ class Person(object):
 
     @staticmethod
     def list_all_people():
-        return [ Person.find(whoever) for whoever in database.get_all_person_dicts() ]
+        return [ model.person.Person.find(whoever) for whoever in model.database.get_all_person_dicts() ]
 
     @staticmethod
     def list_all_members():
-        return equipment_type.Equipment_type.find(configuration.get_config()['organization']['name']).get_trained_users()
+        return model.equipment_type.Equipment_type.find(model.configuration.get_config()['organization']['name']).get_trained_users()
 
     @staticmethod
     def find(identification):
         """Find a person in the database."""
-        data = identification if type(identification) is dict else database.get_person_dict(identification)
+        data = identification if type(identification) is dict else model.database.get_person_dict(identification)
         if data is None:
             return None
         # convert the dictionary into a Person object
         person_id = data['_id']
-        if person_id not in Person.people_by_id:
-            Person.people_by_id[person_id] = Person()
-        p = Person.people_by_id[person_id]
+        if person_id not in model.person.Person.people_by_id:
+            model.person.Person.people_by_id[person_id] = Person()
+        p = model.person.Person.people_by_id[person_id]
         p.__dict__.update(data)
         return p
 
@@ -99,7 +100,7 @@ class Person(object):
         # This line gets the information for the person logged in (the
         # "viewing person"), which is not necessarily the Person
         # object passed in as self:
-        viewing_access_permissions = access_permissions.Access_Permissions.get_access_permissions()
+        viewing_access_permissions = model.access_permissions.Access_Permissions.get_access_permissions()
         if (self == viewing_access_permissions.viewing_person
             or viewing_access_permissions.admin
             or viewing_access_permissions.auditor):
@@ -122,7 +123,7 @@ class Person(object):
         if self.visible(access_permissions_event=access_permissions_event,
                         access_permissions_role=None,
                         access_permissions_equipment=None):
-            formal, _ = database.person_name(self.link_id)
+            formal, _ = model.database.person_name(self.link_id)
             return formal
         else:
             return ("member_"+str(self.membership_number))
@@ -135,7 +136,7 @@ class Person(object):
         if self.visible(access_permissions_event=access_permissions_event,
                         access_permissions_role=None,
                         access_permissions_equipment=None):
-            _, informal = database.person_name(self.link_id)
+            _, informal = model.database.person_name(self.link_id)
             return informal
         else:
             return ("member_"+str(self.membership_number))
@@ -148,12 +149,12 @@ class Person(object):
         if self.visible(access_permissions_event=access_permissions_event,
                         access_permissions_role=None,
                         access_permissions_equipment=None):
-            email = database.person_email(self.link_id,
-                                          access_permissions.Access_Permissions.get_access_permissions().viewing_person)
+            email = model.database.person_email(self.link_id,
+                                          model.access_permissions.Access_Permissions.get_access_permissions().viewing_person)
             return email
         else:
             return ("member_"+str(self.membership_number)
-                    +"@"+configuration.get_config()['server']['mailhost'])
+                    +"@"+model.configuration.get_config()['server']['mailhost'])
 
     def get_visibility(self, access_permissions):
         return self.visibility[access_permissions]
@@ -163,7 +164,7 @@ class Person(object):
 
     def save(self):
         """Save the person to the database."""
-        database.save_person(self.__dict__)
+        model.database.save_person(self.__dict__)
 
     def set_fob(self, newfob):
         if self.fob:
@@ -182,7 +183,7 @@ class Person(object):
         """Get this person's open training request limit.
         If set to None, the system-wide defalt, from the config file, will be used."""
         return (self.training_requests_limit
-                or int(configuration.get_config()['training']['default_max_requests']))
+                or int(model.configuration.get_config()['training']['default_max_requests']))
 
     def set_training_requests_limit(self, limit):
         """Set this person's open training request limit.
@@ -206,19 +207,19 @@ class Person(object):
         The role may be 'user','trainer', or 'owner'."""
         if len(self.get_training_requests()) > self.get_training_requests_limit():
             return False, "Too many open training requests"
-        role_training = database.role_training(role)
+        role_training = model.database.role_training(role)
         if ((len(self.get_training_events(role_training, result='noshow')) - self.noshow_absolutions)
-            >= int(configuration.get_config()['training']['no_shows_limit'])):
+            >= int(model.configuration.get_config()['training']['no_shows_limit'])):
             return False, "Too many no-shows"
         self.training_requests.append({'request_date': when or datetime.now(),
-                                       'equipment_types': [ equipment_type.Equipment_type.find(eqt)._id for eqt in equipment_types],
+                                       'equipment_types': [ model.equipment_type.Equipment_type.find(eqt)._id for eqt in equipment_types],
                                        'event_type': role_training})
         self.save()
         return True, None
 
     def remove_training_request(self, role, equipment_types):
         """Remove a training request."""
-        event_type = database.role_training(role)
+        event_type = model.database.role_training(role)
         for req in self.training_requests:
             if req['event_type'] != event_type:
                 continue
@@ -233,7 +234,7 @@ class Person(object):
         This is to allow administrators to backdate training requests
         if a person convinces them that they have a good case for jumping
         the queue."""
-        event_type = database.role_training(role)
+        event_type = model.database.role_training(role)
         for req in self.training_requests:
             if req['event_type'] != event_type:
                 continue
@@ -250,7 +251,7 @@ class Person(object):
     def has_requested_training(self, equipment_types, role):
         """Return whether the person has an unfulfilled training request
         for a given equipment and role."""
-        event_type = database.role_training(role)
+        event_type = model.database.role_training(role)
         for req in self.training_requests:
             if req['event_type'] != event_type:
                 continue
@@ -265,7 +266,7 @@ class Person(object):
                             result='passed'):
         """Return the training data for this person,
         as a list of training events."""
-        return database.get_events(event_type=event_type,
+        return model.database.get_events(event_type=event_type,
                                    person_field=result,
                                    person_id=self._id,
                                    include_hidden=True,
@@ -279,20 +280,20 @@ class Person(object):
     def awaiting_training(event_type, equipment_types):
         """List the people who have requested a particular type of training."""
         return map(find,
-                   database.get_people_awaiting_training(event_type,
+                   model.database.get_people_awaiting_training(event_type,
                                                          equipment_types))
 
     def mail_event_invitation(self, m_event, message_template_name):
         """Mail the person about an event.
         They get a link to click on to respond about whether they can attend."""
         invitation_uuid = str(uuid.uuid4())
-        all_conf = configuration.get_config()
+        all_conf = model.configuration.get_config()
         server_config = all_conf['server']
         invitation_url = server_config['base_url'] + server_config['rsvp'] + invitation_uuid
         self.invitations[invitation_uuid] = m_event._id
         substitutions = {'rsvp': invitation_url,
                          'queue_position': len(m_event.invited),
-                         'equipment_types': ', '.join([ equipment_type.Equipment_type.find_by_id(eqty).name
+                         'equipment_types': ', '.join([ model.equipment_type.Equipment_type.find_by_id(eqty).name
                                                         for eqty
                                                         in m_event.equipment_types ]),
                          'date': str(m_event.start)}
@@ -303,9 +304,9 @@ class Person(object):
     @staticmethod
     def mailed_event_details(rsvp):
         """Convert an RSVP UUID into a person and an event."""
-        who = database.find_rsvp(rsvp)
+        who = model.database.find_rsvp(rsvp)
         what = who['invitations'][rsvp]
-        return Person.find(who._id), event.Event.find_by_id(what)
+        return model.person.Person.find(who._id), model.event.Event.find_by_id(what)
 
     # Conditions and qualifications
 
@@ -314,16 +315,16 @@ class Person(object):
         trained = {}
         detrained = {}
         equipments = {}
-        for ev in self.get_training_events(event_type = database.role_training(role),
+        for ev in self.get_training_events(event_type = model.database.role_training(role),
                                            when=when or datetime.now()):
             for eq in ev.equipment:
                 trained[eq] = ev.start
                 equipments[eq] = eq
-        for ev in self.get_training_events(event_type = database.role_untraining(role),
+        for ev in self.get_training_events(event_type = model.database.role_untraining(role),
                                            when=when or datetime.now()):
             for eq in ev.equipment:
                 detrained[eq] = ev.start
-        return [ equipment_type.Equipment_type.find_by_id(equipments[e])
+        return [ model.equipment_type.Equipment_type.find_by_id(equipments[e])
                  for e in trained.keys()
                  if (e not in detrained
                      or trained[e] > detrained[e])]
@@ -351,13 +352,13 @@ class Person(object):
         A second result gives their latest ban or suspension on this equipment type."""
         trained = None
         detrained = None
-        equipment_id = equipment_type.Equipment_type.find(equipment_type_name)._id
-        for ev in self.get_training_events(event_type = database.role_training(role),
+        equipment_id = model.equipment_type.Equipment_type.find(equipment_type_name)._id
+        for ev in self.get_training_events(event_type = model.database.role_training(role),
                                            when=when or datetime.now()):
             if equipment_id in ev.equipment:
                 trained = ev
                 break
-        for ev in self.get_training_events(event_type = database.role_untraining(role),
+        for ev in self.get_training_events(event_type = model.database.role_untraining(role),
                                            when=when or datetime.now()):
             if equipment_id in ev.equipment:
                 detrained = ev.start
@@ -377,21 +378,21 @@ class Person(object):
 
     def is_member(self):
         """Return whether the person is a member, and whether they have a suspension on their membership."""
-        return self.qualification(configuration.get_config()['organization']['name'], 'user',
+        return self.qualification(model.configuration.get_config()['organization']['name'], 'user',
                                   skip_membership_check=True)
 
     def is_administrator(self):
         """Return whether the person is an admin."""
-        return self.is_owner(configuration.get_config()['organization']['database'])
+        return self.is_owner(model.configuration.get_config()['organization']['database'])
 
     def is_auditor(self):
         """Return whether the person is an auditor.
         Similar to admin but read-only."""
-        return self.is_trained(configuration.get_config()['organization']['database'])
+        return self.is_trained(model.configuration.get_config()['organization']['database'])
 
     def is_inductor(self):
         """Return whether the person is a general inductor."""
-        return self.is_trainer(configuration.get_config()['organization']['name'])
+        return self.is_trainer(model.configuration.get_config()['organization']['name'])
 
     def is_trained(self, equipment_class):
         """Return whether a person is trained to use a particular equipment_class."""
@@ -445,10 +446,10 @@ class Person(object):
     # machine use
 
     def get_log_raw(self):
-        return database.get_user_log(self._id)
+        return model.database.get_user_log(self._id)
 
     def get_log(self):
-        return [ (str(entry['start']), machine.Machine.find(entry['machine'])) for entry in self.get_log_raw() ]
+        return [ (str(entry['start']), model.machine.Machine.find(entry['machine'])) for entry in self.get_log_raw() ]
 
     # API
 
@@ -456,7 +457,7 @@ class Person(object):
         """Get the data for a person, in a suitable form for the API.
         With an optional flag, get more detail."""
         # todo: allow 'detailed' to be a list of fields you want
-        name, known_as = database.person_name(self)
+        name, known_as = model.database.person_name(self)
         personal_data = {'name': name,
                          'qualified': self.get_qualifications()}
         membership = self.is_member()[0]
@@ -469,19 +470,19 @@ class Person(object):
             personal_data['fob'] = int(self.fob)
         if detailed:
             for field, title in [('hosts', 'hosting_events'), ('attendees', 'attending_events')]:
-                my_events = timeline.Timeline.create_timeline(person_field=field, person_id=self._id).events
+                my_events = model.timeline.Timeline.create_timeline(person_field=field, person_id=self._id).events
                 if len(my_events) > 0:
-                    my_event_api_data = [ { 'start': event.timestring(tl_event.start),
+                    my_event_api_data = [ { 'start': model.event.timestring(tl_event.start),
                                             'type': str(tl_event.event_type),
-                                            'equipment_types': [ equipment_type.Equipment_type.find_by_id(eqty).name
+                                            'equipment_types': [ model.equipment_type.Equipment_type.find_by_id(eqty).name
                                                                     for eqty in tl_event.equipment_types]} for tl_event in my_events ]
                     personal_data[title] = my_event_api_data
 
             tr_hist = {}
             for role in ['user', 'owner', 'trainer']:
-                for tr_ev in self.get_training_events(event_type = database.role_training(role)):
+                for tr_ev in self.get_training_events(event_type = model.database.role_training(role)):
                     tr_hist[tr_ev.start] = tr_ev.event_as_json()
-                for untr_ev in self.get_training_events(event_type = database.role_untraining(role)):
+                for untr_ev in self.get_training_events(event_type = model.database.role_untraining(role)):
                     tr_hist[untr_ev.start] = untr_ev.event_as_json()
             personal_data['training_history'] = [ tr_hist[evdate] for evdate in sorted(tr_hist.keys()) ]
             personal_data['machine_log'] = [ [ str(entry[0]), entry[1].name ] for entry in self.get_log() ]

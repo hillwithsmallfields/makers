@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-import throw_out_your_templates_p3 as untemplate
-from throw_out_your_templates_p3 import htmltags as T
-import configuration
+import untemplate.throw_out_your_templates_p3 as untemplate
+from untemplate.throw_out_your_templates_p3 import htmltags as T
+import model.configuration as configuration
 import os
 
 class HtmlPage(object):

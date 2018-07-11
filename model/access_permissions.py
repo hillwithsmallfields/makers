@@ -1,5 +1,5 @@
-import person
-import configuration
+import model.person
+import model.configuration
 
 def set_access_permissions_from_django(context):
     # todo: talk to django to get the login context
@@ -35,7 +35,7 @@ class Access_Permissions(object):
     def setup_access_permissions(self, link_id):
         """Look through a person's roles and set up their permissions accordingly."""
         self.link_id = link_id
-        self.viewing_person = person.Person.find(link_id)
+        self.viewing_person = model.person.Person.find(link_id)
         for role in self.roles.keys():
             for equipment in self.viewing_person.get_equipment_classes(role):
                 self.add_role(role, equipment._id)
@@ -45,7 +45,7 @@ class Access_Permissions(object):
         """Cache some access_permissions information.
 
         Call this after you've finished adding roles with add_role()."""
-        org = configuration.get_config()['organization']['database']
+        org = model.configuration.get_config()['organization']['database']
         self.auditor = org in self.roles['user']
         self.admin = (self.auditor
                       or org in self.roles['owner']
@@ -64,6 +64,21 @@ class Access_Permissions(object):
             if callback:
                 callback(Access_Permissions.my_access_permissions)
                 Access_Permissions.my_access_permissions.cache_access_permissions()
+
+
+        ########################################
+        # Start of horrible hack for debugging #
+        ########################################
+
+        Access_Permissions.my_access_permissions.viewing_person = model.person.Person()
+        Access_Permissions.my_access_permissions.admin = True
+
+        ######################################
+        # End of horrible hack for debugging #
+        ######################################
+
+
+
         return Access_Permissions.my_access_permissions
 
     @staticmethod

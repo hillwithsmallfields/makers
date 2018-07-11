@@ -5,12 +5,12 @@
 
 from __future__ import print_function
 
-import configuration
-import event
+import model.configuration
+import model.event
 import json
 import os
-# import machine
-import person
+# import machine as machine
+import model.person
 import pymongo
 import uuid
 
@@ -39,7 +39,7 @@ def get_person_dict(identification):
         return None
     if isinstance(identification, dict):
         return identification             # no lookup needed
-    if isinstance(identification, person.Person):
+    if isinstance(identification, model.person.Person):
         return identification.__dict__
     collection = database[collection_names['people']]
     # print("get_person_dict lookup", identification)
@@ -57,12 +57,12 @@ def person_name(whoever,
                 role_viewed=None,
                 equipment=None):
     """Return the formal and informal names of a person.
-    You should use person.name() instead of this in your programs,
+    You should use model.person.name() instead of this in your programs,
     as that handles the privacy controls."""
     person_link = (whoever['link_id']
                    if isinstance(whoever, dict)
                    else (whoever.link_id
-                         if isinstance(whoever, person.Person)
+                         if isinstance(whoever, model.person.Person)
                          else whoever))
     name_record = database[collection_names['names']].find_one({'link_id': person_link})
     if name_record is None:
@@ -77,7 +77,7 @@ def person_email(whoever, viewing_person):
     person_link = (whoever['link_id']
                    if isinstance(whoever, dict)
                    else (whoever.link_id
-                         if isinstance(whoever, person.Person)
+                         if isinstance(whoever, model.person.Person)
                          else whoever))
     name_record = database[collection_names['names']].find_one({'link_id': person_link})
     if name_record is None:
@@ -147,7 +147,7 @@ def get_events(event_type=None,
         query['start'] = {'$gt': earliest}
     if latest:
         query['end'] = {'$lt': latest}
-    result = [ event.Event.find_by_id(tr_event['_id'])
+    result = [ model.event.Event.find_by_id(tr_event['_id'])
                for tr_event in database[collection_names['events']].find(query).sort('start',
                                                                                      pymongo.ASCENDING) ]
     # print("get_events result", result)
@@ -184,7 +184,7 @@ def add_template(template):
 def is_administrator(person, writer=False):
     """Return whether a person is an administrator who can access other people's data in the database.
     With the optional third argument non-False, check whether they have write access too."""
-    return (configuration.get_config()['organization']['database']
+    return (model.configuration.get_config()['organization']['database']
             in get_person_machines(person,
                                    'owner' if writer else 'trained'))
 
@@ -216,7 +216,7 @@ def get_eqtype_events(equipment_type, event_type, earliest=None, latest=None):
         query['start'] = {'$gt': earliest}
     if latest:
         query['end'] = {'$lt': latest}
-    return [ event.Event.find_by_id(tr_event['_id'])
+    return [ model.event.Event.find_by_id(tr_event['_id'])
              for tr_event in database[collection_names['events']].find(query).sort('start', pymongo.DESCENDING) ]
 
 # Equipment
