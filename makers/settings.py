@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'dashboard.apps.DashboardConfig',
     'equipment.apps.EquipmentConfig',
     'equiptypes.apps.EquiptypesConfig',
-    'events.apps.EventsConfig'
+    'events.apps.EventsConfig',
+    'users' # from https://wsvincent.com/django-custom-user-model-tutorial/ but why is it not a long one like the others?
 ]
 
 MIDDLEWARE = [
@@ -94,6 +95,7 @@ DATABASES = {
 #     }
 # }
 
+AUTH_USER_MODEL = 'users.CustomUser' # from https://wsvincent.com/django-custom-user-model-tutorial/
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators

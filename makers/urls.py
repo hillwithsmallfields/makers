@@ -18,7 +18,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls import include
-from django.views.generic.base import RedirectView
+from django.views.generic.base import RedirectView, TemplateView
 
 import dashboard.views
 import equiptypes.views
@@ -31,7 +31,10 @@ urlpatterns = [
     path('equiptypes/', include('equiptypes.urls')),
     path('equipment/', include('equipment.urls')),
     path('events/', include('events.urls')),
-    path('', RedirectView.as_view(url='/dashboard/'))
+    path('users/', include('users.urls')),
+    path('users/', include('django.contrib.auth.urls')),
+    # path('', RedirectView.as_view(url='/dashboard/'))
+    path('', TemplateView.as_view(template_name='home.html'), name='home')
 ]
 
 # from https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/skeleton_website|:
