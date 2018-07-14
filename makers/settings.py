@@ -72,6 +72,8 @@ TEMPLATES = [
     },
 ]
 
+LOGIN_REDIRECT_URL = '/dashboard/'
+
 WSGI_APPLICATION = 'makers.wsgi.application'
 
 

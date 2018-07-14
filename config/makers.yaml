@@ -248,6 +248,7 @@ database:
   collections:
     names:           MakespaceNames
     people:          MakespacePeople
+    profiles:        MakespaceProfiles
     equipment_types: MakespaceEquipmentTypes
     machines:        MakespaceMachines
     machine_logs:    MakespaceMachineLogs

@@ -9,7 +9,7 @@ class CustomUser(AbstractUser):
 
     USERNAME_FIELD = 'username'
     EMAIL_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'email', 'link_id']
+    REQUIRED_FIELDS = ['email', 'link_id']
 
     def __str__(self):
         return "<user " + self.handle + ">"
