@@ -12,4 +12,4 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ['email', 'link_id']
 
     def __str__(self):
-        return "<user " + self.handle + ">"
+        return "<user " + self.username + " link " + self.link_id + ">"

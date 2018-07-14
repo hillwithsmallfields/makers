@@ -23,7 +23,7 @@ def public_index(request, who=""):
 
     model.database.database_init(config_data)
 
-    page_data = pages.SectionalPage("User dashboard for " + who,
+    page_data = pages.SectionalPage("User dashboard for " + who + str(request.user),
                                     # todo: put these into a central place, for use on most pages
                                     [T.ul[T.li[T.a(href=org_conf['home_page'])["Home"]],
                                           T.li[T.a(href=org_conf['wiki'])["Wiki"]],
