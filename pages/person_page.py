@@ -42,38 +42,37 @@ def responsibilities(who, typename, keyed_types):
     has_requested_owner_training = who.has_requested_training([keyed_types[typename]._id], 'owner')
     is_trainer = who.is_trainer(keyed_types[typename])
     has_requested_trainer_training = who.has_requested_training([keyed_types[typename]._id], 'trainer')
-    # todo: use H3 instead of dl and dt, at least as an option
-    return [T.dl[T.dt["Machines"],
-                 T.dd[page_pieces.machinelist(equipment_type.Equipment_type.find(typename),
-                                              who, is_owner)],
-                 T.dt["Owner"
+    return [T.h3["Machines"],
+            [page_pieces.machinelist(equipment_type.Equipment_type.find(typename),
+                                     who, is_owner)],
+            T.h3["Owner"
                       if is_owner
                       else "Not yet an owner"+(" but has requested owner training" if has_requested_owner_training else "")],
-                 T.dd[(page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
-                                                             T.input(type="hidden", name="role", value="owner"),
-                                                             T.input(type="hidden", name="type", value=typename)],
-                                                       "Schedule owner training")
+            T.div(class_='as_owner')[(page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
+                                                                            T.input(type="hidden", name="role", value="owner"),
+                                                                            T.input(type="hidden", name="type", value=typename)],
+                                                                      "Schedule owner training")
                        if is_owner
                        else page_pieces.toggle_request(typename, 'owner',
                                                        has_requested_owner_training))],
-                 T.dt["Trainer"
+            T.h3["Trainer"
                       if is_trainer
                       else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
-                 # todo: count the training requests for this type, and perhaps what times are most popular
-                 T.dd[(page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
-                                                             "User training: ", T.input(type="radio",
-                                                                                        name="role",
-                                                                                        value="user",
-                                                                                        checked="checked"), T.br,
-                                                             "Trainer training: ", T.input(type="radio",
-                                                                                           name="role",
-                                                                                           value="trainer"), T.br,
-                                                             T.input(type="hidden", name="type", value=typename),
-                                                             T.input(type="hidden", name="type", value=typename)],
-                                                       "Schedule training")
+            # todo: count the training requests for this type, and perhaps what times are most popular
+                 T.div(class_='as_trainer')[(page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
+                                                                                   "User training: ", T.input(type="radio",
+                                                                                                              name="role",
+                                                                                                              value="user",
+                                                                                                              checked="checked"), T.br,
+                                                                                   "Trainer training: ", T.input(type="radio",
+                                                                                                                 name="role",
+                                                                                                                 value="trainer"), T.br,
+                                                                                   T.input(type="hidden", name="type", value=typename),
+                                                                                   T.input(type="hidden", name="type", value=typename)],
+                                                                             "Schedule training")
                        if is_trainer
                        else page_pieces.toggle_request(typename, 'trainer',
-                                                       has_requested_trainer_training))]]]
+                                                       has_requested_trainer_training))]]
 
 def equipment_trained_on(who, equipment_types):
     # todo: handle bans/suspensions, with admin-only buttons to unsuspend them
@@ -132,9 +131,9 @@ def person_page_contents(who, viewer):
     if len(their_responsible_types) > 0:
         keyed_types = { ty.pretty_name(): ty for ty in their_responsible_types }
         page_data.add_section("Equipment responsibilities",
-                              T.div(class_="resps")[T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
-                                                           T.dd[responsibilities(who, name, keyed_types)]]
-                                                          for name in sorted(keyed_types.keys())]]])
+                              T.div(class_="resps")[[[T.h2[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
+                                                           responsibilities(who, name, keyed_types)]
+                                                          for name in sorted(keyed_types.keys())]])
 
     their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
     if len(their_equipment_types) > 0:
