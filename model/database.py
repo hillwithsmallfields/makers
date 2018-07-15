@@ -25,6 +25,8 @@ def database_init(config, delete_existing=False):
     print("collection names are", collection_names)
     client = pymongo.MongoClient(db_config['URI'])
     database = client[db_config['database_name']]
+    if database is None:
+        raise ConnectionError
     if delete_existing:
         # I think these are wrong
         database.drop_collection(collection_names['people'])

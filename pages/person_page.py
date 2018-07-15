@@ -112,19 +112,8 @@ def admin_section(viewer):
                 T.li[page_pieces.section_link('admin', "intervene", "Create intervention event")]
                         if viewer.is_administrator() else ""]
 
-def person_page_contents(who, viewer):
-    global server_conf, org_conf
-    all_conf = configuration.get_config()
-    server_conf = all_conf['server']
-    org_conf = all_conf['organization']
-    page_pieces.set_server_conf()
-
-    page_data = pages.SectionalPage("User dashboard for " + who.name(),
-                                    # todo: put these into a central place, for use on most pages
-                                    [T.ul[T.li[T.a(href=org_conf['home_page'])["Home"]],
-                                          T.li[T.a(href=org_conf['wiki'])["Wiki"]],
-                                          T.li[T.a(href=org_conf['forum'])["Forum"]]]])
-
+def add_person_page_contents(page_data, who, viewer):
+    """Add the sections of a user dashboard to a sectional page."""
     page_data.add_section("Personal profile", profile_section(who, viewer))
 
     their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
@@ -192,5 +181,22 @@ def person_page_contents(who, viewer):
                             method='POST')[T.button(type="submit", value="authorize")["Get API authorization code"]]]
     page_data.add_section("API links",
                           T.div(class_="apilinks")[api_link])
+
+    return page_data
+
+def person_page_contents(who, viewer):
+    global server_conf, org_conf
+    all_conf = configuration.get_config()
+    server_conf = all_conf['server']
+    org_conf = all_conf['organization']
+    page_pieces.set_server_conf()
+
+    page_data = pages.SectionalPage("User dashboard for " + who.name(),
+                                    # todo: put these into a central place, for use on most pages
+                                    [T.ul[T.li[T.a(href=org_conf['home_page'])["Home"]],
+                                          T.li[T.a(href=org_conf['wiki'])["Wiki"]],
+                                          T.li[T.a(href=org_conf['forum'])["Forum"]]]])
+
+    add_person_page_contents(page_data, who, viewer)
 
     return page_data

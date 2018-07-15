@@ -2,18 +2,19 @@
 
 from __future__ import print_function
 
+import os
 import sys
 sys.path.append('model')
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from event import Event
-from person import Person
-from equipment_type import Equipment_type
+from model.event import Event
+from model.person import Person
+from model.equipment_type import Equipment_type
 import argparse
-import configuration
+import model.configuration as configuration
 import csv
-import database
+import model.database as database
 import yaml
-import os
 
 def import_template_file(file):
     if os.path.isdir(file):

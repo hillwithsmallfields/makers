@@ -7,6 +7,8 @@ import model.pages as pages
 import pages.user_list_page as user_list_page
 import model.database
 # import model.person as person
+import pages.person_page
+import model.person
 
 # Create your views here.
 
@@ -29,12 +31,17 @@ def public_index(request, who=""):
                                           T.li[T.a(href=org_conf['wiki'])["Wiki"]],
                                           T.li[T.a(href=org_conf['forum'])["Forum"]]]])
 
-    if who == "":
-        who = "unspecified user"
-
+    viewing_user = model.person.find(request.user.link_id)
     if who == "all":
-        page_data.add_section("User list",
-                              user_list_page.user_list_section())
+        if viewing_user.is_administrator() or viewing_user.is_auditor():
+            page_data.add_section("User list",
+                                  user_list_page.user_list_section())
+        else:
+            page_data.add_section([T.p["You do not have permission to view the list of users."]])
+    else:
+        if who == "":
+            who = viewing_user
+        pages.person_page.add_person_page_contents(page_data, who, viewing_user)
 
     return HttpResponse(str(page_data.to_string()))
 
