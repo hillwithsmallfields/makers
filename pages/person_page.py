@@ -2,7 +2,7 @@ from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.configuration
 import model.equipment_type
 import model.event
-import model.page_pieces
+import pages.page_pieces
 import model.pages
 import model.person
 import model.timeline
@@ -184,12 +184,15 @@ def add_person_page_contents(page_data, who, viewer):
 
     return page_data
 
-def person_page_contents(who, viewer):
+def person_page_setup():
     global server_conf, org_conf
-    all_conf = configuration.get_config()
+    all_conf = model.configuration.get_config()
     server_conf = all_conf['server']
     org_conf = all_conf['organization']
-    page_pieces.set_server_conf()
+    pages.page_pieces.set_server_conf()
+
+def person_page_contents(who, viewer):
+    person_page_setup()
 
     page_data = pages.SectionalPage("User dashboard for " + who.name(),
                                     # todo: put these into a central place, for use on most pages

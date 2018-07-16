@@ -10,13 +10,13 @@ import model.timeline
 import model.timeslots
 import datetime
 
-"""Assorted useful bits of stan expressions for constructing our pages."""
+"""Assorted useful bits of expressions for constructing our pages."""
 
 server_conf = None
 
 def set_server_conf():
     global server_conf
-    server_conf = configuration.get_config()['server']
+    server_conf = model.configuration.get_config()['server']
 
 def section_link(section, name, presentation):
     return T.a(href=server_conf['base_url']+server_conf[section]+name)[presentation]
@@ -55,7 +55,7 @@ def schedule_event_form(who, extras, button_text):
              T.button(type="submit", value="schedule")[button_text]])
 
 def availform(available):
-    days, _, times = timeslots.get_slots_conf()
+    days, _, times = model.timeslots.get_slots_conf()
     return (T.div(class_="availability")
             [T.form(action="updateavail",
                     method="POST")
@@ -73,7 +73,7 @@ def availform(available):
                                          value=day+t)]
                        for t, b in zip(['M', 'A', 'E', 'O'], day_slots)]]]
                 for (day, day_slots) in zip(days,
-                                            timeslots.timeslots_from_int(available))]],
+                                            model.timeslots.timeslots_from_int(available))]],
               # todo: write receiver for this
               # todo: on changing availability, re-run invite_available_interested_people on the equipment types for which this person has a training request outstanding
               T.input(type="submit", value="Update availability")]])
@@ -116,18 +116,18 @@ def machinelist(eqty, who, as_owner=False):
 def eventlist(evlist, with_signup=False):
     if True:
         return T.table(class_='event_table')[[[T.tr[T.th[ev.title or "Untitled"],
-                                                    T.td[event.timestring(ev.start)],
+                                                    T.td[model.event.timestring(ev.start)],
                                                     T.td[ev.event_type],
-                                                    T.td[", ".join([equipment_type.Equipment_type.find(e).name for e in ev.equipment_types])],
+                                                    T.td[", ".join([model.equipment_type.Equipment_type.find(e).name for e in ev.equipment_types])],
                                                     T.td[signup_button(ev._id, "Sign up") if with_signup else ""]
                                                 ]] for ev in evlist]]
     else:
-        return T.dl[[[T.dt[event.timestring(ev.start)],
+        return T.dl[[[T.dt[model.event.timestring(ev.start)],
                       T.dd[T.a(href=server_conf['base_url']+server_conf['events']+str(ev._id))[ev.title or "Untitled"],
                            " ",
                        ev.event_type,
                            " on ",
-                           ", ".join([equipment_type.Equipment_type.find(e).name for e in ev.equipment_types]),
+                           ", ".join([model.equipment_type.Equipment_type.find(e).name for e in ev.equipment_types]),
                            signup_button(ev._id, "Sign up") if with_signup else ""
                            # todo: add title, hosts if allowed, attendees
                        ]] for ev in evlist]]

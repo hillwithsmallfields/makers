@@ -1,6 +1,6 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.configuration
-import model.page_pieces
+import pages.page_pieces
 import model.timeline
 
 conf=None
@@ -21,5 +21,5 @@ def public_page():
         current_events if current_events and len(current_events) > 0 else T.p["No events are listed as current."],
         T.h2["Upcoming events"],
         upcoming_events if upcoming_events and len(upcoming_events) > 0 else T.p["No upcoming events are listed."]]]
-    content += [
+    content += [ ]
     return content
