@@ -1,9 +1,9 @@
-from nevow import tags as T
-import configuration
-import database
-import event
-import makers_server
-import person
+from untemplate.throw_out_your_templates_p3 import htmltags as T
+import model.configuration
+import model.database
+import model.event
+import model.makers_server
+import model.person
 
 server_conf = None
 

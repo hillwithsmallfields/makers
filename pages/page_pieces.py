@@ -1,13 +1,13 @@
 # from nevow import flat
 # from nevow import tags as T
-from throw_out_your_templates_p3 import htmltags as T
-import configuration
-import equipment_type
-import event
-import machine
-import person
-import timeline
-import timeslots
+from untemplate.throw_out_your_templates_p3 import htmltags as T
+import model.configuration
+import model.equipment_type
+import model.event
+import model.machine
+import model.person
+import model.timeline
+import model.timeslots
 import datetime
 
 """Assorted useful bits of stan expressions for constructing our pages."""

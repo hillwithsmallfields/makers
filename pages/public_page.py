@@ -1,7 +1,7 @@
-from nevow import tags as T
-import configuration
-import page_pieces
-import timeline
+from untemplate.throw_out_your_templates_p3 import htmltags as T
+import model.configuration
+import model.page_pieces
+import model.timeline
 
 conf=None
 
