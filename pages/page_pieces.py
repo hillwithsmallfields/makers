@@ -24,6 +24,11 @@ def top_navigation():
                  T.li[T.a(href=org_conf['wiki'])["Wiki"]],
                  T.li[T.a(href=org_conf['forum'])["Forum"]]]]
 
+# https://stackoverflow.com/questions/2345708/how-can-i-get-the-full-absolute-url-with-domain-in-django
+# request.build_absolute_url()
+# https://docs.djangoproject.com/en/2.0/topics/http/urls/
+# https://docs.djangoproject.com/en/2.0/ref/urlresolvers/
+
 def section_link(section, name, presentation):
     return T.a(href=server_conf['base_url']+server_conf[section]+name)[presentation]
 
