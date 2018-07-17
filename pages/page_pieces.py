@@ -18,6 +18,12 @@ def set_server_conf():
     global server_conf
     server_conf = model.configuration.get_config()['server']
 
+def top_navigation():
+    org_conf = model.configuration.get_config()['organization']
+    return [T.ul[T.li[T.a(href=org_conf['home_page'])["Home"]],
+                 T.li[T.a(href=org_conf['wiki'])["Wiki"]],
+                 T.li[T.a(href=org_conf['forum'])["Forum"]]]]
+
 def section_link(section, name, presentation):
     return T.a(href=server_conf['base_url']+server_conf[section]+name)[presentation]
 

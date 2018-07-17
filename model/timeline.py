@@ -1,5 +1,5 @@
 from datetime import datetime
-import model.database as database
+import model.database
 
 class Timeline(object):
 
@@ -25,7 +25,7 @@ class Timeline(object):
     @staticmethod
     def create_timeline(**kwargs):
         TL = Timeline()
-        TL.events = database.get_events(**kwargs)
+        TL.events = model.database.get_events(**kwargs)
         TL.characteristics = kwargs # so we can refresh the events list
         return TL
 
@@ -61,4 +61,4 @@ class Timeline(object):
         """Update the list of events in this timeline.
 
         The original criteria are used."""
-        self.events = database.get_events(**self.characteristics)
+        self.events = model.database.get_events(**self.characteristics)

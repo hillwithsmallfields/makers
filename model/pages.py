@@ -5,9 +5,9 @@ from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.configuration as configuration
 import os
 
-class HtmlPage(object):
+class RawHtmlPage(object):
 
-    def __init__(self, name, content,
+    def __init__(self, name, content=[],
                  visitor_map=untemplate.examples_vmap,
                  input_encoding='utf-8'):
         self.name = name
@@ -15,9 +15,28 @@ class HtmlPage(object):
         self.visitor_map = visitor_map
         self.input_encoding = input_encoding
 
+    def add_content(self, name, content):
+        self.content.append([T.h2[name], content])
+
     def to_string(self):
         return untemplate.Serializer(self.visitor_map,
                                      self.input_encoding).serialize(self.content)
+
+class HtmlPage(object):
+
+    def __init__(self, name, content=[],
+                 visitor_map=untemplate.examples_vmap,
+                 input_encoding='utf-8'):
+        self.name = name
+        self.content = content
+        self.visitor_map = visitor_map
+        self.input_encoding = input_encoding
+
+    def add_content(self, name, content):
+        self.content.append([T.h2[name], content])
+
+    def to_string(self):
+        return page_string(self.name, self.content)
 
 class SectionalPage(object):
 
@@ -72,7 +91,7 @@ def page_string(page_title, content):
     # todo: put the motd into the preamble
     postamble = page_conf.get('postamble', '')
     # print "Flattening", content
-    return HtmlPage(page_title,
+    return RawHtmlPage(page_title,
                     untemplate.HTML5Doc([untemplate.safe_unicode(style_text
                                                                  + script_text
                                                                  + preamble),

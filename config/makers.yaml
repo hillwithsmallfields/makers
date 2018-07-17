@@ -276,14 +276,16 @@ organization:
 
 server:
   mailhost:       makespace.org
-  base_url:       https://makers.makespace.org/
+  # base_url:       https://makers.makespace.org/
+  base_url:       http://fragaria:8000/ # todo: use a django mechanism for this
+  # todo: use a django mechanism for these:`
   login:          login
   update_profile: update_profile/
   rsvp_form:      rsvp_form/
   rsvp:           rsvp/
   users:          users/
   machines:       equipment/
-  types:          equipment-type/
+  types:          equiptypes/
   events:         event/
   admin:          admin/
   userapi:        api/users/
