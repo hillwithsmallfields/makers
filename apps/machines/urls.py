@@ -3,7 +3,9 @@
 from django.urls import path
 from . import views
 
+app_name = 'machines'
 
 urlpatterns = [
-    path('', views.public_index, name='index')
+    path('', views.public_index, name='index'),
+    path('<machine>', views.public_index, name='index')
 ]

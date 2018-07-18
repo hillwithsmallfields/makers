@@ -167,20 +167,22 @@ def add_person_page_contents(page_data, who, viewer):
         page_data.add_section("Events I can sign up for",
                               T.div(class_="availableevents")[pages.page_pieces.eventlist(available_events, True)])
 
-    # todo: I think this condition is giving false positives
-    if viewer.is_administrator() or viewer.is_auditor():
-        page_data.add_section("Admin actions",
-                              admin_section(viewer))
+    # # todo: I think this condition is giving false positives
+    # todo: separate this from django's "admin"
+    # if viewer.is_administrator() or viewer.is_auditor():
+    #     page_data.add_section("Admin actions",
+    #                           admin_section(viewer))
 
-    userapilink = pages.page_pieces.section_link("userapi", who.link_id, who.link_id)
-    api_link = ["Your user API link is ", userapilink]
-    if who.api_authorization is None:
-        api_link += [T.br,
-                     "You will need to register to get API access authorization.",
-                     T.form(action=server_conf['base_url']+server_conf['userapi']+"authorize",
-                            method='POST')[T.button(type="submit", value="authorize")["Get API authorization code"]]]
-    page_data.add_section("API links",
-                          T.div(class_="apilinks")[api_link])
+    # todo: reinstate when I've created a userapi section in the django setup
+    # userapilink = pages.page_pieces.section_link("userapi", who.link_id, who.link_id)
+    # api_link = ["Your user API link is ", userapilink]
+    # if who.api_authorization is None:
+    #     api_link += [T.br,
+    #                  "You will need to register to get API access authorization.",
+    #                  T.form(action=server_conf['base_url']+server_conf['userapi']+"authorize",
+    #                         method='POST')[T.button(type="submit", value="authorize")["Get API authorization code"]]]
+    # page_data.add_section("API links",
+    #                       T.div(class_="apilinks")[api_link])
 
     return page_data
 

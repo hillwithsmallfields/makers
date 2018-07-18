@@ -22,10 +22,11 @@ def public_index(request, who=""):
 
     pages.person_page.person_page_setup()
 
-    page_data = model.pages.SectionalPage("User dashboard for " + who + str(request.user),
+    viewing_user = model.person.Person.find(request.user.link_id)
+
+    page_data = model.pages.SectionalPage("User dashboard for " + who if who != "" else viewing_user.name(),
                                           pages.page_pieces.top_navigation())
 
-    viewing_user = model.person.Person.find(request.user.link_id)
     if who == "all":
         if viewing_user.is_administrator() or viewing_user.is_auditor():
             page_data.add_section("User list",

@@ -278,7 +278,7 @@ server:
   mailhost:       makespace.org
   # base_url:       https://makers.makespace.org/
   base_url:       http://fragaria:8000/ # todo: use a django mechanism for this
-  # todo: use a django mechanism for these:`
+  # todo: use django's "reverse" instead of these:`
   login:          login
   update_profile: update_profile/
   rsvp_form:      rsvp_form/

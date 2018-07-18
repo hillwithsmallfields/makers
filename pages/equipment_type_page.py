@@ -2,6 +2,7 @@ from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.configuration
 import model.equipment_type
 import model.person
+import pages.page_pieces
 
 serverconf=None
 
@@ -14,14 +15,13 @@ def role_people(eqty, role):
                  for who in sorted(eqty.get_people(role), key=model.person.Person.name)]]
 
 def eqty_machines(eqty):
-    # todo: put making links such as machine names into a function, then later make it use django's mechanism for getting app names
-    return T.dl[[[T.dt[T.a(href=serverconf['machines']+m.name)[m.name]],
+    return T.dl[[[T.dt[T.a(href=pages.page_pieces.machine_link(m.name))],
                   T.dd[T.dl[T.dt["Status"], T.dd[m.status or "Unknown"],
                             T.dt["Location"], T.dd[m.location or "Unknown"],
                             T.dt["Serial number"], T.dd[m.serial_number or "Unknown"]]]]
                  for m in eqty.get_machines()]]
 
-def equipment_type_section(eqty):
+def equipment_type_section(eqty, viewing_user):
     """Return a pre-HTML structure describing an equipment type."""
     global serverconf
     if serverconf == None:
@@ -32,12 +32,13 @@ def equipment_type_section(eqty):
     if eqty.manufacturer:
         result += [T.dt["Manufacturer"],
                    T.dd[eqty.manufacturer]]
-    result += [T.dt["Machines"],
-               T.dd[eqty_machines(eqty)]]
-    result += [[T.dt[role_heading], # todo: make the heading a mailto link to a mailing list
-                T.dd[role_people(eqty, role)]]
-               for role_heading, role in [("Owners", 'owner'),
-                                          ("Trainers", 'trainer'),
-                                          # todo: make the users list visible only to owners, trainers, admins, auditors
-                                          ("Users", 'user')]]
+    result += [T.h3["Machines"],
+               [eqty_machines(eqty)]]
+    roles = [("Owners", 'owner'),
+             ("Trainers", 'trainer')]
+    if viewing_user.is_administrator() or viewing_user.is_auditor() or viewing_user.is_owner(eqty) or viewing_user.is_trainer(eqty):
+        roles.append(("Users", 'user'))
+    result += [[T.h3[role_heading], # todo: make the heading a mailto link to a mailing list
+                [role_people(eqty, role)]]
+               for role_heading, role in roles]
     return result

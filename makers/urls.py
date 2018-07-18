@@ -26,13 +26,13 @@ import equipment.views
 import events.views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('dashboard/', include('dashboard.urls')),
-    path('equiptypes/', include('equiptypes.urls')),
-    path('equipment/', include('equipment.urls')),
-    path('events/', include('events.urls')),
-    path('users/', include('users.urls')),
-    path('users/', include('django.contrib.auth.urls')),
+    path('admin/', admin.site.urls, name='admin'),
+    path('dashboard/', include('dashboard.urls'), name='dashboard'),
+    path('equiptypes/', include('equiptypes.urls'), name='equiptypes'),
+    path('machines/', include('machines.urls', namespace='machines'), name='machines'),
+    path('events/', include('events.urls'), name='events'),
+    path('users/', include('users.urls'), name='users'),
+    path('users/', include('django.contrib.auth.urls'), name='users'),
     # path('', RedirectView.as_view(url='/dashboard/'))
     path('', TemplateView.as_view(template_name='home.html'), name='home')
 ]

@@ -1,6 +1,7 @@
 # from nevow import flat
 # from nevow import tags as T
 from untemplate.throw_out_your_templates_p3 import htmltags as T
+import django.urls
 import model.configuration
 import model.equipment_type
 import model.event
@@ -30,10 +31,10 @@ def top_navigation():
 # https://docs.djangoproject.com/en/2.0/ref/urlresolvers/
 
 def section_link(section, name, presentation):
-    return T.a(href=server_conf['base_url']+server_conf[section]+name)[presentation]
+    return T.a(href=django.urls.reverse(section, args=[name]))[presentation]
 
 def machine_link(name):
-    return section_link('machines', name, name)
+    return section_link('machines:index', name, name)
 
 def request_button(typename, role, button_text):
     return T.form(action=server_conf['base_url']+"request",

@@ -2,14 +2,16 @@ from django.http import HttpResponse
 from pages import page_pieces
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.database
-import model.equipment_type
+import model.machine
 import model.pages
 import model.person
-import pages.equipment_type_page
+import pages.machine_page
 import pages.page_pieces
 
-def public_index(request, eqty):
-    """View function for listing the equipment types."""
+# Create your views here.
+
+def public_index(request, machine):
+    """View function for viewing a machine."""
 
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
@@ -19,13 +21,11 @@ def public_index(request, eqty):
 
     viewing_user = model.person.Person.find(request.user.link_id)
 
-    # todo: if eqty is None or "", show list of equipment types
+    mach = model.machine.find(machine)
 
-    eq_type = model.equipment_type.Equipment_type.find(eqty)
+    if mach is None:
+        page_data.add_content("Error", [T.p["Could not find machine " + machine]])
 
-    if eq_type is None:
-        page_data.add_content("Error", [T.p["Could not find equipment type " + eqty]])
-
-    page_data.add_content("Equipment type details", pages.equipment_type_page.equipment_type_section(eq_type, viewing_user))
+    page_data.add_content("Machine", pages.machine_page.machine_section(mach))
 
     return HttpResponse(str(page_data.to_string()))
