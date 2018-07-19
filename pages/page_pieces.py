@@ -23,7 +23,9 @@ def top_navigation():
     org_conf = model.configuration.get_config()['organization']
     return [T.ul[T.li[T.a(href=org_conf['home_page'])["Home"]],
                  T.li[T.a(href=org_conf['wiki'])["Wiki"]],
-                 T.li[T.a(href=org_conf['forum'])["Forum"]]]]
+                 T.li[T.a(href=org_conf['forum'])["Forum"]],
+                 # todo: find how to make absolute URL from wherever you are
+                 T.li[T.a(href='../users/logout')["Logout"]]]]
 
 # https://stackoverflow.com/questions/2345708/how-can-i-get-the-full-absolute-url-with-domain-in-django
 # request.build_absolute_url()
@@ -92,19 +94,10 @@ def availform(available):
 
 def general_equipment_list(who, these_types, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
-    # todo: use h3 titles instead of dl and dt, at least as an option
-    if True:
-        holder = T.div
-        heading = T.h3
-        rest = T.div
-    else:
-        holder = T.dl
-        heading = T.dt
-        rest = T.dd
-    return holder[[[heading[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
-                    rest[machinelist(keyed_types[name],
-                                     who, False) if detailed else "",
-                         toggle_request(name, 'user', who.has_requested_training([keyed_types[name]._id], 'user'))]]
+    return T.table[[[T.tr[T.th[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
+                             T.td[machinelist(keyed_types[name],
+                                              who, False) if detailed else "",
+                                  toggle_request(name, 'user', who.has_requested_training([keyed_types[name]._id], 'user'))]]]
                    for name in sorted(keyed_types.keys())]]
 
 def machinelist(eqty, who, as_owner=False):
