@@ -55,6 +55,42 @@ def get_person_dict(identification):
 # people, rather than looking directly in the relevant fields of the
 # record, so that privacy protection can be applied.
 
+def get_person_profile_field(whoever,
+                             profile_field,
+                             role_viewed=None,
+                             equipment=None):
+    """Return a profile field of a person.
+    You should use model.person.profile_field() instead of this in your programs,
+    as that handles the privacy controls."""
+    person_link = (whoever['link_id']
+                   if isinstance(whoever, dict)
+                   else (whoever.link_id
+                         if isinstance(whoever, model.person.Person)
+                         else whoever))
+    profile_record = database[collection_names['names']].find_one({'link_id': person_link})
+    if profile_record is None:
+        return None
+    else:
+        return profile_record.get(profile_field, None)
+
+def set_person_profile_field(whoever,
+                             profile_field,
+                             new_value,
+                             role_viewed=None,
+                             equipment=None):
+    """Return a profile field of a person.
+    You should use model.person.profile_field() instead of this in your programs,
+    as that handles the privacy controls."""
+    person_link = (whoever['link_id']
+                   if isinstance(whoever, dict)
+                   else (whoever.link_id
+                         if isinstance(whoever, model.person.Person)
+                         else whoever))
+    profile_record = database[collection_names['names']].find_one({'link_id': person_link})
+    if profile_record is not None:
+        profile_record[profile_field] = new_value
+        database[collection_names['names']].save(profile_record)
+
 def person_name(whoever,
                 role_viewed=None,
                 equipment=None):

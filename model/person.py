@@ -54,7 +54,6 @@ class Person(object):
         self.available = 0xffffffff # bitmap of timeslots, lowest bit is Monday morning, etc
         self.invitations = {}       # dict of uuid to event
         self.visibility = {}        # binds 'general', 'host', 'attendee' to True, False, 'logged-in'
-        self.profile = {} # bag of stuff like skills, demographic info, foods they avoid
 
     def __str__(self):
         return ("<member " + str(self.membership_number)
@@ -172,10 +171,24 @@ class Person(object):
         self.fob = newfob
         self.save()
 
-    def set_profile_field(self, **kwargs):
-        """Set the fields and write them back to the database."""
-        self.profile.update(kwargs)
-        self.save()
+    def get_profile_field(self, field_name,
+                          access_permissions_event=None,
+                          access_permissions_role=None,
+                          access_permissions_equipment=None):
+        """Get a field."""
+        if self.visible(access_permissions_event=access_permissions_event,
+                        access_permissions_role=None,
+                        access_permissions_equipment=None):
+            return model.database.get_person_profile_field(self, field_name)
+        else:
+            return None
+
+    def set_profile_field(self, field_name, new_value:
+        """Set a field and write it back to the database."""
+        if self.visible(access_permissions_event=access_permissions_event,
+                        access_permissions_role=None,
+                        access_permissions_equipment=None):
+            model.database.set_person_profile_field(self, field_name, new_value)
 
     # training and requests
 
