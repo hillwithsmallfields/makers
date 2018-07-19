@@ -183,7 +183,7 @@ class Person(object):
         else:
             return None
 
-    def set_profile_field(self, field_name, new_value:
+    def set_profile_field(self, field_name, new_value):
         """Set a field and write it back to the database."""
         if self.visible(access_permissions_event=access_permissions_event,
                         access_permissions_role=None,

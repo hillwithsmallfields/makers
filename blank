@@ -4,6 +4,7 @@ use Makespace
 db.MakespaceEquipmentTypes.drop()
 db.MakespaceMachines.drop()
 db.MakespaceNames.drop()
+db.MakespaceProfiles.drop()
 db.MakespacePeople.drop()
 db.MakespaceEvents.drop()
 db.MakespaceMachineLogs.drop()

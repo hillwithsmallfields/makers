@@ -80,7 +80,7 @@ def import0(args):
 
     # todo: fix these
     # database[collection_names['people']].create_index('link_id')
-    # database[collection_names['names']].create_index('link_id')
+    # database[collection_names['profiles']].create_index('link_id')
     # and so on for the other collections?
 
     if args.equipment_types != "None":

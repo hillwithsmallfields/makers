@@ -33,8 +33,8 @@ urlpatterns = [
     path('events/', include('events.urls'), name='events'),
     path('users/', include('users.urls'), name='users'),
     path('users/', include('django.contrib.auth.urls'), name='users'),
-    # path('', RedirectView.as_view(url='/dashboard/'))
-    path('', TemplateView.as_view(template_name='home.html'), name='home')
+    path('', RedirectView.as_view(url='/dashboard/'))
+    # path('', TemplateView.as_view(template_name='home.html'), name='home')
 ]
 
 # from https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/skeleton_website|:

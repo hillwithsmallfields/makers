@@ -22,7 +22,18 @@ def public_index(request, who=""):
 
     pages.person_page.person_page_setup()
 
+    if request.user.is_anonymous:
+        return HttpResponse("""<html><head><title>This will be the public page</title></head>
+        <body><h1>This will be the public page</h1>
+        <p>It should display general status, and a <a href="../users/login">login</a> box.</p>
+        </body></html>""")
+
     viewing_user = model.person.Person.find(request.user.link_id)
+
+    # return HttpResponse("""<html><head><title>Debugging page</title></head>
+    #     <body><h1>Debugging page</h1>
+    #     <p>request.user: """ + str(request.user) + """; viewing_user: """ + str(viewing_user) + """</p>
+    #     </body></html>""")
 
     page_data = model.pages.SectionalPage("User dashboard for " + who if who != "" else viewing_user.name(),
                                           pages.page_pieces.top_navigation())

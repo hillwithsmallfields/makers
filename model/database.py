@@ -67,7 +67,7 @@ def get_person_profile_field(whoever,
                    else (whoever.link_id
                          if isinstance(whoever, model.person.Person)
                          else whoever))
-    profile_record = database[collection_names['names']].find_one({'link_id': person_link})
+    profile_record = database[collection_names['profiles']].find_one({'link_id': person_link})
     if profile_record is None:
         return None
     else:
@@ -86,10 +86,10 @@ def set_person_profile_field(whoever,
                    else (whoever.link_id
                          if isinstance(whoever, model.person.Person)
                          else whoever))
-    profile_record = database[collection_names['names']].find_one({'link_id': person_link})
+    profile_record = database[collection_names['profiles']].find_one({'link_id': person_link})
     if profile_record is not None:
         profile_record[profile_field] = new_value
-        database[collection_names['names']].save(profile_record)
+        database[collection_names['profiles']].save(profile_record)
 
 def person_name(whoever,
                 role_viewed=None,
@@ -102,7 +102,7 @@ def person_name(whoever,
                    else (whoever.link_id
                          if isinstance(whoever, model.person.Person)
                          else whoever))
-    name_record = database[collection_names['names']].find_one({'link_id': person_link})
+    name_record = database[collection_names['profiles']].find_one({'link_id': person_link})
     if name_record is None:
         return "unknown", "unknown"
     else:
@@ -117,7 +117,7 @@ def person_email(whoever, viewing_person):
                    else (whoever.link_id
                          if isinstance(whoever, model.person.Person)
                          else whoever))
-    name_record = database[collection_names['names']].find_one({'link_id': person_link})
+    name_record = database[collection_names['profiles']].find_one({'link_id': person_link})
     if name_record is None:
         return "unknown@example.com"
     else:
@@ -125,7 +125,7 @@ def person_email(whoever, viewing_person):
 
 def name_to_id(name):
     name_parts = name.rsplit(" ", 1)
-    collection = database[collection_names['names']]
+    collection = database[collection_names['profiles']]
     record = (collection.find_one({"surname" : name_parts[-1], "given_name" : name_parts[0]})
               if len(name_parts) >= 2
               else (collection.find_one({"known_as" : name})
@@ -138,7 +138,7 @@ def add_person(name_record, main_record):
     main_record['link_id'] = linking_id # todo: make it index by this
     name_record['link_id'] = linking_id # todo: make it index by this
     database[collection_names['people']].insert(main_record)
-    database[collection_names['names']].insert(name_record)
+    database[collection_names['profiles']].insert(name_record)
 
 def get_all_person_dicts():
     return [ whoever for whoever in database[collection_names['people']].find({}) ]
