@@ -163,46 +163,6 @@ locations:
   kitchen:
     name: Cakespace
 
-# The data which is the same for each piece of the same type of
-# equipment, so we don't have to repeat it.  Members get trained on an
-# equipment class, not an individual instance of the equipment.
-    
-equipment_classes:
-  makespace:
-    description: The hackerspace itself.  Its equipment training is the induction.
-  makespace_admin_db:
-    description: The admin database.  Being a user of it means you can read other people's data, and being an owner means you can write other people's data.
-  laser_cutter:
-    training_class: red
-    manufacturer:   laserscript
-  ultimaker:
-    training_class: red
-  formlabs:
-    training_class: red
-  vacuum_former:
-    training_class: amber
-    manufacturer:   Formech
-  warco_metal_mill:
-    manufacturer:   Warco
-    training_class: red
-  metal_lathe:
-    training_class: red
-  wood_lathe:
-    training_class: red
-  projector:
-    training_class: green
-
-training_classes:
-  red:
-    training_required: Yes
-    training_available: Yes
-  amber:
-    training_required: No
-    training_available: Yes
-  green:
-    training_required: No
-    training_available: No
-
 training:
   default_max_requests: 3
   no_shows_limit:       2
@@ -242,11 +202,20 @@ skill_areas:
   - Wearable computing
   - Woodwork
 
+dietary_avoidances:
+  - kosher
+  - halal
+  - vegetarian
+  - vegan
+  - nut allergy
+  - no gluten
+  - low carb
+  - low sugar
+
 database:
   URI: mongodb://localhost/
   database_name: Makespace
   collections:
-    names:           MakespaceNames
     people:          MakespacePeople
     profiles:        MakespaceProfiles
     equipment_types: MakespaceEquipmentTypes

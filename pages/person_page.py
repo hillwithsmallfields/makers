@@ -9,33 +9,44 @@ import model.timeline
 import model.timeslots
 import datetime
 
+all_conf = None
 server_conf = None
 org_conf = None
 
 def profile_section(who, viewer):
     form_act = server_conf["update_profile"]
-    return T.div(class_="personal_profile")[
-        T.form(action=form_act,
-               method='POST')[T.table(class_="personaldetails")[
-                   T.tr[T.th(class_="ralabel")["Name"], T.td[T.input(type="text",
-                                                                     name="name",
-                                                                     value=who.name())]],
-                   T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
-                                                                      name="email",
-                                                                      value=who.get_email())]],
-                   T.tr[T.th(class_="ralabel")["Membership number"], T.td[str(who.membership_number)]],
-                   T.tr[T.th(class_="ralabel")['Fob number'],
-                        T.td[(T.input(type="text",
-                                      name="fob",
-                                      value=str(who.fob))
-                                        if viewer.is_administrator()
-                                        else [str(who.fob)])]],
-                   T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
-                   # todo: add address, mobile number, food preferences, demographics, etc
-                   T.tr[T.th(class_="ralabel")[""], T.td["address etc to go here"]]],
-                              T.input(type="submit", value="Update details")],
-        T.h2["Availability"],
-        pages.page_pieces.availform(who.available)]
+    address = who.get_profile_field('address') or {} # todo: sort out how to get viewer through to this
+    telephone = who.get_profile_field('telephone') or ""
+    result = [T.form(action=form_act,
+                     method='POST')[T.table(class_="personaldetails")[
+                         T.tr[T.th(class_="ralabel")["Name"], T.td[T.input(type="text",
+                                                                           name="name",
+                                                                           value=who.name())]],
+                         T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
+                                                                            name="email",
+                                                                            value=who.get_email())]],
+                         T.tr[T.th(class_="ralabel")["Membership number"], T.td[str(who.membership_number)]],
+                         T.tr[T.th(class_="ralabel")['Fob number'],
+                              T.td[(T.input(type="text",
+                                            name="fob",
+                                            value=str(who.fob))
+                                    if viewer.is_administrator()
+                                    else [str(who.fob)])]],
+                         T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
+                         T.tr[T.th(class_="ralabel")["Telephone"], T.td[T.input(type="text", name="telephone", value=str(telephone))]],
+                         T.tr[T.th(class_="ralabel")["Street 1"], T.td[T.input(type="text", name="street_1", value=str(address.get('street_1', "")))]],
+                         T.tr[T.th(class_="ralabel")["Street 2"], T.td[T.input(type="text", name="street_2", value=str(address.get('street_2', "")))]],
+                         T.tr[T.th(class_="ralabel")["Street 3"], T.td[T.input(type="text", name="street_3", value=str(address.get('street_3', "")))]],
+                         T.tr[T.th(class_="ralabel")["City"], T.td[T.input(type="text", name="city", value=str(address.get('city', "")))]],
+                         T.tr[T.th(class_="ralabel")["County"], T.td[T.input(type="text", name="county", value=str(address.get('county', "")))]],
+                         T.tr[T.th(class_="ralabel")["Country"], T.td[T.input(type="text", name="country", value=str(address.get('country', "")))]],
+                         T.tr[T.th(class_="ralabel")["Postcode"], T.td[T.input(type="text", name="postcode", value=str(address.get('postcode', "")))]],
+                         T.input(type="submit", value="Update details")]],
+              T.h2["Availability"],
+              pages.page_pieces.availform(who.available)]
+    if 'dietary_avoidances' in all_conf:
+        result.append([T.h2["Dietary avoidances"], avoidances_section(who)])
+    return T.div(class_="personal_profile")[result]
 
 def responsibilities(who, typename, keyed_types):
     is_owner = who.is_owner(keyed_types[typename])
@@ -73,6 +84,19 @@ def responsibilities(who, typename, keyed_types):
                        if is_trainer
                        else pages.page_pieces.toggle_request(typename, 'trainer',
                                                        has_requested_trainer_training))]]
+
+def avoidances_section(who):
+    if 'dietary_avoidances' not in all_conf:
+        return []
+    avoidances = who.get_profile_field('avoidances') or []
+    form_act = "update/avoidances" # todo: get from config or from django
+    return [T.form(action=form_act,
+                   method='POST')[T.ul[[T.li[(T.input(type="checkbox", name="dietary", value=thing, checked="checked")[thing]
+                                              if thing in avoidances
+                                              else T.input(type="checkbox", name="dietary", value=thing)[thing])]
+                                        for thing in sorted(all_conf['dietary_avoidances'])]],
+                                  T.input(type='submit', value="Update avoidances")]]
+
 
 def equipment_trained_on(who, equipment_types):
     # todo: handle bans/suspensions, with admin-only buttons to unsuspend them
@@ -187,7 +211,7 @@ def add_person_page_contents(page_data, who, viewer):
     return page_data
 
 def person_page_setup():
-    global server_conf, org_conf
+    global all_conf, server_conf, org_conf
     all_conf = model.configuration.get_config()
     server_conf = all_conf['server']
     org_conf = all_conf['organization']
