@@ -1,5 +1,5 @@
 #!/bin/bash
 # Copy To Test Server
 SERVER=fragaria
-rsync -av $HOME/open-projects/makers/ $SERVER:$HOME/open-projects/makers
+rsync -av --exclude .git $HOME/open-projects/makers/ $SERVER:$HOME/open-projects/makers
 ssh $SERVER $HOME/open-projects/makers/scripts/setperm.sh

@@ -1,5 +1,6 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.configuration
+import django.middleware.csrf
 import model.equipment_type
 import model.event
 import pages.page_pieces
@@ -13,7 +14,7 @@ all_conf = None
 server_conf = None
 org_conf = None
 
-def profile_section(who, viewer):
+def profile_section(who, viewer, django_request):
     form_act = server_conf["update_profile"]
     address = who.get_profile_field('address') or {} # todo: sort out how to get viewer through to this
     telephone = who.get_profile_field('telephone') or ""
@@ -41,51 +42,56 @@ def profile_section(who, viewer):
                          T.tr[T.th(class_="ralabel")["County"], T.td[T.input(type="text", name="county", value=str(address.get('county', "")))]],
                          T.tr[T.th(class_="ralabel")["Country"], T.td[T.input(type="text", name="country", value=str(address.get('country', "")))]],
                          T.tr[T.th(class_="ralabel")["Postcode"], T.td[T.input(type="text", name="postcode", value=str(address.get('postcode', "")))]],
+                         T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                          T.input(type="submit", value="Update details")]],
               T.h2["Availability"],
-              pages.page_pieces.availform(who.available)]
+              pages.page_pieces.availform(who.available, django_request)]
     if 'dietary_avoidances' in all_conf:
-        result.append([T.h2["Dietary avoidances"], avoidances_section(who)])
+        result.append([T.h2["Dietary avoidances"], avoidances_section(who, django_request)])
     return T.div(class_="personal_profile")[result]
 
-def responsibilities(who, typename, keyed_types):
+def responsibilities(who, typename, keyed_types, django_request):
     is_owner = who.is_owner(keyed_types[typename])
     has_requested_owner_training = who.has_requested_training([keyed_types[typename]._id], 'owner')
+    eqtype = model.equipment_type.Equipment_type.find(typename)
     is_trainer = who.is_trainer(keyed_types[typename])
     has_requested_trainer_training = who.has_requested_training([keyed_types[typename]._id], 'trainer')
     return [T.h3["Machines"],
-            [pages.page_pieces.machinelist(model.equipment_type.Equipment_type.find(typename),
+            [pages.page_pieces.machinelist(eqtype,
                                      who, is_owner)],
             T.h3["Owner"
                       if is_owner
                       else "Not yet an owner"+(" but has requested owner training" if has_requested_owner_training else "")],
             T.div(class_='as_owner')[(pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
-                                                                            T.input(type="hidden", name="role", value="owner"),
-                                                                            T.input(type="hidden", name="type", value=typename)],
-                                                                      "Schedule owner training")
+                                                                                  T.input(type="hidden", name="role", value="owner"),
+                                                                                  T.input(type="hidden", name="type", value=eqtype._id)],
+                                                                            "Schedule owner training",
+                                                                            django_request)
                        if is_owner
-                       else pages.page_pieces.toggle_request(typename, 'owner',
-                                                       has_requested_owner_training))],
+                       else pages.page_pieces.toggle_request(eqtype, 'owner',
+                                                             has_requested_owner_training,
+                                                             django_request))],
             T.h3["Trainer"
                       if is_trainer
                       else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
             # todo: count the training requests for this type, and perhaps what times are most popular
                  T.div(class_='as_trainer')[(pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
-                                                                                   "User training: ", T.input(type="radio",
-                                                                                                              name="role",
-                                                                                                              value="user",
-                                                                                                              checked="checked"), T.br,
-                                                                                   "Trainer training: ", T.input(type="radio",
-                                                                                                                 name="role",
-                                                                                                                 value="trainer"), T.br,
-                                                                                   T.input(type="hidden", name="type", value=typename),
-                                                                                   T.input(type="hidden", name="type", value=typename)],
-                                                                             "Schedule training")
+                                                                                         "User training: ", T.input(type="radio",
+                                                                                                                    name="role",
+                                                                                                                    value="user",
+                                                                                                                    checked="checked"), T.br,
+                                                                                         "Trainer training: ", T.input(type="radio",
+                                                                                                                       name="role",
+                                                                                                                       value="trainer"), T.br,
+                                                                                         T.input(type="hidden", name="type", value=eqtype._id)],
+                                                                                   "Schedule training",
+                                                                                   django_request)
                        if is_trainer
                        else pages.page_pieces.toggle_request(typename, 'trainer',
-                                                       has_requested_trainer_training))]]
+                                                             has_requested_trainer_training,
+                                                             django_request))]]
 
-def avoidances_section(who):
+def avoidances_section(who, django_request):
     if 'dietary_avoidances' not in all_conf:
         return []
     avoidances = who.get_profile_field('avoidances') or []
@@ -95,10 +101,11 @@ def avoidances_section(who):
                                               if thing in avoidances
                                               else T.input(type="checkbox", name="dietary", value=thing)[thing])]
                                         for thing in sorted(all_conf['dietary_avoidances'])]],
+                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                   T.input(type='submit', value="Update avoidances")]]
 
 
-def equipment_trained_on(who, equipment_types):
+def equipment_trained_on(who, equipment_types, django_request):
     # todo: handle bans/suspensions, with admin-only buttons to unsuspend them
     keyed_types = { ty.pretty_name(): (ty, who.qualification(ty.name, 'user'))
                     for ty in equipment_types }
@@ -108,13 +115,15 @@ def equipment_trained_on(who, equipment_types):
         T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name]],
                T.dd[ # todo: add when they were trained, and by whom
                    "Since ", model.event.timestring(keyed_types[name][1][0].start), T.br,
-                   pages.page_pieces.toggle_request(name, 'trainer',
-                                              who.has_requested_training([keyed_types[name][0]._id], 'trainer')),
-                   pages.page_pieces.toggle_request(name, 'owner',
-                                              who.has_requested_training([keyed_types[name][0]._id], 'owner')),
+                   pages.page_pieces.toggle_request(who, keyed_types[name][0], 'trainer',
+                                                    who.has_requested_training([keyed_types[name][0]._id], 'trainer'),
+                                                    django_request),
+                   pages.page_pieces.toggle_request(who, keyed_types[name][0], 'owner',
+                                                    who.has_requested_training([keyed_types[name][0]._id], 'owner'),
+                                                    django_request),
                    # todo: add admin-only buttons for suspending qualifications
                    pages.page_pieces.machinelist(keyed_types[name][0],
-                                           who, False)]]
+                                                 who, False)]]
                              for name in sorted(keyed_types.keys())]]]
 
 def training_requests_section(who):
@@ -136,29 +145,29 @@ def admin_section(viewer):
                 T.li[pages.page_pieces.section_link('admin', "intervene", "Create intervention event")]
                         if viewer.is_administrator() else ""]
 
-def add_person_page_contents(page_data, who, viewer):
+def add_person_page_contents(page_data, who, viewer, django_request):
     """Add the sections of a user dashboard to a sectional page."""
-    page_data.add_section("Personal profile", profile_section(who, viewer))
+    page_data.add_section("Personal profile", profile_section(who, viewer, django_request))
 
     their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
     if len(their_responsible_types) > 0:
         keyed_types = { ty.pretty_name(): ty for ty in their_responsible_types }
         page_data.add_section("Equipment responsibilities",
                               T.div(class_="resps")[[[T.h2[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
-                                                           responsibilities(who, name, keyed_types)]
+                                                           responsibilities(who, name, keyed_types, django_request)]
                                                           for name in sorted(keyed_types.keys())]])
 
     their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
     if len(their_equipment_types) > 0:
         page_data.add_section("Equipment trained on",
-                              equipment_trained_on(who, their_equipment_types))
+                              equipment_trained_on(who, their_equipment_types, django_request))
 
     all_remaining_types = ((set(model.equipment_type.Equipment_type.list_equipment_types())
                             -their_responsible_types)
                            -their_equipment_types)
     if len(all_remaining_types) > 0:
         page_data.add_section("Other equipment",
-                              pages.page_pieces.general_equipment_list(who, all_remaining_types))
+                              pages.page_pieces.general_equipment_list(who, all_remaining_types, django_request))
 
     if len(who.training_requests) > 0:
         page_data.add_section("Training requests", training_requests_section(who))

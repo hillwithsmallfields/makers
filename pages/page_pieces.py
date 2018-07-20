@@ -38,37 +38,43 @@ def section_link(section, name, presentation):
 def machine_link(name):
     return section_link('machines:index', name, name)
 
-def request_button(typename, role, button_text):
-    return T.form(action=server_conf['base_url']+"request",
-                  method='POST')[T.input(type="hidden", name="typename", value=typename),
+def request_button(who, eqty, role, button_text, django_request):
+    return T.form(action=django.urls.reverse("training:request"),
+                  method='POST')[T.input(type="hidden", name="equiptype", value=eqty._id),
                                  T.input(type="hidden", name="role", value=role),
+                                 T.input(type="hidden", name="person", value=who._id),
+                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.button(type="submit", value="request")[button_text]]
 
-def cancel_button(typename, role, button_text):
-    return T.form(action=server_conf['base_url']+"cancel_request",
-                  method='POST')[T.input(type="hidden", name="typename", value=typename),
+def cancel_button(who, eqty, role, button_text, django_request):
+    return T.form(action=django.urls.reverse("training:cancel_request"),
+                  method='POST')[T.input(type="hidden", name="equiptype", value=eqty._id),
                                  T.input(type="hidden", name="role", value=role),
+                                 T.input(type="hidden", name="person", value=who._id),
+                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.button(type="submit", value="cancel_request")[button_text]]
 
-def toggle_request(name, role, already_requested):
-    return (request_button(name, 'trainer', "Request %s training"%role)
+def toggle_request(who, eqty, role, already_requested, django_request):
+    return (request_button(who, eqty, role, "Request %s training"%role, django_request)
             if not already_requested
-            else cancel_button(name, 'trainer', "Cancel %s training request"%role))
+            else cancel_button(who, eqty, role, "Cancel %s training request"%role, django_request))
 
-def signup_button(event_id, button_text):
+def signup_button(event_id, button_text, django_request):
     return T.form(action=server_conf['base_url']+"signup",
                   method='POST')[T.input(type="hidden", name="eventid", value=str(event_id)),
+                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.button(type="submit", value="cancel_request")[button_text]]
 
-def schedule_event_form(who, extras, button_text):
+def schedule_event_form(who, extras, button_text, django_request):
     return (T.form(action=server_conf['base_url']+"schedevent",
                    method='POST')
             ["Date and time: ", T.input(type="datetime", name="when"), T.br,
              extras,
              T.input(type="hidden", name="submitter", value=str(who._id)),
+             T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
              T.button(type="submit", value="schedule")[button_text]])
 
-def availform(available):
+def availform(available, django_request):
     days, _, times = model.timeslots.get_slots_conf()
     return (T.div(class_="availability")
             [T.form(action="updateavail",
@@ -90,14 +96,17 @@ def availform(available):
                                             model.timeslots.timeslots_from_int(available))]],
               # todo: write receiver for this
               # todo: on changing availability, re-run invite_available_interested_people on the equipment types for which this person has a training request outstanding
+              T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
               T.input(type="submit", value="Update availability")]])
 
-def general_equipment_list(who, these_types, detailed=False):
+def general_equipment_list(who, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
     return T.table[[[T.tr[T.th[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
                              T.td[machinelist(keyed_types[name],
                                               who, False) if detailed else "",
-                                  toggle_request(name, 'user', who.has_requested_training([keyed_types[name]._id], 'user'))]]]
+                                  toggle_request(who, keyed_types[name], 'user',
+                                                 who.has_requested_training([keyed_types[name]._id], 'user'),
+                                                 django_request)]]]
                    for name in sorted(keyed_types.keys())]]
 
 def machinelist(eqty, who, as_owner=False):

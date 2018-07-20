@@ -24,6 +24,7 @@ import dashboard.views
 import equiptypes.views
 import equipment.views
 import events.views
+import training.views
 
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
@@ -31,6 +32,7 @@ urlpatterns = [
     path('equiptypes/', include('equiptypes.urls'), name='equiptypes'),
     path('machines/', include('machines.urls', namespace='machines'), name='machines'),
     path('events/', include('events.urls'), name='events'),
+    path('training/', include('training.urls'), name='training'),
     path('users/', include('users.urls'), name='users'),
     path('users/', include('django.contrib.auth.urls'), name='users'),
     path('', RedirectView.as_view(url='/dashboard/'))

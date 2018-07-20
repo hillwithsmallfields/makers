@@ -9,7 +9,9 @@ import model.person as person
 import pages.person_page
 import pages.user_list_page as user_list_page
 import sys
+from django.views.decorators.csrf import ensure_csrf_cookie
 
+@ensure_csrf_cookie
 def public_index(request, who=""):
     """
     View function for the landing page.
@@ -56,6 +58,6 @@ def public_index(request, who=""):
         if subject_user is None:
             page_data.add_section("Error", [T.p["Could not find the user " + who + "."]])
         else:
-            pages.person_page.add_person_page_contents(page_data, subject_user, viewing_user)
+            pages.person_page.add_person_page_contents(page_data, subject_user, viewing_user, request)
 
     return HttpResponse(str(page_data.to_string()))
