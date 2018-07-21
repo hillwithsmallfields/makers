@@ -1,7 +1,17 @@
 * Makers things to do
-** TODO find and write down ssh port for external access to server
-** TODO add logout link to each page
+** DONE find and write down ssh port for external access to server
+   CLOSED: [2018-07-21 Sat 20:56]
+   :PROPERTIES:
+   :last-state-change: [2018-07-21 Sat 20:56]
+   :first-seen: [2018-07-21 Sat 20:56]
+   :END:
+** DONE add logout link to each page
+   CLOSED: [2018-07-21 Sat 20:56]
+   :PROPERTIES:
+   :last-state-change: [2018-07-21 Sat 20:56]
+   :first-seen: [2018-07-21 Sat 20:56]
+   :END:
 * Makers info
-** ssh port for server access: internal 8000; external: ?
-** http port for server access:
+** ssh port for server access: 54839
+** http port for server access: 53672
 ** https port for server access:
