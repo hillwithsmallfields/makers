@@ -126,7 +126,7 @@ def equipment_trained_on(who, equipment_types, django_request):
                                                  who, False)]]
                              for name in sorted(keyed_types.keys())]]]
 
-def training_requests_section(who):
+def training_requests_section(who, django_request):
     len_training = len("_training")
     keyed_requests = {req['request_date']: req for req in who.training_requests}
     sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
@@ -135,8 +135,12 @@ def training_requests_section(who):
                                                      T.td[", ".join([model.equipment_type.Equipment_type.find_by_id(id).pretty_name()
                                                                              for id in req['equipment_types']])],
                                                      T.td[str(req['event_type'])[:-len_training]],
-                                                     T.td[pages.page_pieces.cancel_button(",".join(map(str, req['equipment_types'])),
-                                                                                    'user', "Cancel training request")]]
+                                                     T.td[pages.page_pieces.cancel_button(who,
+                                                                                          #  ",".join(map(str, req['equipment_types'])),
+                                                                                          # todo: re-instate multiple types
+                                                                                          model.equipment_type.Equipment_type.find_by_id(req['equipment_types'][0]),
+                                                                                          'user', "Cancel training request",
+                                                                                          django_request)]]
                                                         for req in sorted_requests]]]
 
 
@@ -170,7 +174,7 @@ def add_person_page_contents(page_data, who, viewer, django_request):
                               pages.page_pieces.general_equipment_list(who, all_remaining_types, django_request))
 
     if len(who.training_requests) > 0:
-        page_data.add_section("Training requests", training_requests_section(who))
+        page_data.add_section("Training requests", training_requests_section(who, django_request))
 
     hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events
     if len(hosting) > 0:

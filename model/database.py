@@ -5,13 +5,14 @@
 
 from __future__ import print_function
 
+import bson
+import json
 import model.configuration
 import model.event
-import json
-import os
-# import machine as machine
 import model.person
+import os
 import pymongo
+import re
 import uuid
 
 client = None
@@ -44,8 +45,11 @@ def get_person_dict(identification):
     if isinstance(identification, model.person.Person):
         return identification.__dict__
     collection = database[collection_names['people']]
-    # print("get_person_dict lookup", identification)
-    return (collection.find_one({'_id': identification})
+    return ((isinstance(identification, bson.objectid.ObjectId)
+             and collection.find_one({'_id': identification}))
+            or (isinstance(identification, str)
+                and re.match("^[0-9a-fA-F]+$", identification)
+                and collection.find_one({'_id': bson.objectid.ObjectId(identification)}))
             or collection.find_one({'link_id': identification})
             or collection.find_one({'fob': identification})
             # names and email addresses are kept in a separate database

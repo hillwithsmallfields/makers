@@ -47,7 +47,7 @@ def request_button(who, eqty, role, button_text, django_request):
                                  T.button(type="submit", value="request")[button_text]]
 
 def cancel_button(who, eqty, role, button_text, django_request):
-    return T.form(action=django.urls.reverse("training:cancel_request"),
+    return T.form(action=django.urls.reverse("training:cancel"),
                   method='POST')[T.input(type="hidden", name="equiptype", value=eqty._id),
                                  T.input(type="hidden", name="role", value=role),
                                  T.input(type="hidden", name="person", value=who._id),

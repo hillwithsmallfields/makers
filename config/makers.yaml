@@ -213,7 +213,7 @@ dietary_avoidances:
   - low sugar
 
 database:
-  URI: mongodb://localhost/
+  URI: 
   database_name: Makespace
   collections:
     people:          MakespacePeople
