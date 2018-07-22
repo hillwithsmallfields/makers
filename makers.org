@@ -15,6 +15,7 @@
 ** TODO navigation links to include link back to dashboard (small)
 ** TODO display training requests in dashboard "trainers" sections
 ** TODO display help alongside tabs (small)
+** TODO mail sending
 ** TODO trainers to be able to create training sessions
 *** TODO creating a training session to send invitations
 *** TODO training request confirmation to list any pending training sessions
@@ -42,10 +43,12 @@
 *** TODO send password reset email for others
 *** TODO see list of users
 ** API
+*** TODO users to be able to fetch various levels of their own data
 ** Enhancements
 *** TODO training event creation to show timeslot counts for the set of people who have already requested training
 *** TODO pages for events with catering to show the dietary combinations of those who have signed up
 *** TODO event timeline for current events and for today's / tomorrow's events
+*** TODO integrate with other systems' APIs
 ** TODO re-style navigation, add logo, etc (small)
 * Makers info
 ** ssh port for server access: 54839
