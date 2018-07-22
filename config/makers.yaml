@@ -171,6 +171,7 @@ page:
   stylesheet:   /usr/local/share/makers/makers.css
   script_file:  /usr/local/share/makers/makers.js
   style_inline: True
+  help_texts: /usr/local/share/makers/help_texts
   # preamble:     
   # postamble:  <p>Bottom navigation bar etc will go here.</p>
   motd_file:    config/motd.html

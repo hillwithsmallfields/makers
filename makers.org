@@ -14,7 +14,12 @@
 ** OPEN fix training request cancellations
 ** TODO navigation links to include link back to dashboard (small)
 ** TODO display training requests in dashboard "trainers" sections
-** TODO display help alongside tabs (small)
+** DONE display help alongside tabs (small)
+   CLOSED: [2018-07-22 Sun 18:50]
+   :PROPERTIES:
+   :last-state-change: [2018-07-22 Sun 18:50]
+   :first-seen: [2018-07-22 Sun 18:50]
+   :END:
 ** TODO mail sending
 ** TODO trainers to be able to create training sessions
 *** TODO creating a training session to send invitations

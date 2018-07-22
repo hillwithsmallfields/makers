@@ -19,35 +19,38 @@ def profile_section(who, viewer, django_request):
     address = who.get_profile_field('address') or {} # todo: sort out how to get viewer through to this
     telephone = who.get_profile_field('telephone') or ""
     result = [T.form(action=form_act,
-                     method='POST')[T.table(class_="personaldetails")[
-                         T.tr[T.th(class_="ralabel")["Name"], T.td[T.input(type="text",
-                                                                           name="name",
-                                                                           value=who.name())]],
-                         T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
-                                                                            name="email",
-                                                                            value=who.get_email())]],
-                         T.tr[T.th(class_="ralabel")["Membership number"], T.td[str(who.membership_number)]],
-                         T.tr[T.th(class_="ralabel")['Fob number'],
-                              T.td[(T.input(type="text",
-                                            name="fob",
-                                            value=str(who.fob))
-                                    if viewer.is_administrator()
-                                    else [str(who.fob)])]],
-                         T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
-                         T.tr[T.th(class_="ralabel")["Telephone"], T.td[T.input(type="text", name="telephone", value=str(telephone))]],
-                         T.tr[T.th(class_="ralabel")["Street 1"], T.td[T.input(type="text", name="street_1", value=str(address.get('street_1', "")))]],
-                         T.tr[T.th(class_="ralabel")["Street 2"], T.td[T.input(type="text", name="street_2", value=str(address.get('street_2', "")))]],
-                         T.tr[T.th(class_="ralabel")["Street 3"], T.td[T.input(type="text", name="street_3", value=str(address.get('street_3', "")))]],
-                         T.tr[T.th(class_="ralabel")["City"], T.td[T.input(type="text", name="city", value=str(address.get('city', "")))]],
-                         T.tr[T.th(class_="ralabel")["County"], T.td[T.input(type="text", name="county", value=str(address.get('county', "")))]],
-                         T.tr[T.th(class_="ralabel")["Country"], T.td[T.input(type="text", name="country", value=str(address.get('country', "")))]],
-                         T.tr[T.th(class_="ralabel")["Postcode"], T.td[T.input(type="text", name="postcode", value=str(address.get('postcode', "")))]],
-                         T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-                         T.input(type="submit", value="Update details")]],
+                     method='POST')
+              [T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+               T.table(class_="personaldetails")[
+                   T.tr[T.th(class_="ralabel")["Name"], T.td[T.input(type="text",
+                                                                     name="name",
+                                                                     value=who.name())]],
+                   T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
+                                                                      name="email",
+                                                                      value=who.get_email())]],
+                   T.tr[T.th(class_="ralabel")["Membership number"], T.td[str(who.membership_number)]],
+                   T.tr[T.th(class_="ralabel")['Fob number'],
+                        T.td[(T.input(type="text",
+                                      name="fob",
+                                      value=str(who.fob))
+                              if viewer.is_administrator()
+                              else [str(who.fob)])]],
+                   T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
+                   T.tr[T.th(class_="ralabel")["Telephone"], T.td[T.input(type="text", name="telephone", value=str(telephone))]],
+                   T.tr[T.th(class_="ralabel")["Street 1"], T.td[T.input(type="text", name="street_1", value=str(address.get('street_1', "")))]],
+                   T.tr[T.th(class_="ralabel")["Street 2"], T.td[T.input(type="text", name="street_2", value=str(address.get('street_2', "")))]],
+                   T.tr[T.th(class_="ralabel")["Street 3"], T.td[T.input(type="text", name="street_3", value=str(address.get('street_3', "")))]],
+                   T.tr[T.th(class_="ralabel")["City"], T.td[T.input(type="text", name="city", value=str(address.get('city', "")))]],
+                   T.tr[T.th(class_="ralabel")["County"], T.td[T.input(type="text", name="county", value=str(address.get('county', "")))]],
+                   T.tr[T.th(class_="ralabel")["Country"], T.td[T.input(type="text", name="country", value=str(address.get('country', "")))]],
+                   T.tr[T.th(class_="ralabel")["Postcode"], T.td[T.input(type="text", name="postcode", value=str(address.get('postcode', "")))]],
+                   T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]]],
               T.h2["Availability"],
-              pages.page_pieces.availform(who.available, django_request)]
+              model.pages.with_help(pages.page_pieces.availform(who.available, django_request),
+                                    "availability")]
     if 'dietary_avoidances' in all_conf:
-        result.append([T.h2["Dietary avoidances"], avoidances_section(who, django_request)])
+        result.append([T.h2["Dietary avoidances"], model.pages.with_help(avoidances_section(who, django_request),
+                                                                         "dietary_avoidances")])
     return T.div(class_="personal_profile")[result]
 
 def responsibilities(who, typename, keyed_types, django_request):

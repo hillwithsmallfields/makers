@@ -5,6 +5,15 @@ from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.configuration as configuration
 import os
 
+def with_help(content, help_name):
+    help_file = os.path.join(configuration.get_config()['page']['help_texts'], help_name + ".html")
+    if os.path.isfile(help_file):
+        with open(help_file) as helpstream:
+            return T.table(class_="help_on_right")[T.tr[T.td(class_="helped")[content],
+                                                        T.td(class_="help")[untemplate.safe_unicode(helpstream.read())]]]
+    else:
+        return content
+
 class RawHtmlPage(object):
 
     def __init__(self, name, content=[],

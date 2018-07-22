@@ -10,10 +10,11 @@ echo Installing with config $MAINCONF from $SOURCE to $DESTINATION and $CONFDEST
 
 echo Copying config files
 mkdir -p $CONFDEST
+cp -r $SOURCE/help_texts $CONFDEST
 chmod a+rx $CONFDEST
 cd $SOURCE/config/
 cp $MAINCONF makers.css makers.js $CONFDEST
-chmod a+r $CONFDEST/*
+chmod -R a+r $CONFDEST/*
 
 mkdir -p $DESTINATION
 

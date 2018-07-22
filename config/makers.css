@@ -113,3 +113,25 @@ ul.compactlist {
     border: 1px solid #ccc;
     border-top: none;
 }
+
+.help {
+    font-style: italic;
+    width:      30%;
+}
+
+.privacy_warning {
+    font-style:  italic;
+    font-weight: bold;
+    font-size:   small;
+}
+
+.privacy_warning::before {
+    content:     "Privacy warning: ";
+    font-style:  italic;
+    font-weight: bold;
+    font-size:   small;
+    color:       red;
+}
+
+
+
