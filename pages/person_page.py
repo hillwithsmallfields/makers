@@ -21,30 +21,32 @@ def profile_section(who, viewer, django_request):
     result = [T.form(action=form_act,
                      method='POST')
               [T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-               T.table(class_="personaldetails")[
-                   T.tr[T.th(class_="ralabel")["Name"], T.td[T.input(type="text",
-                                                                     name="name",
-                                                                     value=who.name())]],
-                   T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
-                                                                      name="email",
-                                                                      value=who.get_email())]],
-                   T.tr[T.th(class_="ralabel")["Membership number"], T.td[str(who.membership_number)]],
-                   T.tr[T.th(class_="ralabel")['Fob number'],
-                        T.td[(T.input(type="text",
-                                      name="fob",
-                                      value=str(who.fob))
-                              if viewer.is_administrator()
-                              else [str(who.fob)])]],
-                   T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
-                   T.tr[T.th(class_="ralabel")["Telephone"], T.td[T.input(type="text", name="telephone", value=str(telephone))]],
-                   T.tr[T.th(class_="ralabel")["Street 1"], T.td[T.input(type="text", name="street_1", value=str(address.get('street_1', "")))]],
-                   T.tr[T.th(class_="ralabel")["Street 2"], T.td[T.input(type="text", name="street_2", value=str(address.get('street_2', "")))]],
-                   T.tr[T.th(class_="ralabel")["Street 3"], T.td[T.input(type="text", name="street_3", value=str(address.get('street_3', "")))]],
-                   T.tr[T.th(class_="ralabel")["City"], T.td[T.input(type="text", name="city", value=str(address.get('city', "")))]],
-                   T.tr[T.th(class_="ralabel")["County"], T.td[T.input(type="text", name="county", value=str(address.get('county', "")))]],
-                   T.tr[T.th(class_="ralabel")["Country"], T.td[T.input(type="text", name="country", value=str(address.get('country', "")))]],
-                   T.tr[T.th(class_="ralabel")["Postcode"], T.td[T.input(type="text", name="postcode", value=str(address.get('postcode', "")))]],
-                   T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]]],
+               model.pages.with_help(
+                   T.table(class_="personaldetails")[
+                       T.tr[T.th(class_="ralabel")["Name"], T.td[T.input(type="text",
+                                                                         name="name",
+                                                                         value=who.name())]],
+                       T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
+                                                                          name="email",
+                                                                          value=who.get_email())]],
+                       T.tr[T.th(class_="ralabel")["Membership number"], T.td[str(who.membership_number)]],
+                       T.tr[T.th(class_="ralabel")['Fob number'],
+                            T.td[(T.input(type="text",
+                                          name="fob",
+                                          value=str(who.fob))
+                                  if viewer.is_administrator()
+                                  else [str(who.fob)])]],
+                       T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
+                       T.tr[T.th(class_="ralabel")["Telephone"], T.td[T.input(type="text", name="telephone", value=str(telephone))]],
+                       T.tr[T.th(class_="ralabel")["Street 1"], T.td[T.input(type="text", name="street_1", value=str(address.get('street_1', "")))]],
+                       T.tr[T.th(class_="ralabel")["Street 2"], T.td[T.input(type="text", name="street_2", value=str(address.get('street_2', "")))]],
+                       T.tr[T.th(class_="ralabel")["Street 3"], T.td[T.input(type="text", name="street_3", value=str(address.get('street_3', "")))]],
+                       T.tr[T.th(class_="ralabel")["City"], T.td[T.input(type="text", name="city", value=str(address.get('city', "")))]],
+                       T.tr[T.th(class_="ralabel")["County"], T.td[T.input(type="text", name="county", value=str(address.get('county', "")))]],
+                       T.tr[T.th(class_="ralabel")["Country"], T.td[T.input(type="text", name="country", value=str(address.get('country', "")))]],
+                       T.tr[T.th(class_="ralabel")["Postcode"], T.td[T.input(type="text", name="postcode", value=str(address.get('postcode', "")))]],
+                       T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]],
+                   "general_user_profile")],
               T.h2["Availability"],
               model.pages.with_help(pages.page_pieces.availform(who.available, django_request),
                                     "availability")]
@@ -141,7 +143,7 @@ def training_requests_section(who, django_request):
                                                      T.td[pages.page_pieces.cancel_button(who,
                                                                                           #  ",".join(map(str, req['equipment_types'])),
                                                                                           # todo: re-instate multiple types
-                                                                                          model.equipment_type.Equipment_type.find_by_id(req['equipment_types'][0]),
+                                                                                          req['equipment_types'][0],
                                                                                           'user', "Cancel training request",
                                                                                           django_request)]]
                                                         for req in sorted_requests]]]

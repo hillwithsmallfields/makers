@@ -45,10 +45,10 @@ class Equipment_type(object):
         return c
 
     @staticmethod
-    def find_by_id(id):
-        if id in Equipment_type.types_by_id:
-            return Equipment_type.types_by_id[id]
-        data = model.database.get_equipment_type_dict(id)
+    def find_by_id(this_id):
+        if this_id in Equipment_type.types_by_id:
+            return Equipment_type.types_by_id[this_id]
+        data = model.database.get_equipment_type_dict(this_id)
         if data is None:
             return None
         c = Equipment_type()

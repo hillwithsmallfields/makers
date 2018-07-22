@@ -38,17 +38,17 @@ def section_link(section, name, presentation):
 def machine_link(name):
     return section_link('machines:index', name, name)
 
-def request_button(who, eqty, role, button_text, django_request):
+def request_button(who, eqty_id, role, button_text, django_request):
     return T.form(action=django.urls.reverse("training:request"),
-                  method='POST')[T.input(type="hidden", name="equiptype", value=eqty._id),
+                  method='POST')[T.input(type="hidden", name="equiptype", value=eqty_id),
                                  T.input(type="hidden", name="role", value=role),
                                  T.input(type="hidden", name="person", value=who._id),
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.button(type="submit", value="request")[button_text]]
 
-def cancel_button(who, eqty, role, button_text, django_request):
+def cancel_button(who, eqty_id, role, button_text, django_request):
     return T.form(action=django.urls.reverse("training:cancel"),
-                  method='POST')[T.input(type="hidden", name="equiptype", value=eqty._id),
+                  method='POST')[T.input(type="hidden", name="equiptype", value=eqty_id),
                                  T.input(type="hidden", name="role", value=role),
                                  T.input(type="hidden", name="person", value=who._id),
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
@@ -104,7 +104,7 @@ def general_equipment_list(who, these_types, django_request, detailed=False):
     return T.table[[[T.tr[T.th[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
                              T.td[machinelist(keyed_types[name],
                                               who, False) if detailed else "",
-                                  toggle_request(who, keyed_types[name], 'user',
+                                  toggle_request(who, keyed_types[name]._id, 'user',
                                                  who.has_requested_training([keyed_types[name]._id], 'user'),
                                                  django_request)]]]
                    for name in sorted(keyed_types.keys())]]

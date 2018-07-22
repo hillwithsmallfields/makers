@@ -11,7 +11,12 @@
    :last-state-change: [2018-07-21 Sat 20:56]
    :first-seen: [2018-07-21 Sat 20:56]
    :END:
-** OPEN fix training request cancellations
+** DONE fix training request cancellations
+   CLOSED: [2018-07-22 Sun 20:19]
+   :PROPERTIES:
+   :last-state-change: [2018-07-22 Sun 20:19]
+   :first-seen: [2018-07-22 Sun 20:19]
+   :END:
 ** TODO navigation links to include link back to dashboard (small)
 ** TODO display training requests in dashboard "trainers" sections
 ** DONE display help alongside tabs (small)

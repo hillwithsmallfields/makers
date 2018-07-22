@@ -49,10 +49,10 @@ class Machine(object):
         return c
 
     @staticmethod
-    def find_by_id(id):
-        if id in Machine.machine_by_id:
-            return Machine.machine_by_id[id]
-        data = model.database.get_machine_dict(id)
+    def find_by_id(this_id):
+        if this_id in Machine.machine_by_id:
+            return Machine.machine_by_id[this_id]
+        data = model.database.get_machine_dict(this_id)
         if data is None:
             return None
         c = Machine(data['name'])

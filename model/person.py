@@ -233,13 +233,14 @@ class Person(object):
     def remove_training_request(self, role, equipment_types):
         """Remove a training request."""
         event_type = model.database.role_training(role)
+        sorted_types = sorted(equipment_types)
         for req in self.training_requests:
             if req['event_type'] != event_type:
                 continue
-            if equipment_type == req['equipment_types']:
+            if sorted_types == sorted(req['equipment_types']):
                 self.training_requests.remove(req)
+                self.save()
                 return True
-            self.save()
         return False
 
     def alter_training_request_date(self, role, equipment_types, new_date):

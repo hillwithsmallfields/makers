@@ -38,10 +38,10 @@ def cancel_training_request(django_request):
     page_data = model.pages.SectionalPage("Training request cancellation confirmation",
                                           pages.page_pieces.top_navigation())
     params = django_request.POST
-    params = django_request.POST
+    model.database.database_init(model.configuration.get_config())
     who = model.person.Person.find(unstring_id(params['person']))
     role = params['role']
-    what = model.equipment_type.Equipment_type.find_by_id(unstring_id(params['equiptype']))
+    what = unstring_id(params['equiptype'])
     who.remove_training_request(role, [what])
-    page_data.add_section("Data", [T.p["User " + who.name() + " cancelled signup for " + role + " training on ", what.name + "."]])
+    page_data.add_section("Data", [T.p["User " + who.name() + " cancelled signup for " + role + " training on ", model.equipment_type.Equipment_type.find_by_id(what).name + "."]])
     return HttpResponse(str(page_data.to_string()))
