@@ -38,7 +38,7 @@ def public_index(request, who=""):
     #     </body></html>""")
 
     page_data = model.pages.SectionalPage("User dashboard for " + who if who != "" else viewing_user.name(),
-                                          pages.page_pieces.top_navigation())
+                                          pages.page_pieces.top_navigation(request))
 
     if who == "all":
         if viewing_user.is_administrator() or viewing_user.is_auditor():

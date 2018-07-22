@@ -19,13 +19,14 @@ def set_server_conf():
     global server_conf
     server_conf = model.configuration.get_config()['server']
 
-def top_navigation():
+def top_navigation(django_request):
     org_conf = model.configuration.get_config()['organization']
-    return [T.ul[T.li[T.a(href=org_conf['home_page'])["Home"]],
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
+    return [T.ul[T.li[T.a(href=org_conf['home_page'])[org_conf['title'] + " home"]],
                  T.li[T.a(href=org_conf['wiki'])["Wiki"]],
                  T.li[T.a(href=org_conf['forum'])["Forum"]],
-                 # todo: find how to make absolute URL from wherever you are
-                 T.li[T.a(href='../users/logout')["Logout"]]]]
+                 T.li[T.a(href=base + "dashboard/")["Your dashboard"]],
+                 T.li[T.a(href=base + 'users/logout')["Logout"]]]]
 
 # https://stackoverflow.com/questions/2345708/how-can-i-get-the-full-absolute-url-with-domain-in-django
 # request.build_absolute_url()

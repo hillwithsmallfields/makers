@@ -11,7 +11,7 @@ import re
 
 def list_training(django_request):
     page_data = model.pages.SectionalPage("Training",
-                                          pages.page_pieces.top_navigation())
+                                          pages.page_pieces.top_navigation(django_request))
     return HttpResponse(str(page_data.to_string()))
 
 def unstring_id(poss_id):
@@ -24,7 +24,7 @@ def unstring_id(poss_id):
 
 def request_training(django_request):
     page_data = model.pages.SectionalPage("Training request confirmation",
-                                          pages.page_pieces.top_navigation())
+                                          pages.page_pieces.top_navigation(django_request))
     params = django_request.POST
     model.database.database_init(model.configuration.get_config())
     who = model.person.Person.find(unstring_id(params['person']))
@@ -36,7 +36,7 @@ def request_training(django_request):
 
 def cancel_training_request(django_request):
     page_data = model.pages.SectionalPage("Training request cancellation confirmation",
-                                          pages.page_pieces.top_navigation())
+                                          pages.page_pieces.top_navigation(django_request))
     params = django_request.POST
     model.database.database_init(model.configuration.get_config())
     who = model.person.Person.find(unstring_id(params['person']))

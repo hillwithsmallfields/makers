@@ -17,7 +17,7 @@ def public_index(request, machine):
     model.database.database_init(config_data)
 
     page_data = model.pages.HtmlPage(eqty,
-                                     pages.page_pieces.top_navigation())
+                                     pages.page_pieces.top_navigation(request))
 
     viewing_user = model.person.Person.find(request.user.link_id)
 
