@@ -118,17 +118,17 @@ def equipment_trained_on(who, equipment_types, django_request):
     # print "sorted(keyed_types.keys()) is", sorted(keyed_types.keys())
     return T.div(class_="trainedon")[
         T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name]],
-               T.dd[ # todo: add when they were trained, and by whom
-                   "Since ", model.event.timestring(keyed_types[name][1][0].start), T.br,
-                   pages.page_pieces.toggle_request(who, keyed_types[name][0], 'trainer',
-                                                    who.has_requested_training([keyed_types[name][0]._id], 'trainer'),
-                                                    django_request),
-                   pages.page_pieces.toggle_request(who, keyed_types[name][0], 'owner',
-                                                    who.has_requested_training([keyed_types[name][0]._id], 'owner'),
-                                                    django_request),
-                   # todo: add admin-only buttons for suspending qualifications
-                   pages.page_pieces.machinelist(keyed_types[name][0],
-                                                 who, False)]]
+               T.dd["Trained by ", ", ".join([model.person.Person.find(host).name() for host in keyed_types[name][1][0].hosts]),
+                   " on ", model.event.timestring(keyed_types[name][1][0].start), T.br,
+                    pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'trainer',
+                                                     who.has_requested_training([keyed_types[name][0]._id], 'trainer'),
+                                                     django_request),
+                    pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'owner',
+                                                     who.has_requested_training([keyed_types[name][0]._id], 'owner'),
+                                                     django_request),
+                    # todo: add admin-only buttons for suspending qualifications
+                    pages.page_pieces.machinelist(keyed_types[name][0],
+                                                  who, False)]]
                              for name in sorted(keyed_types.keys())]]]
 
 def training_requests_section(who, django_request):
