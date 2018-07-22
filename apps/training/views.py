@@ -20,7 +20,7 @@ def unstring_id(poss_id):
         matched = re.match("ObjectId\\('([0-9a-fA-F]+)'\\)", poss_id)
         if matched:
             return bson.objectid.ObjectId(matched.group(1))
-    return id
+    return poss_id
 
 def request_training(django_request):
     page_data = model.pages.SectionalPage("Training request confirmation",
