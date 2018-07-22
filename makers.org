@@ -26,6 +26,8 @@
 *** TODO event pages to have result forms, with receiver for them
 ** TODO handle RSVPs to invitations
    Will probably use event signup page code
+** TODO create django accounts from mongo data (small?)
+** TODO check password resets (small)
 ** Profiles
 *** TODO receiver for profile updates
 *** TODO interests section of profile
@@ -44,6 +46,7 @@
 *** TODO training event creation to show timeslot counts for the set of people who have already requested training
 *** TODO pages for events with catering to show the dietary combinations of those who have signed up
 *** TODO event timeline for current events and for today's / tomorrow's events
+** TODO re-style navigation, add logo, etc (small)
 * Makers info
 ** ssh port for server access: 54839
 ** http port for server access: 53672
