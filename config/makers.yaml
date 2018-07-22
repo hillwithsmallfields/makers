@@ -253,7 +253,7 @@ server:
   update_profile: update_profile/
   rsvp_form:      rsvp_form/
   rsvp:           rsvp/
-  users:          users/
+  users:          dashboard/
   machines:       equipment/
   types:          equiptypes/
   events:         event/

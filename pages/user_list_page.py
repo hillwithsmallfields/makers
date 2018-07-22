@@ -23,8 +23,15 @@ def user_list_section(include_non_members=False, filter_fn=None):
     people = person.Person.list_all_people() if include_non_members else person.Person.list_all_members()
     if filter_fn:
         people = [someone for someone in people if filter_fn(someone)]
+    people_dict = {whoever.name(): whoever for whoever in people}
+    # todo: remove this dirty hack which I put in for early testing
     if True: # permissions.auditor or permissions.admin:
-        return T.ul[[T.li[T.a(href=users_base+who.link_id)[who.name()]] for who in people]]
+        return T.table[[T.tr[T.th[T.a(href=users_base+who.link_id)[whoname]],
+                             T.td[", ".join(who.get_equipment_type_names('user'))],
+                             T.td[", ".join(who.get_equipment_type_names('owner'))],
+                             T.td[", ".join(who.get_equipment_type_names('trainer'))]]
+                        for (whoname, who) in [(key, people_dict[key]) for key in sorted(people_dict.keys())]
+                    ]]
     else:
         return T.p["There are "+str(len(people))
                    +(" people" if include_non_members else " members")

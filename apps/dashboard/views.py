@@ -32,11 +32,6 @@ def public_index(request, who=""):
 
     viewing_user = model.person.Person.find(request.user.link_id)
 
-    # return HttpResponse("""<html><head><title>Debugging page</title></head>
-    #     <body><h1>Debugging page</h1>
-    #     <p>request.user: """ + str(request.user) + """; viewing_user: """ + str(viewing_user) + """</p>
-    #     </body></html>""")
-
     page_data = model.pages.SectionalPage("User dashboard for " + who if who != "" else viewing_user.name(),
                                           pages.page_pieces.top_navigation(request))
 
@@ -50,7 +45,8 @@ def public_index(request, who=""):
         if who == "":
             subject_user = viewing_user
         else:
-            if viewing_user.is_administrator() or viewing_user.is_auditor():
+            # todo: remove this dirty hack for early debugging
+            if True or viewing_user.is_administrator() or viewing_user.is_auditor():
                 subject_user = model.person.Person.find(who)
             else:
                 subject_user = None
