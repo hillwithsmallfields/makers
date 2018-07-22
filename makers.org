@@ -11,6 +11,39 @@
    :last-state-change: [2018-07-21 Sat 20:56]
    :first-seen: [2018-07-21 Sat 20:56]
    :END:
+** OPEN fix training request cancellations
+** TODO navigation links to include link back to dashboard (small)
+** TODO display training requests in dashboard "trainers" sections
+** TODO display help alongside tabs (small)
+** TODO trainers to be able to create training sessions
+*** TODO creating a training session to send invitations
+*** TODO training request confirmation to list any pending training sessions
+** TODO event timeline display
+*** TODO event timeline display on users' dashboards
+*** TODO event timeline display on equipment type pages
+** TODO event pages
+*** TODO event signup pages
+*** TODO event pages to have result forms, with receiver for them
+** TODO handle RSVPs to invitations
+   Will probably use event signup page code
+** Profiles
+*** TODO receiver for profile updates
+*** TODO interests section of profile
+** TODO Equipment type pages to have owner-editable fields
+   including urls for help (normally pointing to wiki) and for
+   pictures (also normally using the wiki)
+** Admin features
+*** TODO unconstrained event creation
+*** TODO canned event creation for particular tasks such as bans, reinstatements, and direct grant of permissions
+*** TODO see other users' dashboards
+*** TODO setting of profile/operational fields that users can't set themselves
+*** TODO send password reset email for others
+*** TODO see list of users
+** API
+** Enhancements
+*** TODO training event creation to show timeslot counts for the set of people who have already requested training
+*** TODO pages for events with catering to show the dietary combinations of those who have signed up
+*** TODO event timeline for current events and for today's / tomorrow's events
 * Makers info
 ** ssh port for server access: 54839
 ** http port for server access: 53672
