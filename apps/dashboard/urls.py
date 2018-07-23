@@ -6,6 +6,8 @@ from . import views
 app_name = 'dashboard'
 
 urlpatterns = [
-    path('', views.public_index, name='index'),
-    path('<who>', views.public_index, name='index')
+    path('', views.dashboard_page, name='own_dashboard'),
+    path('<who>', views.dashboard_page, name='user_dashboard'),
+    path('all', views.user_list_page, name='all_users'),
+    path('match/<pattern>', views.user_match_page, name='matching_users')
 ]

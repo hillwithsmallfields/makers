@@ -12,7 +12,36 @@ import sys
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 @ensure_csrf_cookie
-def public_index(request, who=""):
+def user_list_page(request):
+
+    config_data = model.configuration.get_config()
+
+    model.database.database_init(config_data)
+
+    pages.person_page.person_page_setup()
+
+    if request.user.is_anonymous:
+        return HttpResponse("""<html><head><title>Error</title></head>
+        <body><h1>Information not publicly available</h1>
+        <p>The user list is not publicly visible.
+        To see this, you must <a href="../users/login">login</a> as a user with admin rights.</p>
+        </body></html>""")
+
+    viewing_user = model.person.Person.find(request.user.link_id)
+
+    page_data = model.pages.HtmlPage("User list page",
+                                     pages.page_pieces.top_navigation(request))
+
+    if viewing_user.is_administrator() or viewing_user.is_auditor():
+        page_data.add_content("User list",
+                              user_list_page.user_list_section())
+    else:
+        page_data.add_content("Error", [T.p["You do not have permission to view the list of users."]])
+
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
+def dashboard_page(request, who=""):
     """
     View function for the landing page.
     """
@@ -35,25 +64,47 @@ def public_index(request, who=""):
     page_data = model.pages.SectionalPage("User dashboard for " + who if who != "" else viewing_user.name(),
                                           pages.page_pieces.top_navigation(request))
 
-    if who == "all":
-        if viewing_user.is_administrator() or viewing_user.is_auditor():
-            page_data.add_section("User list",
-                                  user_list_page.user_list_section())
-        else:
-            page_data.add_section("Error", [T.p["You do not have permission to view the list of users."]])
+    if who == "":
+        subject_user = viewing_user
     else:
-        if who == "":
-            subject_user = viewing_user
+        # todo: remove this dirty hack for early debugging
+        if True or viewing_user.is_administrator() or viewing_user.is_auditor():
+            subject_user = model.person.Person.find(who)
         else:
-            # todo: remove this dirty hack for early debugging
-            if True or viewing_user.is_administrator() or viewing_user.is_auditor():
-                subject_user = model.person.Person.find(who)
-            else:
-                subject_user = None
-                page_data.add_section("Error", [T.p["You do not have permission to view other users."]])
-        if subject_user is None:
-            page_data.add_section("Error", [T.p["Could not find the user " + who + "."]])
-        else:
-            pages.person_page.add_person_page_contents(page_data, subject_user, viewing_user, request)
+            subject_user = None
+            page_data.add_section("Error", [T.p["You do not have permission to view other users."]])
+    if subject_user is None:
+        page_data.add_section("Error", [T.p["Could not find the user " + who + "."]])
+    else:
+        pages.person_page.add_person_page_contents(page_data, subject_user, viewing_user, request)
+
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
+def user_match_page(pattern):
+
+    config_data = model.configuration.get_config()
+
+    model.database.database_init(config_data)
+
+    pages.person_page.person_page_setup()
+
+    if request.user.is_anonymous:
+        return HttpResponse("""<html><head><title>Error</title></head>
+        <body><h1>Information not publicly available</h1>
+        <p>The user list is not publicly visible.
+        To see this, you must <a href="../users/login">login</a> as a user with admin rights.</p>
+        </body></html>""")
+
+    viewing_user = model.person.Person.find(request.user.link_id)
+
+    page_data = model.pages.HtmlPage("Matching user list page",
+                                     pages.page_pieces.top_navigation(request))
+
+    if viewing_user.is_administrator() or viewing_user.is_auditor():
+        page_data.add_content("User list",
+                              user_list_page.user_list_matching_section(pattern, False))
+    else:
+        page_data.add_content("Error", [T.p["You do not have permission to view the list of users."]])
 
     return HttpResponse(str(page_data.to_string()))
