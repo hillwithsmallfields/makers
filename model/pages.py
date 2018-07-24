@@ -100,11 +100,18 @@ def page_string(page_title, content):
     # todo: put the motd into the preamble
     postamble = page_conf.get('postamble', '')
     # print "Flattening", content
+    page_heading = page_title
+    logo = page_conf.get('logo', None)
+    if logo:
+        logo_height = int(page_conf.get('logo_height', "32"))
+        page_heading = T.span[page_heading, T.a(href=conf['organization']['home_page'])[T.img(align="right",
+                                                                                              height=logo_height,
+                                                                                              src=logo)]]
     return RawHtmlPage(page_title,
                     untemplate.HTML5Doc([untemplate.safe_unicode(style_text
                                                                  + script_text
                                                                  + preamble),
-                                         T.body[T.h1[page_title],
+                                         T.body[T.h1[page_heading],
                                                 content],
                                          untemplate.safe_unicode(postamble)],
                                         head=T.head[T.title[page_title]])).to_string()
