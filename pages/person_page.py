@@ -56,15 +56,14 @@ def profile_section(who, viewer, django_request):
     return T.div(class_="personal_profile")[result]
 
 def responsibilities(who, typename, keyed_types, django_request):
-    is_owner = who.is_owner(keyed_types[typename])
-    has_requested_owner_training = who.has_requested_training([keyed_types[typename]._id], 'owner')
-    eqtype = model.equipment_type.Equipment_type.find(typename)
-    is_trainer = who.is_trainer(keyed_types[typename])
-    has_requested_trainer_training = who.has_requested_training([keyed_types[typename]._id], 'trainer')
+    eqtype = keyed_types[typename]
+    is_owner = who.is_owner(eqtype)
+    has_requested_owner_training = who.has_requested_training([eqtype._id], 'owner')
+    is_trainer = who.is_trainer(eqtype)
+    has_requested_trainer_training = who.has_requested_training([eqtype._id], 'trainer')
     return [T.h3["Machines"],
-            [pages.page_pieces.machinelist(eqtype,
-                                     who, is_owner)],
-            T.h3["Owner"
+            [pages.page_pieces.machinelist(eqtype, who, django_request, is_owner)],
+            T.h3["Owner information and actions"
                       if is_owner
                       else "Not yet an owner"+(" but has requested owner training" if has_requested_owner_training else "")],
             T.div(class_='as_owner')[(pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
@@ -76,7 +75,7 @@ def responsibilities(who, typename, keyed_types, django_request):
                        else pages.page_pieces.toggle_request(eqtype, 'owner',
                                                              has_requested_owner_training,
                                                              django_request))],
-            T.h3["Trainer"
+            T.h3["Trainer information and actions"
                       if is_trainer
                       else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
             # todo: count the training requests for this type, and perhaps what times are most popular
@@ -118,7 +117,9 @@ def equipment_trained_on(who, equipment_types, django_request):
     # print "sorted(keyed_types.keys()) is", sorted(keyed_types.keys())
     return T.div(class_="trainedon")[
         T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+name)[name]],
-               T.dd["Trained by ", ", ".join([model.person.Person.find(host).name() for host in keyed_types[name][1][0].hosts]),
+               T.dd["Trained by ", ", ".join([model.person.Person.find(host).name()
+                                              # todo: linkify these if admin? but that would mean not using the easy "join"
+                                              for host in keyed_types[name][1][0].hosts]),
                    " on ", model.event.timestring(keyed_types[name][1][0].start), T.br,
                     pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'trainer',
                                                      who.has_requested_training([keyed_types[name][0]._id], 'trainer'),

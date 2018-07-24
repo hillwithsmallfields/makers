@@ -104,27 +104,27 @@ def general_equipment_list(who, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
     return T.table[[[T.tr[T.th[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
                              T.td[machinelist(keyed_types[name],
-                                              who, False) if detailed else "",
+                                              who, django_request, False) if detailed else "",
                                   toggle_request(who, keyed_types[name]._id, 'user',
                                                  who.has_requested_training([keyed_types[name]._id], 'user'),
                                                  django_request)]]]
                    for name in sorted(keyed_types.keys())]]
 
-def machinelist(eqty, who, as_owner=False):
+def machinelist(eqty, who, django_request, as_owner=False):
     """Make a list of machines, with appropriate detail for each."""
-    # todo: this, or something underneath it, isn't working
     if eqty is None:
         return []
     mclist = eqty.get_machines()
-    return ([T.dl[[[T.dt[machine_link(device.name)],
-                    T.dd[T.dl[T.dt["Status"], T.dd[device.status],
-                              [T.dt["Schedule maintenance"],
-                               T.dd[schedule_event_form(who,
-                                                        [T.input(type="hidden", name="machine", value=device.name),
-                                                         T.input(type="hidden", name="event_type", value="maintenance")],
-                                                        "Schedule maintenance")]]
-                              if as_owner else []]]]
-                   for device in mclist]]]
+    return ([T.table[T.tr[T.th["Machine"], T.th["Status"], T.th["Owner actions" if as_owner else ""]],
+                     [[T.tr[T.th[machine_link(device.name)],
+                            T.td[device.status],
+                            T.td[schedule_event_form(who,
+                                                     [T.input(type="hidden", name="machine", value=device.name),
+                                                      T.input(type="hidden", name="event_type", value="maintenance")],
+                                                     "Schedule maintenance",
+                                                     django_request)
+                                 if as_owner else ""]]]
+                      for device in mclist]]]
             if mclist
             else [])
 

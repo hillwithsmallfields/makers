@@ -7,12 +7,12 @@ import model.pages
 import model.person
 import model.person as person
 import pages.person_page
-import pages.user_list_page as user_list_page
+import pages.user_list_page
 import sys
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 @ensure_csrf_cookie
-def user_list_page(request):
+def all_user_list_page(request):
 
     config_data = model.configuration.get_config()
 
@@ -34,7 +34,7 @@ def user_list_page(request):
 
     if viewing_user.is_administrator() or viewing_user.is_auditor():
         page_data.add_content("User list",
-                              user_list_page.user_list_section())
+                              pages.user_list_page.user_list_section())
     else:
         page_data.add_content("Error", [T.p["You do not have permission to view the list of users."]])
 
@@ -61,9 +61,6 @@ def dashboard_page(request, who=""):
 
     viewing_user = model.person.Person.find(request.user.link_id)
 
-    page_data = model.pages.SectionalPage("User dashboard for " + who if who != "" else viewing_user.name(),
-                                          pages.page_pieces.top_navigation(request))
-
     if who == "":
         subject_user = viewing_user
     else:
@@ -71,17 +68,22 @@ def dashboard_page(request, who=""):
         if True or viewing_user.is_administrator() or viewing_user.is_auditor():
             subject_user = model.person.Person.find(who)
         else:
-            subject_user = None
+            page_data = model.pages.HtmlPage("Error",
+                                     pages.page_pieces.top_navigation(request))
             page_data.add_section("Error", [T.p["You do not have permission to view other users."]])
     if subject_user is None:
+        page_data = model.pages.HtmlPage("Error",
+                                         pages.page_pieces.top_navigation(request))
         page_data.add_section("Error", [T.p["Could not find the user " + who + "."]])
     else:
+        page_data = model.pages.SectionalPage("User dashboard for " + subject_user.name(),
+                                              pages.page_pieces.top_navigation(request))
         pages.person_page.add_person_page_contents(page_data, subject_user, viewing_user, request)
 
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def user_match_page(pattern):
+def user_match_page(request, pattern):
 
     config_data = model.configuration.get_config()
 
@@ -103,7 +105,7 @@ def user_match_page(pattern):
 
     if viewing_user.is_administrator() or viewing_user.is_auditor():
         page_data.add_content("User list",
-                              user_list_page.user_list_matching_section(pattern, False))
+                              pages.user_list_page.user_list_matching_section(pattern, False))
     else:
         page_data.add_content("Error", [T.p["You do not have permission to view the list of users."]])
 

@@ -8,6 +8,6 @@ app_name = 'dashboard'
 urlpatterns = [
     path('', views.dashboard_page, name='own_dashboard'),
     path('<who>', views.dashboard_page, name='user_dashboard'),
-    path('all', views.user_list_page, name='all_users'),
+    path('all', views.all_user_list_page, name='all_users'),
     path('match/<pattern>', views.user_match_page, name='matching_users')
 ]

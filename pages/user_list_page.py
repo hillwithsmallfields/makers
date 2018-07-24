@@ -29,7 +29,8 @@ def user_list_section(include_non_members=False, filter_fn=None, filter_opaque=N
     people_dict = {whoever.name(): whoever for whoever in people}
     # todo: remove this dirty hack which I put in for early testing
     if True: # permissions.auditor or permissions.admin:
-        return T.table[[T.tr[T.th[T.a(href=users_base+who.link_id)[whoname]],
+        return T.table[[T.tr[T.th["Name"], T.th["User"], T.th["Owner"], T.th["Trainer"]]],
+                       [T.tr[T.th[T.a(href=users_base+who.link_id)[whoname]],
                              T.td[", ".join(who.get_equipment_type_names('user'))],
                              T.td[", ".join(who.get_equipment_type_names('owner'))],
                              T.td[", ".join(who.get_equipment_type_names('trainer'))]]
@@ -41,7 +42,7 @@ def user_list_section(include_non_members=False, filter_fn=None, filter_opaque=N
                    +" in the database."]
 
 def name_match(user, pattern):
-    return re.search(user.name(), pattern)
+    return re.search(pattern, user.name())
 
 def user_list_matching_section(pattern, include_non_members=False):
     """Return the list of users whose names match the given pattern."""
