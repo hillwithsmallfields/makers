@@ -15,11 +15,9 @@ server_conf = None
 org_conf = None
 
 def profile_section(who, viewer, django_request):
-    form_act = server_conf["update_profile"]
     address = who.get_profile_field('address') or {} # todo: sort out how to get viewer through to this
     telephone = who.get_profile_field('telephone') or ""
-    result = [T.form(action=form_act,
-                     method='POST')
+    result = [T.form(action=server_conf["update_profile"], method='POST')
               [T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                model.pages.with_help(
                    T.table(class_="personaldetails")[
@@ -99,8 +97,7 @@ def avoidances_section(who, django_request):
     if 'dietary_avoidances' not in all_conf:
         return []
     avoidances = who.get_profile_field('avoidances') or []
-    form_act = "update/avoidances" # todo: get from config or from django
-    return [T.form(action=form_act,
+    return [T.form(action="update/avoidances",# todo: get from config or from django
                    method='POST')[T.ul[[T.li[(T.input(type="checkbox", name="dietary", value=thing, checked="checked")[thing]
                                               if thing in avoidances
                                               else T.input(type="checkbox", name="dietary", value=thing)[thing])]
