@@ -29,6 +29,8 @@ def equipment_type_section(eqty, viewing_user):
     result = [T.dl[T.dt["Training category"],
                    T.dd[eqty.training_category]]]
     # todo: add admin-specific buttons
+    if eqty.picture:
+        result += [T.img(src=eqty.picture, align="right")]
     if eqty.manufacturer:
         result += [T.dt["Manufacturer"],
                    T.dd[eqty.manufacturer]]

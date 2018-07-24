@@ -252,6 +252,7 @@ server:
   # todo: use django's "reverse" instead of these:`
   login:          login
   update_profile: update_profile/
+  update_mugshot: update_mugshot/
   rsvp_form:      rsvp_form/
   rsvp:           rsvp/
   users:          dashboard/
