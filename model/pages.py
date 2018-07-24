@@ -77,6 +77,7 @@ def page_string(page_title, content):
     """Make up a complete page as a string."""
     conf = configuration.get_config()
     page_conf = conf['page']
+    org_conf = conf['organization']
     preamble = page_conf.get('preamble', '')
     script_file = page_conf['script_file']
     script_body = ""
@@ -104,9 +105,11 @@ def page_string(page_title, content):
     logo = page_conf.get('logo', None)
     if logo:
         logo_height = int(page_conf.get('logo_height', "32"))
-        page_heading = T.span[page_heading, T.a(href=conf['organization']['home_page'])[T.img(align="right",
-                                                                                              height=logo_height,
-                                                                                              src=logo)]]
+        page_heading = T.span[page_heading,
+                              T.a(href=org_conf['home_page'])[T.img(align="right",
+                                                                    alt=org_conf['title']
+                                                                    height=logo_height,
+                                                                    src=logo)]]
     return RawHtmlPage(page_title,
                     untemplate.HTML5Doc([untemplate.safe_unicode(style_text
                                                                  + script_text
