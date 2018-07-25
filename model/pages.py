@@ -107,7 +107,7 @@ def page_string(page_title, content):
         logo_height = int(page_conf.get('logo_height', "32"))
         page_heading = T.span[page_heading,
                               T.a(href=org_conf['home_page'])[T.img(align="right",
-                                                                    alt=org_conf['title']
+                                                                    alt=org_conf['title'],
                                                                     height=logo_height,
                                                                     src=logo)]]
     return RawHtmlPage(page_title,

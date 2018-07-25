@@ -14,14 +14,7 @@ def role_people(eqty, role):
                                  access_permissions_equipment=eqty._id)]]]
                  for who in sorted(eqty.get_people(role), key=model.person.Person.name)]]
 
-def eqty_machines(eqty):
-    return T.dl[[[T.dt[T.a(href=pages.page_pieces.machine_link(m.name))],
-                  T.dd[T.dl[T.dt["Status"], T.dd[m.status or "Unknown"],
-                            T.dt["Location"], T.dd[m.location or "Unknown"],
-                            T.dt["Serial number"], T.dd[m.serial_number or "Unknown"]]]]
-                 for m in eqty.get_machines()]]
-
-def equipment_type_section(eqty, viewing_user):
+def equipment_type_section(eqty, viewing_user, django_request):
     """Return a pre-HTML structure describing an equipment type."""
     global serverconf
     if serverconf == None:
@@ -35,7 +28,7 @@ def equipment_type_section(eqty, viewing_user):
         result += [T.dt["Manufacturer"],
                    T.dd[eqty.manufacturer]]
     result += [T.h3["Machines"],
-               [eqty_machines(eqty)]]
+               [pages.page_pieces.machinelist(eqty, viewing_user, django_request, viewing_user.is_owner(eqty))]]
     roles = [("Owners", 'owner'),
              ("Trainers", 'trainer')]
     if viewing_user.is_administrator() or viewing_user.is_auditor() or viewing_user.is_owner(eqty) or viewing_user.is_trainer(eqty):

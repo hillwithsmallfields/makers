@@ -70,11 +70,11 @@ def dashboard_page(request, who=""):
         else:
             page_data = model.pages.HtmlPage("Error",
                                      pages.page_pieces.top_navigation(request))
-            page_data.add_section("Error", [T.p["You do not have permission to view other users."]])
+            page_data.add_content("Error", [T.p["You do not have permission to view other users."]])
     if subject_user is None:
         page_data = model.pages.HtmlPage("Error",
                                          pages.page_pieces.top_navigation(request))
-        page_data.add_section("Error", [T.p["Could not find the user " + who + "."]])
+        page_data.add_content("Error", [T.p["Could not find the user " + who + "."]])
     else:
         page_data = model.pages.SectionalPage("User dashboard for " + subject_user.name(),
                                               pages.page_pieces.top_navigation(request))

@@ -67,7 +67,8 @@ def signup_button(event_id, button_text, django_request):
                                  T.button(type="submit", value="cancel_request")[button_text]]
 
 def schedule_event_form(who, extras, button_text, django_request):
-    return (T.form(action=server_conf['base_url']+"schedevent",
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
+    return (T.form(action=base+"schedevent", # todo: use django mechanisms for this
                    method='POST')
             ["Date and time: ", T.input(type="datetime", name="when"), T.br,
              extras,

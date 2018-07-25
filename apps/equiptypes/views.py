@@ -14,18 +14,18 @@ def public_index(request, eqty):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    page_data = model.pages.HtmlPage(eqty,
-                                     pages.page_pieces.top_navigation(request))
-
     viewing_user = model.person.Person.find(request.user.link_id)
 
     # todo: if eqty is None or "", show list of equipment types
 
     eq_type = model.equipment_type.Equipment_type.find(eqty)
 
+    page_data = model.pages.HtmlPage(eq_type.name,
+                                     pages.page_pieces.top_navigation(request))
+
     if eq_type is None:
         page_data.add_content("Error", [T.p["Could not find equipment type " + eqty]])
-
-    page_data.add_content("Equipment type details", pages.equipment_type_page.equipment_type_section(eq_type, viewing_user))
+    else:
+        page_data.add_content("Equipment type details", pages.equipment_type_page.equipment_type_section(eq_type, viewing_user, request))
 
     return HttpResponse(str(page_data.to_string()))
