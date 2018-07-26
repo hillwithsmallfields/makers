@@ -56,8 +56,10 @@ def dashboard_page(request, who=""):
     if request.user.is_anonymous:
         return HttpResponse("""<html><head><title>This will be the public page</title></head>
         <body><h1>This will be the public page</h1>
-        <p>It should display general status, and a <a href="../users/login">login</a> box.</p>
-        </body></html>""")
+
+        <p>It should display general status, and <a
+        href="../users/login">login</a> and <a
+        href="../users/signup">signup</a> boxes.</p> </body></html>""")
 
     viewing_user = model.person.Person.find(request.user.link_id)
 
