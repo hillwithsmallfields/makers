@@ -1,5 +1,4 @@
 * Makers things to do
-** TODO fix user list (add filters to avoid timeout)
 ** TODO display training requests in dashboard "trainers" sections
 ** TODO mail sending
 ** TODO trainers to be able to create training sessions
@@ -17,7 +16,6 @@
 ** TODO check password resets (small)
 ** Profiles
 *** TODO receiver for profile updates
-*** TODO interests section of profile
 ** TODO Equipment type pages to have owner-editable fields
    including urls for help (normally pointing to wiki) and for
    pictures (also normally using the wiki)
