@@ -225,6 +225,7 @@ class Person(object):
             >= int(model.configuration.get_config()['training']['no_shows_limit'])):
             return False, "Too many no-shows"
         self.training_requests.append({'request_date': when or datetime.now(),
+                                       'requester': self._id,
                                        'equipment_types': [ model.equipment_type.Equipment_type.find(eqt)._id for eqt in equipment_types],
                                        'event_type': role_training})
         self.save()
