@@ -61,11 +61,19 @@ def responsibilities(who, typename, keyed_types, django_request):
     eqtype = keyed_types[typename]
     is_owner = who.is_owner(eqtype)
     has_requested_owner_training = who.has_requested_training([eqtype._id], 'owner')
-    is_trainer = who.is_trainer(eqtype)
+    is_trainer, _ = who.is_trainer(eqtype)
+    print(who.name(), "is_trainer for", typename, "is", is_trainer)
     has_requested_trainer_training = who.has_requested_training([eqtype._id], 'trainer')
-    return [T.h3["Machines"],
+    raw_req = eqtype.get_training_requests()
+    print("raw_req is", raw_req)
+    open_training_requests = { model.person.Person.find(personid).name(): str(reqdata)
+                               for personid, reqdata in raw_req.items()
+                               # todo: filter the list of training requests of each requester, down to the ones for this piece of equipment
+    } # todo: if is_trainer else None
+    print("open_training_requests are", open_training_requests)
+    return [T.h3["Equipment of type " + eqtype.name],
             [pages.page_pieces.machinelist(eqtype, who, django_request, is_owner)],
-            T.h3["Owner information and actions"
+            T.h3[eqtype.name + " owner information and actions"
                       if is_owner
                       else "Not yet an owner"+(" but has requested owner training" if has_requested_owner_training else "")],
             T.div(class_='as_owner')[(pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
@@ -74,14 +82,14 @@ def responsibilities(who, typename, keyed_types, django_request):
                                                                             "Schedule owner training",
                                                                             django_request)
                        if is_owner
-                       else pages.page_pieces.toggle_request(eqtype, 'owner',
+                       else pages.page_pieces.toggle_request(who, eqtype._id, 'owner',
                                                              has_requested_owner_training,
                                                              django_request))],
-            T.h3["Trainer information and actions"
+            T.h3[eqtype.name + " trainer information and actions"
                       if is_trainer
                       else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
             # todo: count the training requests for this type, and perhaps what times are most popular
-                 T.div(class_='as_trainer')[(pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
+                 T.div(class_='as_trainer')[str(open_training_requests),([pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
                                                                                          "User training: ", T.input(type="radio",
                                                                                                                     name="role",
                                                                                                                     value="user",
@@ -91,9 +99,9 @@ def responsibilities(who, typename, keyed_types, django_request):
                                                                                                                        value="trainer"), T.br,
                                                                                          T.input(type="hidden", name="type", value=eqtype._id)],
                                                                                    "Schedule training",
-                                                                                   django_request)
+                                                                                   django_request)]
                        if is_trainer
-                       else pages.page_pieces.toggle_request(typename, 'trainer',
+                       else pages.page_pieces.toggle_request(who, eqtype._id, 'trainer',
                                                              has_requested_trainer_training,
                                                              django_request))]]
 
@@ -155,6 +163,7 @@ def training_requests_section(who, django_request):
 
 def admin_section(viewer):
     return T.ul[T.li[pages.page_pieces.section_link('admin', "userlist", "User list")],
+                # T.li["Search by name:", T.form()[]],
                 T.li[pages.page_pieces.section_link('admin', "intervene", "Create intervention event")]
                         if viewer.is_administrator() else ""]
 
@@ -215,9 +224,9 @@ def add_person_page_contents(page_data, who, viewer, django_request):
 
     # # todo: I think this condition is giving false positives
     # todo: separate this from django's "admin"
-    # if viewer.is_administrator() or viewer.is_auditor():
-    #     page_data.add_section("Admin actions",
-    #                           admin_section(viewer))
+    if viewer.is_administrator() or viewer.is_auditor():
+        page_data.add_section("Admin actions",
+                              admin_section(viewer))
 
     # todo: reinstate when I've created a userapi section in the django setup
     # userapilink = pages.page_pieces.section_link("userapi", who.link_id, who.link_id)
