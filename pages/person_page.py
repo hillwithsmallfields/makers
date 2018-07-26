@@ -52,6 +52,9 @@ def profile_section(who, viewer, django_request):
               T.h2["Availability"],
               model.pages.with_help(pages.page_pieces.availform(who.available, django_request),
                                     "availability")]
+    if 'skill_areas' in all_conf:
+        result.append([T.h2["Skills and interests"], model.pages.with_help(skills_section(who, django_request),
+                                                                           "skills_interests")])
     if 'dietary_avoidances' in all_conf:
         result.append([T.h2["Dietary avoidances"], model.pages.with_help(avoidances_section(who, django_request),
                                                                          "dietary_avoidances")])
@@ -62,7 +65,6 @@ def responsibilities(who, typename, keyed_types, django_request):
     is_owner = who.is_owner(eqtype)
     has_requested_owner_training = who.has_requested_training([eqtype._id], 'owner')
     is_trainer, _ = who.is_trainer(eqtype)
-    print(who.name(), "is_trainer for", typename, "is", is_trainer)
     has_requested_trainer_training = who.has_requested_training([eqtype._id], 'trainer')
     raw_req = eqtype.get_training_requests()
     print("raw_req is", raw_req)
@@ -105,6 +107,32 @@ def responsibilities(who, typename, keyed_types, django_request):
                                                              has_requested_trainer_training,
                                                              django_request))]]
 
+def skills_button(area_name, level, which_level):
+    return [T.td[T.input(type='radio',
+                         name=area_name,
+                         value=str(which_level),
+                         checked='checked')
+                 if level == which_level
+                 else T.input(type='radio',
+                              name=area_name,
+                              value=str(which_level))]]
+
+def skills_section(who, django_request):
+    skill_levels = who.get_profile_field('skill_levels') or {}
+    skill_areas = all_conf.get('skill_areas', None)
+    if skill_areas is None:
+        return []
+    existing_skills = {area_name: skill_levels.get(area_name, 0) for area_name in skill_areas}
+    return [T.form(action="update_levels", method="POST")
+            [T.table[[T.th["Area"], T.th["0"], T.th["1"], T.th["2"], T.th["3"]],
+                     [[T.tr[T.th[area],
+                            skills_button(area, existing_skills[area], 0),
+                            skills_button(area, existing_skills[area], 1),
+                            skills_button(area, existing_skills[area], 2),
+                            skills_button(area, existing_skills[area], 3)]]
+                      for area in sorted(skill_areas)]],
+             T.div(align="right")[T.input(type="submit", value="Update interests and skills")]]]
+
 def avoidances_section(who, django_request):
     if 'dietary_avoidances' not in all_conf:
         return []
@@ -115,7 +143,7 @@ def avoidances_section(who, django_request):
                                               else T.input(type="checkbox", name="dietary", value=thing)[thing])]
                                         for thing in sorted(all_conf['dietary_avoidances'])]],
                                   T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-                                  T.input(type='submit', value="Update avoidances")]]
+                                  T.div(align="right")[T.input(type='submit', value="Update avoidances")]]]
 
 def name_of_host(host):
     return model.person.Person.find(host).name() if host else "Unknown"
@@ -124,8 +152,6 @@ def equipment_trained_on(who, equipment_types, django_request):
     # todo: handle bans/suspensions, with admin-only buttons to unsuspend them
     keyed_types = { ty.pretty_name(): (ty, who.qualification(ty.name, 'user'))
                     for ty in equipment_types }
-    # print("keyed_types are", keyed_types, "with trainers", [[host for host in keyed_types[name][1][0].hosts] for name in sorted(keyed_types.keys())])
-    # print "sorted(keyed_types.keys()) is", sorted(keyed_types.keys())
     return T.div(class_="trainedon")[
         T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name][0].name)[name]], # todo: use django url reverser
                T.dd["Trained by ", ", ".join([name_of_host(host)
@@ -222,11 +248,11 @@ def add_person_page_contents(page_data, who, viewer, django_request):
         page_data.add_section("Events I can sign up for",
                               T.div(class_="availableevents")[pages.page_pieces.eventlist(available_events, True)])
 
-    # # todo: I think this condition is giving false positives
-    # todo: separate this from django's "admin"
-    if viewer.is_administrator() or viewer.is_auditor():
-        page_data.add_section("Admin actions",
-                              admin_section(viewer))
+    # todo: I think this condition is giving false positives
+    # todo: separate this from django's "admin", and make an app for it
+    # if viewer.is_administrator() or viewer.is_auditor():
+    #     page_data.add_section("Admin actions",
+    #                           admin_section(viewer))
 
     # todo: reinstate when I've created a userapi section in the django setup
     # userapilink = pages.page_pieces.section_link("userapi", who.link_id, who.link_id)
