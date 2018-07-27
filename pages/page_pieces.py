@@ -62,9 +62,10 @@ def toggle_request(who, eqty, role, already_requested, django_request):
             if not already_requested
             else cancel_button(who, eqty, role, "Cancel %s training request"%role, django_request))
 
-def signup_button(event_id, button_text, django_request):
+def signup_button(event_id, who_id, button_text, django_request):
     return T.form(action=server_conf['base_url']+"signup",
                   method='POST')[T.input(type="hidden", name="eventid", value=str(event_id)),
+                                 T.input(type="hidden", name="person_id", value=who_id),
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.button(type="submit", value="cancel_request")[button_text]]
 

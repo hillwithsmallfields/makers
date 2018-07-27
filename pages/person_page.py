@@ -235,22 +235,22 @@ def add_person_page_contents(page_data, who, viewer, django_request):
     hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events
     if len(hosting) > 0:
         page_data.add_section("Events I'm hosting",
-                              T.div(class_="hostingevents")[pages.event_page.event_table_section(hosting)])
+                              T.div(class_="hostingevents")[pages.event_page.event_table_section(hosting, who._id, django_request)])
 
     attending = model.timeline.Timeline.future_events(person_field='attendees', person_id=who._id).events
     if len(attending) > 0:
         page_data.add_section("Events I'm attending",
-                              T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending)])
+                              T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)])
 
     hosted = model.timeline.Timeline.past_events(person_field='hosts', person_id=who._id).events
     if len(hosting) > 0:
         page_data.add_section("Events I have hosted",
-                              T.div(class_="hostedevents")[pages.event_page.event_table_section(hosted)])
+                              T.div(class_="hostedevents")[pages.event_page.event_table_section(hosted, who._id, django_request)])
 
     attended = model.timeline.Timeline.past_events(person_field='attendees', person_id=who._id).events
     if len(attended) > 0:
         page_data.add_section("Events I have attended",
-                              T.div(class_="attendedingevents")[pages.event_page.event_table_section(attended)])
+                              T.div(class_="attendedingevents")[pages.event_page.event_table_section(attended, who._id, django_request)])
 
     known_events = hosting + attending + hosted + attended
     available_events = [ev
@@ -258,7 +258,7 @@ def add_person_page_contents(page_data, who, viewer, django_request):
                         if ev not in known_events]
     if len(available_events) > 0:
         page_data.add_section("Events I can sign up for",
-                              T.div(class_="availableevents")[pages.event_page.event_table_section(available_events, True, True)])
+                              T.div(class_="availableevents")[pages.event_page.event_table_section(available_events, who._id, django_request, True, True)])
 
     # todo: I think this condition is giving false positives
     # todo: separate this from django's "admin", and make an app for it

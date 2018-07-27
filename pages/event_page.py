@@ -57,10 +57,11 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
                                              completion_table])
                        if completion_as_form
                        else completion_table)
+        # todo: signup if in the future
     return [T.h3[ev.title],
             results]
 
-def event_table_section(tl, django_request, equiptype=None, with_signup=False):
+def event_table_section(tl, who_id, django_request, equiptype=None, with_signup=False):
     return (T.table(class_="timeline_table")
             [T.thead[T.tr[T.th["Title"], T.th["Event type"], T.th["Start"], T.th["Location"], T.th["Hosts"],
                           T.th["Equipment"] if equiptype else "",
@@ -71,5 +72,5 @@ def event_table_section(tl, django_request, equiptype=None, with_signup=False):
                             T.td(class_="location")[ev.location],
                             T.td(class_="hosts")[people_list(ev.hosts)],
                             T.td(class_="event_equipment_types")[ev.equipment_types] if equiptype else [],
-                            T.td[signup_button(ev._id, "Sign up")] if with_signup else ""]]
+                            T.td[signup_button(ev._id, who_id, "Sign up")] if with_signup else ""]]
                       for ev in tl.events()]]])
