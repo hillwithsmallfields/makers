@@ -109,7 +109,7 @@ def responsibilities(who, typename, keyed_types, django_request):
                                                                                          "Trainer training: ", T.input(type="radio",
                                                                                                                        name="role",
                                                                                                                        value="trainer"), T.br,
-                                                                                         T.input(type="hidden", name="type", value=eqtype._id)],
+                                                                                         T.input(type="hidden", name="equiptype", value=eqtype._id)],
                                                                                    "Schedule training",
                                                                                    django_request)]
                        if is_trainer

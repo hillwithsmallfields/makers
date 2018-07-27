@@ -70,7 +70,7 @@ def signup_button(event_id, button_text, django_request):
 
 def schedule_event_form(who, extras, button_text, django_request):
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
-    return (T.form(action=base+"schedevent", # todo: use django mechanisms for this
+    return (T.form(action=base+django.urls.reverse("events:newevent"),
                    method='POST')
             ["Date and time: ", T.input(type="datetime", name="when"), T.br,
              extras,

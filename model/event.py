@@ -23,7 +23,6 @@ def as_time(clue):
                         if isinstance(clue, str)
                         else None)))
 
-
 def timestring(when):
     if when.hour == 0 and when.minute == 0 and when.second == 0:
         return str(when.date())
@@ -101,9 +100,10 @@ class Event(object):
         self.equipment_types = equipment_types
         self.equipment = equipment # list of Machine, by ObjectId
         self._id = None
-        self.passed = []   # [_id of person]
-        self.failed = []   # [_id of person]
-        self.noshow = []   # [_id of person]
+        self.signed_up = [] # [_id of person]
+        self.passed = []    # [_id of person]
+        self.failed = []    # [_id of person]
+        self.noshow = []    # [_id of person]
         self.host_prerequisites = []
         self.attendee_prerequisites = []
         self.location = None
