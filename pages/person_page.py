@@ -60,19 +60,28 @@ def profile_section(who, viewer, django_request):
                                                                          "dietary_avoidances")])
     return T.div(class_="personal_profile")[result]
 
+def eqty_training_requests(eqtype, who):
+    raw_reqs = eqtype.get_training_requests()
+    print("raw_reqs is", raw_reqs)
+    reqs = []
+    # we can't use dates as dictionary keys, as they might not be unique
+    for d in sorted([req['request_date'] for req in raw_reqs]):
+        for r in raw_reqs:
+            if r['request_date'] == d:
+                reqs.append(r)
+    print("reqs are", reqs)
+    return T.table[T.tr[T.th["Date requested"],
+                        T.th["Requester"]],
+                   [[T.tr[T.td[req['request_date']],
+                          T.td[req['requester']]]]
+                     for req in reqs]]
+
 def responsibilities(who, typename, keyed_types, django_request):
     eqtype = keyed_types[typename]
     is_owner = who.is_owner(eqtype)
     has_requested_owner_training = who.has_requested_training([eqtype._id], 'owner')
     is_trainer, _ = who.is_trainer(eqtype)
     has_requested_trainer_training = who.has_requested_training([eqtype._id], 'trainer')
-    raw_req = eqtype.get_training_requests()
-    print("raw_req is", raw_req)
-    open_training_requests = { model.person.Person.find(personid).name(): str(reqdata)
-                               for personid, reqdata in raw_req.items()
-                               # todo: filter the list of training requests of each requester, down to the ones for this piece of equipment
-    } # todo: if is_trainer else None
-    print("open_training_requests are", open_training_requests)
     return [T.h3["Equipment of type " + eqtype.name],
             [pages.page_pieces.machinelist(eqtype, who, django_request, is_owner)],
             T.h3[eqtype.name + " owner information and actions"
@@ -91,7 +100,8 @@ def responsibilities(who, typename, keyed_types, django_request):
                       if is_trainer
                       else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
             # todo: count the training requests for this type, and perhaps what times are most popular
-                 T.div(class_='as_trainer')[str(open_training_requests),([pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
+                 T.div(class_='as_trainer')[eqty_training_requests(eqtype, who),
+                                            ([pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
                                                                                          "User training: ", T.input(type="radio",
                                                                                                                     name="role",
                                                                                                                     value="user",

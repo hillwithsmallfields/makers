@@ -224,10 +224,12 @@ class Person(object):
         if ((len(self.get_training_events(role_training, result='noshow')) - self.noshow_absolutions)
             >= int(model.configuration.get_config()['training']['no_shows_limit'])):
             return False, "Too many no-shows"
+        # todo: check they don't already have a request of this type
         self.training_requests.append({'request_date': when or datetime.now(),
                                        'requester': self._id,
                                        'equipment_types': [ model.equipment_type.Equipment_type.find(eqt)._id for eqt in equipment_types],
-                                       'event_type': role_training})
+                                       'event_type': role_training,
+                                       'uuid': uuid.uuid4()})
         self.save()
         return True, None
 

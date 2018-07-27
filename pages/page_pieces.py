@@ -22,11 +22,13 @@ def set_server_conf():
 def top_navigation(django_request):
     org_conf = model.configuration.get_config()['organization']
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
-    return [T.ul[T.li[T.a(href=org_conf['home_page'])[org_conf['title'] + " home"]],
-                 T.li[T.a(href=org_conf['wiki'])["Wiki"]],
-                 T.li[T.a(href=org_conf['forum'])["Forum"]],
-                 T.li[T.a(href=base + "dashboard/")["Your dashboard"]],
-                 T.li[T.a(href=base + 'users/logout')["Logout"]]]]
+    # todo: make this a bar of buttons, or a dropdow
+    return [T.nav(class_='top_nav')
+            [T.ul[T.li[T.a(href=org_conf['home_page'])[org_conf['title'] + " home"]],
+                  T.li[T.a(href=org_conf['wiki'])["Wiki"]],
+                  T.li[T.a(href=org_conf['forum'])["Forum"]],
+                  T.li[T.a(href=base + "dashboard/")["Your dashboard"]],
+                  T.li[T.a(href=base + 'users/logout')["Logout"]]]]]
 
 # https://stackoverflow.com/questions/2345708/how-can-i-get-the-full-absolute-url-with-domain-in-django
 # request.build_absolute_url()

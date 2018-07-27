@@ -129,8 +129,12 @@ class Equipment_type(object):
         whoever.remove_training_request(role, [self])
 
     def get_training_requests(self, role='user'):
-        return { y._id: y.training_requests
-                 for y in [ model.person.Person.find(x)
+        """Return a dictionary of people ids to lists of training requests.
+        There should normally be only one entry in the list.
+        The training request is in the form of a dictionary as constructed by person.Person.add_training_request."""
+        return {y._id: [z for z in y.training_requests
+                        if self._id in z['equipment_types']]
+                 for y in [model.person.Person.find(x)
                             for x in model.database.get_people_awaiting_training(model.database.role_training(role), [self._id])]}
 
     def get_training_events(self, role, earliest=None, latest=None):
