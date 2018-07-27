@@ -60,6 +60,7 @@ def profile_section(who, viewer, django_request):
                                                                          "dietary_avoidances")])
     return T.div(class_="personal_profile")[result]
 
+# todo: move this into page_pieces.py and use it in equipment_type_page.py too?
 def eqty_training_requests(eqtype, who):
     raw_reqs = eqtype.get_training_requests()
     print("raw_reqs is", raw_reqs)
