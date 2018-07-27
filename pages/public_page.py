@@ -1,6 +1,7 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.configuration
 import pages.page_pieces
+import pages.event_page
 import model.timeline
 
 conf=None
@@ -10,8 +11,8 @@ def public_page():
     global conf
     if conf == None:
         conf = configuration.get_config()
-    current_events = page.pieces.eventlist(timeline.present_events().events)
-    upcoming_events = page.pieces.eventlist(timeline.future_events().events)
+    current_events = pages.event_page.event_table_section(timeline.present_events().events, True)
+    upcoming_events = pages.event_page.event_table_section(timeline.future_events().events, True)
     content = [T.div[
         T.form(action=conf['server']['login'])[T.input(type='email address', name='identifier'),
                                                T.input(type='password', name='password')],

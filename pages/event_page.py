@@ -1,15 +1,15 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
+import datetime
+import django.middleware.csrf
 import model.configuration
 import model.equipment_type
-import django.middleware.csrf
 import model.equipment_type
 import model.event
-import pages.page_pieces
 import model.pages
 import model.person
 import model.timeline
 import model.timeslots
-import datetime
+import pages.page_pieces
 
 all_conf = None
 server_conf = None
@@ -60,13 +60,16 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
     return [T.h3[ev.title],
             results]
 
-def event_table_section(tl, django_request, equiptype=None):
+def event_table_section(tl, django_request, equiptype=None, with_signup=False):
     return (T.table(class_="timeline_table")
-            [T.tr[T.th["Title"], T.th["Event type"], T.th["Start"], T.th["Location"], T.th["Hosts"], T.th["Equipment"] if equiptype else []],
-             [T.tr[T.th(class_="event_title")[ev.title],
-                   T.td(class_="event_type")[ev.event_type],
-                   T.td(class_="event_start")[model.event.timestring(ev.start)],
-                   T.td(class_="location")[ev.location],
-                   T.td(class_="hosts")[people_list(ev.hosts)],
-                   T.td(class_="event_equipment_types")[ev.equipment_types] if equiptype else []]
-                                             for ev in tl.events()]])
+            [T.thead[T.tr[T.th["Title"], T.th["Event type"], T.th["Start"], T.th["Location"], T.th["Hosts"],
+                          T.th["Equipment"] if equiptype else "",
+                          T.th["Sign up"] if with_signup else ""]],
+             T.tbody[[[T.tr[T.th(class_="event_title")[ev.title],
+                            T.td(class_="event_type")[ev.event_type],
+                            T.td(class_="event_start")[model.event.timestring(ev.start)],
+                            T.td(class_="location")[ev.location],
+                            T.td(class_="hosts")[people_list(ev.hosts)],
+                            T.td(class_="event_equipment_types")[ev.equipment_types] if equiptype else [],
+                            T.td[signup_button(ev._id, "Sign up")] if with_signup else ""]]
+                      for ev in tl.events()]]])

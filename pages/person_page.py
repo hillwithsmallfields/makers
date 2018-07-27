@@ -1,14 +1,15 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
-import model.configuration
+import datetime
 import django.middleware.csrf
+import model.configuration
 import model.equipment_type
 import model.event
-import pages.page_pieces
 import model.pages
 import model.person
 import model.timeline
 import model.timeslots
-import datetime
+import pages.event_page
+import pages.page_pieces
 
 all_conf = None
 server_conf = None
@@ -71,11 +72,11 @@ def eqty_training_requests(eqtype, who):
             if r['request_date'] == d:
                 reqs.append(r)
     print("reqs are", reqs)
-    return T.table[T.tr[T.th["Date requested"],
-                        T.th["Requester"]],
-                   [[T.tr[T.td[req['request_date']],
-                          T.td[req['requester']]]]
-                     for req in reqs]]
+    return T.table[T.thead[T.tr[T.th["Date requested"],
+                                T.th["Requester"]]],
+                   T.tbody[[[T.tr[T.td[req['request_date']],
+                                 T.td[req['requester']]]]
+                            for req in reqs]]]
 
 def responsibilities(who, typename, keyed_types, django_request):
     eqtype = keyed_types[typename]
@@ -135,13 +136,13 @@ def skills_section(who, django_request):
         return []
     existing_skills = {area_name: skill_levels.get(area_name, 0) for area_name in skill_areas}
     return [T.form(action="update_levels", method="POST")
-            [T.table[[T.th["Area"], T.th["0"], T.th["1"], T.th["2"], T.th["3"]],
-                     [[T.tr[T.th[area],
-                            skills_button(area, existing_skills[area], 0),
-                            skills_button(area, existing_skills[area], 1),
-                            skills_button(area, existing_skills[area], 2),
-                            skills_button(area, existing_skills[area], 3)]]
-                      for area in sorted(skill_areas)]],
+            [T.table[T.thead[T.tr[[T.th["Area"], T.th["0"], T.th["1"], T.th["2"], T.th["3"]]]],
+                     T.tbody[[[T.tr[T.th[area],
+                                    skills_button(area, existing_skills[area], 0),
+                                    skills_button(area, existing_skills[area], 1),
+                                    skills_button(area, existing_skills[area], 2),
+                                    skills_button(area, existing_skills[area], 3)]]
+                              for area in sorted(skill_areas)]]],
              T.div(align="right")[T.input(type="submit", value="Update interests and skills")]]]
 
 def avoidances_section(who, django_request):
@@ -184,18 +185,18 @@ def training_requests_section(who, django_request):
     len_training = len("_training")
     keyed_requests = {req['request_date']: req for req in who.training_requests}
     sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
-    return T.div(class_="requested")[T.table()[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]],
-                                               [T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
-                                                     T.td[", ".join([model.equipment_type.Equipment_type.find_by_id(id).pretty_name()
+    return T.div(class_="requested")[T.table()[T.thead[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]]],
+                                               T.tbody[[T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
+                                                             T.td[", ".join([model.equipment_type.Equipment_type.find_by_id(id).pretty_name()
                                                                              for id in req['equipment_types']])],
-                                                     T.td[str(req['event_type'])[:-len_training]],
-                                                     T.td[pages.page_pieces.cancel_button(who,
-                                                                                          #  ",".join(map(str, req['equipment_types'])),
-                                                                                          # todo: re-instate multiple types
+                                                             T.td[str(req['event_type'])[:-len_training]],
+                                                             T.td[pages.page_pieces.cancel_button(who,
+                                                                                                  #  ",".join(map(str, req['equipment_types'])),
+                                                                                                  # todo: re-instate multiple types
                                                                                           req['equipment_types'][0],
-                                                                                          'user', "Cancel training request",
-                                                                                          django_request)]]
-                                                        for req in sorted_requests]]]
+                                                                                                  'user', "Cancel training request",
+                                                                                                  django_request)]]
+                                                        for req in sorted_requests]]]]
 
 
 def admin_section(viewer):
@@ -234,22 +235,22 @@ def add_person_page_contents(page_data, who, viewer, django_request):
     hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events
     if len(hosting) > 0:
         page_data.add_section("Events I'm hosting",
-                              T.div(class_="hostingevents")[pages.page_pieces.eventlist(hosting)])
+                              T.div(class_="hostingevents")[pages.event_page.event_table_section(hosting)])
 
     attending = model.timeline.Timeline.future_events(person_field='attendees', person_id=who._id).events
     if len(attending) > 0:
         page_data.add_section("Events I'm attending",
-                              T.div(class_="attendingingevents")[pages.page_pieces.eventlist(attending)])
+                              T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending)])
 
     hosted = model.timeline.Timeline.past_events(person_field='hosts', person_id=who._id).events
     if len(hosting) > 0:
         page_data.add_section("Events I have hosted",
-                              T.div(class_="hostedevents")[pages.page_pieces.eventlist(hosted)])
+                              T.div(class_="hostedevents")[pages.event_page.event_table_section(hosted)])
 
     attended = model.timeline.Timeline.past_events(person_field='attendees', person_id=who._id).events
     if len(attended) > 0:
         page_data.add_section("Events I have attended",
-                              T.div(class_="attendedingevents")[pages.page_pieces.eventlist(attended)])
+                              T.div(class_="attendedingevents")[pages.event_page.event_table_section(attended)])
 
     known_events = hosting + attending + hosted + attended
     available_events = [ev
@@ -257,7 +258,7 @@ def add_person_page_contents(page_data, who, viewer, django_request):
                         if ev not in known_events]
     if len(available_events) > 0:
         page_data.add_section("Events I can sign up for",
-                              T.div(class_="availableevents")[pages.page_pieces.eventlist(available_events, True)])
+                              T.div(class_="availableevents")[pages.event_page.event_table_section(available_events, True, True)])
 
     # todo: I think this condition is giving false positives
     # todo: separate this from django's "admin", and make an app for it
