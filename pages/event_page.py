@@ -1,5 +1,6 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.configuration
+import model.equipment_type
 import django.middleware.csrf
 import model.equipment_type
 import model.event
@@ -35,19 +36,21 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
         for pair in all_people_name_and_id:
             if name == pair[0]:
                 ids_in_order.append(pair[1])
-    results = [T.table[T.tr[T.th(class_="ralabel")["Title"], T.td[T.a(href=event_link(ev, django_request))[ev.title]]],
-                       T.tr[T.th(class_="ralabel")["Event type"], T.td[[ev.event_type]]],
-                       T.tr[T.th(class_="ralabel")["Start time"], T.td[model.event.timestring(ev.start)]],
-                       T.tr[T.th(class_="ralabel")["End time"], T.td[model.event.timestring(ev.end)]],
-                       T.tr[T.th(class_="ralabel")["Location"], T.td[ev.location]],
-                       T.tr[T.th(class_="ralabel")["Hosts"], T.td[people_list(ev.hosts)]]]]
+    results = [(T.table(class_='event_details')
+                [T.tr[T.th(class_="ralabel")["Title"], T.td(class_="event_title")[T.a(href=event_link(ev, django_request))[ev.title]]],
+                 T.tr[T.th(class_="ralabel")["Event type"], T.td(class_="event_type")[ev.event_type]],
+                 T.tr[T.th(class_="ralabel")["Start time"], T.td(class_="event_start")[model.event.timestring(ev.start)]],
+                 T.tr[T.th(class_="ralabel")["End time"], T.td(class_="event_end")[model.event.timestring(ev.end)]],
+                 T.tr[T.th(class_="ralabel")["Location"], T.td(class_="location")[ev.location]],
+                 T.tr[T.th(class_="ralabel")["Equipment types"], T.td(class_="event_equipment_types")[", ".join([model.equipment_type.Equipment_type.find_by_id(x).name for x in ev.equipment_types])]],
+                 T.tr[T.th(class_="ralabel")["Hosts"], T.td(class_="hosts")[people_list(ev.hosts)]]])]
     if with_completion:
         completion_table = T.table(class_='event_completion')[T.tr[T.th["Name"],T.th["Unknown"],T.th["No-show"],T.th["Failed"],T.th["Passed"]],
                                                               [T.tr[T.th[all_people_id_to_name[id]],
-                                                                    T.tr[result_checkbox(id, "unknown", id not in ev.noshow and id not in ev.failed and id not in ev.passed)],
-                                                                    T.tr[result_checkbox(id, "noshow", id in ev.noshow)],
-                                                                    T.tr[result_checkbox(id, "failed", id in ev.failed)],
-                                                                    T.tr[result_checkbox(id, "passed", id in ev.passed)]]
+                                                                    T.td[result_checkbox(id, "unknown", id not in ev.noshow and id not in ev.failed and id not in ev.passed)],
+                                                                    T.td[result_checkbox(id, "noshow", id in ev.noshow)],
+                                                                    T.td[result_checkbox(id, "failed", id in ev.failed)],
+                                                                    T.td[result_checkbox(id, "passed", id in ev.passed)]]
                                                            for id in ids_in_order]]
         results.append((T.form(action=django.urls.reverse("event:results"),
                               method="POST")[T.input(type="hidden", name='event_id', value=ev._id),
@@ -58,11 +61,12 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
             results]
 
 def event_table_section(tl, django_request, equiptype=None):
-    return T.table(class_="timeline_table")[T.tr[T.th["Title"], T.th["Event type"], T.th["Start"], T.th["Location"], T.th["Hosts"], T.th["Equipment"] if equiptype else []],
-                                            [T.tr[T.th[ev.title],
-                                                  T.td[ev.event_type],
-                                                  T.td[model.event.timestring(ev.start)],
-                                                  T.td[ev.location],
-                                                  T.td[people_list(ev.hosts)],
-                                                  T.td[ev.equipment_types] if equiptype else []]
-                                             for ev in tl.events()]]
+    return (T.table(class_="timeline_table")
+            [T.tr[T.th["Title"], T.th["Event type"], T.th["Start"], T.th["Location"], T.th["Hosts"], T.th["Equipment"] if equiptype else []],
+             [T.tr[T.th(class_="event_title")[ev.title],
+                   T.td(class_="event_type")[ev.event_type],
+                   T.td(class_="event_start")[model.event.timestring(ev.start)],
+                   T.td(class_="location")[ev.location],
+                   T.td(class_="hosts")[people_list(ev.hosts)],
+                   T.td(class_="event_equipment_types")[ev.equipment_types] if equiptype else []]
+                                             for ev in tl.events()]])
