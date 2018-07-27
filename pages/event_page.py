@@ -33,8 +33,8 @@ def one_event_section(ev, django_request, with_completion=False):
             if name == pair[0]:
                 ids_in_order.append(pair[1])
     results = [T.table[T.tr[T.th(class_="ralabel")["Event type"], T.td[ev.event_type]],
-                      T.tr[T.th(class_="ralabel")["Start time"], T.td[ev.timestring(ev.start)]],
-                      T.tr[T.th(class_="ralabel")["End time"], T.td[ev.timestring(ev.end)]],
+                      T.tr[T.th(class_="ralabel")["Start time"], T.td[model.event.timestring(ev.start)]],
+                      T.tr[T.th(class_="ralabel")["End time"], T.td[model.event.timestring(ev.end)]],
                       T.tr[T.th(class_="ralabel")["Location"], T.td[ev.location]],
                       T.tr[T.th(class_="ralabel")["Hosts"], T.td[people_list(ev.hosts)]],
                       T.tr[T.th(class_="ralabel")["Signed up"], T.td[people_list(ev.signed_up)]],
@@ -53,3 +53,13 @@ def one_event_section(ev, django_request, with_completion=False):
                                                            for id in ids_in_order]])
     return [T.h3[ev.title],
             results]
+
+def event_table_section(tl, django_request, equiptype=None):
+    return T.table(class_="timeline_table")[T.tr[T.th["Title"], T.th["Event type"], T.th["Start"], T.th["Location"], T.th["Hosts"], T.th["Equipment"] if equiptype else []],
+                                            [T.tr[T.th[ev.title],
+                                                  T.td[ev.event_type],
+                                                  T.td[model.event.timestring(ev.start)],
+                                                  T.td[ev.location],
+                                                  T.td[people_list(ev.hosts)],
+                                                  T.td[ev.equipment_types] if equiptype else []]
+                                             for ev in tl.events()]]
