@@ -17,7 +17,7 @@ class Person(object):
 
     """The Person class describes a person, typically but not necessarily a member.
 
-    Some of the informtation that you might expect to be here is
+    Some of the information that you might expect to be here is
     actually stored elsewhere, but you can access some of that through
     the methods of this class.
 
@@ -224,13 +224,20 @@ class Person(object):
         if ((len(self.get_training_events(role_training, result='noshow')) - self.noshow_absolutions)
             >= int(model.configuration.get_config()['training']['no_shows_limit'])):
             return False, "Too many no-shows"
-        # todo: check they don't already have a request of this type
+        eliminator = equipment_types
+        for existing in self.training_requests:
+            for eli in eliminator:
+                if eli in existing['equipment_types']:
+                    eliminator.pop(eli)
+        if len(eliminator) == 0:
+            return False, "All equipment types already requested"
         self.training_requests.append({'request_date': when or datetime.now(),
                                        'requester': self._id,
                                        'equipment_types': [ model.equipment_type.Equipment_type.find(eqt)._id for eqt in equipment_types],
                                        'event_type': role_training,
                                        'uuid': uuid.uuid4()})
         self.save()
+        # todo: look for existing training events, and call this_event.invite_available_interested_people on them
         return True, None
 
     def remove_training_request(self, role, equipment_types):

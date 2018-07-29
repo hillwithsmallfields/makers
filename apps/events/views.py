@@ -24,6 +24,7 @@ def new_event(request):
                                           [params['submitter']],
                                           params['when'])
     ev.publish()
+    ev.invite_available_interested_people()
 
     page_data = model.pages.HtmlPage("New event confirmation",
                                      pages.page_pieces.top_navigation(request))

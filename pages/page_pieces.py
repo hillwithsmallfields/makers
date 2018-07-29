@@ -1,5 +1,3 @@
-# from nevow import flat
-# from nevow import tags as T
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import django.urls
 import model.configuration
@@ -89,20 +87,34 @@ def availform(available, django_request):
                             T.th["Morning"],
                             T.th["Afternoon"],
                             T.th["Evening"],
-                            T.th["Other"]]],
-               T.tbody[[[T.tr[T.th(class_="daylabel")[day],
-                              [T.td[T.input(type="checkbox", name="avail",
-                                            value=day+t, checked="checked")
+                            T.th["Other"]]]],
+              T.tbody[[[T.tr[T.th(class_="daylabel")[day],
+                             [T.td[T.input(type="checkbox", name="avail",
+                                           value=day+t, checked="checked")
                             if b
                             else T.input(type="checkbox", name="avail",
                                          value=day+t)]
                        for t, b in zip(['M', 'A', 'E', 'O'], day_slots)]]]
                 for (day, day_slots) in zip(days,
                                             model.timeslots.timeslots_from_int(available))]]],
-              # todo: write receiver for this
-              # todo: on changing availability, re-run invite_available_interested_people on the equipment types for which this person has a training request outstanding
-              T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-              T.input(type="submit", value="Update availability")]])
+             # todo: write receiver for this
+             # todo: on changing availability, re-run invite_available_interested_people on the equipment types for which this person has a training request outstanding
+             T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+             T.input(type="submit", value="Update availability")])
+
+def avail_table(slot_sums):
+    days, _, _ = model.timeslots.get_slots_conf()
+    return [T.table(class_="availability")
+            [T.thead[T.tr[T.th(class_="daylabel")["Day"],
+                          T.th["Morning"],
+                          T.th["Afternoon"],
+                          T.th["Evening"],
+                          T.th["Other"]]]],
+            T.tbody[[[T.tr[T.th(class_="daylabel")[day],
+                           [T.td[str(b)]
+                       for t, b in zip(['M', 'A', 'E', 'O'], day_slots)]]]
+                for (day, day_slots) in zip(days,
+                                            model.timeslots.avsums_by_day(slot_sums))]]]
 
 def general_equipment_list(who, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
@@ -131,6 +143,26 @@ def machinelist(eqty, who, django_request, as_owner=False):
                               for device in mclist]]]]
             if mclist
             else [])
+
+def eqty_training_requests(eqtype):
+    raw_reqs = eqtype.get_training_requests()
+    print("raw_reqs is", raw_reqs)
+    reqs = []
+    # we can't use dates as dictionary keys, as they might not be
+    # unique, so go through all the dates in order getting all
+    # requests which have that date, so they will be in order
+    for d in sorted([req['request_date'] for req in raw_reqs]):
+        for r in raw_reqs:
+            if r['request_date'] == d:
+                reqs.append(r)
+    print("reqs are", reqs)
+    return [T.table[T.thead[T.tr[T.th["Date requested"],
+                                T.th["Requester"]]],
+                   T.tbody[[[T.tr[T.td[event.timestring(req['request_date'])],
+                                 T.td[person.Person.find(req['requester']).name()]]]
+                            for req in reqs]]],
+            avail_table(timeslots.sum_availabilities([person.Person.find(req['requester']).available
+                                                      for req in raw_reqs]))]
 
 def announcements_section():
     return T.div[T.p["Placeholder."]]

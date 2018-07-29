@@ -61,23 +61,6 @@ def profile_section(who, viewer, django_request):
                                                                          "dietary_avoidances")])
     return T.div(class_="personal_profile")[result]
 
-# todo: move this into page_pieces.py and use it in equipment_type_page.py too?
-def eqty_training_requests(eqtype, who):
-    raw_reqs = eqtype.get_training_requests()
-    print("raw_reqs is", raw_reqs)
-    reqs = []
-    # we can't use dates as dictionary keys, as they might not be unique
-    for d in sorted([req['request_date'] for req in raw_reqs]):
-        for r in raw_reqs:
-            if r['request_date'] == d:
-                reqs.append(r)
-    print("reqs are", reqs)
-    return T.table[T.thead[T.tr[T.th["Date requested"],
-                                T.th["Requester"]]],
-                   T.tbody[[[T.tr[T.td[req['request_date']],
-                                 T.td[req['requester']]]]
-                            for req in reqs]]]
-
 def responsibilities(who, typename, keyed_types, django_request):
     eqtype = keyed_types[typename]
     is_owner = who.is_owner(eqtype)
@@ -101,19 +84,19 @@ def responsibilities(who, typename, keyed_types, django_request):
             T.h3[eqtype.name + " trainer information and actions"
                       if is_trainer
                       else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
-            # todo: count the training requests for this type, and perhaps what times are most popular
-                 T.div(class_='as_trainer')[eqty_training_requests(eqtype, who),
-                                            ([pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
-                                                                                         "User training: ", T.input(type="radio",
-                                                                                                                    name="role",
-                                                                                                                    value="user",
-                                                                                                                    checked="checked"), T.br,
-                                                                                         "Trainer training: ", T.input(type="radio",
-                                                                                                                       name="role",
-                                                                                                                       value="trainer"), T.br,
-                                                                                         T.input(type="hidden", name="equiptype", value=eqtype._id)],
-                                                                                   "Schedule training",
-                                                                                   django_request)]
+            T.div(class_='as_trainer')[page_pieces.eqty_training_requests(eqtype),
+                                       ([pages.page_pieces.schedule_event_form(who,
+                                                                               [T.input(type="hidden", name="event_type", value="training"),
+                                                                                "User training: ", T.input(type="radio",
+                                                                                                           name="role",
+                                                                                                           value="user",
+                                                                                                           checked="checked"), T.br,
+                                                                                "Trainer training: ", T.input(type="radio",
+                                                                                                              name="role",
+                                                                                                              value="trainer"), T.br,
+                                                                                T.input(type="hidden", name="equiptype", value=eqtype._id)],
+                                                                               "Schedule training",
+                                                                               django_request)]
                        if is_trainer
                        else pages.page_pieces.toggle_request(who, eqtype._id, 'trainer',
                                                              has_requested_trainer_training,

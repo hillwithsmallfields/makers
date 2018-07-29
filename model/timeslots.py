@@ -66,3 +66,17 @@ def time_to_timeslot(when):
     time_slot_number = order.index(timename)
     # print "timename", timename, "time_slot_number", time_slot_number
     return 1 << (time_slot_number + when.weekday() * 4)
+
+def sum_availabilities(avlist):
+    """Sum up a list of availability bitmaps.
+    Each bitmap represents one person's availability slots,
+    and the result shows how many people are available in
+    each slot."""
+    sums = [0] * 32
+    for perav in avlist:
+        for i in range(32):
+            sums[i] += perav >> i
+    return sums
+
+def avsums_by_day(avsumlist):
+    return [avsumlist[start:start+3] for start in range(0,8,4)]

@@ -33,6 +33,7 @@
 *** TODO pages for events with catering to show the dietary combinations of those who have signed up
 *** TODO event timeline for current events and for today's / tomorrow's events
 *** TODO integrate with other systems' APIs
+*** TODO allow a choice of stylesheet? Maybe as a per-user setting.
 ** TODO re-style navigation, add logo, etc (small)
 * Makers info
 ** ssh port for server access: 54839
