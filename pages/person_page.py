@@ -170,13 +170,10 @@ def training_requests_section(who, django_request):
     sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
     return T.div(class_="requested")[T.table()[T.thead[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]]],
                                                T.tbody[[T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
-                                                             T.td[", ".join([model.equipment_type.Equipment_type.find_by_id(id).pretty_name()
-                                                                             for id in req['equipment_types']])],
+                                                             T.td[model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).pretty_name()],
                                                              T.td[str(req['event_type'])[:-len_training]],
                                                              T.td[pages.page_pieces.cancel_button(who,
-                                                                                                  #  ",".join(map(str, req['equipment_types'])),
-                                                                                                  # todo: re-instate multiple types
-                                                                                          req['equipment_types'][0],
+                                                                                          req['equipment_type'],
                                                                                                   'user', "Cancel training request",
                                                                                                   django_request)]]
                                                         for req in sorted_requests]]]]

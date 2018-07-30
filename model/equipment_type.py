@@ -133,7 +133,7 @@ class Equipment_type(object):
         There should normally be only one entry in the list.
         The training request is in the form of a dictionary as constructed by person.Person.add_training_request."""
         return {y._id: [z for z in y.training_requests
-                        if self._id in z['equipment_types']]
+                        if self._id == z['equipment_type']]
                  for y in [model.person.Person.find(x)
                             for x in model.database.get_people_awaiting_training(model.database.role_training(role), [self._id])]}
 

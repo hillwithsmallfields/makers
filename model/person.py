@@ -48,7 +48,7 @@ class Person(object):
         self.membership_number = None
         self.fob = None
         self.past_fobs = []
-        self.training_requests = []      # list of dict with 'request_date', 'equipment_types' (as _id), 'event_type'
+        self.training_requests = []      # list of dict with 'request_date', 'equipment_type' (as _id), 'event_type'
         self.training_requests_limit = None # normally comes from config but admins can override using this
         self.noshow_absolutions = 0
         self.available = 0xffffffff # bitmap of timeslots, lowest bit is Monday morning, etc
@@ -212,7 +212,7 @@ class Person(object):
                                    + len(self.get_training_events('trainer_training', result='noshow')))
         self.save()
 
-    def add_training_request(self, role, equipment_types, when=None):
+    def add_training_request(self, role, equipment_type, when=None):
         """Register a a training request for one or more equipment types.
         The time should not normally be specified, as that would allow
         queue-jumping, although an admin might do that if someone convinces
@@ -224,45 +224,36 @@ class Person(object):
         if ((len(self.get_training_events(role_training, result='noshow')) - self.noshow_absolutions)
             >= int(model.configuration.get_config()['training']['no_shows_limit'])):
             return False, "Too many no-shows"
-        eliminator = equipment_types
         for existing in self.training_requests:
-            for eli in eliminator:
-                if eli in existing['equipment_types']:
-                    eliminator.pop(eli)
-        if len(eliminator) == 0:
-            return False, "All equipment types already requested"
+            if equipment_type == existing['equipment_type']:
+                return False, "Equipment type training already requested"
         self.training_requests.append({'request_date': when or datetime.now(),
                                        'requester': self._id,
-                                       'equipment_types': [ model.equipment_type.Equipment_type.find(eqt)._id for eqt in equipment_types],
+                                       'equipment_type': equipment_type,
                                        'event_type': role_training,
                                        'uuid': uuid.uuid4()})
         self.save()
         # todo: look for existing training events, and call this_event.invite_available_interested_people on them
         return True, None
 
-    def remove_training_request(self, role, equipment_types):
+    def remove_training_request(self, role, equipment_type):
         """Remove a training request."""
         event_type = model.database.role_training(role)
-        sorted_types = sorted(equipment_types)
         for req in self.training_requests:
-            if req['event_type'] != event_type:
-                continue
-            if sorted_types == sorted(req['equipment_types']):
+            if req['event_type'] == event_type and req['equipment_type'] == equipment_type:
                 self.training_requests.remove(req)
                 self.save()
                 return True
         return False
 
-    def alter_training_request_date(self, role, equipment_types, new_date):
+    def alter_training_request_date(self, role, equipment_type, new_date):
         """Alter the date of a training request.
         This is to allow administrators to backdate training requests
         if a person convinces them that they have a good case for jumping
         the queue."""
         event_type = model.database.role_training(role)
         for req in self.training_requests:
-            if req['event_type'] != event_type:
-                continue
-            if equipment_type == req['equipment_types']:
+            if req['event_type'] == event_type and equipment_type == req['equipment_type']:
                 req['request_date'] = new_date
                 return True
             self.save()
@@ -272,16 +263,13 @@ class Person(object):
         keyed = { req['request_date']: req for req in self.training_requests }
         return [ keyed[d] for d in sorted(keyed.keys()) ]
 
-    def has_requested_training(self, equipment_types, role):
+    def has_requested_training(self, equipment_type, role):
         """Return whether the person has an unfulfilled training request
         for a given equipment and role."""
         event_type = model.database.role_training(role)
         for req in self.training_requests:
-            if req['event_type'] != event_type:
-                continue
-            for eqty in req['equipment_types']:
-                if eqty in equipment_types:
-                    return req
+            if req['event_type'] == event_type and req['equipment_type'] == equipment_type:
+                return req
         return None
 
     def get_training_events(self,
@@ -301,11 +289,11 @@ class Person(object):
         tr_event.mark_results([self], [], [])
 
     @staticmethod
-    def awaiting_training(event_type, equipment_types):
+    def awaiting_training(event_type, equipment_type):
         """List the people who have requested a particular type of training."""
         return map(find,
                    model.database.get_people_awaiting_training(event_type,
-                                                         equipment_types))
+                                                         equipment_type))
 
     def mail_event_invitation(self, m_event, message_template_name):
         """Mail the person about an event.
@@ -317,9 +305,7 @@ class Person(object):
         self.invitations[invitation_uuid] = m_event._id
         substitutions = {'rsvp': invitation_url,
                          'queue_position': len(m_event.invited),
-                         'equipment_types': ', '.join([ model.equipment_type.Equipment_type.find_by_id(eqty).name
-                                                        for eqty
-                                                        in m_event.equipment_types ]),
+                         'equipment_type': m_event.equipment_type,
                          'date': str(m_event.start)}
         with open(os.path.join(all_conf['messages']['templates_directory'], message_template_name)) as msg_file:
             makers_server.mailer(self.get_email(),

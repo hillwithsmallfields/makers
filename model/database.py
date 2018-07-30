@@ -253,7 +253,7 @@ def list_equipment_types(training_category=None):
 
 def get_eqtype_events(equipment_type, event_type, earliest=None, latest=None):
     query = {'event_type': event_type,
-             'equipment_types': {'$in': [equipment_type]}}
+             'equipment_type': equipment_type}
     if earliest:
         query['start'] = {'$gt': earliest}
     if latest:
@@ -301,12 +301,12 @@ def get_user_log(user):
 
 # training requests
 
-def get_people_awaiting_training(event_type, equipment_types):
+def get_people_awaiting_training(event_type, equipment_type):
     return [ who['_id'] for who in
              database[collection_names['people']]
              .find({'training_requests': {'$elemMatch':
                                           {'event_type': event_type,
-                                           'equipment_types': {'$in': equipment_types}}}})
+                                           'equipment_type': equipment_type}}})
              .sort('training_requests.request_date', pymongo.ASCENDING) ]
 
 def find_interested_people(interests):

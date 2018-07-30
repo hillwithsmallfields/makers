@@ -71,6 +71,6 @@ def event_table_section(tl, who_id, django_request, equiptype=None, with_signup=
                             T.td(class_="event_start")[model.event.timestring(ev.start)],
                             T.td(class_="location")[ev.location],
                             T.td(class_="hosts")[people_list(ev.hosts)],
-                            T.td(class_="event_equipment_types")[ev.equipment_types] if equiptype else [],
+                            T.td(class_="event_equipment_type")[ev.equipment_type] if equiptype else [],
                             T.td[signup_button(ev._id, who_id, "Sign up")] if with_signup else ""]]
                       for ev in tl.events()]]])

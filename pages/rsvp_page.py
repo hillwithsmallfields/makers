@@ -65,7 +65,7 @@ def handle_invitation_response(rsvp_uuid, response):
     elif response == 'drop':
         event_responding.add_invitation_declined([person_responding])
         person_responding.remove_training_request(event_responding.training_for_role(),
-                                                  event_responding.equipment_types)
+                                                  event_responding.equipment_type)
         makers_server.generate_page('dropped', person_responding.name(), event_responding.title)
     elif response == '':
         makers_server.generate_page('rsvp_choices', person_responding.name(), event_responding.title)
