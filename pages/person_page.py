@@ -16,7 +16,7 @@ server_conf = None
 org_conf = None
 
 def profile_section(who, viewer, django_request):
-    address = who.get_profile_field('address') or {} # todo: sort out how to get viewer through to this
+    address = who.get_profile_field('address') or {}
     telephone = who.get_profile_field('telephone') or ""
     mugshot = who.get_profile_field('mugshot')
     result = [T.form(action=server_conf["update_mugshot"], method='POST')[T.img(src=mugshot) if mugshot else "",
@@ -61,7 +61,7 @@ def profile_section(who, viewer, django_request):
                                                                          "dietary_avoidances")])
     return T.div(class_="personal_profile")[result]
 
-def responsibilities(who, typename, keyed_types, django_request):
+def responsibilities(who, viewer, typename, keyed_types, django_request):
     eqtype = keyed_types[typename]
     is_owner = who.is_owner(eqtype)
     has_requested_owner_training = who.has_requested_training([eqtype._id], 'owner')
@@ -80,7 +80,8 @@ def responsibilities(who, typename, keyed_types, django_request):
                        if is_owner
                        else pages.page_pieces.toggle_request(who, eqtype._id, 'owner',
                                                              has_requested_owner_training,
-                                                             django_request))],
+                                                             django_request)),
+                                     [pages.page_pieces.ban_form(eqtype, who, 'owner') if viewer.is_administrator() else []]],
             T.h3[eqtype.name + " trainer information and actions"
                       if is_trainer
                       else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
@@ -100,7 +101,8 @@ def responsibilities(who, typename, keyed_types, django_request):
                        if is_trainer
                        else pages.page_pieces.toggle_request(who, eqtype._id, 'trainer',
                                                              has_requested_trainer_training,
-                                                             django_request))]]
+                                                             django_request)),
+                                       [pages.page_pieces.ban_form(eqtype, who, 'trainer') if viewer.is_administrator() else []]]]
 
 def skills_button(area_name, level, which_level):
     return [T.td[T.input(type='radio',
@@ -143,8 +145,7 @@ def avoidances_section(who, django_request):
 def name_of_host(host):
     return model.person.Person.find(host).name() if host else "Unknown"
 
-def equipment_trained_on(who, equipment_types, django_request):
-    # todo: handle bans/suspensions, with admin-only buttons to unsuspend them
+def equipment_trained_on(who, viewer, equipment_types, django_request):
     keyed_types = { ty.pretty_name(): (ty, who.qualification(ty.name, 'user'))
                     for ty in equipment_types }
     return T.div(class_="trainedon")[
@@ -159,7 +160,9 @@ def equipment_trained_on(who, equipment_types, django_request):
                     pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'owner',
                                                      who.has_requested_training([keyed_types[name][0]._id], 'owner'),
                                                      django_request),
-                    # todo: add admin-only buttons for suspending qualifications
+                    pages.page_pieces.ban_form(keyed_types[name], who, 'user') if (viewer.is_administrator()
+                                                                   or viewer.is_owner(name)
+                                                                   or viewer.is_trainer(name)) else [],
                     pages.page_pieces.machinelist(keyed_types[name][0],
                                                   who, False)]]
                              for name in sorted(keyed_types.keys())]]]
@@ -185,8 +188,12 @@ def admin_section(viewer):
                 T.li[pages.page_pieces.section_link('admin', "intervene", "Create intervention event")]
                         if viewer.is_administrator() else ""]
 
-def add_person_page_contents(page_data, who, viewer, django_request):
+def add_person_page_contents(page_data, who, viewer, django_request, extra_top_header=None, extra_top_body=None):
     """Add the sections of a user dashboard to a sectional page."""
+
+    if extra_top_body:
+        page_data.add_section(extra_top_header or "Confirmation", extra_top_body)
+
     page_data.add_section("Personal profile", profile_section(who, viewer, django_request))
 
     their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
@@ -194,20 +201,20 @@ def add_person_page_contents(page_data, who, viewer, django_request):
         keyed_types = { ty.pretty_name(): ty for ty in their_responsible_types }
         page_data.add_section("Equipment responsibilities",
                               T.div(class_="resps")[[[T.h2[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
-                                                           responsibilities(who, name, keyed_types, django_request)]
+                                                           responsibilities(who, viewer, name, keyed_types, django_request)]
                                                           for name in sorted(keyed_types.keys())]])
 
     their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
     if len(their_equipment_types) > 0:
         page_data.add_section("Equipment trained on",
-                              equipment_trained_on(who, their_equipment_types, django_request))
+                              equipment_trained_on(who, viewer, their_equipment_types, django_request))
 
     all_remaining_types = ((set(model.equipment_type.Equipment_type.list_equipment_types())
                             -their_responsible_types)
                            -their_equipment_types)
     if len(all_remaining_types) > 0:
         page_data.add_section("Other equipment",
-                              pages.page_pieces.general_equipment_list(who, all_remaining_types, django_request))
+                              pages.page_pieces.general_equipment_list(who, viewer, all_remaining_types, django_request))
 
     if len(who.training_requests) > 0:
         page_data.add_section("Training requests", training_requests_section(who, django_request))
@@ -266,7 +273,7 @@ def person_page_setup():
     org_conf = all_conf['organization']
     pages.page_pieces.set_server_conf()
 
-def person_page_contents(who, viewer):
+def person_page_contents(who, viewer, extra_top_header=None, extra_top_body=None):
     person_page_setup()
 
     page_data = pages.SectionalPage("User dashboard for " + who.name(),
@@ -275,6 +282,8 @@ def person_page_contents(who, viewer):
                                           T.li[T.a(href=org_conf['wiki'])["Wiki"]],
                                           T.li[T.a(href=org_conf['forum'])["Forum"]]]])
 
-    add_person_page_contents(page_data, who, viewer)
+    add_person_page_contents(page_data, who, viewer,
+                             extra_top_header=extra_top_header,
+                             extra_top_body=extra_top_body)
 
     return page_data

@@ -337,12 +337,12 @@ class Person(object):
                                     invitation_accepted=[self._id],
                                     equipment_type=equipment_type)
         special_event.mark_results([self], [], [])
-        if revert_after:
+        if revert_after and revert_after != "":
             self.training_individual_event(admin_user,
                                            role, equipment_type, not enabling,
                                            when = when + timedelta(int(revert_after), 0),
                                            False)
-    
+
     # Conditions and qualifications
 
     def get_equipment_types(self, role, when=None):

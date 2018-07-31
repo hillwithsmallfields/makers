@@ -11,5 +11,6 @@ urlpatterns = [
     path('/signup/<id>', views.signup_event, name="signup"),
     path('/complete/<id>', views.complete_event, name='done_event')
     path('/results', views.store_event_results, name='results')
+    path('/special/<uuid:what>:<uuid:who>:<uuid:admin_user>:<role>:<bool:enable>:<duration>', views.special_event, name='special')
     path('', views.public_index, name='index')
 ]

@@ -133,5 +133,12 @@ ul.compactlist {
     color:       red;
 }
 
+form.ban_form {
+    background-color: red;
+    color:            yellow;
+}
 
-
+form.permit_form {
+    background-color: green;
+    color:            yellow;
+}

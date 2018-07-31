@@ -116,15 +116,17 @@ def avail_table(slot_sums):
                 for (day, day_slots) in zip(days,
                                             model.timeslots.avsums_by_day(slot_sums))]]]
 
-def general_equipment_list(who, these_types, django_request, detailed=False):
+def general_equipment_list(who, viewer, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
-    return T.table[[[T.tr[T.th[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
-                          T.td[machinelist(keyed_types[name],
-                                           who, django_request, False) if detailed else "",
-                               toggle_request(who, keyed_types[name]._id, 'user',
-                                              who.has_requested_training([keyed_types[name]._id], 'user'),
-                                              django_request)]]]
-                   for name in sorted(keyed_types.keys())]]
+    return T.table[T.thead[T.tr[T.th["Equipment type"], T.th["Request"], T.th["Admin action"] if viewer.is_administrator() else ""]],
+                   T.tbody[[[T.tr[T.th[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
+                                  T.td[machinelist(keyed_types[name],
+                                                   who, django_request, False) if detailed else "",
+                                       toggle_request(who, keyed_types[name]._id, 'user',
+                                                      who.has_requested_training([keyed_types[name]._id], 'user'),
+                                                      django_request)],
+                                  T.td[permit_form(eqtype, who, 'user')] if viewer.is_administrator() else ""]]
+                            for name in sorted(keyed_types.keys())]]]
 
 def machinelist(eqty, who, django_request, as_owner=False):
     """Make a list of machines, with appropriate detail for each."""
@@ -163,6 +165,23 @@ def eqty_training_requests(eqtype):
                             for req in reqs]]],
             avail_table(timeslots.sum_availabilities([person.Person.find(req['requester']).available
                                                       for req in raw_reqs]))]
+
+def special_event_form(eqtype, who_id, role, enable, css_class, duration_label, button_label):
+    return T.form(action="events/special",
+                  class_=css_class,
+                  method='POST')[button_label,
+                                 T.input(type='hidden', name='eqtype', value=eqtype._id),
+                                 T.input(type='hidden', name='who', value=who_id),
+                                 T.input(type='hidden', name='role', value=role),
+                                 T.input(type='hidden', name='enable', value=enable),
+                                 duration_label, T.input(type='text', name='duration'),
+                                 T.input(type='submit', value=button_label)]
+
+def permit_form(eqtype, who_id, role):
+    return special_event_form(eqtype, who_id, role, 'False', "ban_form", "Duration in days (blank for indefinite): ", 'Ban')
+
+def ban_form(eqtype, who_id, role):
+    return special_event_form(eqtype, who_id, role, 'True', "permit_form", "Duration in days (blank for indefinite): ", 'Grant permission')
 
 def announcements_section():
     return T.div[T.p["Placeholder."]]

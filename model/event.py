@@ -76,8 +76,6 @@ class Event(object):
                  equipment=[]):
         """Create an event of a given type and datetime.
 
-        The current user is added as a host.
-
         The event is not saved and scheduled yet."""
         # self.details = get_event_template(event_type)
         self.title = title
