@@ -537,10 +537,10 @@ class Script(XmlElement):
 # separate list for each html version.
 _non_empty_html_tags = '''
   a abbr acronym address applet b bdo big blockquote body button
-  caption center cite code colgroup dd dfn div dl dt em fieldset font
+  caption center cite code colgroup dd dfn div dl dt em fieldset font footer
   form frameset h1 h2 h3 h4 h5 h6 head html i iframe ins kbd label
-  legend li menu noframes noscript ol optgroup option pre q s samp
-  select small span strike strong style sub sup table tbody td
+  legend li menu nav noframes noscript ol optgroup option pre q s samp
+  select small span strike strong style sub sup table thead tbody td
   textarea tfoot th thead title tr tt u ul var'''.split()
 
 _maybe_empty_html_tags = '''
