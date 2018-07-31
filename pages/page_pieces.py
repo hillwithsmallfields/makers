@@ -83,20 +83,20 @@ def availform(available, django_request):
             [T.form(action="updateavail",
                     method="POST")
              [T.table(class_="availability")
-              [T.thead[T.tr[T.th(class_="daylabel")["Day"],
-                            T.th["Morning"],
-                            T.th["Afternoon"],
-                            T.th["Evening"],
-                            T.th["Other"]]]],
-              T.tbody[[[T.tr[T.th(class_="daylabel")[day],
-                             [T.td[T.input(type="checkbox", name="avail",
-                                           value=day+t, checked="checked")
-                            if b
-                            else T.input(type="checkbox", name="avail",
-                                         value=day+t)]
-                       for t, b in zip(['M', 'A', 'E', 'O'], day_slots)]]]
-                for (day, day_slots) in zip(days,
-                                            model.timeslots.timeslots_from_int(available))]]],
+              [[T.thead[T.tr[T.th(class_="daylabel")["Day"],
+                             T.th["Morning"],
+                             T.th["Afternoon"],
+                             T.th["Evening"],
+                             T.th["Other"]]]],
+               T.tbody[[[T.tr[T.th(class_="daylabel")[day],
+                              [T.td[T.input(type="checkbox", name="avail",
+                                            value=day+t, checked="checked")
+                                    if b
+                                    else T.input(type="checkbox", name="avail",
+                                                 value=day+t)]
+                               for t, b in zip(['M', 'A', 'E', 'O'], day_slots)]]]
+                        for (day, day_slots) in zip(days,
+                                                    model.timeslots.timeslots_from_int(available))]]]],
              # todo: write receiver for this
              # todo: on changing availability, re-run invite_available_interested_people on the equipment types for which this person has a training request outstanding
              T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
@@ -125,7 +125,7 @@ def general_equipment_list(who, viewer, these_types, django_request, detailed=Fa
                                        toggle_request(who, keyed_types[name]._id, 'user',
                                                       who.has_requested_training([keyed_types[name]._id], 'user'),
                                                       django_request)],
-                                  T.td[permit_form(eqtype, who, 'user')] if viewer.is_administrator() else ""]]
+                                  T.td[permit_form(keyed_types[name], who, 'user')] if viewer.is_administrator() else ""]]
                             for name in sorted(keyed_types.keys())]]]
 
 def machinelist(eqty, who, django_request, as_owner=False):
@@ -178,10 +178,10 @@ def special_event_form(eqtype, who_id, role, enable, css_class, duration_label, 
                                  T.input(type='submit', value=button_label)]
 
 def permit_form(eqtype, who_id, role):
-    return special_event_form(eqtype, who_id, role, 'False', "ban_form", "Duration in days (blank for indefinite): ", 'Ban')
+    return special_event_form(eqtype, who_id, role, 'True', "permit_form", "Duration in days (blank for indefinite): ", 'Grant permission')
 
 def ban_form(eqtype, who_id, role):
-    return special_event_form(eqtype, who_id, role, 'True', "permit_form", "Duration in days (blank for indefinite): ", 'Grant permission')
+    return special_event_form(eqtype, who_id, role, 'False', "ban_form", "Duration in days (blank for indefinite): ", 'Ban')
 
 def announcements_section():
     return T.div[T.p["Placeholder."]]

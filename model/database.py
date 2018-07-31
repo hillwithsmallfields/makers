@@ -23,7 +23,6 @@ def database_init(config, delete_existing=False):
     global client, database, collection_names
     db_config = config['database']
     collection_names = db_config['collections']
-    print("collection names are", collection_names)
     client = pymongo.MongoClient(db_config['URI'])
     database = client[db_config['database_name']]
     if database is None:

@@ -269,7 +269,9 @@ class Person(object):
         for a given equipment and role."""
         event_type = model.database.role_training(role)
         for req in self.training_requests:
-            if req['event_type'] == event_type and req['equipment_type'] == equipment_type:
+            if req['event_type'] == event_type and req.get('equipment_type',
+                                                           # todo: remove this hack left for read compatibility with an earlier version
+                                                           (req.get('equipment_types', ["compat-dummy"])[0])) == equipment_type:
                 return req
         return None
 
@@ -341,8 +343,8 @@ class Person(object):
         if revert_after and revert_after != "":
             self.training_individual_event(admin_user,
                                            role, equipment_type, not enabling,
-                                           when = when + timedelta(int(revert_after), 0),
-                                           False)
+                                           when=when+timedelta(int(revert_after), 0),
+                                           revert_after=False)
 
     # Conditions and qualifications
 

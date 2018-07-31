@@ -3,6 +3,7 @@
 import untemplate.throw_out_your_templates_p3 as untemplate
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.configuration as configuration
+import model.person
 import os
 
 def with_help(content, help_name):
@@ -76,9 +77,9 @@ class SectionalPage(object):
                    for section_id in self.index]
         return page_string(self.name,
                            self.top_content + index + tabs,
-                           viewer or ((model.person.Person.find(self.django_request.user.link_id)
-                                       if self.django_request
-                                       else None_))
+                           self.viewer or (model.person.Person.find(self.django_request.user.link_id)
+                                      if self.django_request
+                                      else None))
 
 def page_string(page_title, content, user=None):
     """Make up a complete page as a string."""
@@ -121,9 +122,13 @@ def page_string(page_title, content, user=None):
                                                                     alt=org_conf['title'],
                                                                     height=logo_height,
                                                                     src=logo)]]
-    footer = T.footer[T.p["Produced by the ",
-                          T.a(href="https://github.com/hillwithsmallfields/makers/")["makers"],
-                          " system."]]
+    footer = T.footer[T.p(class_="the_small_print")
+                      ["Produced by the ",
+                       T.a(href="https://github.com/hillwithsmallfields/makers/")["makers"],
+                       " system.  ",
+                       "We use ",
+                       T.a(href="https://www.djangoproject.com/")["django"],
+                       " to handle login and sessions, and that uses a session cookie."]]
     return RawHtmlPage(page_title,
                     untemplate.HTML5Doc([untemplate.safe_unicode(style_text
                                                                  + script_text

@@ -39,7 +39,7 @@ def request_training(django_request):
 def cancel_training_request(django_request):
     page_data = model.pages.SectionalPage("Training request cancellation confirmation",
                                           pages.page_pieces.top_navigation(django_request),
-                                          django_request=request)
+                                          django_request=django_request)
     params = django_request.POST
     model.database.database_init(model.configuration.get_config())
     who = model.person.Person.find(unstring_id(params['person']))

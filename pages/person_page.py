@@ -24,7 +24,7 @@ def profile_section(who, viewer, django_request):
               [T.img(src=mugshot) if mugshot else "",
                "Upload new photo: ", T.input(type="text"),
                T.input(type="hidden", name="subject_user_uuid", value=who._id),
-               T.input(type="submit")],
+               T.input(type="submit", value="Update photo")],
               T.form(action=base + django.urls.reverse("dashboard:update_profile"), method='POST')
               [T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                T.input(type="hidden", name="subject_user_uuid", value=who._id),
@@ -53,7 +53,7 @@ def profile_section(who, viewer, django_request):
                        T.tr[T.th(class_="ralabel")["Country"], T.td[T.input(type="text", name="country", value=str(address.get('country', "")))]],
                        T.tr[T.th(class_="ralabel")["Postcode"], T.td[T.input(type="text", name="postcode", value=str(address.get('postcode', "")))]],
                        T.tr[T.th(class_="ralabel")["Stylesheet"], T.td[T.input(type="text", # todo: make this a dropdown
-                                                                               name="stylesheet", value=who.stylesheet or "makers")]]
+                                                                               name="stylesheet", value=who.stylesheet or "makers")]],
                        T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]],
                    "general_user_profile")],
               T.h2["Availability"],
@@ -166,7 +166,7 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                     pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'owner',
                                                      who.has_requested_training([keyed_types[name][0]._id], 'owner'),
                                                      django_request),
-                    pages.page_pieces.ban_form(keyed_types[name], who, 'user') if (viewer.is_administrator()
+                    pages.page_pieces.ban_form(keyed_types[name][0], who, 'user') if (viewer.is_administrator()
                                                                    or viewer.is_owner(name)
                                                                    or viewer.is_trainer(name)) else [],
                     pages.page_pieces.machinelist(keyed_types[name][0],
@@ -179,10 +179,15 @@ def training_requests_section(who, django_request):
     sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
     return T.div(class_="requested")[T.table()[T.thead[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]]],
                                                T.tbody[[T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
-                                                             T.td[model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).pretty_name()],
+                                                             T.td[model.equipment_type.Equipment_type.find_by_id(req.get('equipment_type',
+                                                                                                                         # todo: remove this back-compat hack
+                                                                                                                         req.get('equipment_types', ["dummy"])[0])).pretty_name()],
                                                              T.td[str(req['event_type'])[:-len_training]],
                                                              T.td[pages.page_pieces.cancel_button(who,
-                                                                                          req['equipment_type'],
+                                                                                          req.get('equipment_type',
+                                                                                                  # todo: remove this back-compat hack
+                                                                                                  req.get('equipment_types',
+                                                                                                          ["dummy"])[0]),
                                                                                                   'user', "Cancel training request",
                                                                                                   django_request)]]
                                                         for req in sorted_requests]]]]

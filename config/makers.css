@@ -142,3 +142,7 @@ form.permit_form {
     background-color: green;
     color:            yellow;
 }
+
+p.the_small_print {
+    font-size: small;
+}

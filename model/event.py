@@ -157,7 +157,7 @@ class Event(object):
             Event.events_by_id[event_id] = Event(event_dict['event_type'],
                                                  event_dict['start'],
                                                  event_dict['hosts'],
-                                                 equipment_type=event_dict['equipment_type'])
+                                                 equipment_type=event_dict.get('equipment_type', None))
         e = Event.events_by_id[event_id]
         e.__dict__.update(event_dict)
         return e
