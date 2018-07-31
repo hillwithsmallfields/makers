@@ -7,7 +7,7 @@ import model.machine
 import model.makers_server
 import model.timeline
 import model.person
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import uuid
 
@@ -318,6 +318,31 @@ class Person(object):
         what = who['invitations'][rsvp]
         return model.person.Person.find(who._id), model.event.Event.find_by_id(what)
 
+    def training_individual_event(self, admin_user,
+                                  role, equipment_type, enabling,
+                                  when=None, revert_after=None):
+        """Add an individual training or untraining event.
+        This is mostly for administrators to fix the record to match reality,
+        and for banning and unbanning users."""
+        if when is None:
+            when = datetime.now()
+        special_event = event.Event(({'user': 'user_training',
+                                      'owner': 'owner_training',
+                                      'trainer': 'trainer_training'}
+                                     if enabling
+                                     else {'user': 'user_untraining',
+                                           'owner': 'owner_untraining',
+                                           'trainer': 'trainer_untraining'})[role], event_when,
+                                    [admin_user], "Direct grant of permission" if enabling else "Ban",
+                                    invitation_accepted=[self._id],
+                                    equipment_type=equipment_type)
+        special_event.mark_results([self], [], [])
+        if revert_after:
+            self.training_individual_event(admin_user,
+                                           role, equipment_type, not enabling,
+                                           when = when + timedelta(int(revert_after), 0),
+                                           False)
+    
     # Conditions and qualifications
 
     def get_equipment_types(self, role, when=None):
