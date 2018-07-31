@@ -117,3 +117,23 @@ def user_match_page(request, pattern):
         page_data.add_content("Error", [T.p["You do not have permission to view the list of users."]])
 
     return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
+def update_mugshot(request):
+    params = request.POST
+    who = model.person.Person.find(params['subject_user_uuid'])
+    admin_user = model.person.Person.find(request.user)
+    # todo: update photo from upload
+    return HttpResponse(pages.person_page.person_page_contents(who, admin_user,
+                                                               extra_top_header="Confirmation",
+                                                               extra_top_body=T.p["Mugshot updated."]).to_string)
+
+@ensure_csrf_cookie
+def update_profile(request):
+    params = request.POST
+    who = model.person.Person.find(params['subject_user_uuid'])
+    admin_user = model.person.Person.find(request.user)
+    who.update_profile(params)
+    return HttpResponse(pages.person_page.person_page_contents(who, admin_user,
+                                                               extra_top_header="Confirmation",
+                                                               extra_top_body=T.p["Profile updated."]).to_string)

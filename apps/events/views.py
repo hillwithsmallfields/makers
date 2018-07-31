@@ -124,6 +124,6 @@ def special_event(what, who, admin_user, role, enable, duration):
     what = model.equipment_type.Equipment_type.find_by_id(what)
     who.training_individual_event(admin_user, role, what, bool(enable), duration)
 
-    return pages.person_page.person_page_contents(who, admin_user,
-                                                  "Confirmation",
-                                                  T.p[("Permit" if enable else "Ban") + " confirmed"])
+    return HttpResponse(pages.person_page.person_page_contents(who, admin_user,
+                                                  extra_top_header="Confirmation",
+                                                  extra_top_body=T.p[("Permit" if enable else "Ban") + " confirmed"]).to_string)

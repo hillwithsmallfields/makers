@@ -487,6 +487,16 @@ class Person(object):
     def get_log(self):
         return [ (str(entry['start']), model.machine.Machine.find(entry['machine'])) for entry in self.get_log_raw() ]
 
+    # Update from form
+
+    def update_profile(self, params):
+        old_address = who.get_profile_field('address') or {}
+        old_telephone = who.get_profile_field('telephone') or ""
+        old_mugshot = who.get_profile_field('mugshot')
+        old_email = who.get_email() # email needs special handling as we must tell django too
+        # name needs special handling as we must tell django too
+
+
     # API
 
     def api_personal_data(self, detailed=False):
