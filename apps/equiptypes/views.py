@@ -21,7 +21,8 @@ def public_index(request, eqty):
     eq_type = model.equipment_type.Equipment_type.find(eqty)
 
     page_data = model.pages.HtmlPage(eq_type.name,
-                                     pages.page_pieces.top_navigation(request))
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
 
     if eq_type is None:
         page_data.add_content("Error", [T.p["Could not find equipment type " + eqty]])

@@ -30,7 +30,8 @@ def new_event(request):
     ev.invite_available_interested_people()
 
     page_data = model.pages.HtmlPage("New event confirmation",
-                                     pages.page_pieces.top_navigation(request))
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
 
     page_data.add_content("Event details",
                           pages.event_page.one_event_section(ev, request))
@@ -43,7 +44,8 @@ def one_event(request, id):
     ev = event.Event.find(id)
 
     page_data = model.pages.HtmlPage("Event details",
-                                     pages.page_pieces.top_navigation(request))
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
 
     page_data.add_content("Event details",
                           pages.event_page.one_event_section(ev, request))
@@ -60,7 +62,8 @@ def signup_event(request):
     ev.invitation_accepted.append(params['person_id'])
 
     page_data = model.pages.HtmlPage("Event completion",
-                                     pages.page_pieces.top_navigation(request))
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
 
     page_data.add_content("Event details",
                           pages.event_page.one_event_section(ev, request,
@@ -74,7 +77,8 @@ def complete_event(request, id):
     ev = event.Event.find(id)
 
     page_data = model.pages.HtmlPage("Event completion",
-                                     pages.page_pieces.top_navigation(request))
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
 
     page_data.add_content("Event details",
                           pages.event_page.one_event_section(ev, request,
@@ -105,7 +109,8 @@ def store_event_results(request):
     ev.mark_results(passed, failed, noshow)
 
     page_data = model.pages.HtmlPage("Event completion",
-                                     pages.page_pieces.top_navigation(request))
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
 
     page_data.add_content("Event details",
                           pages.event_page.one_event_section(ev, request,

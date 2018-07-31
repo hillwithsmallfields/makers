@@ -17,3 +17,8 @@ def get_config():
         with open(config_file_name, 'r') as confstream:
             cached_config = yaml.load(confstream)
     return cached_config
+
+def get_stylesheets():
+    return sorted(os.listdir(os.path.dirname(get_config()['page']['stylesheet']),
+                             # todo: check arglist for os.listdir
+                             ".css"))

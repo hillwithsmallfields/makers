@@ -48,6 +48,8 @@ def profile_section(who, viewer, django_request):
                        T.tr[T.th(class_="ralabel")["County"], T.td[T.input(type="text", name="county", value=str(address.get('county', "")))]],
                        T.tr[T.th(class_="ralabel")["Country"], T.td[T.input(type="text", name="country", value=str(address.get('country', "")))]],
                        T.tr[T.th(class_="ralabel")["Postcode"], T.td[T.input(type="text", name="postcode", value=str(address.get('postcode', "")))]],
+                       T.tr[T.th(class_="ralabel")["Stylesheet"], T.td[T.input(type="text", # todo: make this a dropdown
+                                                                               name="stylesheet", value=who.stylesheet or "makers")]]
                        T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]],
                    "general_user_profile")],
               T.h2["Availability"],
@@ -280,7 +282,8 @@ def person_page_contents(who, viewer, extra_top_header=None, extra_top_body=None
                                     # todo: put these into a central place, for use on most pages
                                     [T.ul[T.li[T.a(href=org_conf['home_page'])["Home"]],
                                           T.li[T.a(href=org_conf['wiki'])["Wiki"]],
-                                          T.li[T.a(href=org_conf['forum'])["Forum"]]]])
+                                          T.li[T.a(href=org_conf['forum'])["Forum"]]]],
+                                    viewer=viewer)
 
     add_person_page_contents(page_data, who, viewer,
                              extra_top_header=extra_top_header,

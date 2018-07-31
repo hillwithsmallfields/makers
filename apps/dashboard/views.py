@@ -30,7 +30,8 @@ def all_user_list_page(request):
     viewing_user = model.person.Person.find(request.user.link_id)
 
     page_data = model.pages.HtmlPage("User list page",
-                                     pages.page_pieces.top_navigation(request))
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
 
     if viewing_user.is_administrator() or viewing_user.is_auditor():
         page_data.add_content("User list",
@@ -71,15 +72,18 @@ def dashboard_page(request, who=""):
             subject_user = model.person.Person.find(who)
         else:
             page_data = model.pages.HtmlPage("Error",
-                                     pages.page_pieces.top_navigation(request))
+                                             pages.page_pieces.top_navigation(request),
+                                             django_request=request)
             page_data.add_content("Error", [T.p["You do not have permission to view other users."]])
     if subject_user is None:
         page_data = model.pages.HtmlPage("Error",
-                                         pages.page_pieces.top_navigation(request))
+                                         pages.page_pieces.top_navigation(request),
+                                         django_request=request)
         page_data.add_content("Error", [T.p["Could not find the user " + who + "."]])
     else:
         page_data = model.pages.SectionalPage("User dashboard for " + subject_user.name(),
-                                              pages.page_pieces.top_navigation(request))
+                                              pages.page_pieces.top_navigation(request),
+                                              django_request=request)
         pages.person_page.add_person_page_contents(page_data, subject_user, viewing_user, request)
 
     return HttpResponse(str(page_data.to_string()))
@@ -103,7 +107,8 @@ def user_match_page(request, pattern):
     viewing_user = model.person.Person.find(request.user.link_id)
 
     page_data = model.pages.HtmlPage("Matching user list page",
-                                     pages.page_pieces.top_navigation(request))
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
 
     if viewing_user.is_administrator() or viewing_user.is_auditor():
         page_data.add_content("User list",

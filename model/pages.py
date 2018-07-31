@@ -35,11 +35,13 @@ class HtmlPage(object):
 
     def __init__(self, name, content=[],
                  visitor_map=untemplate.examples_vmap,
+                 django_request=None,
                  input_encoding='utf-8'):
         self.name = name
         self.content = content
         self.visitor_map = visitor_map
         self.input_encoding = input_encoding
+        self.django_request = django_request
 
     def add_content(self, name, content):
         self.content.append([T.h2[name], content])
@@ -51,12 +53,14 @@ class SectionalPage(object):
 
     """A page which can be rendered as tabs and possibly other styles."""
 
-    def __init__(self, name, top_content):
+    def __init__(self, name, top_content, viewer=None, django_request=None):
         self.name = name
         self.top_content = top_content
         self.sections = {}
         self.presentation_names = {}
         self.index = []
+        self.viewer = viewer
+        self.django_request = django_request
 
     def add_section(self, name, content):
         section_id = name.replace(' ', '_')
@@ -71,9 +75,12 @@ class SectionalPage(object):
         tabs = [[T.div(class_="tabcontent", id_=section_id)[self.sections[section_id]]]
                    for section_id in self.index]
         return page_string(self.name,
-                           self.top_content + index + tabs)
+                           self.top_content + index + tabs,
+                           viewer or ((model.person.Person.find(self.django_request.user.link_id)
+                                       if self.django_request
+                                       else None_))
 
-def page_string(page_title, content):
+def page_string(page_title, content, user=None):
     """Make up a complete page as a string."""
     conf = configuration.get_config()
     page_conf = conf['page']
@@ -91,6 +98,10 @@ def page_string(page_title, content):
         with open(motd_file) as mfile:
             motd = mfile.read()
     stylesheet_name = page_conf['stylesheet']
+    if user and user.stylesheet:
+        user_stylesheet_name = os.path.dirname(stylesheet_name) + user.stylesheet + ".css"
+        if os.path.exists(user_stylesheet_name):
+            stylesheet_name = user_stylesheet_name
     if os.path.exists(stylesheet_name):
         inline = page_conf['style_inline']
         if inline:

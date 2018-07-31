@@ -54,6 +54,7 @@ class Person(object):
         self.available = 0xffffffff # bitmap of timeslots, lowest bit is Monday morning, etc
         self.invitations = {}       # dict of uuid to event
         self.visibility = {}        # binds 'general', 'host', 'attendee' to True, False, 'logged-in'
+        self.stylesheet = None      # None means use the system default
 
     def __str__(self):
         return ("<member " + str(self.membership_number)
