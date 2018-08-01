@@ -235,6 +235,8 @@ class Event(object):
         Results are the resulting event instance, and the error; one of these will be None.
 
         """
+        if isinstance(event_datetime, str):
+            event_datetime = datetime.strptime(event_datetime, "%Y-%m-%dT%H:%M")
         if event_datetime < datetime.now() and not allow_past:
             return None, "Cannot create a past event"
         template_dict = Event.find_template(template_name)

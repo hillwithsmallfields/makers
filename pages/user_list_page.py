@@ -24,8 +24,10 @@ def user_list_section(include_non_members=False, filter_fn=None, filter_opaque=N
     # todo: must have done access_permissions.setup_access_permissions(logged_in_user) by now
     # permissions = access_permissions.get_access_permissions()
     people = person.Person.list_all_people() if include_non_members else person.Person.list_all_members()
+    print("raw list", people)
     if filter_fn:
         people = [someone for someone in people if filter_fn(someone, filter_opaque)]
+        print("filtered list", people)
     people_dict = {whoever.name(): whoever for whoever in people}
     # todo: remove this dirty hack which I put in for early testing
     if True: # permissions.auditor or permissions.admin:

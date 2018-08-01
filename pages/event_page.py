@@ -24,7 +24,7 @@ def checkbox(id, which, condition):
             else T.input(name=id, value=which))
 
 def event_link(ev, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return base + django.urls.reverse("events:oneevent") + "/" + ev._id
 
 def one_event_section(ev, django_request, with_completion=False, completion_as_form=False):

@@ -19,7 +19,7 @@ def set_server_conf():
 
 def top_navigation(django_request):
     org_conf = model.configuration.get_config()['organization']
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     # todo: make this a bar of buttons, or a dropdow
     return [T.nav(class_='top_nav')
             [T.ul[T.li[T.a(href=org_conf['home_page'])[org_conf['title'] + " home"]],
@@ -68,7 +68,7 @@ def signup_button(event_id, who_id, button_text, django_request):
                                  T.button(type="submit", value="cancel_request")[button_text]]
 
 def schedule_event_form(who, extras, button_text, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return (T.form(action=base+django.urls.reverse("events:newevent"),
                    method='POST')
             ["Date and time: ", T.input(type="datetime", name="when"), T.br,
@@ -163,11 +163,11 @@ def eqty_training_requests(eqtype):
                    T.tbody[[[T.tr[T.td[event.timestring(req['request_date'])],
                                  T.td[person.Person.find(req['requester']).name()]]]
                             for req in reqs]]],
-            avail_table(timeslots.sum_availabilities([person.Person.find(req['requester']).available
+            avail_table(model.timeslots.sum_availabilities([person.Person.find(req['requester']).available
                                                       for req in raw_reqs]))]
 
 def special_event_form(eqtype, who_id, role, enable, css_class, button_label, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return T.form(action=base+"events/special",
                   class_=css_class,
                   method='POST')[T.input(type='hidden', name='eqtype', value=eqtype._id),

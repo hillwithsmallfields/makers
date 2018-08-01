@@ -19,7 +19,7 @@ def profile_section(who, viewer, django_request):
     address = who.get_profile_field('address') or {}
     telephone = who.get_profile_field('telephone') or ""
     mugshot = who.get_profile_field('mugshot')
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] # + "/"
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     result = [T.form(action=base + django.urls.reverse("dashboard:update_mugshot"), method='POST')
               [T.img(src=mugshot) if mugshot else "",
                "Upload new photo: ", T.input(type="text"),

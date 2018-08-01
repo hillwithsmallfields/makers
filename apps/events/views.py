@@ -24,9 +24,9 @@ def public_index(request):
 @ensure_csrf_cookie
 def new_event(request):
     """View function for creating an event."""
-    params = django_request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
+    params = request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
 
-    ev = event.Event.instantiate_template(params['event_type'],
+    ev = model.event.Event.instantiate_template(params['event_type'],
                                           [params['equiptype']],
                                           [params['submitter']],
                                           params['when'])
@@ -63,7 +63,7 @@ def signup_event(request):
 
     params = django_request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
 
-    ev = event.Event.find(params['event_id'])
+    ev = model.event.Event.find(params['event_id'])
 
     ev.invitation_accepted.append(params['person_id'])
 
@@ -81,7 +81,7 @@ def signup_event(request):
 def complete_event(request, id):
     """View function for handling event completion."""
 
-    ev = event.Event.find(id)
+    ev = model.event.Event.find(id)
 
     page_data = model.pages.HtmlPage("Event completion",
                                      pages.page_pieces.top_navigation(request),
@@ -100,7 +100,7 @@ def store_event_results(request):
 
     params = django_request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
 
-    ev = event.Event.find(params['event_id'])
+    ev = model.event.Event.find(params['event_id'])
 
     noshow = []
     failed = []
