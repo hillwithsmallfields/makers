@@ -7,7 +7,9 @@ import model.pages
 import model.person
 import pages.equipment_type_page
 import pages.page_pieces
+from django.views.decorators.csrf import ensure_csrf_cookie
 
+@ensure_csrf_cookie
 def public_index(request, eqty):
     """View function for listing the equipment types."""
 

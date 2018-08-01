@@ -1,12 +1,15 @@
 from django.http import HttpResponse
 import model.equipment_type
+import model.event
 import model.pages
 import model.person
 import pages.event_page
 import pages.person_page
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 # Create your views here.
 
+@ensure_csrf_cookie
 def public_index(request):
     """View function for listing the events."""
     return HttpResponse("""
@@ -18,6 +21,7 @@ def public_index(request):
     </html>
     """)
 
+@ensure_csrf_cookie
 def new_event(request):
     """View function for creating an event."""
     params = django_request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
@@ -38,10 +42,11 @@ def new_event(request):
 
     return HttpResponse(str(page_data.to_string()))
 
+@ensure_csrf_cookie
 def one_event(request, id):
     """View function for looking at one event."""
 
-    ev = event.Event.find(id)
+    ev = model.event.Event.find(id)
 
     page_data = model.pages.HtmlPage("Event details",
                                      pages.page_pieces.top_navigation(request),
@@ -52,6 +57,7 @@ def one_event(request, id):
 
     return HttpResponse(str(page_data.to_string()))
 
+@ensure_csrf_cookie
 def signup_event(request):
     """View function for signing up for an event."""
 
@@ -71,6 +77,7 @@ def signup_event(request):
 
     return HttpResponse(str(page_data.to_string()))
 
+@ensure_csrf_cookie
 def complete_event(request, id):
     """View function for handling event completion."""
 
@@ -87,6 +94,7 @@ def complete_event(request, id):
 
     return HttpResponse(str(page_data.to_string()))
 
+@ensure_csrf_cookie
 def store_event_results(request):
     """View function for handling event completion."""
 
@@ -118,6 +126,7 @@ def store_event_results(request):
 
     return HttpResponse(str(page_data.to_string()))
 
+@ensure_csrf_cookie
 def special_event():
     params = django_request.POST
     who = model.person.Person.find(params['who'])

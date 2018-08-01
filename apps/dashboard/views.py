@@ -122,7 +122,7 @@ def user_match_page(request, pattern):
 def update_mugshot(request):
     params = request.POST
     who = model.person.Person.find(params['subject_user_uuid'])
-    admin_user = model.person.Person.find(request.user)
+    admin_user = model.person.Person.find(request.user.link_id)
     # todo: update photo from upload
     return HttpResponse(pages.person_page.person_page_contents(who, admin_user,
                                                                extra_top_header="Confirmation",
@@ -132,7 +132,7 @@ def update_mugshot(request):
 def update_profile(request):
     params = request.POST
     who = model.person.Person.find(params['subject_user_uuid'])
-    admin_user = model.person.Person.find(request.user)
+    admin_user = model.person.Person.find(request.user.link_id)
     who.update_profile(params)
     return HttpResponse(pages.person_page.person_page_contents(who, admin_user,
                                                                extra_top_header="Confirmation",

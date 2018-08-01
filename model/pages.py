@@ -1,10 +1,12 @@
 #!/usr/bin/python
 
+import bson
 import untemplate.throw_out_your_templates_p3 as untemplate
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.configuration as configuration
 import model.person
 import os
+import re
 
 def with_help(content, help_name):
     help_file = os.path.join(configuration.get_config()['page']['help_texts'], help_name + ".html")
@@ -150,3 +152,11 @@ def test_page_section(title, content):
 
 def error_page(message):
     return page_string(message, message)
+
+def unstring_id(poss_id):
+    """Convert a representation of an ObjectId back to an ObjectId."""
+    if isinstance(poss_id, str):
+        matched = re.match("ObjectId\\('([0-9a-fA-F]+)'\\)", poss_id)
+        if matched:
+            return bson.objectid.ObjectId(matched.group(1))
+    return poss_id

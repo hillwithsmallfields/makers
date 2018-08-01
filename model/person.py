@@ -230,7 +230,7 @@ class Person(object):
                 return False, "Equipment type training already requested"
         self.training_requests.append({'request_date': when or datetime.now(),
                                        'requester': self._id,
-                                       'equipment_type': equipment_type,
+                                       'equipment_type': equipment_type._id,
                                        'event_type': role_training,
                                        'uuid': uuid.uuid4()})
         self.save()
@@ -241,7 +241,7 @@ class Person(object):
         """Remove a training request."""
         event_type = model.database.role_training(role)
         for req in self.training_requests:
-            if req['event_type'] == event_type and req['equipment_type'] == equipment_type:
+            if req['event_type'] == event_type and req['equipment_type'] == equipment_type._id:
                 self.training_requests.remove(req)
                 self.save()
                 return True

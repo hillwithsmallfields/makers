@@ -168,7 +168,7 @@ def eqty_training_requests(eqtype):
 
 def special_event_form(eqtype, who_id, role, enable, css_class, button_label, django_request):
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
-    return T.form(action=base+"events:special",
+    return T.form(action=base+"events/special",
                   class_=css_class,
                   method='POST')[T.input(type='hidden', name='eqtype', value=eqtype._id),
                                  T.input(type='hidden', name='who', value=who_id),
