@@ -1,0 +1,141 @@
+BODY {
+  color:            green;
+  background-color: black;
+  font-family:      monospace;
+  font-style:       normal;
+  font-weight:      normal;
+  margin-top:       2em;
+  margin-bottom:    5em;
+  margin-left:      5%;
+  margin-right:     8%;
+  text-align:       left;   /* discourage justification */
+  letter-spacing:   0;  /* in fact, switch it right off */
+  /* line-height:   125% */
+}
+
+H1 {
+    background-color: orange;
+    color:            black;
+    font-weight:      bold;
+}
+
+H2 {
+    background-color: orange;
+    color:            black;
+}
+
+H3 {
+    background-color: green;
+    color:            black;
+    font-weight:      bold;
+}
+
+H4 {
+    background-color: green;
+    color:            black;
+}
+
+form {
+  background:     DarkSlateGrey;
+}
+
+th.daylabel {
+    text-align: right;
+}
+
+th.ralabel {
+    text-align: right;
+}
+
+ul.compactlist {
+    display: inline;
+}
+
+.button {
+    border:        1px;
+    border-style:  outset;
+    border-radius: 8%;
+    padding:       0.25em;
+    background:    #80c080;
+}
+
+.negbutton {
+    border:        1px;
+    border-style:  outset;
+    border-radius: 8%;
+    padding:       0.25em;
+    background:    #ffa500;
+}
+
+.adminbutton {
+    border:        px red;
+    border-style:  outset;
+    border-radius: 8%;
+    padding:       0.25em;
+    background:    #ffa500;
+}
+
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+.tab button {
+    background-color: #ffb510;
+    color:          #004000;
+    float: left;
+    border: 1px solid #008000;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+
+.tab button:hover {
+    background-color: #ffb510;
+}
+
+.tab button.active {
+    background-color: #ffa500;
+}
+
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+.help {
+    font-style: italic;
+    width:      30%;
+}
+
+.privacy_warning {
+    font-style:  italic;
+    font-weight: bold;
+    font-size:   small;
+}
+
+.privacy_warning::before {
+    content:     "Privacy warning: ";
+    font-style:  italic;
+    font-weight: bold;
+    font-size:   small;
+    color:       red;
+}
+
+form.ban_form {
+    background-color: red;
+    color:            yellow;
+}
+
+form.permit_form {
+    background-color: green;
+    color:            yellow;
+}
+
+p.the_small_print {
+    font-size: small;
+}
