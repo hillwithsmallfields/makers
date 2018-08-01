@@ -78,16 +78,16 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
             T.h3[eqtype.name + " owner information and actions"
                       if is_owner
                       else "Not yet an owner"+(" but has requested owner training" if has_requested_owner_training else "")],
-            T.div(class_='as_owner')[(pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
-                                                                                  T.input(type="hidden", name="role", value="owner"),
-                                                                                  T.input(type="hidden", name="type", value=eqtype._id)],
-                                                                            "Schedule owner training",
-                                                                            django_request)
-                       if is_owner
-                       else pages.page_pieces.toggle_request(who, eqtype._id, 'owner',
-                                                             has_requested_owner_training,
-                                                             django_request)),
-                                     [pages.page_pieces.ban_form(eqtype, who, 'owner') if viewer.is_administrator() else []]],
+            T.div(class_='as_owner')[([pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
+                                                                                   T.input(type="hidden", name="role", value="owner"),
+                                                                                   T.input(type="hidden", name="type", value=eqtype._id)],
+                                                                             "Schedule owner training",
+                                                                             django_request),
+                                       [pages.page_pieces.ban_form(eqtype, who, 'owner', django_request) if viewer.is_administrator() else []]]
+                                      if is_owner
+                                      else pages.page_pieces.toggle_request(who, eqtype._id, 'owner',
+                                                                            has_requested_owner_training,
+                                                                            django_request))],
             T.h3[eqtype.name + " trainer information and actions"
                       if is_trainer
                       else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
@@ -103,12 +103,12 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
                                                                                                               value="trainer"), T.br,
                                                                                 T.input(type="hidden", name="equiptype", value=eqtype._id)],
                                                                                "Schedule training",
-                                                                               django_request)]
-                       if is_trainer
-                       else pages.page_pieces.toggle_request(who, eqtype._id, 'trainer',
-                                                             has_requested_trainer_training,
-                                                             django_request)),
-                                       [pages.page_pieces.ban_form(eqtype, who, 'trainer') if viewer.is_administrator() else []]]]
+                                                                               django_request),
+                                         [pages.page_pieces.ban_form(eqtype, who, 'trainer', django_request) if viewer.is_administrator() else []]]
+                                        if is_trainer
+                                        else pages.page_pieces.toggle_request(who, eqtype._id, 'trainer',
+                                                                              has_requested_trainer_training,
+                                                                              django_request))]]
 
 def skills_button(area_name, level, which_level):
     return [T.td[T.input(type='radio',
@@ -166,9 +166,12 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                     pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'owner',
                                                      who.has_requested_training([keyed_types[name][0]._id], 'owner'),
                                                      django_request),
-                    pages.page_pieces.ban_form(keyed_types[name][0], who, 'user') if (viewer.is_administrator()
-                                                                   or viewer.is_owner(name)
-                                                                   or viewer.is_trainer(name)) else [],
+                    ([pages.page_pieces.ban_form(keyed_types[name][0], who, 'user', django_request),
+                      pages.page_pieces.permit_form(keyed_types[name][0], who, 'owner', django_request),
+                      pages.page_pieces.permit_form(keyed_types[name][0], who, 'trainer', django_request)]
+                     if (viewer.is_administrator()
+                         or viewer.is_owner(name)
+                         or viewer.is_trainer(name)) else []),
                     pages.page_pieces.machinelist(keyed_types[name][0],
                                                   who, False)]]
                              for name in sorted(keyed_types.keys())]]]

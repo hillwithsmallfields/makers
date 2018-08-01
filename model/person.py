@@ -340,7 +340,7 @@ class Person(object):
                                     invitation_accepted=[self._id],
                                     equipment_type=equipment_type)
         special_event.mark_results([self], [], [])
-        if revert_after and revert_after != "":
+        if revert_after and revert_after != "" and revert_after != "indefinite":
             self.training_individual_event(admin_user,
                                            role, equipment_type, not enabling,
                                            when=when+timedelta(int(revert_after), 0),

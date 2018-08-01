@@ -125,7 +125,7 @@ def general_equipment_list(who, viewer, these_types, django_request, detailed=Fa
                                        toggle_request(who, keyed_types[name]._id, 'user',
                                                       who.has_requested_training([keyed_types[name]._id], 'user'),
                                                       django_request)],
-                                  T.td[permit_form(keyed_types[name], who, 'user')] if viewer.is_administrator() else ""]]
+                                  T.td[permit_form(keyed_types[name], who, 'user', django_request)] if viewer.is_administrator() else ""]]
                             for name in sorted(keyed_types.keys())]]]
 
 def machinelist(eqty, who, django_request, as_owner=False):
@@ -166,22 +166,31 @@ def eqty_training_requests(eqtype):
             avail_table(timeslots.sum_availabilities([person.Person.find(req['requester']).available
                                                       for req in raw_reqs]))]
 
-def special_event_form(eqtype, who_id, role, enable, css_class, duration_label, button_label):
-    return T.form(action="events/special",
+def special_event_form(eqtype, who_id, role, enable, css_class, button_label, django_request):
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
+    return T.form(action=base+"events:special",
                   class_=css_class,
-                  method='POST')[button_label,
-                                 T.input(type='hidden', name='eqtype', value=eqtype._id),
+                  method='POST')[T.input(type='hidden', name='eqtype', value=eqtype._id),
                                  T.input(type='hidden', name='who', value=who_id),
                                  T.input(type='hidden', name='role', value=role),
                                  T.input(type='hidden', name='enable', value=enable),
-                                 duration_label, T.input(type='text', name='duration'),
+                                 "Days", T.input(type='text',
+                                                 name='duration',
+                                                 value="indefinite",
+                                                 size=len("indefinite")),
                                  T.input(type='submit', value=button_label)]
 
-def permit_form(eqtype, who_id, role):
-    return special_event_form(eqtype, who_id, role, 'True', "permit_form", "Duration in days (blank for indefinite): ", 'Grant permission')
+def permit_form(eqtype, who_id, role, django_request):
+    return special_event_form(eqtype, who_id, role,
+                              'True', "permit_form",
+                              "Grant " + role + " permission",
+                              django_request)
 
-def ban_form(eqtype, who_id, role):
-    return special_event_form(eqtype, who_id, role, 'False', "ban_form", "Duration in days (blank for indefinite): ", 'Ban')
+def ban_form(eqtype, who_id, role, django_request):
+    return special_event_form(eqtype, who_id, role,
+                              'False', "ban_form",
+                              "Ban as " + role,
+                              django_request)
 
 def announcements_section():
     return T.div[T.p["Placeholder."]]

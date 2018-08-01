@@ -118,11 +118,12 @@ def store_event_results(request):
 
     return HttpResponse(str(page_data.to_string()))
 
-def special_event(what, who, admin_user, role, enable, duration):
-    who = model.person.Person.find(who)
-    admin_user = model.person.Person.find(admin_user)
-    what = model.equipment_type.Equipment_type.find_by_id(what)
-    who.training_individual_event(admin_user, role, what, bool(enable), duration)
+def special_event():
+    params = django_request.POST
+    who = model.person.Person.find(params['who'])
+    admin_user = model.person.Person.find(params['admin_user'])
+    what = model.equipment_type.Equipment_type.find_by_id(params['what'])
+    who.training_individual_event(admin_user, role, what, bool(params['enable']), params['duration'])
 
     return HttpResponse(pages.person_page.person_page_contents(who, admin_user,
                                                   extra_top_header="Confirmation",
