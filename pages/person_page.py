@@ -19,11 +19,11 @@ def profile_section(who, viewer, django_request):
     address = who.get_profile_field('address') or {}
     telephone = who.get_profile_field('telephone') or ""
     mugshot = who.get_profile_field('mugshot')
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] # + "/"
     result = [T.form(action=base + django.urls.reverse("dashboard:update_mugshot"), method='POST')
               [T.img(src=mugshot) if mugshot else "",
                "Upload new photo: ", T.input(type="text"),
-               T.input(type="hidden", name="subject_user_uuid", value=who._id),
+               T.input(type="hidden", name="subject_user_uuid", value=who.link_id),
                T.input(type="submit", value="Update photo")],
               T.form(action=base + django.urls.reverse("dashboard:update_profile"), method='POST')
               [T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
@@ -91,7 +91,7 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
             T.h3[eqtype.name + " trainer information and actions"
                       if is_trainer
                       else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
-            T.div(class_='as_trainer')[page_pieces.eqty_training_requests(eqtype),
+            T.div(class_='as_trainer')[pages.page_pieces.eqty_training_requests(eqtype),
                                        ([pages.page_pieces.schedule_event_form(who,
                                                                                [T.input(type="hidden", name="event_type", value="training"),
                                                                                 "User training: ", T.input(type="radio",

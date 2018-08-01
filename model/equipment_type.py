@@ -119,7 +119,7 @@ class Equipment_type(object):
         The data is actually stored with the person's record, not the
         equipment type record, so this is just a secondary
         presentation of the action."""
-        whoever.add_training_request(role, [self])
+        whoever.add_training_request(role, self)
 
     def cancel_training_request(self, whoever):
         """Note that a person has cancelled their request for training on this equipment type.

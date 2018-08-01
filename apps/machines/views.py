@@ -7,9 +7,9 @@ import model.pages
 import model.person
 import pages.machine_page
 import pages.page_pieces
+from django.views.decorators.csrf import ensure_csrf_cookie
 
-# Create your views here.
-
+@ensure_csrf_cookie
 def public_index(request, machine):
     """View function for viewing a machine."""
 

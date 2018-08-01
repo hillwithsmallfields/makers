@@ -33,7 +33,7 @@ def equipment_type_section(eqty, viewing_user, django_request):
     # todo: add lists of training requests, using eqty.get_training_requests(role); may be able to use eqty_training_requests from person_page.py
     if viewing_user.is_trainer(eqty):
         result += [T.h3["Training requests"],
-                   page_pieces.eqty_training_requests(eqty)]
+                   pages.page_pieces.eqty_training_requests(eqty)]
     roles = [("Owners", 'owner'),
              ("Trainers", 'trainer')]
     if viewing_user.is_administrator() or viewing_user.is_auditor() or viewing_user.is_owner(eqty) or viewing_user.is_trainer(eqty):
