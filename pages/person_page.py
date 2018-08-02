@@ -166,7 +166,7 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                           T.th["Make trainer"]] if (viewer.is_administrator()
                                                     or viewer.is_owner(name)
                                                     or viewer.is_trainer(name)) else []]],
-            T.tbody[[T.tr[T.th[T.a(href=base + django.urls.reverse("equiptypes/") + keyed_types[name][0].name)[name]],
+            T.tbody[[T.tr[T.th[T.a(href=base + django.urls.reverse("equiptypes") + keyed_types[name][0].name)[name]],
                           T.td[join([name_of_host(host)
                                      # todo: linkify these if admin? but that would mean not using the easy "join"
                                                                  for host in keyed_types[name][1][0].hosts])],
