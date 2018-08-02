@@ -154,20 +154,23 @@ def name_of_host(host):
 def equipment_trained_on(who, viewer, equipment_types, django_request):
     keyed_types = { ty.pretty_name(): (ty, who.qualification(ty.name, 'user'))
                     for ty in equipment_types }
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + django.urls.reverse("equiptypes:eqty<eqty>")
     return T.div(class_="trainedon")[
         T.table(class_='trainedon')[
             T.thead[T.tr[T.th["Equipment type"],
                          T.th["Trainer"],
                          T.th["Date"],
+                         T.th["Request trainer training"],
+                         T.th["Request owner training"],
                          # todo: put machine statuses in
                          [T.th["Ban"],
                           T.th["Make owner"],
                           T.th["Make trainer"]] if (viewer.is_administrator()
                                                     or viewer.is_owner(name)
                                                     or viewer.is_trainer(name)) else []]],
-            T.tbody[[T.tr[T.th[T.a(href=base + django.urls.reverse("equiptypes") + keyed_types[name][0].name)[name]],
-                          T.td[join([name_of_host(host)
+            T.tbody[[T.tr[T.th[T.a(href=django_request.scheme
+                                   + "://" + django_request.META['HTTP_HOST']
+                                   + django.urls.reverse("equiptypes:eqty", args=(keyed_types[name][0].name,)))[name]],
+                          T.td[", ".join([name_of_host(host)
                                      # todo: linkify these if admin? but that would mean not using the easy "join"
                                                                  for host in keyed_types[name][1][0].hosts])],
                           T.td[model.event.timestring(keyed_types[name][1][0].start)],
