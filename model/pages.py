@@ -131,7 +131,8 @@ def page_string(page_title, content, user=None, initial_tab=None):
                                                                     alt=org_conf['title'],
                                                                     height=logo_height,
                                                                     src=logo)]]
-    footer = T.footer[T.p(class_="the_small_print")
+    footer = T.footer[T.hr,
+                      T.p(class_="the_small_print")
                       ["Produced by the ",
                        T.a(href="https://github.com/hillwithsmallfields/makers/")["makers"],
                        " system.  ",

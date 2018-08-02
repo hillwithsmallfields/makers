@@ -25,8 +25,8 @@ def top_navigation(django_request):
             [T.ul[T.li[T.a(href=org_conf['home_page'])[org_conf['title'] + " home"]],
                   T.li[T.a(href=org_conf['wiki'])["Wiki"]],
                   T.li[T.a(href=org_conf['forum'])["Forum"]],
-                  T.li[T.a(href=base + "dashboard/")["Your dashboard"]],
-                  T.li[T.a(href=base + 'users/logout')["Logout"]]]]]
+                  T.li[T.a(href=base + "/dashboard/")["Your dashboard"]],
+                  T.li[T.a(href=base + '/users/logout')["Logout"]]]]]
 
 # https://stackoverflow.com/questions/2345708/how-can-i-get-the-full-absolute-url-with-domain-in-django
 # request.build_absolute_url()
