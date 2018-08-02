@@ -154,8 +154,9 @@ def name_of_host(host):
 def equipment_trained_on(who, viewer, equipment_types, django_request):
     keyed_types = { ty.pretty_name(): (ty, who.qualification(ty.name, 'user'))
                     for ty in equipment_types }
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return T.div(class_="trainedon")[
-        T.dl[[[T.dt[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name][0].name)[name]], # todo: use django url reverser
+        T.dl[[[T.dt[T.a(href=base + django.urls.reverse("equiptypes/") + keyed_types[name][0].name)[name]],
                T.dd["Trained by ", ", ".join([name_of_host(host)
                                               # todo: linkify these if admin? but that would mean not using the easy "join"
                                               for host in keyed_types[name][1][0].hosts]),
