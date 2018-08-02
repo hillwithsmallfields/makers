@@ -52,8 +52,8 @@ def profile_section(who, viewer, django_request):
                        T.tr[T.th(class_="ralabel")["County"], T.td[T.input(type="text", name="county", value=str(address.get('county', "")))]],
                        T.tr[T.th(class_="ralabel")["Country"], T.td[T.input(type="text", name="country", value=str(address.get('country', "")))]],
                        T.tr[T.th(class_="ralabel")["Postcode"], T.td[T.input(type="text", name="postcode", value=str(address.get('postcode', "")))]],
-                       T.tr[T.th(class_="ralabel")["Stylesheet"], T.td[T.input(type="text", # todo: make this a dropdown
-                                                                               name="stylesheet", value=who.stylesheet or "makers")]],
+                       T.tr[T.th(class_="ralabel")["Stylesheet"], T.td[T.select(name="stylesheet")[[T.option[style] # todo: mark current stylesheet as checked
+                                                                                                    for style in model.configuration.get_stylesheets()]]]],
                        T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]],
                    "general_user_profile")],
               T.h2["Availability"],
@@ -221,6 +221,37 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
         page_data.add_section(extra_top_header or "Confirmation", extra_top_body)
 
     page_data.add_section("Personal profile", profile_section(who, viewer, django_request))
+
+    announcements = [{'From': "Test announcer",
+                      'Date': datetime.datetime.now(),
+                      'Text': "This is a dummy announcement, to show where system-wide messages will go."},
+                     {'From': "Another test announcer",
+                      'Date': datetime.datetime.now(),
+                      'Text': "This is another dummy announcement.  There will eventually be a button to dismiss announcements and notifications."}]
+    notifications = [{'From': "Test notifier",
+                      'Date': datetime.datetime.now(),
+                      'Text': "This is a dummy notification, to show where notifications to individuals will go."},
+                     {'From': "Test notifier",
+                      'Date': datetime.datetime.now(),
+                      'Text': "Until this is connected to email, you'll get training invitations here."},
+                     {'From': "Another test notifier",
+                      'Date': datetime.datetime.now(),
+                      'Text': "I don't like in-site message systems but I've put this here to get us through testing without having to set up real mail sending."}]
+
+    messages = []
+    if len(announcements) > 0:
+        messages.append([T.h3["Announcements"],
+                         T.dl[[[T.dt["From " + a['From'] + " at " + model.event.timestring(a['Date'])],
+                                T.dd[a['Text']]] for a in announcements]]])
+    if len(notifications) > 0:
+        messages.append([T.h3["Notifications"],
+                         T.dl[[[T.dt["From " + n['From'] + " at " + model.event.timestring(n['Date'])],
+                                T.dd[n['Text']]] for n in notifications]]])
+
+    if len(announcements) > 0 or len(notifications) > 0:
+        page_data.add_section("Notifications",
+                              T.div(class_="notifications")[messages],
+                              priority=9)
 
     their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
     if len(their_responsible_types) > 0:
