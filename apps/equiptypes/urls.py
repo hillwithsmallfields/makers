@@ -7,5 +7,5 @@ app_name = 'equiptypes'
 
 urlpatterns = [
     path('', views.public_index, name='index'),
-    path('<eqty>', views.public_index, name='index')
+    path('<eqty>', views.public_index, name='eqty')
 ]

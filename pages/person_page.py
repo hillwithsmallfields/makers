@@ -154,7 +154,7 @@ def name_of_host(host):
 def equipment_trained_on(who, viewer, equipment_types, django_request):
     keyed_types = { ty.pretty_name(): (ty, who.qualification(ty.name, 'user'))
                     for ty in equipment_types }
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + django.urls.reverse("equiptypes:eqty")
     return T.div(class_="trainedon")[
         T.table(class_='trainedon')[
             T.thead[T.tr[T.th["Equipment type"],
@@ -166,7 +166,7 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                           T.th["Make trainer"]] if (viewer.is_administrator()
                                                     or viewer.is_owner(name)
                                                     or viewer.is_trainer(name)) else []]],
-            T.tbody[[T.tr[T.th[T.a(href=base + django.urls.reverse("equiptypes/") + keyed_types[name][0].name)[name]],
+            T.tbody[[T.tr[T.th[T.a(href=base + keyed_types[name][0].name)[name]],
                           T.td[join([name_of_host(host)
                                      # todo: linkify these if admin? but that would mean not using the easy "join"
                                                                  for host in keyed_types[name][1][0].hosts])],
