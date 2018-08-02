@@ -156,26 +156,34 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                     for ty in equipment_types }
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return T.div(class_="trainedon")[
-        T.dl[[[T.dt[T.a(href=base + django.urls.reverse("equiptypes/") + keyed_types[name][0].name)[name]],
-               T.dd["Trained by ", ", ".join([name_of_host(host)
-                                              # todo: linkify these if admin? but that would mean not using the easy "join"
-                                              for host in keyed_types[name][1][0].hosts]),
-                   " on ", model.event.timestring(keyed_types[name][1][0].start), T.br,
-                    pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'trainer',
-                                                     who.has_requested_training([keyed_types[name][0]._id], 'trainer'),
-                                                     django_request),
-                    pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'owner',
-                                                     who.has_requested_training([keyed_types[name][0]._id], 'owner'),
-                                                     django_request),
-                    ([pages.page_pieces.ban_form(keyed_types[name][0], who, 'user', django_request),
-                      pages.page_pieces.permit_form(keyed_types[name][0], who, 'owner', django_request),
-                      pages.page_pieces.permit_form(keyed_types[name][0], who, 'trainer', django_request)]
-                     if (viewer.is_administrator()
-                         or viewer.is_owner(name)
-                         or viewer.is_trainer(name)) else []),
-                    pages.page_pieces.machinelist(keyed_types[name][0],
-                                                  who, False)]]
-                             for name in sorted(keyed_types.keys())]]]
+        T.table(class_='trainedon')[
+            T.thead[T.tr[T.th["Equipment type"],
+                         T.th["Trainer"],
+                         T.th["Date"],
+                         # todo: put machine statuses in
+                         [T.th["Ban"],
+                          T.th["Make owner"],
+                          T.th["Make trainer"]] if (viewer.is_administrator()
+                                                    or viewer.is_owner(name)
+                                                    or viewer.is_trainer(name)) else []]],
+            T.tbody[[T.tr[T.th[T.a(href=base + django.urls.reverse("equiptypes/") + keyed_types[name][0].name)[name]],
+                          T.td[join([name_of_host(host)
+                                     # todo: linkify these if admin? but that would mean not using the easy "join"
+                                                                 for host in keyed_types[name][1][0].hosts])],
+                          T.td[model.event.timestring(keyed_types[name][1][0].start)],
+                          T.td[pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'trainer',
+                                                                who.has_requested_training([keyed_types[name][0]._id], 'trainer'),
+                                                                django_request)],
+                          T.td[pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'owner',
+                                                                who.has_requested_training([keyed_types[name][0]._id], 'owner'),
+                                                                django_request)],
+                          ([T.td[pages.page_pieces.ban_form(keyed_types[name][0], who, 'user', django_request)],
+                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who, 'owner', django_request)],
+                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who, 'trainer', django_request)]]
+                                                       if (viewer.is_administrator()
+                                                           or viewer.is_owner(name)
+                                                           or viewer.is_trainer(name)) else [])]
+                     for name in sorted(keyed_types.keys())]]]]
 
 def training_requests_section(who, django_request):
     len_training = len("_training")
