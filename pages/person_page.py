@@ -154,7 +154,7 @@ def name_of_host(host):
 def equipment_trained_on(who, viewer, equipment_types, django_request):
     keyed_types = { ty.pretty_name(): (ty, who.qualification(ty.name, 'user'))
                     for ty in equipment_types }
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + django.urls.reverse("equiptypes:eqty")
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + django.urls.reverse("equiptypes:eqty<eqty>")
     return T.div(class_="trainedon")[
         T.table(class_='trainedon')[
             T.thead[T.tr[T.th["Equipment type"],
