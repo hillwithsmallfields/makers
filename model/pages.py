@@ -60,30 +60,37 @@ class SectionalPage(object):
         self.name = name
         self.top_content = top_content
         self.sections = {}
+        self.initial_tab = None
+        self.initial_tab_priority = -1
         self.presentation_names = {}
         self.index = []
         self.viewer = viewer
         self.django_request = django_request
 
-    def add_section(self, name, content):
+    def add_section(self, name, content, priority=1):
         section_id = name.replace(' ', '_')
         self.sections[section_id] = [T.h2[name], content]
         self.presentation_names[section_id] = name
+        if priority > self.initial_tab_priority:
+            self.initial_tab_priority = priority
+            self.initial_tab = section_id
         self.index.append(section_id)
 
     def to_string(self):
         index = [T.div(class_="tab")[[T.button(class_="tablinks",
-                                               onclick="openTab(event, '" + section_id + "')")[self.presentation_names[section_id]]
+                                               onclick="openTab(event, '" + section_id + "')",
+                                               id=section_id+"_button")[self.presentation_names[section_id]]
                                       for section_id in self.index]]]
         tabs = [[T.div(class_="tabcontent", id_=section_id)[self.sections[section_id]]]
                    for section_id in self.index]
         return page_string(self.name,
                            self.top_content + index + tabs,
-                           self.viewer or (model.person.Person.find(self.django_request.user.link_id)
-                                      if self.django_request
-                                      else None))
+                           user=self.viewer or (model.person.Person.find(self.django_request.user.link_id)
+                                                if self.django_request
+                                                else None),
+                           initial_tab=(self.initial_tab+"_button") if self.initial_tab else None)
 
-def page_string(page_title, content, user=None):
+def page_string(page_title, content, user=None, initial_tab=None):
     """Make up a complete page as a string."""
     conf = configuration.get_config()
     page_conf = conf['page']
@@ -114,7 +121,7 @@ def page_string(page_title, content, user=None):
             style_text = '<link rel="stylesheet" type="text/css" href="' + stylesheet_name + '">'
     # todo: put the motd into the preamble
     postamble = page_conf.get('postamble', '')
-    # print "Flattening", content
+    final_setup = """<script type="text/javascript">selectTab('""" + initial_tab + """')</script>""" if initial_tab else ""
     page_heading = page_title
     logo = page_conf.get('logo', None)
     if logo:
@@ -130,7 +137,8 @@ def page_string(page_title, content, user=None):
                        " system.  ",
                        "We use ",
                        T.a(href="https://www.djangoproject.com/")["django"],
-                       " to handle login and sessions, and that uses a session cookie."]]
+                       " to handle login and sessions, and that uses a session cookie.",
+                       "We don't use any other cookies, and we neither sell your data nor give it away."]]
     return RawHtmlPage(page_title,
                     untemplate.HTML5Doc([untemplate.safe_unicode(style_text
                                                                  + script_text
@@ -138,7 +146,8 @@ def page_string(page_title, content, user=None):
                                          T.body[T.h1[page_heading],
                                                 content,
                                                 footer],
-                                         untemplate.safe_unicode(postamble)],
+                                         untemplate.safe_unicode(postamble),
+                                         untemplate.safe_unicode(final_setup)],
                                         head=T.head[T.title[page_title]])).to_string()
 
 def expandable_section(section_id, section_tree):
