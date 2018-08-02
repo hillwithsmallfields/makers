@@ -4,8 +4,6 @@ import model.equipment_type
 import model.person
 import pages.page_pieces
 
-serverconf=None
-
 def role_people(eqty, role):
     # todo: change this to a link to the person's page instead of their email address
     return T.ul[[[T.li[T.a(href="mailto:"+who.get_email(access_permissions_role=role,
@@ -16,9 +14,6 @@ def role_people(eqty, role):
 
 def equipment_type_section(eqty, viewing_user, django_request):
     """Return a pre-HTML structure describing an equipment type."""
-    global serverconf
-    if serverconf == None:
-        serverconf = model.configuration.get_config()['server']
     result = [T.dl[T.dt["Training category"],
                    T.dd[eqty.training_category]]]
     # todo: add admin-specific buttons
