@@ -19,6 +19,5 @@ def get_config():
     return cached_config
 
 def get_stylesheets():
-    return sorted(os.listdir(os.path.dirname(get_config()['page']['stylesheet']),
-                             # todo: check arglist for os.listdir
-                             ".css"))
+    return sorted([css[:-4] for css in os.listdir(os.path.dirname(get_config()['page']['stylesheet']))
+                   if css.endswith(".css")])
