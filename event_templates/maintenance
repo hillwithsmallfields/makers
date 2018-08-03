@@ -1,0 +1,7 @@
+attendance_limit:       3
+title:                  $equipment maintenance
+event_type:             maintenance
+name:                   maintenance
+duration:               90
+host_prerequisites:
+  - $equipment owner
