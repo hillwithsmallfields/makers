@@ -281,7 +281,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
         page_data.add_section("Events I'm hosting",
                               T.div(class_="hostingevents")[pages.event_page.event_table_section(hosting, who._id, django_request)])
 
-    attending = model.timeline.Timeline.future_events(person_field='attendees', person_id=who._id).events
+    attending = model.timeline.Timeline.future_events(person_field='signed_up', person_id=who._id).events
     if len(attending) > 0:
         page_data.add_section("Events I'm attending",
                               T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)])
@@ -291,7 +291,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
         page_data.add_section("Events I have hosted",
                               T.div(class_="hostedevents")[pages.event_page.event_table_section(hosted, who._id, django_request)])
 
-    attended = model.timeline.Timeline.past_events(person_field='attendees', person_id=who._id).events
+    attended = model.timeline.Timeline.past_events(person_field='signed_up', person_id=who._id).events
     if len(attended) > 0:
         page_data.add_section("Events I have attended",
                               T.div(class_="attendedingevents")[pages.event_page.event_table_section(attended, who._id, django_request)])

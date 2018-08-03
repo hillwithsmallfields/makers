@@ -4,6 +4,7 @@ import model.access_permissions
 import model.configuration
 import model.database
 import model.equipment_type
+import model.pages
 import model.person
 import model.timeslots
 import re
@@ -70,7 +71,7 @@ class Event(object):
                  event_datetime,
                  hosts,
                  title=None,
-                 invitation_accepted=[],
+                 signed_up=[],
                  event_duration=60,
                  equipment_type=None,
                  equipment=[]):
@@ -91,11 +92,11 @@ class Event(object):
         # but then we'd have to convert them for loading and saving in mongo.
         self.hosts = hosts         # [_id of person]
         self.attendance_limit = 30
-        self.signed_up = invitation_accepted # [_id of person]
+        self.signed_up = signed_up # [_id of person]
         self.invited = {}          # {_id of person: timestamp of invitation}
         self.invitation_declined = []         # [_id of person]
         self.invitation_timeout = 3           # days
-        self.equipment_type = equipment_type
+        self.equipment_type = model.pages.unstring_id(equipment_type)
         self.equipment = equipment # list of Machine, by ObjectId
         self._id = None
         self.passed = []    # [_id of person]
@@ -132,7 +133,7 @@ class Event(object):
         event_datetime = as_time(event_datetime)
         event_dict = model.database.get_event(event_type, event_datetime,
                                         hosts,
-                                        equipment_type,
+                                        model.pages.unstring_id(equipment_type),
                                         create=True)
         if event_dict is None:
             return None
@@ -150,6 +151,7 @@ class Event(object):
     @staticmethod
     def find_by_id(event_id):
         """Find an event by its ObjectId."""
+        event_id = model.pages.unstring_id(event_id)
         event_dict = model.database.get_event_by_id(event_id)
         if event_dict is None:
             return None
@@ -186,13 +188,13 @@ class Event(object):
         model.database.add_template(template_dict)
 
     @staticmethod
-    def _preprocess_conditions_(raw_conds, equipment_type):
+    def _preprocess_conditions_(raw_conds, equip_type):
         """Make some substitutions in condition descriptions of event templates.
 
         Typical conditions are an equipment type name followed by a role,
         such as "laser_cutter user" or "bandsaw owner".  The special equipment
         type name "$equipment" is expanded to the equipment in the
-        equipment_type argument.
+        equip_type argument.
 
         Also, a condition can be any of the strings "member", "admin",
         "auditor", or "director", which are given configuration-dependent expansions."""
@@ -212,7 +214,11 @@ class Event(object):
                 result.append(cond)
             else:
                 onetype, role = cond.split(' ')
-                result.append(model.equipment_type.Equipment_type.find(onetype).name + " " + role)
+                if onetype == "$equipment":
+                    onetype = equip_type
+                type_descr = model.equipment_type.Equipment_type.find(onetype)
+                print("onetype is", onetype, "of type", type(onetype), "and type_descr is", type_descr)
+                result.append(type_descr.name + " " + role)
         return result
 
     def training_for_role(self):
@@ -223,7 +229,7 @@ class Event(object):
 
     @staticmethod
     def instantiate_template(template_name, equipment_type,
-                             hosts, event_datetime, allow_past=False):
+                             hosts, event_datetime, machines=[], allow_past=False):
         """Instantiate a template, or explain the first reason to refuse to do so.
 
         Event templates are stored in a separate database collection.
@@ -240,7 +246,9 @@ class Event(object):
         if event_datetime < datetime.now() and not allow_past:
             return None, "Cannot create a past event"
         template_dict = Event.find_template(template_name)
-        # print "instantiate_template: template_dict is", template_dict
+        print("instantiate_template: template_dict is", template_dict)
+        if template_dict is None:
+            return None, "Could not find a template called " + template_name
         host_prerequisites = Event._preprocess_conditions_(template_dict.get('host_prerequisites',
                                                                              ['member']),
                                                            equipment_type)
@@ -251,6 +259,7 @@ class Event(object):
         attendee_prerequisites = Event._preprocess_conditions_(template_dict.get('attendee_prerequisites',
                                                                                  []),
                                                                equipment_type)
+        print("equipment_type is", equipment_type, "of type", type(equipment_type))
         title = template_dict['title'].replace("$equipment", model.equipment_type.Equipment_type.find(equipment_type).name)
 
         instance = Event(template_dict['event_type'],
@@ -261,9 +270,11 @@ class Event(object):
                          equipment_type=equipment_type)
 
         instance_dict = model.database.get_event(template_dict['event_type'],
-                                           event_datetime,
-                                           hosts,
-                                           equipment_type, True)
+                                                 event_datetime,
+                                                 hosts,
+                                                 equipment_type, True)
+
+        instance_dict['equipment'] = machines
 
         instance.__dict__.update(instance_dict)
 
@@ -301,9 +312,9 @@ class Event(object):
 
     def available_interested_people(self):
         event_timeslot_bitmap = model.timeslots.time_to_timeslot(self.start)
-        [whoever
-         for whoever in model.person.Person.awaiting_training(self.event_type, self.equipment_type)
-         if whoever.available & event_timeslot_bitmap]
+        return [whoever
+                for whoever in model.person.Person.awaiting_training(self.event_type, self.equipment_type)
+                if whoever.available & event_timeslot_bitmap]
 
     def invite_available_interested_people(self):
         """Send event invitations to the relevant people.

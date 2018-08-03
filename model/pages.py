@@ -138,7 +138,7 @@ def page_string(page_title, content, user=None, initial_tab=None):
                        " system.  ",
                        "We use ",
                        T.a(href="https://www.djangoproject.com/")["django"],
-                       " to handle login and sessions, and that uses a session cookie.  ",
+                       " to handle login and sessions, and that uses a session cookie and a CSRF protection cookie.  ",
                        "We don't use any other cookies, and we neither sell your data nor give it away."]]
     return RawHtmlPage(page_title,
                     untemplate.HTML5Doc([untemplate.safe_unicode(style_text

@@ -1,5 +1,6 @@
 import model.database
 import model.machine
+import model.pages
 import model.person
 
 class Equipment_type(object):
@@ -34,6 +35,7 @@ class Equipment_type(object):
     def find(name):
         if isinstance(name, Equipment_type):
             return name
+        name = model.pages.unstring_id(name)
         if name in Equipment_type.types_by_name:
             return Equipment_type.types_by_name[name]
         data = model.database.get_equipment_type_dict(name)
@@ -47,6 +49,7 @@ class Equipment_type(object):
 
     @staticmethod
     def find_by_id(this_id):
+        this_id = model.pages.unstring_id(this_id)
         if this_id in Equipment_type.types_by_id:
             return Equipment_type.types_by_id[this_id]
         data = model.database.get_equipment_type_dict(this_id)

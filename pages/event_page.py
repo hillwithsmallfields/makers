@@ -24,7 +24,7 @@ def checkbox(id, which, condition):
 
 def event_link(ev, django_request):
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return base + django.urls.reverse("events:oneevent") + "/" + ev._id
+    return base + django.urls.reverse("events:oneevent", args=[ev._id])
 
 def one_event_section(ev, django_request, with_completion=False, completion_as_form=False):
     all_people_ids = ev.passed + ev.failed + ev.noshow
@@ -35,13 +35,14 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
         for pair in all_people_name_and_id:
             if name == pair[0]:
                 ids_in_order.append(pair[1])
+    print("ev.equipment_type is", ev.equipment_type)
     results = [(T.table(class_='event_details')
                 [T.tr[T.th(class_="ralabel")["Title"], T.td(class_="event_title")[T.a(href=event_link(ev, django_request))[ev.title]]],
                  T.tr[T.th(class_="ralabel")["Event type"], T.td(class_="event_type")[ev.event_type]],
                  T.tr[T.th(class_="ralabel")["Start time"], T.td(class_="event_start")[model.event.timestring(ev.start)]],
                  T.tr[T.th(class_="ralabel")["End time"], T.td(class_="event_end")[model.event.timestring(ev.end)]],
                  T.tr[T.th(class_="ralabel")["Location"], T.td(class_="location")[ev.location]],
-                 T.tr[T.th(class_="ralabel")["Equipment types"], T.td(class_="event_equipment_types")[", ".join([model.equipment_type.Equipment_type.find_by_id(x).name for x in ev.equipment_types])]],
+                 T.tr[T.th(class_="ralabel")["Equipment type"], T.td(class_="event_equipment_type")[model.equipment_type.Equipment_type.find_by_id(ev.equipment_type).name]],
                  T.tr[T.th(class_="ralabel")["Hosts"], T.td(class_="hosts")[people_list(ev.hosts)]]])]
     if with_completion:
         completion_table = T.table(class_='event_completion')[T.tr[T.th["Name"],T.th["Unknown"],T.th["No-show"],T.th["Failed"],T.th["Passed"]],
@@ -60,16 +61,25 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
     return [T.h3[ev.title],
             results]
 
-def event_table_section(tl, who_id, django_request, equiptype=None, with_signup=False):
+def equip_name(eqid):
+    print("getting name of", eqid, "of type", type(eqid))
+    eqt = model.equipment_type.Equipment_type.find_by_id(eqid)
+    if eqt:
+        return eqt.name
+    else:
+        return "unknown"
+
+def event_table_section(tl_or_events, who_id, django_request, show_equiptype=None, with_signup=False):
+    events = tl_or_events.events() if isinstance(tl_or_events, model.timeline.Timeline) else tl_or_events
     return (T.table(class_="timeline_table")
             [T.thead[T.tr[T.th["Title"], T.th["Event type"], T.th["Start"], T.th["Location"], T.th["Hosts"],
-                          T.th["Equipment"] if equiptype else "",
+                          T.th["Equipment"] if show_equiptype else "",
                           T.th["Sign up"] if with_signup else ""]],
              T.tbody[[[T.tr[T.th(class_="event_title")[ev.title],
                             T.td(class_="event_type")[ev.event_type],
                             T.td(class_="event_start")[model.event.timestring(ev.start)],
                             T.td(class_="location")[ev.location],
                             T.td(class_="hosts")[people_list(ev.hosts)],
-                            T.td(class_="event_equipment_type")[ev.equipment_type] if equiptype else [],
-                            T.td[signup_button(ev._id, who_id, "Sign up")] if with_signup else ""]]
-                      for ev in tl.events()]]])
+                            T.td(class_="event_equipment_type")[equip_name(ev.equipment_type)] if show_equiptype else [],
+                            T.td[pages.page_pieces.signup_button(ev._id, who_id, "Sign up", django_request)] if with_signup else ""]]
+                      for ev in events]]])

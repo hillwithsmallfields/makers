@@ -138,6 +138,7 @@ def machinelist(eqty, who, django_request, as_owner=False):
                                     T.td[device.status],
                                     T.td[schedule_event_form(who,
                                                              [T.input(type="hidden", name="machine", value=device.name),
+                                                              T.input(type="hidden", name="equiptype", value=eqty._id),
                                                               T.input(type="hidden", name="event_type", value="maintenance")],
                                                              "Schedule maintenance",
                                                              django_request)

@@ -1,3 +1,4 @@
+from untemplate.throw_out_your_templates_p3 import htmltags as T
 from django.http import HttpResponse
 import model.equipment_type
 import model.event
@@ -25,11 +26,22 @@ def public_index(request):
 def new_event(request):
     """View function for creating an event."""
     params = request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
+    print("new_event params are", params)
+    ev, error_message = model.event.Event.instantiate_template(params['event_type'],
+                                                               params['equiptype'],
+                                                               [params['submitter']],
+                                                               params['when'],
+                                                               [params['machine']])
+    if ev is None:
+        page_data = model.pages.HtmlPage("New event error",
+                                         pages.page_pieces.top_navigation(request),
+                                         django_request=request)
 
-    ev = model.event.Event.instantiate_template(params['event_type'],
-                                          [params['equiptype']],
-                                          [params['submitter']],
-                                          params['when'])
+        page_data.add_content("Event details",
+                              T.p[error_message])
+
+        return HttpResponse(str(page_data.to_string()))
+
     ev.publish()
     ev.invite_available_interested_people()
 
