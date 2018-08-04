@@ -61,7 +61,8 @@ def toggle_request(who, eqty, role, already_requested, django_request):
             else cancel_button(who, eqty, role, "Cancel %s training request"%role, django_request))
 
 def signup_button(event_id, who_id, button_text, django_request):
-    return T.form(action=server_conf['base_url']+"signup",
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+    return T.form(action=base+django.urls.reverse("events:signup"),
                   method='POST')[T.input(type="hidden", name="eventid", value=str(event_id)),
                                  T.input(type="hidden", name="person_id", value=who_id),
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
@@ -118,8 +119,9 @@ def avail_table(slot_sums):
 
 def general_equipment_list(who, viewer, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return T.table[T.thead[T.tr[T.th["Equipment type"], T.th["Request"], T.th["Admin action"] if viewer.is_administrator() else ""]],
-                   T.tbody[[[T.tr[T.th[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
+                   T.tbody[[[T.tr[T.th[T.a(href=base+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
                                   T.td[machinelist(keyed_types[name],
                                                    who, django_request, False) if detailed else "",
                                        toggle_request(who, keyed_types[name]._id, 'user',
