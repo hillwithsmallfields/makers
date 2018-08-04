@@ -83,7 +83,10 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
                                                                                    T.input(type="hidden", name="type", value=eqtype._id)],
                                                                              "Schedule owner training",
                                                                              django_request),
-                                       [pages.page_pieces.ban_form(eqtype, who, 'owner', django_request) if viewer.is_administrator() else []]]
+                                       [pages.page_pieces.ban_form(eqtype,
+                                                                   who._id,
+                                                                   'owner',
+                                                                   django_request) if viewer.is_administrator() else []]]
                                       if is_owner
                                       else pages.page_pieces.toggle_request(who, eqtype._id, 'owner',
                                                                             has_requested_owner_training,
@@ -104,7 +107,10 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
                                                                                 T.input(type="hidden", name="equiptype", value=eqtype._id)],
                                                                                "Schedule training",
                                                                                django_request),
-                                         [pages.page_pieces.ban_form(eqtype, who, 'trainer', django_request) if viewer.is_administrator() else []]]
+                                         [pages.page_pieces.ban_form(eqtype,
+                                                                     who._id,
+                                                                     'trainer',
+                                                                     django_request) if viewer.is_administrator() else []]]
                                         if is_trainer
                                         else pages.page_pieces.toggle_request(who, eqtype._id, 'trainer',
                                                                               has_requested_trainer_training,

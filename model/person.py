@@ -326,19 +326,22 @@ class Person(object):
         """Add an individual training or untraining event.
         This is mostly for administrators to fix the record to match reality,
         and for banning and unbanning users."""
+        print("in training_individual_event")
         if when is None:
             when = datetime.now()
-        special_event = event.Event(({'user': 'user_training',
-                                      'owner': 'owner_training',
-                                      'trainer': 'trainer_training'}
-                                     if enabling
-                                     else {'user': 'user_untraining',
-                                           'owner': 'owner_untraining',
-                                           'trainer': 'trainer_untraining'})[role], event_when,
-                                    [admin_user], "Direct grant of permission" if enabling else "Ban",
-                                    invitation_accepted=[self._id],
-                                    equipment_type=equipment_type)
+        special_event = model.event.Event(({'user': 'user_training',
+                                            'owner': 'owner_training',
+                                            'trainer': 'trainer_training'}
+                                           if enabling
+                                           else {'user': 'user_untraining',
+                                                 'owner': 'owner_untraining',
+                                                 'trainer': 'trainer_untraining'})[role], when,
+                                          [admin_user], "Direct grant of permission" if enabling else "Ban",
+                                          signed_up=[self._id],
+                                          equipment_type=equipment_type)
+        print("made event", special_event)
         special_event.mark_results([self], [], [])
+        print("saved results in", special_event)
         if revert_after and revert_after != "" and revert_after != "indefinite":
             self.training_individual_event(admin_user,
                                            role, equipment_type, not enabling,

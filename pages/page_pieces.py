@@ -125,7 +125,10 @@ def general_equipment_list(who, viewer, these_types, django_request, detailed=Fa
                                        toggle_request(who, keyed_types[name]._id, 'user',
                                                       who.has_requested_training([keyed_types[name]._id], 'user'),
                                                       django_request)],
-                                  T.td[permit_form(keyed_types[name], who, 'user', django_request)] if viewer.is_administrator() else ""]]
+                                  T.td[permit_form(keyed_types[name],
+                                                   who._id,
+                                                   'user',
+                                                   django_request)] if viewer.is_administrator() else ""]]
                             for name in sorted(keyed_types.keys())]]]
 
 def machinelist(eqty, who, django_request, as_owner=False):
@@ -168,17 +171,19 @@ def eqty_training_requests(eqtype):
                                                       for req in raw_reqs]))]
 
 def special_event_form(eqtype, who_id, role, enable, css_class, button_label, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
     return T.form(action=base+"events/special",
                   class_=css_class,
                   method='POST')[T.input(type='hidden', name='eqtype', value=eqtype._id),
                                  T.input(type='hidden', name='who', value=who_id),
+                                 T.input(type='hidden', name='admin_user', value=model.person.Person.find(django_request.user.link_id)),
                                  T.input(type='hidden', name='role', value=role),
                                  T.input(type='hidden', name='enable', value=enable),
                                  "Days", T.input(type='text',
                                                  name='duration',
                                                  value="indefinite",
                                                  size=len("indefinite")),
+                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value=button_label)]
 
 def permit_form(eqtype, who_id, role, django_request):

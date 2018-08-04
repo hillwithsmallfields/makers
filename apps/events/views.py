@@ -22,6 +22,16 @@ def public_index(request):
     </html>
     """)
 
+def event_error_page(request, label, error_message):
+    page_data = model.pages.HtmlPage(label,
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+
+    page_data.add_content("Event details",
+                          T.p[error_message])
+
+    return HttpResponse(str(page_data.to_string()))
+
 @ensure_csrf_cookie
 def new_event(request):
     """View function for creating an event."""
@@ -33,14 +43,7 @@ def new_event(request):
                                                                params['when'],
                                                                [params['machine']])
     if ev is None:
-        page_data = model.pages.HtmlPage("New event error",
-                                         pages.page_pieces.top_navigation(request),
-                                         django_request=request)
-
-        page_data.add_content("Event details",
-                              T.p[error_message])
-
-        return HttpResponse(str(page_data.to_string()))
+        return event_error_page(request, "New event error", error_message)
 
     ev.publish()
     ev.invite_available_interested_people()
@@ -58,7 +61,11 @@ def new_event(request):
 def one_event(request, id):
     """View function for looking at one event."""
 
-    ev = model.event.Event.find(id)
+    ev = model.event.Event.find_by_id(id)
+
+    if ev is None:
+        return event_error_page(request, "Event display error",
+                                "In one_event, could not find event with id " + str(id))
 
     page_data = model.pages.HtmlPage("Event details",
                                      pages.page_pieces.top_navigation(request),
@@ -73,9 +80,14 @@ def one_event(request, id):
 def signup_event(request):
     """View function for signing up for an event."""
 
+    print("in signup_event with params", params)
     params = django_request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
 
-    ev = model.event.Event.find(params['event_id'])
+    ev = model.event.Event.find_by_id(params['event_id'])
+
+    if ev is None:
+        return event_error_page(request, "Event signup page error",
+                                "In signup_event, could not find event with id " + str(params['event_id']))
 
     ev.invitation_accepted.append(params['person_id'])
 
@@ -93,7 +105,11 @@ def signup_event(request):
 def complete_event(request, id):
     """View function for handling event completion."""
 
-    ev = model.event.Event.find(id)
+    ev = model.event.Event.find_by_id(id)
+
+    if ev is None:
+        return event_error_page(request, "Event completion page error",
+                                "In complete_event, could not find event with id " + str(id))
 
     page_data = model.pages.HtmlPage("Event completion",
                                      pages.page_pieces.top_navigation(request),
@@ -111,8 +127,13 @@ def store_event_results(request):
     """View function for handling event completion."""
 
     params = django_request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
+    print("in store_event_results with params", params)
 
-    ev = model.event.Event.find(params['event_id'])
+    ev = model.event.Event.find_by_id(params['event_id'])
+
+    if ev is None:
+        return event_error_page(request, "Event recording error",
+                                "In store_event_results, could not find event with id " + str(params['event_id']))
 
     noshow = []
     failed = []
@@ -139,13 +160,22 @@ def store_event_results(request):
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def special_event():
+def special_event(django_request):
     params = django_request.POST
-    who = model.person.Person.find(params['who'])
-    admin_user = model.person.Person.find(params['admin_user'])
-    what = model.equipment_type.Equipment_type.find_by_id(params['what'])
-    who.training_individual_event(admin_user, role, what, bool(params['enable']), params['duration'])
+    print("in special_event with params", params)
+    who = model.person.Person.find(model.pages.unstring_id(params['who']))
+    admin_user = model.person.Person.find(model.pages.unstring_id(params['admin_user']))
+    what = model.equipment_type.Equipment_type.find_by_id(params['eqtype'])
+    who.training_individual_event(admin_user,
+                                  params['role'],
+                                  what,
+                                  params['enable'] == 'True',
+                                  None,
+                                  params['duration'])
 
     return HttpResponse(pages.person_page.person_page_contents(who, admin_user,
-                                                  extra_top_header="Confirmation",
-                                                  extra_top_body=T.p[("Permit" if enable else "Ban") + " confirmed"]).to_string)
+                                                               extra_top_header="Confirmation",
+                                                               extra_top_body=T.p[("Permit"
+                                                                                   if enable
+                                                                                   else "Ban")
+                                                                                  + " confirmed"]).to_string)
