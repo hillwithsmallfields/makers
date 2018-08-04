@@ -336,9 +336,9 @@ class Person(object):
                                            else {'user': 'user_untraining',
                                                  'owner': 'owner_untraining',
                                                  'trainer': 'trainer_untraining'})[role], when,
-                                          [admin_user], "Direct grant of permission" if enabling else "Ban",
+                                          [admin_user._id], "Direct grant of permission" if enabling else "Ban",
                                           signed_up=[self._id],
-                                          equipment_type=equipment_type)
+                                          equipment_type=equipment_type._id)
         print("made event", special_event)
         special_event.mark_results([self], [], [])
         print("saved results in", special_event)

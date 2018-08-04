@@ -176,7 +176,7 @@ def special_event_form(eqtype, who_id, role, enable, css_class, button_label, dj
                   class_=css_class,
                   method='POST')[T.input(type='hidden', name='eqtype', value=eqtype._id),
                                  T.input(type='hidden', name='who', value=who_id),
-                                 T.input(type='hidden', name='admin_user', value=model.person.Person.find(django_request.user.link_id)),
+                                 T.input(type='hidden', name='admin_user', value=model.person.Person.find(django_request.user.link_id)._id),
                                  T.input(type='hidden', name='role', value=role),
                                  T.input(type='hidden', name='enable', value=enable),
                                  "Days", T.input(type='text',

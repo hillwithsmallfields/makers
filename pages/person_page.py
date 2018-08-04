@@ -186,9 +186,9 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                           T.td[pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'owner',
                                                                 who.has_requested_training([keyed_types[name][0]._id], 'owner'),
                                                                 django_request)],
-                          ([T.td[pages.page_pieces.ban_form(keyed_types[name][0], who, 'user', django_request)],
-                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who, 'owner', django_request)],
-                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who, 'trainer', django_request)]]
+                          ([T.td[pages.page_pieces.ban_form(keyed_types[name][0], who._id, 'user', django_request)],
+                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who._id, 'owner', django_request)],
+                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who._id, 'trainer', django_request)]]
                                                        if (viewer.is_administrator()
                                                            or viewer.is_owner(name)
                                                            or viewer.is_trainer(name)) else [])]
@@ -336,17 +336,14 @@ def person_page_setup():
     org_conf = all_conf['organization']
     pages.page_pieces.set_server_conf()
 
-def person_page_contents(who, viewer, extra_top_header=None, extra_top_body=None):
+def person_page_contents(who, viewer, django_request, extra_top_header=None, extra_top_body=None):
     person_page_setup()
 
-    page_data = pages.SectionalPage("User dashboard for " + who.name(),
-                                    # todo: put these into a central place, for use on most pages
-                                    [T.ul[T.li[T.a(href=org_conf['home_page'])["Home"]],
-                                          T.li[T.a(href=org_conf['wiki'])["Wiki"]],
-                                          T.li[T.a(href=org_conf['forum'])["Forum"]]]],
-                                    viewer=viewer)
+    page_data = model.pages.SectionalPage("User dashboard for " + who.name(),
+                                          pages.page_pieces.top_navigation(django_request),
+                                          viewer=viewer)
 
-    add_person_page_contents(page_data, who, viewer,
+    add_person_page_contents(page_data, who, viewer, django_request,
                              extra_top_header=extra_top_header,
                              extra_top_body=extra_top_body)
 

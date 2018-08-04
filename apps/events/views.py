@@ -166,16 +166,17 @@ def special_event(django_request):
     who = model.person.Person.find(model.pages.unstring_id(params['who']))
     admin_user = model.person.Person.find(model.pages.unstring_id(params['admin_user']))
     what = model.equipment_type.Equipment_type.find_by_id(params['eqtype'])
+    enable = params['enable'] == 'True'
     who.training_individual_event(admin_user,
                                   params['role'],
                                   what,
-                                  params['enable'] == 'True',
+                                  enable,
                                   None,
                                   params['duration'])
 
-    return HttpResponse(pages.person_page.person_page_contents(who, admin_user,
-                                                               extra_top_header="Confirmation",
-                                                               extra_top_body=T.p[("Permit"
-                                                                                   if enable
-                                                                                   else "Ban")
-                                                                                  + " confirmed"]).to_string)
+    return HttpResponse(str(pages.person_page.person_page_contents(who, admin_user, django_request,
+                                                                   extra_top_header="Confirmation",
+                                                                   extra_top_body=T.p[("Permit"
+                                                                                       if enable
+                                                                                       else "Ban")
+                                                                                      + " confirmed"]).to_string()))

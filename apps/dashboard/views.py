@@ -124,7 +124,7 @@ def update_mugshot(request):
     who = model.person.Person.find(params['subject_user_uuid'])
     admin_user = model.person.Person.find(request.user.link_id)
     # todo: update photo from upload
-    return HttpResponse(pages.person_page.person_page_contents(who, admin_user,
+    return HttpResponse(pages.person_page.person_page_contents(who, admin_user, request,
                                                                extra_top_header="Confirmation",
                                                                extra_top_body=T.p["Mugshot updated."]).to_string)
 
@@ -134,6 +134,6 @@ def update_profile(request):
     who = model.person.Person.find(params['subject_user_uuid'])
     admin_user = model.person.Person.find(request.user.link_id)
     who.update_profile(params)
-    return HttpResponse(pages.person_page.person_page_contents(who, admin_user,
+    return HttpResponse(pages.person_page.person_page_contents(who, admin_user, request,
                                                                extra_top_header="Confirmation",
                                                                extra_top_body=T.p["Profile updated."]).to_string)
