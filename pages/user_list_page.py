@@ -17,6 +17,7 @@ def user_list_section(include_non_members=False, filter_fn=None, filter_opaque=N
     like listing people whose fobs are ready for enabling, or who have missed
     paying their latest subscription.  A third argument is passed through
     to that function."""
+    include_non_members = True
     global serverconf
     if serverconf == None:
         serverconf = configuration.get_config()['server']

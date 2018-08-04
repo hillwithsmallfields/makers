@@ -37,11 +37,14 @@ def new_event(request):
     """View function for creating an event."""
     params = request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
     print("new_event params are", params)
+    machine = params.get('machine', None)
+    if machine:
+        machine = [machine]
     ev, error_message = model.event.Event.instantiate_template(params['event_type'],
                                                                params['equiptype'],
                                                                [params['submitter']],
                                                                params['when'],
-                                                               [params['machine']])
+                                                               machine)
     if ev is None:
         return event_error_page(request, "New event error", error_message)
 
