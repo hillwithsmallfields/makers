@@ -16,16 +16,16 @@ def public_index(request, machine):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    page_data = model.pages.HtmlPage(eqty,
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
-
     viewing_user = model.person.Person.find(request.user.link_id)
 
-    mach = model.machine.find(machine)
+    mach = model.machine.Machine.find(machine)
 
     if mach is None:
         page_data.add_content("Error", [T.p["Could not find machine " + machine]])
+
+    page_data = model.pages.HtmlPage(mach.name,
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
 
     page_data.add_content("Machine", pages.machine_page.machine_section(mach))
 

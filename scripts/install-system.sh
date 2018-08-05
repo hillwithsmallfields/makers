@@ -15,7 +15,7 @@ ALTER ROLE makersuser SET timezone to 'UTC';
 GRANT ALL PRIVILEGES ON DATABASE makers to makersuser;
 \q
 EOF
-cd /var/wwwx
+cd /var/www
 virtualenv --python=python3 --always-copy makers_venv
 source makers_venv/bin/activate
 pip install django

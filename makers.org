@@ -1,11 +1,16 @@
 * Makers things to do
-** TODO display training requests in dashboard "trainers" sections
+** TODO display training requests in dashboard "trainers" sections, possibly with timeslot counts
 ** TODO mail sending
 ** TODO trainers to be able to create training sessions
 *** TODO creating a training session to send invitations
 *** TODO training request confirmation to list any pending training sessions
+** TODO get adminstrative grant and ban buttons working
+** TODO add a "schedule maintenance" button to the individual machine pages 
+   and perhaps remove it from the equipment type page
 ** TODO event timeline display
 *** TODO event timeline display on users' dashboards
+**** TODO fix searching for events the user is hosting, etc
+     Also give these higher priorities in the tabbing system
 *** TODO event timeline display on equipment type pages
 ** TODO event pages
 *** TODO event signup pages

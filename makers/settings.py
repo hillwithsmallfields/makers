@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'dashboard.apps.DashboardConfig',
-    'equipment.apps.EquipmentConfig',
     'equiptypes.apps.EquiptypesConfig',
     'events.apps.EventsConfig',
     'users' # from https://wsvincent.com/django-custom-user-model-tutorial/ but why is it not a long one like the others?
@@ -75,7 +74,6 @@ TEMPLATES = [
 LOGIN_REDIRECT_URL = '/dashboard/'
 
 WSGI_APPLICATION = 'makers.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases

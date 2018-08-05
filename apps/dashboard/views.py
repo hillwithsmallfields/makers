@@ -35,7 +35,7 @@ def all_user_list_page(request):
 
     if viewing_user.is_administrator() or viewing_user.is_auditor():
         page_data.add_content("User list",
-                              pages.user_list_page.user_list_section())
+                              pages.user_list_page.user_list_section(request))
     else:
         page_data.add_content("Error", [T.p["You do not have permission to view the list of users."]])
 
@@ -112,7 +112,7 @@ def user_match_page(request, pattern):
 
     if viewing_user.is_administrator() or viewing_user.is_auditor():
         page_data.add_content("User list",
-                              pages.user_list_page.user_list_matching_section(pattern, False))
+                              pages.user_list_page.user_list_matching_section(request, pattern, False))
     else:
         page_data.add_content("Error", [T.p["You do not have permission to view the list of users."]])
 
@@ -124,7 +124,7 @@ def update_mugshot(request):
     who = model.person.Person.find(params['subject_user_uuid'])
     admin_user = model.person.Person.find(request.user.link_id)
     # todo: update photo from upload
-    return HttpResponse(pages.person_page.person_page_contents(who, admin_user,
+    return HttpResponse(pages.person_page.person_page_contents(who, admin_user, request,
                                                                extra_top_header="Confirmation",
                                                                extra_top_body=T.p["Mugshot updated."]).to_string)
 
@@ -134,6 +134,6 @@ def update_profile(request):
     who = model.person.Person.find(params['subject_user_uuid'])
     admin_user = model.person.Person.find(request.user.link_id)
     who.update_profile(params)
-    return HttpResponse(pages.person_page.person_page_contents(who, admin_user,
+    return HttpResponse(pages.person_page.person_page_contents(who, admin_user, request,
                                                                extra_top_header="Confirmation",
                                                                extra_top_body=T.p["Profile updated."]).to_string)

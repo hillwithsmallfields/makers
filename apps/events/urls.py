@@ -7,10 +7,10 @@ app_name = 'events'
 
 urlpatterns = [
     path('new', views.new_event, name='newevent'),
-    path('<id>', views.one_event, name='oneevent'),
-    path('signup/<id>', views.signup_event, name="signup"),
+    path('signup', views.signup_event, name="signup"),
     path('complete/<id>', views.complete_event, name='done_event'),
     path('results', views.store_event_results, name='results'),
     path('special', views.special_event, name='special'),
+    path('<id>', views.one_event, name='oneevent'),
     path('', views.public_index, name='index')
 ]

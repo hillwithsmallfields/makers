@@ -8,7 +8,7 @@ import re
 
 serverconf=None
 
-def user_list_section(include_non_members=False, filter_fn=None, filter_opaque=None):
+def user_list_section(django_request, include_non_members=False, filter_fn=None, filter_opaque=None):
     """Return the users list, if the viewing person is allowed to see it.
     Otherwise, just how many people there are.
     The optional first argument is a flag for whether to include non-members.
@@ -17,10 +17,13 @@ def user_list_section(include_non_members=False, filter_fn=None, filter_opaque=N
     like listing people whose fobs are ready for enabling, or who have missed
     paying their latest subscription.  A third argument is passed through
     to that function."""
+    if not include_non_members: # debug hack
+        print("members list for debugging", person.Person.list_all_members()) # debug hack
+    include_non_members = True  # debug hack
     global serverconf
     if serverconf == None:
         serverconf = configuration.get_config()['server']
-    users_base = serverconf['base_url']+serverconf['users']
+    users_base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + serverconf['users']
     # todo: must have done access_permissions.setup_access_permissions(logged_in_user) by now
     # permissions = access_permissions.get_access_permissions()
     people = person.Person.list_all_people() if include_non_members else person.Person.list_all_members()
@@ -46,9 +49,9 @@ def user_list_section(include_non_members=False, filter_fn=None, filter_opaque=N
 def name_match(user, pattern):
     return re.search(pattern, user.name())
 
-def user_list_matching_section(pattern, include_non_members=False):
+def user_list_matching_section(django_request, pattern, include_non_members=False):
     """Return the list of users whose names match the given pattern."""
-    return user_list_section(include_non_members, name_match, pattern)
+    return user_list_section(django_request, include_non_members, name_match, pattern)
 
 def joined_before(user, datestring):
     joined, left = user.is_member()
@@ -56,8 +59,8 @@ def joined_before(user, datestring):
         return False
     return model.event.timestring(joined.start) < datestring
 
-def user_list_before_section(datestring, include_non_members=False):
-    return user_list_section(include_non_members, joined_before, datestring)
+def user_list_before_section(django_request, datestring, include_non_members=False):
+    return user_list_section(django_request, include_non_members, joined_before, datestring)
 
 def joined_after(user, datestring):
     joined, left = user.is_member()
@@ -65,8 +68,8 @@ def joined_after(user, datestring):
         return False
     return model.event.timestring(joined.start) > datestring
 
-def user_list_after_section(datestring, include_non_members=False):
-    return user_list_section(include_non_members, joined_after, datestring)
+def user_list_after_section(django_request, datestring, include_non_members=False):
+    return user_list_section(django_request, include_non_members, joined_after, datestring)
 
 user_list_filters = {
     'name': name_match,

@@ -25,8 +25,8 @@ def top_navigation(django_request):
             [T.ul[T.li[T.a(href=org_conf['home_page'])[org_conf['title'] + " home"]],
                   T.li[T.a(href=org_conf['wiki'])["Wiki"]],
                   T.li[T.a(href=org_conf['forum'])["Forum"]],
-                  T.li[T.a(href=base + "dashboard/")["Your dashboard"]],
-                  T.li[T.a(href=base + 'users/logout')["Logout"]]]]]
+                  T.li[T.a(href=base + "/dashboard/")["Your dashboard"]],
+                  T.li[T.a(href=base + '/users/logout')["Logout"]]]]]
 
 # https://stackoverflow.com/questions/2345708/how-can-i-get-the-full-absolute-url-with-domain-in-django
 # request.build_absolute_url()
@@ -61,7 +61,8 @@ def toggle_request(who, eqty, role, already_requested, django_request):
             else cancel_button(who, eqty, role, "Cancel %s training request"%role, django_request))
 
 def signup_button(event_id, who_id, button_text, django_request):
-    return T.form(action=server_conf['base_url']+"signup",
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+    return T.form(action=base+django.urls.reverse("events:signup"),
                   method='POST')[T.input(type="hidden", name="eventid", value=str(event_id)),
                                  T.input(type="hidden", name="person_id", value=who_id),
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
@@ -118,14 +119,18 @@ def avail_table(slot_sums):
 
 def general_equipment_list(who, viewer, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
     return T.table[T.thead[T.tr[T.th["Equipment type"], T.th["Request"], T.th["Admin action"] if viewer.is_administrator() else ""]],
-                   T.tbody[[[T.tr[T.th[T.a(href=server_conf['base_url']+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
+                   T.tbody[[[T.tr[T.th[T.a(href=base+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
                                   T.td[machinelist(keyed_types[name],
                                                    who, django_request, False) if detailed else "",
                                        toggle_request(who, keyed_types[name]._id, 'user',
                                                       who.has_requested_training([keyed_types[name]._id], 'user'),
                                                       django_request)],
-                                  T.td[permit_form(keyed_types[name], who, 'user', django_request)] if viewer.is_administrator() else ""]]
+                                  T.td[permit_form(keyed_types[name],
+                                                   who._id,
+                                                   'user',
+                                                   django_request)] if viewer.is_administrator() else ""]]
                             for name in sorted(keyed_types.keys())]]]
 
 def machinelist(eqty, who, django_request, as_owner=False):
@@ -138,6 +143,7 @@ def machinelist(eqty, who, django_request, as_owner=False):
                                     T.td[device.status],
                                     T.td[schedule_event_form(who,
                                                              [T.input(type="hidden", name="machine", value=device.name),
+                                                              T.input(type="hidden", name="equiptype", value=eqty._id),
                                                               T.input(type="hidden", name="event_type", value="maintenance")],
                                                              "Schedule maintenance",
                                                              django_request)
@@ -167,17 +173,19 @@ def eqty_training_requests(eqtype):
                                                       for req in raw_reqs]))]
 
 def special_event_form(eqtype, who_id, role, enable, css_class, button_label, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
     return T.form(action=base+"events/special",
                   class_=css_class,
                   method='POST')[T.input(type='hidden', name='eqtype', value=eqtype._id),
                                  T.input(type='hidden', name='who', value=who_id),
+                                 T.input(type='hidden', name='admin_user', value=model.person.Person.find(django_request.user.link_id)._id),
                                  T.input(type='hidden', name='role', value=role),
                                  T.input(type='hidden', name='enable', value=enable),
                                  "Days", T.input(type='text',
                                                  name='duration',
                                                  value="indefinite",
                                                  size=len("indefinite")),
+                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value=button_label)]
 
 def permit_form(eqtype, who_id, role, django_request):

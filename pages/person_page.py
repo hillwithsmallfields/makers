@@ -52,8 +52,8 @@ def profile_section(who, viewer, django_request):
                        T.tr[T.th(class_="ralabel")["County"], T.td[T.input(type="text", name="county", value=str(address.get('county', "")))]],
                        T.tr[T.th(class_="ralabel")["Country"], T.td[T.input(type="text", name="country", value=str(address.get('country', "")))]],
                        T.tr[T.th(class_="ralabel")["Postcode"], T.td[T.input(type="text", name="postcode", value=str(address.get('postcode', "")))]],
-                       T.tr[T.th(class_="ralabel")["Stylesheet"], T.td[T.input(type="text", # todo: make this a dropdown
-                                                                               name="stylesheet", value=who.stylesheet or "makers")]],
+                       T.tr[T.th(class_="ralabel")["Stylesheet"], T.td[T.select(name="stylesheet")[[T.option[style] # todo: mark current stylesheet as checked
+                                                                                                    for style in model.configuration.get_stylesheets()]]]],
                        T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]],
                    "general_user_profile")],
               T.h2["Availability"],
@@ -78,12 +78,15 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
             T.h3[eqtype.name + " owner information and actions"
                       if is_owner
                       else "Not yet an owner"+(" but has requested owner training" if has_requested_owner_training else "")],
-            T.div(class_='as_owner')[([pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="training"),
+            T.div(class_='as_owner')[([pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="owner training"),
                                                                                    T.input(type="hidden", name="role", value="owner"),
                                                                                    T.input(type="hidden", name="type", value=eqtype._id)],
                                                                              "Schedule owner training",
                                                                              django_request),
-                                       [pages.page_pieces.ban_form(eqtype, who, 'owner', django_request) if viewer.is_administrator() else []]]
+                                       [pages.page_pieces.ban_form(eqtype,
+                                                                   who._id,
+                                                                   'owner',
+                                                                   django_request) if viewer.is_administrator() else []]]
                                       if is_owner
                                       else pages.page_pieces.toggle_request(who, eqtype._id, 'owner',
                                                                             has_requested_owner_training,
@@ -93,18 +96,21 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
                       else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
             T.div(class_='as_trainer')[pages.page_pieces.eqty_training_requests(eqtype),
                                        ([pages.page_pieces.schedule_event_form(who,
-                                                                               [T.input(type="hidden", name="event_type", value="training"),
-                                                                                "User training: ", T.input(type="radio",
-                                                                                                           name="role",
-                                                                                                           value="user",
-                                                                                                           checked="checked"), T.br,
-                                                                                "Trainer training: ", T.input(type="radio",
-                                                                                                              name="role",
-                                                                                                              value="trainer"), T.br,
+                                                                               [T.input(type="hidden", name="event_type", value="user training"),
+                                                                                T.input(type="hidden", name="role", value="user"),
                                                                                 T.input(type="hidden", name="equiptype", value=eqtype._id)],
-                                                                               "Schedule training",
+                                                                               "Schedule user training",
                                                                                django_request),
-                                         [pages.page_pieces.ban_form(eqtype, who, 'trainer', django_request) if viewer.is_administrator() else []]]
+                                         pages.page_pieces.schedule_event_form(who,
+                                                                               [T.input(type="hidden", name="event_type", value="trainer training"),
+                                                                                T.input(type="hidden", name="role", value="trainer"),
+                                                                                T.input(type="hidden", name="equiptype", value=eqtype._id)],
+                                                                               "Schedule trainer training",
+                                                                               django_request),
+                                         [pages.page_pieces.ban_form(eqtype,
+                                                                     who._id,
+                                                                     'trainer',
+                                                                     django_request) if viewer.is_administrator() else []]]
                                         if is_trainer
                                         else pages.page_pieces.toggle_request(who, eqtype._id, 'trainer',
                                                                               has_requested_trainer_training,
@@ -154,20 +160,23 @@ def name_of_host(host):
 def equipment_trained_on(who, viewer, equipment_types, django_request):
     keyed_types = { ty.pretty_name(): (ty, who.qualification(ty.name, 'user'))
                     for ty in equipment_types }
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + django.urls.reverse("equiptypes:eqty<eqty>")
     return T.div(class_="trainedon")[
         T.table(class_='trainedon')[
             T.thead[T.tr[T.th["Equipment type"],
                          T.th["Trainer"],
                          T.th["Date"],
+                         T.th["Request trainer training"],
+                         T.th["Request owner training"],
                          # todo: put machine statuses in
                          [T.th["Ban"],
                           T.th["Make owner"],
                           T.th["Make trainer"]] if (viewer.is_administrator()
                                                     or viewer.is_owner(name)
                                                     or viewer.is_trainer(name)) else []]],
-            T.tbody[[T.tr[T.th[T.a(href=base + django.urls.reverse("equiptypes") + keyed_types[name][0].name)[name]],
-                          T.td[join([name_of_host(host)
+            T.tbody[[T.tr[T.th[T.a(href=django_request.scheme
+                                   + "://" + django_request.META['HTTP_HOST']
+                                   + django.urls.reverse("equiptypes:eqty", args=(keyed_types[name][0].name,)))[name]],
+                          T.td[", ".join([name_of_host(host)
                                      # todo: linkify these if admin? but that would mean not using the easy "join"
                                                                  for host in keyed_types[name][1][0].hosts])],
                           T.td[model.event.timestring(keyed_types[name][1][0].start)],
@@ -177,9 +186,9 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                           T.td[pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'owner',
                                                                 who.has_requested_training([keyed_types[name][0]._id], 'owner'),
                                                                 django_request)],
-                          ([T.td[pages.page_pieces.ban_form(keyed_types[name][0], who, 'user', django_request)],
-                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who, 'owner', django_request)],
-                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who, 'trainer', django_request)]]
+                          ([T.td[pages.page_pieces.ban_form(keyed_types[name][0], who._id, 'user', django_request)],
+                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who._id, 'owner', django_request)],
+                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who._id, 'trainer', django_request)]]
                                                        if (viewer.is_administrator()
                                                            or viewer.is_owner(name)
                                                            or viewer.is_trainer(name)) else [])]
@@ -219,6 +228,37 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
 
     page_data.add_section("Personal profile", profile_section(who, viewer, django_request))
 
+    announcements = [{'From': "Test announcer",
+                      'Date': datetime.datetime.now(),
+                      'Text': "This is a dummy announcement, to show where system-wide messages will go."},
+                     {'From': "Another test announcer",
+                      'Date': datetime.datetime.now(),
+                      'Text': "This is another dummy announcement.  There will eventually be a button to dismiss announcements and notifications."}]
+    notifications = [{'From': "Test notifier",
+                      'Date': datetime.datetime.now(),
+                      'Text': "This is a dummy notification, to show where notifications to individuals will go."},
+                     {'From': "Test notifier",
+                      'Date': datetime.datetime.now(),
+                      'Text': "Until this is connected to email, you'll get training invitations here."},
+                     {'From': "Another test notifier",
+                      'Date': datetime.datetime.now(),
+                      'Text': "I don't like in-site message systems but I've put this here to get us through testing without having to set up real mail sending."}]
+
+    messages = []
+    if len(announcements) > 0:
+        messages.append([T.h3["Announcements"],
+                         T.dl[[[T.dt["From " + a['From'] + " at " + model.event.timestring(a['Date'])],
+                                T.dd[a['Text']]] for a in announcements]]])
+    if len(notifications) > 0:
+        messages.append([T.h3["Notifications"],
+                         T.dl[[[T.dt["From " + n['From'] + " at " + model.event.timestring(n['Date'])],
+                                T.dd[n['Text']]] for n in notifications]]])
+
+    if len(announcements) > 0 or len(notifications) > 0:
+        page_data.add_section("Notifications",
+                              T.div(class_="notifications")[messages],
+                              priority=9)
+
     their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
     if len(their_responsible_types) > 0:
         keyed_types = { ty.pretty_name(): ty for ty in their_responsible_types }
@@ -247,7 +287,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
         page_data.add_section("Events I'm hosting",
                               T.div(class_="hostingevents")[pages.event_page.event_table_section(hosting, who._id, django_request)])
 
-    attending = model.timeline.Timeline.future_events(person_field='attendees', person_id=who._id).events
+    attending = model.timeline.Timeline.future_events(person_field='signed_up', person_id=who._id).events
     if len(attending) > 0:
         page_data.add_section("Events I'm attending",
                               T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)])
@@ -257,7 +297,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
         page_data.add_section("Events I have hosted",
                               T.div(class_="hostedevents")[pages.event_page.event_table_section(hosted, who._id, django_request)])
 
-    attended = model.timeline.Timeline.past_events(person_field='attendees', person_id=who._id).events
+    attended = model.timeline.Timeline.past_events(person_field='signed_up', person_id=who._id).events
     if len(attended) > 0:
         page_data.add_section("Events I have attended",
                               T.div(class_="attendedingevents")[pages.event_page.event_table_section(attended, who._id, django_request)])
@@ -296,17 +336,14 @@ def person_page_setup():
     org_conf = all_conf['organization']
     pages.page_pieces.set_server_conf()
 
-def person_page_contents(who, viewer, extra_top_header=None, extra_top_body=None):
+def person_page_contents(who, viewer, django_request, extra_top_header=None, extra_top_body=None):
     person_page_setup()
 
-    page_data = pages.SectionalPage("User dashboard for " + who.name(),
-                                    # todo: put these into a central place, for use on most pages
-                                    [T.ul[T.li[T.a(href=org_conf['home_page'])["Home"]],
-                                          T.li[T.a(href=org_conf['wiki'])["Wiki"]],
-                                          T.li[T.a(href=org_conf['forum'])["Forum"]]]],
-                                    viewer=viewer)
+    page_data = model.pages.SectionalPage("User dashboard for " + who.name(),
+                                          pages.page_pieces.top_navigation(django_request),
+                                          viewer=viewer)
 
-    add_person_page_contents(page_data, who, viewer,
+    add_person_page_contents(page_data, who, viewer, django_request,
                              extra_top_header=extra_top_header,
                              extra_top_body=extra_top_body)
 
