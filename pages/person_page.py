@@ -1,6 +1,7 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import datetime
 import django.middleware.csrf
+import django.urls
 import model.configuration
 import model.equipment_type
 import model.event

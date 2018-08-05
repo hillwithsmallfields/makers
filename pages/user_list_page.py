@@ -1,5 +1,6 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 
+import django.urls
 import model.access_permissions as access_permissions
 import model.configuration as configuration
 import model.person as person
@@ -23,7 +24,7 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
     global serverconf
     if serverconf == None:
         serverconf = configuration.get_config()['server']
-    users_base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + serverconf['users']
+    users_base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     # todo: must have done access_permissions.setup_access_permissions(logged_in_user) by now
     # permissions = access_permissions.get_access_permissions()
     people = person.Person.list_all_people() if include_non_members else person.Person.list_all_members()
@@ -35,7 +36,8 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
     # todo: remove this dirty hack which I put in for early testing
     if True: # permissions.auditor or permissions.admin:
         return T.table[[T.tr[T.th["Name"], T.th["User"], T.th["Owner"], T.th["Trainer"]]],
-                       [T.tr[T.th[T.a(href=users_base+who.link_id)[whoname]],
+                       [T.tr[T.th[T.a(href=users_base
+                                      + django.urls.reverse('dashboard:user_dashboard', args=([who.link_id])))[whoname]],
                              T.td[", ".join(who.get_equipment_type_names('user'))],
                              T.td[", ".join(who.get_equipment_type_names('owner'))],
                              T.td[", ".join(who.get_equipment_type_names('trainer'))]]
