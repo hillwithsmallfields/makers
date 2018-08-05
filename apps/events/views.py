@@ -64,7 +64,9 @@ def new_event(request):
 def one_event(request, id):
     """View function for looking at one event."""
 
-    ev = model.event.Event.find_by_id(id)
+    print("one_event with id", id, "of type", type(id))
+
+    ev = model.event.Event.find_by_id(model.pages.unstring_id(id))
 
     if ev is None:
         return event_error_page(request, "Event display error",
@@ -83,10 +85,10 @@ def one_event(request, id):
 def signup_event(request):
     """View function for signing up for an event."""
 
+    params = request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
     print("in signup_event with params", params)
-    params = django_request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
 
-    ev = model.event.Event.find_by_id(params['event_id'])
+    ev = model.event.Event.find_by_id(model.pages.unstring_id(params['event_id']))
 
     if ev is None:
         return event_error_page(request, "Event signup page error",
@@ -108,7 +110,7 @@ def signup_event(request):
 def complete_event(request, id):
     """View function for handling event completion."""
 
-    ev = model.event.Event.find_by_id(id)
+    ev = model.event.Event.find_by_id(model.pages.unstring_id(id))
 
     if ev is None:
         return event_error_page(request, "Event completion page error",
@@ -132,7 +134,7 @@ def store_event_results(request):
     params = django_request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
     print("in store_event_results with params", params)
 
-    ev = model.event.Event.find_by_id(params['event_id'])
+    ev = model.event.Event.find_by_id(model.pages.unstring_id(params['event_id']))
 
     if ev is None:
         return event_error_page(request, "Event recording error",

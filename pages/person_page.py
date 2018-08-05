@@ -81,11 +81,11 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
                       else "Not yet an owner"+(" but has requested owner training" if has_requested_owner_training else "")],
             T.div(class_='as_owner')[([pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="owner training"),
                                                                                    T.input(type="hidden", name="role", value="owner"),
-                                                                                   T.input(type="hidden", name="type", value=eqtype._id)],
+                                                                                   T.input(type="hidden", name="equiptype", value=eqtype._id)],
                                                                              "Schedule owner training",
                                                                              django_request),
                                        [pages.page_pieces.ban_form(eqtype,
-                                                                   who._id,
+                                                                   who._id, who.name(),
                                                                    'owner',
                                                                    django_request) if viewer.is_administrator() else []]]
                                       if is_owner
@@ -109,7 +109,7 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
                                                                                "Schedule trainer training",
                                                                                django_request),
                                          [pages.page_pieces.ban_form(eqtype,
-                                                                     who._id,
+                                                                     who._id, who.name(),
                                                                      'trainer',
                                                                      django_request) if viewer.is_administrator() else []]]
                                         if is_trainer
@@ -118,14 +118,15 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
                                                                               django_request))]]
 
 def skills_button(area_name, level, which_level):
-    return [T.td[T.input(type='radio',
-                         name=area_name,
-                         value=str(which_level),
-                         checked='checked')
-                 if level == which_level
-                 else T.input(type='radio',
-                              name=area_name,
-                              value=str(which_level))]]
+    return [T.td(class_="level_" + str(which_level))
+            [T.input(type='radio',
+                     name=area_name,
+                     value=str(which_level),
+                     checked='checked')
+             if level == which_level
+             else T.input(type='radio',
+                          name=area_name,
+                          value=str(which_level))]]
 
 def skills_section(who, django_request):
     skill_levels = who.get_profile_field('skill_levels') or {}
@@ -134,13 +135,18 @@ def skills_section(who, django_request):
         return []
     existing_skills = {area_name: skill_levels.get(area_name, 0) for area_name in skill_areas}
     return [T.form(action="update_levels", method="POST")
-            [T.table[T.thead[T.tr[[T.th["Area"], T.th["0"], T.th["1"], T.th["2"], T.th["3"]]]],
-                     T.tbody[[[T.tr[T.th[area],
-                                    skills_button(area, existing_skills[area], 0),
-                                    skills_button(area, existing_skills[area], 1),
-                                    skills_button(area, existing_skills[area], 2),
-                                    skills_button(area, existing_skills[area], 3)]]
-                              for area in sorted(skill_areas)]]],
+            [T.table(class_="skills_check_table")
+             [T.thead[T.tr[[T.th["Area"],
+                            T.th(class_="level_0")["0"],
+                            T.th(class_="level_1")["1"],
+                            T.th(class_="level_2")["2"],
+                            T.th(class_="level_3")["3"]]]],
+              T.tbody[[[T.tr[T.th[area],
+                             skills_button(area, existing_skills[area], 0),
+                             skills_button(area, existing_skills[area], 1),
+                             skills_button(area, existing_skills[area], 2),
+                             skills_button(area, existing_skills[area], 3)]]
+                       for area in sorted(skill_areas)]]],
              T.div(align="right")[T.input(type="submit", value="Update interests and skills")]]]
 
 def avoidances_section(who, django_request):
@@ -161,6 +167,7 @@ def name_of_host(host):
 def equipment_trained_on(who, viewer, equipment_types, django_request):
     keyed_types = { ty.pretty_name(): (ty, who.qualification(ty.name, 'user'))
                     for ty in equipment_types }
+    who_name = who.name()
     return T.div(class_="trainedon")[
         T.table(class_='trainedon')[
             T.thead[T.tr[T.th["Equipment type"],
@@ -187,9 +194,9 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                           T.td[pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'owner',
                                                                 who.has_requested_training([keyed_types[name][0]._id], 'owner'),
                                                                 django_request)],
-                          ([T.td[pages.page_pieces.ban_form(keyed_types[name][0], who._id, 'user', django_request)],
-                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who._id, 'owner', django_request)],
-                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who._id, 'trainer', django_request)]]
+                          ([T.td[pages.page_pieces.ban_form(keyed_types[name][0], who._id, who_name, 'user', django_request)],
+                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who._id, who_name, 'owner', django_request)],
+                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who._id, who_name, 'trainer', django_request)]]
                                                        if (viewer.is_administrator()
                                                            or viewer.is_owner(name)
                                                            or viewer.is_trainer(name)) else [])]

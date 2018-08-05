@@ -63,7 +63,7 @@ def toggle_request(who, eqty, role, already_requested, django_request):
 def signup_button(event_id, who_id, button_text, django_request):
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return T.form(action=base+django.urls.reverse("events:signup"),
-                  method='POST')[T.input(type="hidden", name="eventid", value=str(event_id)),
+                  method='POST')[T.input(type="hidden", name="event_id", value=str(event_id)),
                                  T.input(type="hidden", name="person_id", value=who_id),
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.button(type="submit", value="cancel_request")[button_text]]
@@ -128,7 +128,7 @@ def general_equipment_list(who, viewer, these_types, django_request, detailed=Fa
                                                       who.has_requested_training([keyed_types[name]._id], 'user'),
                                                       django_request)],
                                   T.td[permit_form(keyed_types[name],
-                                                   who._id,
+                                                   who._id, who.name(),
                                                    'user',
                                                    django_request)] if viewer.is_administrator() else ""]]
                             for name in sorted(keyed_types.keys())]]]
@@ -188,16 +188,16 @@ def special_event_form(eqtype, who_id, role, enable, css_class, button_label, dj
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value=button_label)]
 
-def permit_form(eqtype, who_id, role, django_request):
+def permit_form(eqtype, who_id, who_name, role, django_request):
     return special_event_form(eqtype, who_id, role,
                               'True', "permit_form",
-                              "Grant " + role + " permission",
+                              "Grant " + role + " permission to " + who_name,
                               django_request)
 
-def ban_form(eqtype, who_id, role, django_request):
+def ban_form(eqtype, who_id, who_name, role, django_request):
     return special_event_form(eqtype, who_id, role,
                               'False', "ban_form",
-                              "Ban as " + role,
+                              "Ban " + who_name + " as " + role,
                               django_request)
 
 def announcements_section():

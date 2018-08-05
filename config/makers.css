@@ -58,6 +58,26 @@ ul.compactlist {
     display: inline;
 }
 
+table.skills_check_table {
+    border:    1px;
+}
+
+td.level_0, th.level_0 {
+    background:    grey;
+}
+
+td.level_1, th.level_1 {
+    background:    bronze;
+}
+
+td.level_2, th.level_2 {
+    background:    silver;
+}
+
+td.level_3, th.level_3 {
+    background:    gold;
+}
+
 .button {
     border:        1px;
     border-style:  outset;

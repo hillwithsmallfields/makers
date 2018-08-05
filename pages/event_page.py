@@ -31,6 +31,7 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
     all_people_id_to_name = {p: model.person.Person.find(p).name() for p in all_people_ids}
     all_people_name_and_id = [(all_people_id_to_name[id], id) for id in all_people_id_to_name.keys()]
     ids_in_order = []
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     for name in sorted(all_people_id_to_name.values()):
         for pair in all_people_name_and_id:
             if name == pair[0]:
@@ -52,7 +53,7 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
                                                                     T.td[result_checkbox(id, "failed", id in ev.failed)],
                                                                     T.td[result_checkbox(id, "passed", id in ev.passed)]]
                                                            for id in ids_in_order]]
-        results.append((T.form(action=django.urls.reverse("event:results"),
+        results.append((T.form(action=base+django.urls.reverse("event:results"),
                               method="POST")[T.input(type="hidden", name='event_id', value=ev._id),
                                              completion_table])
                        if completion_as_form
@@ -75,7 +76,7 @@ def event_table_section(tl_or_events, who_id, django_request, show_equiptype=Non
             [T.thead[T.tr[T.th["Title"], T.th["Event type"], T.th["Start"], T.th["Location"], T.th["Hosts"],
                           T.th["Equipment"] if show_equiptype else "",
                           T.th["Sign up"] if with_signup else ""]],
-             T.tbody[[[T.tr[T.th(class_="event_title")[ev.title],
+             T.tbody[[[T.tr[T.th(class_="event_title")[T.a(href=event_link(ev, django_request))[ev.title]],
                             T.td(class_="event_type")[ev.event_type],
                             T.td(class_="event_start")[model.event.timestring(ev.start)],
                             T.td(class_="location")[ev.location],
