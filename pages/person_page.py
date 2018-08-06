@@ -53,6 +53,9 @@ def profile_section(who, viewer, django_request):
                        T.tr[T.th(class_="ralabel")["County"], T.td[T.input(type="text", name="county", value=str(address.get('county', "")))]],
                        T.tr[T.th(class_="ralabel")["Country"], T.td[T.input(type="text", name="country", value=str(address.get('country', "")))]],
                        T.tr[T.th(class_="ralabel")["Postcode"], T.td[T.input(type="text", name="postcode", value=str(address.get('postcode', "")))]],
+                       T.tr[T.th(class_="ralabel")["No-shows"], T.td[str(len(who.get_training_events(role_training, result='noshow')))]],
+                       T.tr[T.th(class_="ralabel")["No-show absolutions"], T.td[(T.input(type="text", name="absolutions", value=str(who.noshow_absolutions))
+                                                                                 if viewer.is_administrator() else str(who.noshow_absolutions))]],
                        T.tr[T.th(class_="ralabel")["Stylesheet"], T.td[T.select(name="stylesheet")[[T.option[style] # todo: mark current stylesheet as checked
                                                                                                     for style in model.configuration.get_stylesheets()]]]],
                        T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]],
