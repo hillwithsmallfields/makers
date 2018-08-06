@@ -132,6 +132,24 @@ td.level_3, th.level_3 {
     padding:          0.5em;
 }
 
+/* lists of event completion results */
+
+.unknown {
+}
+
+.no_show {
+    background-color: black;
+    foreground-color: white;
+}
+
+.failed {
+    background-color: red;
+}
+
+.passed {
+    background-color: green;
+}
+
 /* buttons etc */
 
 .button {

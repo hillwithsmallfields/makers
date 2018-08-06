@@ -372,34 +372,38 @@ class Event(object):
         """Add specified people to the signed_up list."""
         # print "event", self._id, "adding", signed_up, "to", self.signed_up, "?"
         for attendee in signed_up:
-            if attendee._id not in self.signed_up:
-                # print "yes, adding", attendee, attendee._id
-                self.signed_up.append(attendee._id)
+            s_up_id = attendee._id if isinstance(attendee, Event) else attendee
+            if s_up_id not in self.signed_up:
+                # print "yes, adding", attendee, s_up_id
+                self.signed_up.append(s_up_id)
         self.remove_invitation_declined(signed_up)
         self.save()
 
     def remove_signed_up(self, signed_up):
         """Remove specified people from the signed_up list."""
         for attendee in signed_up:
-            if attendee._id in self.signed_up:
-                self.signed_up.remove(attendee._id)
+            s_up_id = attendee._id if isinstance(attendee, Event) else attendee
+            if s_up_id in self.signed_up:
+                self.signed_up.remove(s_up_id)
         self.save()
 
     def add_invitation_declined(self, invitation_declined):
         """Add specified people to the invitation_declined list."""
         # print "event", self._id, "adding", invitation_declined, "to", self.invitation_declined, "?"
         for attendee in invitation_declined:
-            if attendee._id not in self.invitation_declined:
-                # print "yes, adding", attendee, attendee._id
-                self.invitation_declined.append(attendee._id)
+            s_up_id = attendee._id if isinstance(attendee, Event) else attendee
+            if s_up_id not in self.invitation_declined:
+                # print "yes, adding", attendee, s_up_id
+                self.invitation_declined.append(s_up_id)
         self.remove_signed_up(invitation_declined)
         self.save()
 
     def remove_invitation_declined(self, invitation_declined):
         """Remove specified people from the invitation_declined list."""
         for attendee in invitation_declined:
-            if attendee._id in self.invitation_declined:
-                self.invitation_declined.remove(attendee._id)
+            s_up_id = attendee._id if isinstance(attendee, Event) else attendee
+            if s_up_id in self.invitation_declined:
+                self.invitation_declined.remove(s_up_id)
         self.save()
 
     def auto_expire_non_replied_invitations(self):

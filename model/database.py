@@ -196,6 +196,7 @@ def get_events(event_type=None,
 
 def get_event_by_id(event_id):
     """Read the data for an event from the database."""
+    print("getting event by id", event_id,  "of type", type(event_id))
     return database[collection_names['events']].find_one({'_id': event_id})
 
 def save_event(this_event):

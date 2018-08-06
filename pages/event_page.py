@@ -45,19 +45,27 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
                  T.tr[T.th(class_="ralabel")["Location"], T.td(class_="location")[ev.location]],
                  T.tr[T.th(class_="ralabel")["Equipment type"], T.td(class_="event_equipment_type")[model.equipment_type.Equipment_type.find_by_id(ev.equipment_type).name]],
                  T.tr[T.th(class_="ralabel")["Hosts"], T.td(class_="hosts")[people_list(ev.hosts)]]])]
+    if ev.signed_up and len(ev.signed_up) > 0:
+        results += [T.h4["Users signed up to event"],
+                    T.ul[[model.person.Person.find(sup).name() for sup in ev.signed_up]]]
     if with_completion:
-        completion_table = T.table(class_='event_completion')[T.tr[T.th["Name"],T.th["Unknown"],T.th["No-show"],T.th["Failed"],T.th["Passed"]],
+        completion_table = T.table(class_='event_completion')[T.tr[T.th["Name"],
+                                                                   T.th(class_='unknown')["Unknown"],
+                                                                   T.th(class_='no_show')["No-show"],
+                                                                   T.th(class_='failed')["Failed"],
+                                                                   T.th(class_='passed')["Passed"]],
                                                               [T.tr[T.th[all_people_id_to_name[id]],
-                                                                    T.td[result_checkbox(id, "unknown", id not in ev.noshow and id not in ev.failed and id not in ev.passed)],
-                                                                    T.td[result_checkbox(id, "noshow", id in ev.noshow)],
-                                                                    T.td[result_checkbox(id, "failed", id in ev.failed)],
-                                                                    T.td[result_checkbox(id, "passed", id in ev.passed)]]
+                                                                    T.td(class_='unknown')[result_checkbox(id, "unknown", id not in ev.noshow and id not in ev.failed and id not in ev.passed)],
+                                                                    T.td(class_='no_show')[result_checkbox(id, "noshow", id in ev.noshow)],
+                                                                    T.td(class_='failed')[result_checkbox(id, "failed", id in ev.failed)],
+                                                                    T.td(class_='passed')[result_checkbox(id, "passed", id in ev.passed)]]
                                                            for id in ids_in_order]]
-        results.append((T.form(action=base+django.urls.reverse("event:results"),
-                              method="POST")[T.input(type="hidden", name='event_id', value=ev._id),
-                                             completion_table])
-                       if completion_as_form
-                       else completion_table)
+        results += [T.h4["Results"],
+                    ((T.form(action=base+django.urls.reverse("event:results"),
+                             method="POST")[T.input(type="hidden", name='event_id', value=ev._id),
+                                            completion_table])
+                     if completion_as_form
+                     else completion_table)]
         # todo: signup if in the future
     return [T.h3[ev.title],
             results]

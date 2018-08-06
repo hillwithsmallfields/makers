@@ -66,7 +66,7 @@ def one_event(request, id):
 
     print("one_event with id", id, "of type", type(id))
 
-    ev = model.event.Event.find_by_id(model.pages.unstring_id(id))
+    ev = model.event.Event.find_by_id(params['event_id'])
 
     if ev is None:
         return event_error_page(request, "Event display error",
@@ -86,17 +86,16 @@ def signup_event(request):
     """View function for signing up for an event."""
 
     params = request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
-    print("in signup_event with params", params)
 
-    ev = model.event.Event.find_by_id(model.pages.unstring_id(params['event_id']))
+    ev = model.event.Event.find_by_id(params['event_id'])
 
     if ev is None:
         return event_error_page(request, "Event signup page error",
                                 "In signup_event, could not find event with id " + str(params['event_id']))
 
-    ev.invitation_accepted.append(params['person_id'])
+    ev.add_signed_up([params['person_id']])
 
-    page_data = model.pages.HtmlPage("Event completion",
+    page_data = model.pages.HtmlPage("Event signup",
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)
 
@@ -110,7 +109,7 @@ def signup_event(request):
 def complete_event(request, id):
     """View function for handling event completion."""
 
-    ev = model.event.Event.find_by_id(model.pages.unstring_id(id))
+    ev = model.event.Event.find_by_id(params['event_id'])
 
     if ev is None:
         return event_error_page(request, "Event completion page error",
@@ -134,7 +133,7 @@ def store_event_results(request):
     params = django_request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
     print("in store_event_results with params", params)
 
-    ev = model.event.Event.find_by_id(model.pages.unstring_id(params['event_id']))
+    ev = model.event.Event.find_by_id(params['event_id'])
 
     if ev is None:
         return event_error_page(request, "Event recording error",
