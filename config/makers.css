@@ -78,6 +78,62 @@ td.level_3, th.level_3 {
     background:    gold;
 }
 
+/* lists of equipment for which a person has a given role */
+
+.username {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.user {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.owner {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.trainer {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+/* lists of events */
+
+.event_title  {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.event_type  {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.event_start  {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.location  {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.hosts  {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.event_equipment_type  {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+/* buttons etc */
+
 .button {
     border:        1px;
     border-style:  outset;

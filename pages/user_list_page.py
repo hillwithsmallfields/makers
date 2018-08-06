@@ -9,6 +9,11 @@ import re
 
 serverconf=None
 
+def equipment_type_role_name_list(who, role):
+    """Return a list of equipment types for which a person has a given role."""
+    # todo: make this into a list of names with individual anchors
+    return ", ".join(who.get_equipment_type_names(role))
+
 def user_list_section(django_request, include_non_members=False, filter_fn=None, filter_opaque=None):
     """Return the users list, if the viewing person is allowed to see it.
     Otherwise, just how many people there are.
@@ -18,9 +23,6 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
     like listing people whose fobs are ready for enabling, or who have missed
     paying their latest subscription.  A third argument is passed through
     to that function."""
-    if not include_non_members: # debug hack
-        print("members list for debugging", person.Person.list_all_members()) # debug hack
-    include_non_members = True  # debug hack
     global serverconf
     if serverconf == None:
         serverconf = configuration.get_config()['server']
@@ -28,19 +30,20 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
     # todo: must have done access_permissions.setup_access_permissions(logged_in_user) by now
     # permissions = access_permissions.get_access_permissions()
     people = person.Person.list_all_people() if include_non_members else person.Person.list_all_members()
-    print("raw list", people)
     if filter_fn:
         people = [someone for someone in people if filter_fn(someone, filter_opaque)]
-        print("filtered list", people)
     people_dict = {whoever.name(): whoever for whoever in people}
     # todo: remove this dirty hack which I put in for early testing
     if True: # permissions.auditor or permissions.admin:
-        return T.table[[T.tr[T.th["Name"], T.th["User"], T.th["Owner"], T.th["Trainer"]]],
-                       [T.tr[T.th[T.a(href=users_base
+        return T.table[[T.tr[T.th(class_='username')["Name"],
+                             T.th(class_='user')["User"],
+                             T.th(class_='owner')["Owner"],
+                             T.th(class_='trainer')["Trainer"]]],
+                       [T.tr[T.th(class_='username')[T.a(href=users_base
                                       + django.urls.reverse('dashboard:user_dashboard', args=([who.link_id])))[whoname]],
-                             T.td[", ".join(who.get_equipment_type_names('user'))],
-                             T.td[", ".join(who.get_equipment_type_names('owner'))],
-                             T.td[", ".join(who.get_equipment_type_names('trainer'))]]
+                             T.td(class_='user')[equipment_type_role_name_list(who, 'user')],
+                             T.td(class_='owner')[equipment_type_role_name_list(who, 'owner')],
+                             T.td(class_='trainer')[equipment_type_role_name_list(who, 'trainer')]]
                         for (whoname, who) in [(key, people_dict[key]) for key in sorted(people_dict.keys())]
                     ]]
     else:
