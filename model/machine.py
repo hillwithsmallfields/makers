@@ -23,6 +23,7 @@ class Machine(object):
         """Set up a machine's data, from its name."""
         self.name = name
         self.equipment_type = None # an Object_Id
+        self.description = None
         self.status = 'unknown'
         self.status_detail = None
         self.maintenance_history = []

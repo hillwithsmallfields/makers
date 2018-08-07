@@ -22,6 +22,7 @@ class Equipment_type(object):
         self.presentation_name = None
         self.training_category = None
         self.manufacturer = None
+        self.description = None
         self.picture = None
         self._id = None
 

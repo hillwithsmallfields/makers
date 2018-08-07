@@ -19,6 +19,8 @@ def equipment_type_section(eqty, viewing_user, django_request):
     # todo: add admin-specific buttons
     if eqty.picture:
         result += [T.img(src=eqty.picture, align="right")]
+    if eqty.description:
+        result += [T.p[eqty.description]]
     if eqty.manufacturer:
         result += [T.dt["Manufacturer"],
                    T.dd[eqty.manufacturer]]
