@@ -64,7 +64,7 @@ def profile_section(who, viewer, django_request):
               model.pages.with_help(pages.page_pieces.availform(who.available, django_request),
                                     "availability")]
     if 'skill_areas' in all_conf:
-        result.append([T.h2["Skills and interests"], model.pages.with_help(skills_section(who, django_request),
+        result.append([T.h2["Skills and interests"], model.pages.with_help(user_skills_section(who, django_request),
                                                                            "skills_interests")])
     if 'dietary_avoidances' in all_conf:
         result.append([T.h2["Dietary avoidances"], model.pages.with_help(avoidances_section(who, django_request),
@@ -120,37 +120,10 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
                                                                               has_requested_trainer_training,
                                                                               django_request))]]
 
-def skills_button(area_name, level, which_level):
-    return [T.td(class_="level_" + str(which_level))
-            [T.input(type='radio',
-                     name=area_name,
-                     value=str(which_level),
-                     checked='checked')
-             if level == which_level
-             else T.input(type='radio',
-                          name=area_name,
-                          value=str(which_level))]]
-
-def skills_section(who, django_request):
-    skill_levels = who.get_profile_field('skill_levels') or {}
-    skill_areas = all_conf.get('skill_areas', None)
-    if skill_areas is None:
-        return []
-    existing_skills = {area_name: skill_levels.get(area_name, 0) for area_name in skill_areas}
-    return [T.form(action="update_levels", method="POST")
-            [T.table(class_="skills_check_table")
-             [T.thead[T.tr[[T.th["Area"],
-                            T.th(class_="level_0")["0"],
-                            T.th(class_="level_1")["1"],
-                            T.th(class_="level_2")["2"],
-                            T.th(class_="level_3")["3"]]]],
-              T.tbody[[[T.tr[T.th[area],
-                             skills_button(area, existing_skills[area], 0),
-                             skills_button(area, existing_skills[area], 1),
-                             skills_button(area, existing_skills[area], 2),
-                             skills_button(area, existing_skills[area], 3)]]
-                       for area in sorted(skill_areas)]]],
-             T.div(align="right")[T.input(type="submit", value="Update interests and skills")]]]
+def user_skills_section(who, django_request):
+    return pages.page_pieces.skills_section(who.get_profile_field('skill_levels') or {},
+                                            who.get_profile_field('interest_emails', [False, False, False]),
+                                            django_request)
 
 def avoidances_section(who, django_request):
     if 'dietary_avoidances' not in all_conf:
