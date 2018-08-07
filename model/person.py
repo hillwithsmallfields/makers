@@ -70,8 +70,6 @@ class Person(object):
 
     @staticmethod
     def list_all_members():
-        print("list_all_members: orgname is", model.configuration.get_config()['organization']['name'])
-        print("eqty object is", model.equipment_type.Equipment_type.find(model.configuration.get_config()['organization']['name']))
         return model.equipment_type.Equipment_type.find(model.configuration.get_config()['organization']['name']).get_trained_users()
 
     @staticmethod

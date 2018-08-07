@@ -53,6 +53,9 @@ def profile_section(who, viewer, django_request):
                        T.tr[T.th(class_="ralabel")["County"], T.td[T.input(type="text", name="county", value=str(address.get('county', "")))]],
                        T.tr[T.th(class_="ralabel")["Country"], T.td[T.input(type="text", name="country", value=str(address.get('country', "")))]],
                        T.tr[T.th(class_="ralabel")["Postcode"], T.td[T.input(type="text", name="postcode", value=str(address.get('postcode', "")))]],
+                       T.tr[T.th(class_="ralabel")["No-shows"], T.td[str(len(who.get_training_events(role_training, result='noshow')))]],
+                       T.tr[T.th(class_="ralabel")["No-show absolutions"], T.td[(T.input(type="text", name="absolutions", value=str(who.noshow_absolutions))
+                                                                                 if viewer.is_administrator() else str(who.noshow_absolutions))]],
                        T.tr[T.th(class_="ralabel")["Stylesheet"], T.td[T.select(name="stylesheet")[[T.option[style] # todo: mark current stylesheet as checked
                                                                                                     for style in model.configuration.get_stylesheets()]]]],
                        T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]],
@@ -171,14 +174,14 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
     return T.div(class_="trainedon")[
         T.table(class_='trainedon')[
             T.thead[T.tr[T.th["Equipment type"],
-                         T.th["Trainer"],
-                         T.th["Date"],
+                         T.th["Trained by"],
+                         T.th["Date trained"],
                          T.th["Request trainer training"],
                          T.th["Request owner training"],
                          # todo: put machine statuses in
-                         [T.th["Ban"],
-                          T.th["Make owner"],
-                          T.th["Make trainer"]] if (viewer.is_administrator()
+                         [T.th(class_="ban_form")["Admin: Ban"],
+                          T.th(class_="permit_form")["Admin: Make owner"],
+                          T.th(class_="permit_form")["Admin: Make trainer"]] if (viewer.is_administrator()
                                                     or viewer.is_owner(name)
                                                     or viewer.is_trainer(name)) else []]],
             T.tbody[[T.tr[T.th[T.a(href=django_request.scheme
@@ -277,7 +280,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
 
     their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
     if len(their_equipment_types) > 0:
-        page_data.add_section("Equipment trained on",
+        page_data.add_section("Equipment I can use",
                               equipment_trained_on(who, viewer, their_equipment_types, django_request))
 
     all_remaining_types = ((set(model.equipment_type.Equipment_type.list_equipment_types())

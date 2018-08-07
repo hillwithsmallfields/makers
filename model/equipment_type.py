@@ -82,6 +82,7 @@ class Equipment_type(object):
 
     def get_people(self, role):
         """Return the trained users, owners, or trainers of an equipment type."""
+        print("get_people for", self.name, "as", role)
         training = model.database.get_eqtype_events(self._id, model.database.role_training(role))
         untraining = model.database.get_eqtype_events(self._id, model.database.role_untraining(role))
         trained = {}
@@ -95,7 +96,6 @@ class Equipment_type(object):
             for detrained_person in ev.passed:
                 if detrained_person not in detrained:
                     detrained[detrained_person] = ev
-        print("get_people for", self.name, role, "trained", trained, "detrained", detrained)
         return [ model.person.Person.find(trained_person) for trained_person in trained.keys()
                  if (trained_person not in detrained
                      or trained[trained_person].start > detrained[trained_person].start) ]

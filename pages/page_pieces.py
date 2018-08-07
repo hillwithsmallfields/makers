@@ -63,7 +63,7 @@ def toggle_request(who, eqty, role, already_requested, django_request):
 def signup_button(event_id, who_id, button_text, django_request):
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return T.form(action=base+django.urls.reverse("events:signup"),
-                  method='POST')[T.input(type="hidden", name="event_id", value=str(event_id)),
+                  method='POST')[T.input(type="hidden", name="event_id", value=event_id),
                                  T.input(type="hidden", name="person_id", value=who_id),
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.button(type="submit", value="cancel_request")[button_text]]

@@ -38,15 +38,14 @@ def import_role_file(role, csv_file, verbose):
                     continue
                 trainer = Person.find(row.get('Trainer', "Joe Bloggs"))
                 trainer_id = trainer._id if trainer else None
-                equipment_type_names = row['Equipment'].split(';')
-                equipment_type_ids = [ Equipment_type.find(typename)._id
-                                       for typename in equipment_type_names ]
+                equipment_type_name = row['Equipment']
+                equipment_type_id = Equipment_type.find(equipment_type_name)._id
                 if verbose:
-                    print("equipment", equipment_type_names, equipment_type_ids)
+                    print("equipment", equipment_type_name, equipment_type_id)
                 training_event = Event.find(database.role_training(role),
                                             row['Date'],
                                             [trainer_id],
-                                            equipment_type_ids)
+                                            equipment_type_id)
                 training_event.publish()
                 training_event.add_signed_up([tr_person])
                 training_event.mark_results([tr_person], [], [])
