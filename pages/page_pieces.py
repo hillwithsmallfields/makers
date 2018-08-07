@@ -117,6 +117,49 @@ def avail_table(slot_sums):
                 for (day, day_slots) in zip(days,
                                             model.timeslots.avsums_by_day(slot_sums))]]]
 
+def skills_button(area_name, level, which_level):
+    return [T.td(class_="level_" + str(which_level))
+            [T.input(type='radio',
+                     name=area_name,
+                     value=str(which_level),
+                     checked='checked')
+             if level == which_level
+             else T.input(type='radio',
+                          name=area_name,
+                          value=str(which_level))]]
+
+def skills_section(skill_levels, mail_levels, django_request):
+    skill_areas = model.configuration.get_config().get('skill_areas', None)
+    if skill_areas is None:
+        return []
+    (mail_1, mail_2, mail_3) = (mail_levels or [False, False, False])
+    existing_skills = {area_name: skill_levels.get(area_name, 0) for area_name in skill_areas}
+    return [T.form(action="update_levels", method="POST")
+            [T.table(class_="skills_check_table")
+             [T.thead[T.tr[[T.th["Area"],
+                            T.th(class_="level_0")["0"],
+                            T.th(class_="level_1")["1"],
+                            T.th(class_="level_2")["2"],
+                            T.th(class_="level_3")["3"]]]],
+              T.tbody[[[T.tr[T.th[area],
+                             skills_button(area, existing_skills[area], 0),
+                             skills_button(area, existing_skills[area], 1),
+                             skills_button(area, existing_skills[area], 2),
+                             skills_button(area, existing_skills[area], 3)]]
+                       for area in sorted(skill_areas)]],
+              T.tfoot[T.tr[T.th["Mail me about events"],
+                           T.td[""],
+                           T.td[(T.input(type='checkbox', name='mail_1', checked='checked')
+                                 if mail_1 else
+                                 T.input(type='checkbox', name='mail_1'))],
+                           T.td[(T.input(type='checkbox', name='mail_2', checked='checked')
+                                 if mail_2 else
+                                 T.input(type='checkbox', name='mail_2'))],
+                           T.td[(T.input(type='checkbox', name='mail_3', checked='checked')
+                                 if mail_3 else
+                                 T.input(type='checkbox', name='mail_3'))]]]],
+             T.div(align="right")[T.input(type="submit", value="Update interests and skills")]]]
+
 def general_equipment_list(who, viewer, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"

@@ -205,6 +205,12 @@ class Person(object):
         self.training_requests_limit = limit
         self.save()
 
+    def get_noshows(self):
+        result = []
+        for role in ['user', 'owner', 'trainer']:
+            result += self.get_training_events(model.database.role_training(role), result='noshow')
+        return result
+
     def absolve_noshows(self):
         """Administrator action to allow a person to continue to sign up for training,
         despite having been recorded as repeatedly wasting training slots."""
@@ -222,7 +228,7 @@ class Person(object):
         if len(self.get_training_requests()) > self.get_training_requests_limit():
             return False, "Too many open training requests"
         role_training = model.database.role_training(role)
-        if ((len(self.get_training_events(role_training, result='noshow')) - self.noshow_absolutions)
+        if ((len(self.get_noshows()) - self.noshow_absolutions)
             >= int(model.configuration.get_config()['training']['no_shows_limit'])):
             return False, "Too many no-shows"
         for existing in self.training_requests:
