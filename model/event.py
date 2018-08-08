@@ -151,15 +151,19 @@ class Event(object):
     @staticmethod
     def find_by_id(event_id):
         """Find an event by its ObjectId."""
+        print("find_by_id raw arg", event_id)
         event_id = model.pages.unstring_id(event_id)
+        print("find_by_id normalized arg", event_id)
+        if event_id in Event.events_by_id:
+            return Event.events_by_id[event_id]
         event_dict = model.database.get_event_by_id(event_id)
+        print("find_by_id dict", event_dict)
         if event_dict is None:
             return None
-        if event_id not in Event.events_by_id:
-            Event.events_by_id[event_id] = Event(event_dict['event_type'],
-                                                 event_dict['start'],
-                                                 event_dict['hosts'],
-                                                 equipment_type=event_dict.get('equipment_type', None))
+        Event.events_by_id[event_id] = Event(event_dict['event_type'],
+                                             event_dict['start'],
+                                             event_dict['hosts'],
+                                             equipment_type=event_dict.get('equipment_type', None))
         e = Event.events_by_id[event_id]
         e.__dict__.update(event_dict)
         return e
