@@ -20,6 +20,7 @@ from django.conf.urls.static import static
 from django.conf.urls import include
 from django.views.generic.base import RedirectView, TemplateView
 
+import makers_admin.views
 import dashboard.views
 import equiptypes.views
 import equipment.views
@@ -31,6 +32,7 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls'), name='dashboard'),
     path('equiptypes/', include('equiptypes.urls'), name='equiptypes'),
     path('machines/', include('machines.urls', namespace='machines'), name='machines'),
+    path('makers_admin', include('makers_admin.urls', namespace='makers_admin'), name='makers_admin'),
     path('events/', include('events.urls'), name='events'),
     path('training/', include('training.urls'), name='training'),
     path('users/', include('users.urls'), name='users'),

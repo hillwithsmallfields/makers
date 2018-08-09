@@ -8,8 +8,6 @@ import pages.event_page
 import pages.person_page
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-# Create your views here.
-
 @ensure_csrf_cookie
 def public_index(request):
     """View function for listing the events."""

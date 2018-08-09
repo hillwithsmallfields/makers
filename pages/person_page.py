@@ -198,11 +198,14 @@ def training_requests_section(who, django_request):
                                                         for req in sorted_requests]]]]
 
 
-def admin_section(viewer):
-    return T.ul[T.li[pages.page_pieces.section_link('admin', "userlist", "User list")],
-                # T.li["Search by name:", T.form()[]],
-                T.li[pages.page_pieces.section_link('admin', "intervene", "Create intervention event")]
-                        if viewer.is_administrator() else ""]
+def admin_section(viewer, django_request):
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+    return T.ul[T.li[pages.page_pieces.section_link('makers_admin', "userlist", "User list")],
+                T.li["Search by name:", T.form(action=base + "/dashboard/match",
+                                               method='GET')[T.form[T.input(type='text', name='pattern'),
+                                                                    T.submit(value='Search')]]],
+                (T.li[pages.page_pieces.section_link('makers_admin', "create_any_event", "Create event")]
+                 if viewer.is_administrator() else "")]
 
 def add_person_page_contents(page_data, who, viewer, django_request, extra_top_header=None, extra_top_body=None):
     """Add the sections of a user dashboard to a sectional page."""
@@ -294,11 +297,9 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
         page_data.add_section("Events I can sign up for",
                               T.div(class_="availableevents")[pages.event_page.event_table_section(available_events, who._id, django_request, True, True)])
 
-    # todo: I think this condition is giving false positives
-    # todo: separate this from django's "admin", and make an app for it
-    # if viewer.is_administrator() or viewer.is_auditor():
-    #     page_data.add_section("Admin actions",
-    #                           admin_section(viewer))
+    if viewer.is_administrator() or viewer.is_auditor():
+        page_data.add_section("Admin actions",
+                              admin_section(viewer, django_request))
 
     # todo: reinstate when I've created a userapi section in the django setup
     # userapilink = pages.page_pieces.section_link("userapi", who.link_id, who.link_id)

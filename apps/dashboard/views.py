@@ -92,8 +92,11 @@ def dashboard_page(request, who=""):
 def user_match_page(request, pattern):
 
     config_data = model.configuration.get_config()
-
     model.database.database_init(config_data)
+
+    params = request.GET
+    if 'pattern' in params:
+        pattern = params['pattern']
 
     pages.person_page.person_page_setup()
 
