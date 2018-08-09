@@ -18,9 +18,13 @@ import uuid
 client = None
 database = None
 collection_names = None
+database_initted = False
 
 def database_init(config, delete_existing=False):
-    global client, database, collection_names
+    global client, database, collection_names, database_initted
+    if database_initted:
+        return
+    database_initted = True
     db_config = config['database']
     collection_names = db_config['collections']
     client = pymongo.MongoClient(db_config['URI'])
@@ -196,7 +200,6 @@ def get_events(event_type=None,
 
 def get_event_by_id(event_id):
     """Read the data for an event from the database."""
-    print("getting event by id", event_id,  "of type", type(event_id))
     return database[collection_names['events']].find_one({'_id': event_id})
 
 def save_event(this_event):

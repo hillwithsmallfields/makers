@@ -26,6 +26,10 @@ def event_link(ev, django_request):
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return base + django.urls.reverse("events:oneevent", args=[ev._id])
 
+def person_name(who):
+    descr = model.person.Person.find(who)
+    return descr.name() if descr is not None else "<nobody?>"
+
 def one_event_section(ev, django_request, with_completion=False, completion_as_form=False):
     all_people_ids = ev.passed + ev.failed + ev.noshow
     all_people_id_to_name = {p: model.person.Person.find(p).name() for p in all_people_ids}
@@ -47,7 +51,7 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
                  T.tr[T.th(class_="ralabel")["Hosts"], T.td(class_="hosts")[people_list(ev.hosts)]]])]
     if ev.signed_up and len(ev.signed_up) > 0:
         results += [T.h4["Users signed up to event"],
-                    T.ul[[model.person.Person.find(sup).name() for sup in ev.signed_up]]]
+                    T.ul[[person_name(sup) for sup in ev.signed_up]]]
     if with_completion:
         completion_table = T.table(class_='event_completion')[T.tr[T.th["Name"],
                                                                    T.th(class_='unknown')["Unknown"],

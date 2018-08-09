@@ -139,7 +139,7 @@ td.level_3, th.level_3 {
 
 .no_show {
     background-color: black;
-    foreground-color: white;
+    color:            white;
 }
 
 .failed {

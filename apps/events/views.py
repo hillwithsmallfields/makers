@@ -13,6 +13,9 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 @ensure_csrf_cookie
 def public_index(request):
     """View function for listing the events."""
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
     return HttpResponse("""
     <html>
     <head><title>Events list placeholder</title></head>
@@ -35,6 +38,10 @@ def event_error_page(request, label, error_message):
 @ensure_csrf_cookie
 def new_event(request):
     """View function for creating an event."""
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
     params = request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
     print("new_event params are", params)
     machine = params.get('machine', None)
@@ -66,7 +73,10 @@ def one_event(request, id):
 
     print("one_event with id", id, "of type", type(id))
 
-    ev = model.event.Event.find_by_id(params['event_id'])
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    ev = model.event.Event.find_by_id(id)
 
     if ev is None:
         return event_error_page(request, "Event display error",
@@ -85,9 +95,14 @@ def one_event(request, id):
 def signup_event(request):
     """View function for signing up for an event."""
 
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
     params = request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
 
-    ev = model.event.Event.find_by_id(params['event_id'])
+    event_id = params['event_id']
+    print("signup_event with params", params, "and id", event_id, "of type", type(event_id))
+    ev = model.event.Event.find_by_id(event_id)
 
     if ev is None:
         return event_error_page(request, "Event signup page error",
@@ -95,7 +110,7 @@ def signup_event(request):
 
     ev.add_signed_up([params['person_id']])
 
-    page_data = model.pages.HtmlPage("Event signup",
+    page_data = model.pages.HtmlPage("Event signup confirmation",
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)
 
@@ -108,6 +123,9 @@ def signup_event(request):
 @ensure_csrf_cookie
 def complete_event(request, id):
     """View function for handling event completion."""
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
 
     ev = model.event.Event.find_by_id(params['event_id'])
 
@@ -129,6 +147,9 @@ def complete_event(request, id):
 @ensure_csrf_cookie
 def store_event_results(request):
     """View function for handling event completion."""
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
 
     params = django_request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
     print("in store_event_results with params", params)
@@ -165,6 +186,10 @@ def store_event_results(request):
 
 @ensure_csrf_cookie
 def special_event(django_request):
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
     params = django_request.POST
     print("in special_event with params", params)
     who = model.person.Person.find(model.pages.unstring_id(params['who']))
