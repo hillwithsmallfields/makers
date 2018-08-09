@@ -125,7 +125,7 @@ def page_string(page_title, content, user=None, initial_tab=None):
     postamble = page_conf.get('postamble', '')
     final_setup = """<script type="text/javascript">selectTab('""" + initial_tab + """')</script>""" if initial_tab else ""
     page_heading = page_title
-    logo = page_conf.get('logo', None)
+    logo = page_conf.get('heading_logo', None)
     if logo:
         logo_height = int(page_conf.get('logo_height', "32"))
         page_heading = T.span[page_heading,
