@@ -77,10 +77,12 @@ class SectionalPage(object):
         self.index.append(section_id)
 
     def to_string(self):
-        index = [T.div(class_="tab")[[T.button(class_="tablinks",
-                                               onclick="openTab(event, '" + section_id + "')",
-                                               id=section_id+"_button")[self.presentation_names[section_id]]
-                                      for section_id in self.index]]]
+        index = [T.div(class_="tabset")[
+            [T.button(class_="tablinks",
+                      onclick="openTab(event, '" + section_id + "')",
+                      id=section_id+"_button")[self.presentation_names[section_id]]
+                                      for section_id in self.index]],
+                 T.br(clear='all')]
         tabs = [[T.div(class_="tabcontent", id_=section_id)[self.sections[section_id]]]
                    for section_id in self.index]
         return page_string(self.name,

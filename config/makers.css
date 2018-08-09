@@ -176,21 +176,24 @@ td.level_3, th.level_3 {
     background:    #ffa500;
 }
 
-.tab {
-    overflow: hidden;
-    border: 1px solid #ccc;
+.tabset {
+    overflow:         hidden;
+    border:           1px solid #ccc;
     background-color: #f1f1f1;
+    display:          flex;
+    flex-flow:        row wrap;
+    align-items:      stretch;
 }
 
-.tab button {
+.tabset button {
     background-color: #ffb510;
-    color:          #004000;
-    float: left;
-    border: 1px solid #008000;
-    outline: none;
-    cursor: pointer;
-    padding: 14px 16px;
-    transition: 0.3s;
+    color:            #004000;
+    float:            left;
+    border:           1px solid #008000;
+    outline:          none;
+    cursor:           pointer;
+    padding:          14px 16px;
+    transition:       0.3s;
 }
 
 .tab button:hover {
