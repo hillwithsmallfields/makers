@@ -82,7 +82,7 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
             T.h3[eqtype.name + " owner information and actions"
                       if is_owner
                       else "Not yet an owner"+(" but has requested owner training" if has_requested_owner_training else "")],
-            T.div(class_='as_owner')[([pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="owner training"),
+            T.div(class_='as_owner')[([pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="owner_training"),
                                                                                    T.input(type="hidden", name="role", value="owner"),
                                                                                    T.input(type="hidden", name="equiptype", value=eqtype._id)],
                                                                              "Schedule owner training",
@@ -100,13 +100,13 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
                       else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
             T.div(class_='as_trainer')[pages.page_pieces.eqty_training_requests(eqtype),
                                        ([pages.page_pieces.schedule_event_form(who,
-                                                                               [T.input(type="hidden", name="event_type", value="user training"),
+                                                                               [T.input(type="hidden", name="event_type", value="user_training"),
                                                                                 T.input(type="hidden", name="role", value="user"),
                                                                                 T.input(type="hidden", name="equiptype", value=eqtype._id)],
                                                                                "Schedule user training",
                                                                                django_request),
                                          pages.page_pieces.schedule_event_form(who,
-                                                                               [T.input(type="hidden", name="event_type", value="trainer training"),
+                                                                               [T.input(type="hidden", name="event_type", value="trainer_training"),
                                                                                 T.input(type="hidden", name="role", value="trainer"),
                                                                                 T.input(type="hidden", name="equiptype", value=eqtype._id)],
                                                                                "Schedule trainer training",
@@ -200,11 +200,20 @@ def training_requests_section(who, django_request):
 
 def admin_section(viewer, django_request):
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return T.ul[T.li[pages.page_pieces.section_link('makers_admin', "userlist", "User list")],
+    template_types = {template['name']: template['event_type']
+                      for template in model.event.Event.list_templates([], None)}
+    equip_types = {etype.name: etype.pretty_name()
+                       for etype in model.equipment_type.Equipment_type.list_equipment_types()}
+    return T.ul[T.li[T.a(href=base+"/dashboard/all")["List all users"]],
                 T.li["Search by name:", T.form(action=base + "/dashboard/match",
                                                method='GET')[T.form[T.input(type='text', name='pattern'),
-                                                                    T.submit(value='Search')]]],
-                (T.li[pages.page_pieces.section_link('makers_admin', "create_any_event", "Create event")]
+                                                                    T.input(type='submit', value='Search')]]],
+                (T.li[T.form(action=base+"/makers_admin/create_event",
+                             method='GET')[T.select(name='template_name')[[[T.option(value=tt)[template_types[tt]]]
+                                                                           for tt in sorted(template_types.keys())]],
+                                           T.select(name='equipment_type')[[[T.option(value=et)[equip_types[et]]]
+                                                                            for et in sorted(equip_types.keys())]],
+                                           T.input(type='submit', value="Create")]]
                  if viewer.is_administrator() else "")]
 
 def add_person_page_contents(page_data, who, viewer, django_request, extra_top_header=None, extra_top_body=None):

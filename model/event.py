@@ -219,9 +219,9 @@ class Event(object):
                 onetype, role = cond.split(' ')
                 if onetype == "$equipment":
                     onetype = equip_type
-                type_descr = model.equipment_type.Equipment_type.find(onetype)
+                type_descr = model.equipment_type.Equipment_type.find(onetype) if onetype else None
                 print("onetype is", onetype, "of type", type(onetype), "and type_descr is", type_descr)
-                result.append(type_descr.name + " " + role)
+                result.append((type_descr.name if type_descr else "?") + " " + role)
         return result
 
     def training_for_role(self):

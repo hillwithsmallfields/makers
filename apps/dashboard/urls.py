@@ -1,6 +1,6 @@
 # based on https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/skeleton_website etc
 
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 
 app_name = 'dashboard'
@@ -11,5 +11,6 @@ urlpatterns = [
     path('update_profile', views.update_profile, name='update_profile'),
     path('<who>', views.dashboard_page, name='user_dashboard'),
     path('match/<pattern>', views.user_match_page, name='matching_users'),
+    re_path('match?pattern=.+', views.user_match_page, name='matching_users'), # todo: fix this
     path('', views.dashboard_page, name='own_dashboard')
 ]

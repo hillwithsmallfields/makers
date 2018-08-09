@@ -214,7 +214,7 @@ def find_rsvp(rsvp_uuid):
 # event templates
 
 def find_event_template(name):
-    return database[collection_names['event_templates']].find_one({'event_type': name})
+    return database[collection_names['event_templates']].find_one({'name': name})
 
 def list_event_templates():
     return [ template for template in database[collection_names['event_templates']].find({}) ]
