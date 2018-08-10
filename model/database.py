@@ -200,6 +200,26 @@ def save_event(this_event):
     # print("saving event", this_event)
     database[collection_names['events']].save(this_event)
 
+# Notifications (to individuals)
+
+def get_notifications(who_id, since_date):
+    return [message
+            for message in database[collection_names['notifications']].find({'to': who_id, 'when': {'$gt': since_date}})]
+
+def add_notification(who_id, sent_date, text):
+    database[collection_names['notifications']].insert({'to': who_id,
+                                                        'when': sent_date,
+                                                        'text': text})
+
+# Announcements (to all)
+
+def get_announcements(since_date):
+    return [message
+            for message in database[collection_names['notifications']].find({'when': {'$gt': since_date}})]
+
+def add_announcement(sent_date, text):
+    database[collection_names['announcements']].insert({'when': sent_date,
+                                                        'text': text})
 # invitation replies
 
 def find_rsvp(rsvp_uuid):

@@ -114,6 +114,8 @@ database:
     machine_logs:    MakespaceMachineLogs
     events:          MakespaceEvents
     event_templates: MakespaceEventTemplates
+    notifications:   MakespaceNotifications
+    announcements:   MakespaceAnnouncements
 
 # The names in this section indicate which equipment class names
 # are magical

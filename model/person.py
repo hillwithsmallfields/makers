@@ -56,6 +56,7 @@ class Person(object):
         self.visibility = {}        # binds 'general', 'host', 'attendee' to True, False, 'logged-in'
         self.stylesheet = None      # None means use the system default
         self.notifications_read_to = datetime.now()
+        self.announcements_read_to = datetime.now()
 
     def __str__(self):
         return ("<member " + str(self.membership_number)
