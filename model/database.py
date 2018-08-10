@@ -20,7 +20,7 @@ database = None
 collection_names = None
 database_initted = False
 
-def database_init(config, delete_existing=False):
+def database_init(config):
     global client, database, collection_names, database_initted
     if database_initted:
         return
@@ -31,13 +31,6 @@ def database_init(config, delete_existing=False):
     database = client[db_config['database_name']]
     if database is None:
         raise ConnectionError
-    if delete_existing:
-        # I think these are wrong
-        database.drop_collection(collection_names['people'])
-        database.drop_collection(collection_names['equipment_types'])
-        database.drop_collection(collection_names['machines'])
-        database.drop_collection(collection_names['events'])
-        database.drop_collection(collection_names['event_templatess'])
 
 def get_person_dict(identification):
     """Read the data for a person from the database, as a dictionary."""
