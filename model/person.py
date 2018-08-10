@@ -55,6 +55,7 @@ class Person(object):
         self.invitations = {}       # dict of uuid to event
         self.visibility = {}        # binds 'general', 'host', 'attendee' to True, False, 'logged-in'
         self.stylesheet = None      # None means use the system default
+        self.notifications_read_to = datetime.now()
 
     def __str__(self):
         return ("<member " + str(self.membership_number)
