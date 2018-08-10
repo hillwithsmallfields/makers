@@ -15,6 +15,7 @@ server_conf = None
 org_conf = None
 
 def people_list(pl):
+    # todo: perhaps a version with a link for each person (needs per-person privacy controls)
     return ", ".join(model.person.Person.find(p).name() for p in pl)
 
 def checkbox(id, which, condition):
@@ -42,28 +43,51 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
                 ids_in_order.append(pair[1])
     print("ev.equipment_type is", ev.equipment_type)
     results = [(T.table(class_='event_details')
-                [T.tr[T.th(class_="ralabel")["Title"], T.td(class_="event_title")[T.a(href=event_link(ev, django_request))[ev.title]]],
-                 T.tr[T.th(class_="ralabel")["Event type"], T.td(class_="event_type")[ev.event_type]],
-                 T.tr[T.th(class_="ralabel")["Start time"], T.td(class_="event_start")[model.event.timestring(ev.start)]],
-                 T.tr[T.th(class_="ralabel")["End time"], T.td(class_="event_end")[model.event.timestring(ev.end)]],
-                 T.tr[T.th(class_="ralabel")["Location"], T.td(class_="location")[ev.location]],
-                 T.tr[T.th(class_="ralabel")["Equipment type"], T.td(class_="event_equipment_type")[model.equipment_type.Equipment_type.find_by_id(ev.equipment_type).name]],
-                 T.tr[T.th(class_="ralabel")["Hosts"], T.td(class_="hosts")[people_list(ev.hosts)]]])]
+                [T.tr[T.th(class_="ralabel")["Title"],
+                      T.td(class_="event_title")[T.a(href=event_link(ev, django_request))[ev.title]]],
+                 T.tr[T.th(class_="ralabel")["Event type"],
+                      T.td(class_="event_type")[ev.event_type]],
+                 T.tr[T.th(class_="ralabel")["Start time"],
+                      T.td(class_="event_start")[model.event.timestring(ev.start)]],
+                 T.tr[T.th(class_="ralabel")["End time"],
+                      T.td(class_="event_end")[model.event.timestring(ev.end)]],
+                 T.tr[T.th(class_="ralabel")["Location"],
+                      T.td(class_="location")[ev.location]],
+                 T.tr[T.th(class_="ralabel")["Equipment type"],
+                      T.td(class_="event_equipment_type")[model.equipment_type.Equipment_type.find_by_id(ev.equipment_type).name]],
+                 T.tr[T.th(class_="ralabel")["Hosts"],
+                      T.td(class_="hosts")[people_list(ev.hosts)]]])]
     if ev.signed_up and len(ev.signed_up) > 0:
         results += [T.h4["Users signed up to event"],
-                    T.ul[[person_name(sup) for sup in ev.signed_up]]]
+                    T.ul[[[T.li[person_name(sup)]
+                           for sup in ev.signed_up]]]]
     if with_completion:
-        completion_table = T.table(class_='event_completion')[T.tr[T.th["Name"],
-                                                                   T.th(class_='unknown')["Unknown"],
-                                                                   T.th(class_='no_show')["No-show"],
-                                                                   T.th(class_='failed')["Failed"],
-                                                                   T.th(class_='passed')["Passed"]],
-                                                              [T.tr[T.th[all_people_id_to_name[id]],
-                                                                    T.td(class_='unknown')[result_checkbox(id, "unknown", id not in ev.noshow and id not in ev.failed and id not in ev.passed)],
-                                                                    T.td(class_='no_show')[result_checkbox(id, "noshow", id in ev.noshow)],
-                                                                    T.td(class_='failed')[result_checkbox(id, "failed", id in ev.failed)],
-                                                                    T.td(class_='passed')[result_checkbox(id, "passed", id in ev.passed)]]
-                                                           for id in ids_in_order]]
+        completion_table = (T.table(class_='event_completion')
+                            [T.tr[T.th["Name"],
+                                  T.th(class_='unknown')["Unknown"],
+                                  T.th(class_='no_show')["No-show"],
+                                  T.th(class_='failed')["Failed"],
+                                  T.th(class_='passed')["Passed"]],
+                             [[T.tr[T.th[all_people_id_to_name[id]],
+                                    (T.td(class_='unknown')
+                                     [result_checkbox(id,
+                                                      "unknown",
+                                                      (id not in ev.noshow
+                                                       and id not in ev.failed
+                                                       and id not in ev.passed))]),
+                                    (T.td(class_='no_show')
+                                     [result_checkbox(id,
+                                                      "noshow",
+                                                      id in ev.noshow)]),
+                                    (T.td(class_='failed')
+                                     [result_checkbox(id,
+                                                      "failed",
+                                                      id in ev.failed)]),
+                                    (T.td(class_='passed')
+                                     [result_checkbox(id,
+                                                      "passed",
+                                                      id in ev.passed)])]
+                                                           for id in ids_in_order]]])
         results += [T.h4["Results"],
                     ((T.form(action=base+django.urls.reverse("event:results"),
                              method="POST")[T.input(type="hidden", name='event_id', value=ev._id),
@@ -93,6 +117,10 @@ def event_table_section(tl_or_events, who_id, django_request, show_equiptype=Non
                             T.td(class_="event_start")[model.event.timestring(ev.start)],
                             T.td(class_="location")[ev.location],
                             T.td(class_="hosts")[people_list(ev.hosts)],
-                            T.td(class_="event_equipment_type")[equip_name(ev.equipment_type)] if show_equiptype else [],
-                            T.td[pages.page_pieces.signup_button(ev._id, who_id, "Sign up", django_request)] if with_signup else ""]]
+                            (T.td(class_="event_equipment_type")[equip_name(ev.equipment_type)]
+                             if show_equiptype
+                             else ""),
+                            (T.td[pages.page_pieces.signup_button(ev._id, who_id, "Sign up", django_request)]
+                             if with_signup
+                             else "")]]
                       for ev in events]]])
