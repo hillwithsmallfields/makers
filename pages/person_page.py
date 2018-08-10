@@ -279,13 +279,15 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
         page_data.add_section("Training requests", training_requests_section(who, django_request))
 
     hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events
+    print("hosting is", hosting)
     if len(hosting) > 0:
-        page_data.add_section("Events I'm hosting",
+        page_data.add_section("Events I will be hosting",
                               T.div(class_="hostingevents")[pages.event_page.event_table_section(hosting, who._id, django_request)])
 
     attending = model.timeline.Timeline.future_events(person_field='signed_up', person_id=who._id).events
+    print("attending is", attending)
     if len(attending) > 0:
-        page_data.add_section("Events I'm attending",
+        page_data.add_section("Events I have signed up for",
                               T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)])
 
     hosted = model.timeline.Timeline.past_events(person_field='hosts', person_id=who._id).events

@@ -12,7 +12,7 @@ class Timeline(object):
     - event_type
 
     - person_field and person_id (together) where person_field can be
-      'host', 'attendee', 'passed', 'failed', or 'noshow'.
+      'hosts', 'attendee', 'passed', 'failed', or 'noshow'.
 
     - include_hidden to include unpublished events
 

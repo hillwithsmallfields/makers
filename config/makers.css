@@ -117,6 +117,11 @@ td.level_3, th.level_3 {
     padding:          0.5em;
 }
 
+.event_end  {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
 .location  {
     background-color: #fff8d0;
     padding:          0.5em;

@@ -192,6 +192,7 @@ def get_events(event_type=None,
         query['start'] = {'$gt': earliest}
     if latest:
         query['end'] = {'$lt': latest}
+    print("get_events query", query)
     result = [ model.event.Event.find_by_id(tr_event['_id'])
                for tr_event in database[collection_names['events']].find(query).sort('start',
                                                                                      pymongo.ASCENDING) ]

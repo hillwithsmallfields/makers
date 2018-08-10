@@ -174,5 +174,7 @@ def unstring_id(poss_id):
     if isinstance(poss_id, str):
         matched = re.match("ObjectId\\('([0-9a-fA-F]+)'\\)", poss_id)
         if matched:
-            return bson.objectid.ObjectId(matched.group(1))
+            poss_id = matched.group(1)
+        if re.match("[0-9a-fA-F]+$", poss_id):
+            return bson.objectid.ObjectId(poss_id)
     return poss_id

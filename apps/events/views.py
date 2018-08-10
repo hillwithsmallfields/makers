@@ -47,7 +47,7 @@ def new_event(request):
         machine = [machine]
     ev, error_message = model.event.Event.instantiate_template(params['event_type'],
                                                                params['equiptype'],
-                                                               [params['submitter']],
+                                                               [model.pages.unstring_id(params['submitter'])],
                                                                params['when'],
                                                                machine)
     if ev is None:
@@ -106,7 +106,7 @@ def signup_event(request):
         return event_error_page(request, "Event signup page error",
                                 "In signup_event, could not find event with id " + str(params['event_id']))
 
-    ev.add_signed_up([params['person_id']])
+    ev.add_signed_up([model.pages.unstring_id(params['person_id'])])
 
     page_data = model.pages.HtmlPage("Event signup confirmation",
                                      pages.page_pieces.top_navigation(request),
