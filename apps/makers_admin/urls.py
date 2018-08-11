@@ -8,4 +8,6 @@ app_name = 'admin'
 urlpatterns = [
     path('create_event', views.create_event, name='create_event'),
     path('create_event_2', views.create_event_2, name='create_event_2'),
+    path('announce', views.announce, name='announce'),
+    path('notify', views.notify, name='notify')
 ]

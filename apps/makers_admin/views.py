@@ -1,5 +1,7 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 from django.http import HttpResponse
+from datetime import datetime
+import model.database           # for announcements and notifications; I should probably wrap them so apps don't need to see model.database
 import model.equipment_type
 import model.event
 import model.pages
@@ -60,4 +62,43 @@ def create_event_2(django_request):
     result = "placeholder"
 
     page_data.add_content("Event creation confirmation", result)
+    return HttpResponse(str(page_data.to_string()))
+
+def announce(django_request):
+
+    """Send an announcement to everyone."""
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    text = django_request.POST['announcement']
+
+    model.database.add_announcement(datetime.utcnow(),
+                                    model.person.Person.find(django_request.user.link_id)._id,
+                                    text)
+
+    page_data = model.pages.HtmlPage("Announce",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("Announcement confirmation", text)
+    return HttpResponse(str(page_data.to_string()))
+
+def notify(django_request):
+
+    """Send an announcement to everyone."""
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    text = django_request.POST['message']
+    to = django_request.POST['to']
+
+    model.database.add_notification(to,
+                                    datetime.utcnow(),
+                                    text)
+
+    page_data = model.pages.HtmlPage("Notify",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("Confirmation of notification to " + model.person.Person.find(to).name(), text)
     return HttpResponse(str(page_data.to_string()))

@@ -203,25 +203,51 @@ def training_requests_section(who, django_request):
                                                                                                   django_request)]]
                                                         for req in sorted_requests]]]]
 
-
-def admin_section(viewer, django_request):
+def create_event_form(viewer, django_request):
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     template_types = {template['name']: template['event_type']
                       for template in model.event.Event.list_templates([], None)}
     equip_types = {etype.name: etype.pretty_name()
                        for etype in model.equipment_type.Equipment_type.list_equipment_types()}
+    return T.form(action=base+"/makers_admin/create_event",
+                  method='GET')["Event type ",
+                                T.select(name='template_name')[[[T.option(value=tt)[template_types[tt]]]
+                                                                for tt in sorted(template_types.keys())]],
+                                " on equipment type ",
+                                T.select(name='equipment_type')[[[T.option(value=et)[equip_types[et]]]
+                                                                 for et in sorted(equip_types.keys())]],
+                                T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+                                T.input(type='submit', value="Create event")]
+
+def announcement_form(viewer, django_request):
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+    return T.form(action=base+"/makers_admin/announce", # todo: use reverse
+                  method='POST')["Announcement text: ",
+                                 T.textarea(name='announcement'),
+                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+                                 T.input(type='submit', value="Send announcement")]
+
+def notification_form(viewer, django_request):
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+    return T.form(action=base+"/makers_admin/notify", # todo: use reverse
+                  method='POST')["Recipient: ", T.input(type='text', name='to'),
+                                 "Notification text: ",
+                                 T.textarea(name='message'),
+                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+                                 T.input(type='submit', value="Send announcement")]
+
+def admin_section(viewer, django_request):
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return T.ul[T.li[T.a(href=base+"/dashboard/all")["List all users"], " (may be slow and timeout on server)"],
                 T.li["Search by name:", T.form(action=base + "/dashboard/match",
                                                method='GET')[T.form[T.input(type='text', name='pattern'),
                                                                     T.input(type='submit', value='Search')]]],
-                (T.li["Create event: ",
-                      T.form(action=base+"/makers_admin/create_event",
-                             method='GET')[T.select(name='template_name')[[[T.option(value=tt)[template_types[tt]]]
-                                                                           for tt in sorted(template_types.keys())]],
-                                           T.select(name='equipment_type')[[[T.option(value=et)[equip_types[et]]]
-                                                                            for et in sorted(equip_types.keys())]],
-                                           T.input(type='submit', value="Create")]]
-                 if viewer.is_administrator() else "")]
+                T.li["Create event: ",
+                      create_event_form(viewer, django_request)],
+                T.li["Send announcement: ", # todo: separate this and control it by whether the person is a trained announcer
+                     announcement_form(viewer, django_request)],
+                T.li["Send notification: ",
+                     notification_form(viewer, django_request)]]
 
 def add_person_page_contents(page_data, who, viewer, django_request, extra_top_header=None, extra_top_body=None):
     """Add the sections of a user dashboard to a sectional page."""
@@ -231,31 +257,18 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
 
     page_data.add_section("Personal profile", profile_section(who, viewer, django_request))
 
-    announcements = [{'From': "Test announcer",
-                      'Date': datetime.datetime.utcnow(),
-                      'Text': "This is a dummy announcement, to show where system-wide messages will go."},
-                     {'From': "Another test announcer",
-                      'Date': datetime.datetime.utcnow(),
-                      'Text': "This is another dummy announcement.  There will eventually be a button to dismiss announcements and notifications."}]
-    notifications = [{'From': "Test notifier",
-                      'Date': datetime.datetime.utcnow(),
-                      'Text': "This is a dummy notification, to show where notifications to individuals will go."},
-                     {'From': "Test notifier",
-                      'Date': datetime.datetime.utcnow(),
-                      'Text': "Until this is connected to email, you'll get training invitations here."},
-                     {'From': "Another test notifier",
-                      'Date': datetime.datetime.utcnow(),
-                      'Text': "I don't like in-site message systems but I've put this here to get us through testing without having to set up real mail sending."}]
+    announcements = who.read_announcements()
+    notifications = who.read_notifications()
 
     messages = []
     if len(announcements) > 0:
         messages.append([T.h3["Announcements"],
-                         T.dl[[[T.dt["From " + a['From'] + " at " + model.event.timestring(a['Date'])],
-                                T.dd[a['Text']]] for a in announcements]]])
+                         T.dl[[[T.dt["From " + str(anno['from']) + " at " + model.event.timestring(anno['when'])],
+                                T.dd[anno['text']]] for anno in announcements]]])
     if len(notifications) > 0:
         messages.append([T.h3["Notifications"],
-                         T.dl[[[T.dt["From " + n['From'] + " at " + model.event.timestring(n['Date'])],
-                                T.dd[n['Text']]] for n in notifications]]])
+                         T.dl[[[T.dt["At " + model.event.timestring(noti['when'])],
+                                T.dd[noti['text']]] for noti in notifications]]])
 
     if len(announcements) > 0 or len(notifications) > 0:
         page_data.add_section("Notifications",

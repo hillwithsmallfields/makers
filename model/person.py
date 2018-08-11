@@ -502,6 +502,19 @@ class Person(object):
         old_email = who.get_email() # email needs special handling as we must tell django too
         # name needs special handling as we must tell django too
 
+    # Announcements and notifications
+
+    def read_announcements(self):
+        up_to_time = datetime.utcnow()
+        results = model.database.get_announcements(self.announcements_read_to)
+        self.announcements_read_to = up_to_time
+        return results
+
+    def read_notifications(self):
+        up_to_time = datetime.utcnow()
+        results = model.database.get_notifications(self._id, self.notifications_read_to)
+        self.notifications_read_to = up_to_time
+        return results
 
     # API
 
