@@ -55,8 +55,8 @@ class Person(object):
         self.invitations = {}       # dict of uuid to event
         self.visibility = {}        # binds 'general', 'host', 'attendee' to True, False, 'logged-in'
         self.stylesheet = None      # None means use the system default
-        self.notifications_read_to = datetime.now()
-        self.announcements_read_to = datetime.now()
+        self.notifications_read_to = datetime.utcnow()
+        self.announcements_read_to = datetime.utcnow()
 
     def __str__(self):
         return ("<member " + str(self.membership_number)
@@ -236,7 +236,7 @@ class Person(object):
         for existing in self.training_requests:
             if equipment_type == existing['equipment_type']:
                 return False, "Equipment type training already requested"
-        self.training_requests.append({'request_date': when or datetime.now(),
+        self.training_requests.append({'request_date': when or datetime.utcnow(),
                                        'requester': self._id,
                                        'equipment_type': equipment_type._id,
                                        'event_type': role_training,
@@ -335,7 +335,7 @@ class Person(object):
         This is mostly for administrators to fix the record to match reality,
         and for banning and unbanning users."""
         if when is None:
-            when = datetime.now()
+            when = datetime.utcnow()
         special_event = model.event.Event(({'user': 'user_training',
                                             'owner': 'owner_training',
                                             'trainer': 'trainer_training'}
@@ -361,10 +361,10 @@ class Person(object):
         trained = {}
         detrained = {}
         for ev in self.get_training_events(event_type = model.database.role_training(role),
-                                           when=when or datetime.now()):
+                                           when=when or datetime.utcnow()):
             trained[ev.equipment_type] = ev.start
         for ev in self.get_training_events(event_type = model.database.role_untraining(role),
-                                           when=when or datetime.now()):
+                                           when=when or datetime.utcnow()):
             detrained[ev.equipment_type] = ev.start
         return [model.equipment_type.Equipment_type.find_by_id(e)
                 for e in trained.keys()
@@ -396,12 +396,12 @@ class Person(object):
         detrained = None
         equipment_id = model.equipment_type.Equipment_type.find(equipment_type_name)._id
         for ev in self.get_training_events(event_type = model.database.role_training(role),
-                                           when=when or datetime.now()):
+                                           when=when or datetime.utcnow()):
             if equipment_id == ev.equipment_type:
                 trained = ev
                 break
         for ev in self.get_training_events(event_type = model.database.role_untraining(role),
-                                           when=when or datetime.now()):
+                                           when=when or datetime.utcnow()):
             if equipment_id == ev.equipment_type:
                 detrained = ev.start
                 break

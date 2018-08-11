@@ -232,19 +232,19 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
     page_data.add_section("Personal profile", profile_section(who, viewer, django_request))
 
     announcements = [{'From': "Test announcer",
-                      'Date': datetime.datetime.now(),
+                      'Date': datetime.datetime.utcnow(),
                       'Text': "This is a dummy announcement, to show where system-wide messages will go."},
                      {'From': "Another test announcer",
-                      'Date': datetime.datetime.now(),
+                      'Date': datetime.datetime.utcnow(),
                       'Text': "This is another dummy announcement.  There will eventually be a button to dismiss announcements and notifications."}]
     notifications = [{'From': "Test notifier",
-                      'Date': datetime.datetime.now(),
+                      'Date': datetime.datetime.utcnow(),
                       'Text': "This is a dummy notification, to show where notifications to individuals will go."},
                      {'From': "Test notifier",
-                      'Date': datetime.datetime.now(),
+                      'Date': datetime.datetime.utcnow(),
                       'Text': "Until this is connected to email, you'll get training invitations here."},
                      {'From': "Another test notifier",
-                      'Date': datetime.datetime.now(),
+                      'Date': datetime.datetime.utcnow(),
                       'Text': "I don't like in-site message systems but I've put this here to get us through testing without having to set up real mail sending."}]
 
     messages = []

@@ -37,7 +37,7 @@ class Timeline(object):
         """List the events which have not yet started.
 
         See the class documentation for the available search criteria."""
-        return Timeline.create_timeline(earliest=datetime.now(),
+        return Timeline.create_timeline(earliest=datetime.utcnow(),
                                         **kwargs)
 
     @staticmethod
@@ -45,8 +45,8 @@ class Timeline(object):
         """List the events which have started but not finished.
 
         See the class documentation for the available search criteria."""
-        return Timeline.create_timeline(earliest=datetime.now(),
-                                        latest=datetime.now(),
+        return Timeline.create_timeline(earliest=datetime.utcnow(),
+                                        latest=datetime.utcnow(),
                                         **kwargs)
 
     @staticmethod
@@ -54,7 +54,7 @@ class Timeline(object):
         """List the events which have finished.
 
         See the class documentation for the available search criteria."""
-        return Timeline.create_timeline(latest=datetime.now(),
+        return Timeline.create_timeline(latest=datetime.utcnow(),
                                         **kwargs)
 
     def refresh(self):

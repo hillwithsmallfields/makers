@@ -243,7 +243,7 @@ class Event(object):
         """
         if isinstance(event_datetime, str):
             event_datetime = datetime.strptime(event_datetime, "%Y-%m-%dT%H:%M")
-        if event_datetime < datetime.now() and not allow_past:
+        if event_datetime < datetime.utcnow() and not allow_past:
             return None, "Cannot create a past event"
         template_dict = Event.find_template(template_name)
         print("instantiate_template: template_dict is", template_dict)
@@ -332,7 +332,7 @@ class Event(object):
             for whoever in potentials:
                 if whoever._id not in self.invited:
                     whoever.mail_event_invitation(self, "training_invitation")
-                    self.invited[whoever._id] = datetime.now()
+                    self.invited[whoever._id] = datetime.utcnow()
 
     def publish(self):
         """Make the event appear in the list of scheduled events."""
@@ -405,7 +405,7 @@ class Event(object):
         self.save()
 
     def auto_expire_non_replied_invitations(self):
-        cutoff = datetime.now() - timedelta(self.invitation_timeout,0)
+        cutoff = datetime.utcnow() - timedelta(self.invitation_timeout,0)
         for who, when in self.invited.items():
             if when < cutoff:
                 if (who._id not in self.signed_up

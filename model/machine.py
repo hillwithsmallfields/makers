@@ -81,7 +81,7 @@ class Machine(object):
         self.reservations = sorted(self.reservations + [[starting_at, ending_at, for_whom, reason]], lambda res: res[0])
         self.save()
 
-    def reserved(when=datetime.datetime.now()):
+    def reserved(when=datetime.datetime.utcnow()):
         """Return whether the machine is reserved (e.g. for a training session).
         The result is a description of the reservation."""
         for res in self.reservations:
@@ -97,7 +97,7 @@ class Machine(object):
             return person_obj._id == res[2]
         return person_obj.qualification(self.name)
 
-    def log_use(self, who, when=datetime.datetime.now()):
+    def log_use(self, who, when=datetime.datetime.utcnow()):
         """Log that a particular user has used this machine."""
         model.database.log_machine_use(self._id, model.person.Person.find(who)._id, when)
 
