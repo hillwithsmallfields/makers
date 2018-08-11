@@ -8,7 +8,9 @@ import model.person
 import os
 import re
 
-def with_help(content, help_name):
+def with_help(who, content, help_name):
+    if not who.show_help:
+        return content
     help_file = os.path.join(configuration.get_config()['page']['help_texts'], help_name + ".html")
     if os.path.isfile(help_file):
         with open(help_file) as helpstream:

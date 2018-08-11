@@ -55,6 +55,7 @@ class Person(object):
         self.invitations = {}       # dict of uuid to event
         self.visibility = {}        # binds 'general', 'host', 'attendee' to True, False, 'logged-in'
         self.stylesheet = None      # None means use the system default
+        self.show_help = True
         self.notifications_read_to = datetime.utcnow()
         self.announcements_read_to = datetime.utcnow()
 
@@ -500,7 +501,12 @@ class Person(object):
         old_telephone = who.get_profile_field('telephone') or ""
         old_mugshot = who.get_profile_field('mugshot')
         old_email = who.get_email() # email needs special handling as we must tell django too
+        # todo: fill this in
         # name needs special handling as we must tell django too
+
+    def update_controls(self, params):
+        # todo: fill this in
+        pass
 
     # Announcements and notifications
 

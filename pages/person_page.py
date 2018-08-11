@@ -16,6 +16,41 @@ all_conf = None
 server_conf = None
 org_conf = None
 
+def site_controls_sub_section(who, viewer, django_request):
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+    # todo: get these from the person's record
+    visible_as_host = True
+    visible_as_attendee = True
+    visible_generally = False
+    return T.div(class_="site_options")[
+        [T.form(action=base + django.urls.reverse("dashboard:update_site_controls"), method='POST')
+         [T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+          T.input(type="hidden", name="subject_user_uuid", value=who._id),
+          model.pages.with_help(
+              viewer,
+              T.table(class_="siteoptions")[
+                  T.tr[T.th(class_="ralabel")["Visible as host / owner / trainer to attendees / users"],
+                       T.td[T.input(type='checkbox', checked='checked')
+                            if visible_as_host
+                            else T.input(type='checkbox', name='visible_as_host')]],
+                  T.tr[T.th(class_="ralabel")["Visible as attendee / user to hosts / owners / trainers"],
+                       T.td[T.input(type='checkbox', checked='checked')
+                            if visible_as_attendee
+                            else T.input(type='checkbox', name='visible_to_host')]],
+                  T.tr[T.th(class_="ralabel")["Visible generally"],
+                       T.td[T.input(type='checkbox', name='visible_generally', checked='checked')
+                            if visible_generally
+                            else T.input(type='checkbox', name='visible_generally')]],
+                  T.tr[T.th(class_="ralabel")["Stylesheet"],
+                       T.td[T.select(name="stylesheet")[[T.option[style] # todo: mark current stylesheet as checked
+                                                         for style in model.configuration.get_stylesheets()]]]],
+                  T.tr[T.th(class_="ralabel")["Display help beside forms"],
+                       T.td[T.input(type='checkbox', name='display_help', checked='checked')
+                            if who.show_help
+                            else T.input(type='checkbox', name='display_help')]],
+                  T.tr[T.th[""], T.td[T.input(type="submit", value="Update controls")]]],
+              "site_controls")]]]
+
 def profile_section(who, viewer, django_request):
     address = who.get_profile_field('address') or {}
     telephone = who.get_profile_field('telephone') or ""
@@ -30,6 +65,7 @@ def profile_section(who, viewer, django_request):
               [T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                T.input(type="hidden", name="subject_user_uuid", value=who._id),
                model.pages.with_help(
+                   viewer,
                    T.table(class_="personaldetails")[
                        T.tr[T.th(class_="ralabel")["Name"], T.td[T.input(type="text",
                                                                          name="name",
@@ -56,18 +92,21 @@ def profile_section(who, viewer, django_request):
                        T.tr[T.th(class_="ralabel")["No-shows"], T.td[str(len(who.get_noshows()))]],
                        T.tr[T.th(class_="ralabel")["No-show absolutions"], T.td[(T.input(type="text", name="absolutions", value=str(who.noshow_absolutions))
                                                                                  if viewer.is_administrator() else str(who.noshow_absolutions))]],
-                       T.tr[T.th(class_="ralabel")["Stylesheet"], T.td[T.select(name="stylesheet")[[T.option[style] # todo: mark current stylesheet as checked
-                                                                                                    for style in model.configuration.get_stylesheets()]]]],
                        T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]],
                    "general_user_profile")],
+              T.h2["Site controls"],
+              site_controls_sub_section(who, viewer, django_request),
               T.h2["Availability"],
-              model.pages.with_help(pages.page_pieces.availform(who.available, django_request),
+              model.pages.with_help(viewer,
+                                    pages.page_pieces.availform(who.available, django_request),
                                     "availability")]
     if 'skill_areas' in all_conf:
-        result.append([T.h2["Skills and interests"], model.pages.with_help(user_skills_section(who, django_request),
+        result.append([T.h2["Skills and interests"], model.pages.with_help(viewer,
+                                                                           user_skills_section(who, django_request),
                                                                            "skills_interests")])
     if 'dietary_avoidances' in all_conf:
-        result.append([T.h2["Dietary avoidances"], model.pages.with_help(avoidances_section(who, django_request),
+        result.append([T.h2["Dietary avoidances"], model.pages.with_help(viewer,
+                                                                         avoidances_section(who, django_request),
                                                                          "dietary_avoidances")])
     return T.div(class_="personal_profile")[result]
 
@@ -290,14 +329,18 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
     their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
     if len(their_equipment_types) > 0:
         page_data.add_section("Equipment I can use",
-                              equipment_trained_on(who, viewer, their_equipment_types, django_request))
+                              model.pages.with_help(viewer,
+                                                    equipment_trained_on(who, viewer, their_equipment_types, django_request),
+                                                    "equipment_as_user"))
 
     all_remaining_types = ((set(model.equipment_type.Equipment_type.list_equipment_types())
                             -their_responsible_types)
                            -their_equipment_types)
     if len(all_remaining_types) > 0:
         page_data.add_section("Other equipment",
-                              pages.page_pieces.general_equipment_list(who, viewer, all_remaining_types, django_request))
+                              model.pages.with_help(viewer,
+                                                    pages.page_pieces.general_equipment_list(who, viewer, all_remaining_types, django_request),
+                                                    "other_equipment"))
 
     if len(who.training_requests) > 0:
         page_data.add_section("Training requests", training_requests_section(who, django_request))

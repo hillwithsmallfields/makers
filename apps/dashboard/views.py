@@ -140,3 +140,13 @@ def update_profile(request):
     return HttpResponse(pages.person_page.person_page_contents(who, admin_user, request,
                                                                extra_top_header="Confirmation",
                                                                extra_top_body=T.p["Profile updated."]).to_string)
+
+@ensure_csrf_cookie
+def update_site_controls(request):
+    params = request.POST
+    who = model.person.Person.find(params['subject_user_uuid'])
+    admin_user = model.person.Person.find(request.user.link_id)
+    who.supdate_controls(params)
+    return HttpResponse(pages.person_page.person_page_contents(who, admin_user, request,
+                                                               extra_top_header="Confirmation",
+                                                               extra_top_body=T.p["Profile updated."]).to_string)
