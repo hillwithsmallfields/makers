@@ -176,8 +176,6 @@ class Event(object):
     def save(self):
         """Save the event to the database."""
         model.database.save_event(self.__dict__)
-        # todo: remove debugging hack
-        print("saved event", self.__dict__)
 
     @staticmethod
     def find_template(template_name):
@@ -220,7 +218,6 @@ class Event(object):
                 if onetype == "$equipment":
                     onetype = equip_type
                 type_descr = model.equipment_type.Equipment_type.find(onetype) if onetype else None
-                print("onetype is", onetype, "of type", type(onetype), "and type_descr is", type_descr)
                 result.append((type_descr.name if type_descr else "?") + " " + role)
         return result
 

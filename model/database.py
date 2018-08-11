@@ -185,11 +185,11 @@ def get_events(event_type=None,
         query['start'] = {'$gt': earliest}
     if latest:
         query['end'] = {'$lt': latest}
-    print("get_events query", query)
+    # print("get_events query", query)
     result = [ model.event.Event.find_by_id(tr_event['_id'])
                for tr_event in database[collection_names['events']].find(query).sort('start',
                                                                                      pymongo.ASCENDING) ]
-    # print("get_events result", result)
+    # print("get_events result", result, "with ids", [r._id for r in result])
     return result
 
 def get_event_by_id(event_id):
@@ -198,7 +198,12 @@ def get_event_by_id(event_id):
 
 def save_event(this_event):
     # print("saving event", this_event)
-    database[collection_names['events']].save(this_event)
+    if this_event['_id'] is None:
+        del this_event['_id']
+        database[collection_names['events']].insert(this_event)
+    else:
+        database[collection_names['events']].save(this_event)
+    # print("saved event as", this_event)
 
 # Notifications (to individuals)
 

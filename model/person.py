@@ -290,10 +290,10 @@ class Person(object):
         """Return the training data for this person,
         as a list of training events."""
         return model.database.get_events(event_type=event_type,
-                                   person_field=result,
-                                   person_id=self._id,
-                                   include_hidden=True,
-                                   latest=when)
+                                         person_field=result,
+                                         person_id=self._id,
+                                         include_hidden=True,
+                                         latest=when)
 
     def add_training(self, tr_event):
         """Add the event to the appropriate role list of the person's events, and write it back to the database."""
@@ -334,7 +334,6 @@ class Person(object):
         """Add an individual training or untraining event.
         This is mostly for administrators to fix the record to match reality,
         and for banning and unbanning users."""
-        print("in training_individual_event")
         if when is None:
             when = datetime.now()
         special_event = model.event.Event(({'user': 'user_training',
@@ -345,11 +344,10 @@ class Person(object):
                                                  'owner': 'owner_untraining',
                                                  'trainer': 'trainer_untraining'})[role], when,
                                           [admin_user._id], "Direct grant of permission" if enabling else "Ban",
+                                          event_duration=0, # so it takes effect immediately
                                           signed_up=[self._id],
                                           equipment_type=equipment_type._id)
-        print("made event", special_event)
         special_event.mark_results([self], [], [])
-        print("saved results in", special_event)
         if revert_after and revert_after != "" and revert_after != "indefinite":
             self.training_individual_event(admin_user,
                                            role, equipment_type, not enabling,
@@ -359,26 +357,22 @@ class Person(object):
     # Conditions and qualifications
 
     def get_equipment_types(self, role, when=None):
-        """Get the list of the equipment_classes for which the person has the specified role."""
+        """Get the list of the equipment_types for which the person has the specified role."""
         trained = {}
         detrained = {}
-        equipments = {}
         for ev in self.get_training_events(event_type = model.database.role_training(role),
                                            when=when or datetime.now()):
-            for eq in ev.equipment:
-                trained[eq] = ev.start
-                equipments[eq] = eq
+            trained[ev.equipment_type] = ev.start
         for ev in self.get_training_events(event_type = model.database.role_untraining(role),
                                            when=when or datetime.now()):
-            for eq in ev.equipment:
-                detrained[eq] = ev.start
-        return [ model.equipment_type.Equipment_type.find_by_id(equipments[e])
-                 for e in trained.keys()
-                 if (e not in detrained
-                     or trained[e] > detrained[e])]
+            detrained[ev.equipment_type] = ev.start
+        return [model.equipment_type.Equipment_type.find_by_id(e)
+                for e in trained.keys()
+                if (e not in detrained
+                    or trained[e] > detrained[e])]
 
     def get_equipment_type_names(self, role):
-        """Get the list of equipment types for which the person has a given role.
+        """Get the list of names of equipment types for which the person has a given role.
         Aimed mostly at the JSON API."""
         return [ eq.name for eq in self.get_equipment_types(role) ]
 
@@ -403,12 +397,12 @@ class Person(object):
         equipment_id = model.equipment_type.Equipment_type.find(equipment_type_name)._id
         for ev in self.get_training_events(event_type = model.database.role_training(role),
                                            when=when or datetime.now()):
-            if equipment_id in ev.equipment:
+            if equipment_id == ev.equipment_type:
                 trained = ev
                 break
         for ev in self.get_training_events(event_type = model.database.role_untraining(role),
                                            when=when or datetime.now()):
-            if equipment_id in ev.equipment:
+            if equipment_id == ev.equipment_type:
                 detrained = ev.start
                 break
         if detrained is None:

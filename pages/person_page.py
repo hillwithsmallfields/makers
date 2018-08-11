@@ -141,8 +141,14 @@ def name_of_host(host):
     return model.person.Person.find(host).name() if host else "Unknown"
 
 def equipment_trained_on(who, viewer, equipment_types, django_request):
-    keyed_types = { ty.pretty_name(): (ty, who.qualification(ty.name, 'user'))
+    keyed_types = { ty.pretty_name():
+                    (ty,
+                     # the qualification is a pair of (training, untraining)
+                     who.qualification(ty.name, 'user'))
                     for ty in equipment_types }
+    # keyed_types[name][0] is the equipment type
+    # keyed_types[name][1][0] is the qualification
+    # keyed_types[name][1][1] is the disqualification
     who_name = who.name()
     return T.div(class_="trainedon")[
         T.table(class_='trainedon')[
@@ -204,11 +210,12 @@ def admin_section(viewer, django_request):
                       for template in model.event.Event.list_templates([], None)}
     equip_types = {etype.name: etype.pretty_name()
                        for etype in model.equipment_type.Equipment_type.list_equipment_types()}
-    return T.ul[T.li[T.a(href=base+"/dashboard/all")["List all users"]],
+    return T.ul[T.li[T.a(href=base+"/dashboard/all")["List all users"], " (may be slow and timeout on server)"],
                 T.li["Search by name:", T.form(action=base + "/dashboard/match",
                                                method='GET')[T.form[T.input(type='text', name='pattern'),
                                                                     T.input(type='submit', value='Search')]]],
-                (T.li[T.form(action=base+"/makers_admin/create_event",
+                (T.li["Create event: ",
+                      T.form(action=base+"/makers_admin/create_event",
                              method='GET')[T.select(name='template_name')[[[T.option(value=tt)[template_types[tt]]]
                                                                            for tt in sorted(template_types.keys())]],
                                            T.select(name='equipment_type')[[[T.option(value=et)[equip_types[et]]]
@@ -263,6 +270,10 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
                                                            responsibilities(who, viewer, name, keyed_types, django_request)]
                                                           for name in sorted(keyed_types.keys())]])
 
+    # print("user types", who.get_equipment_types('user'))
+    # print("owner types", who.get_equipment_types('owner'))
+    # print("trainer types", who.get_equipment_types('trainer'))
+
     their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
     if len(their_equipment_types) > 0:
         page_data.add_section("Equipment I can use",
@@ -279,13 +290,13 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
         page_data.add_section("Training requests", training_requests_section(who, django_request))
 
     hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events
-    print("hosting is", hosting)
+    # print("hosting is", hosting)
     if len(hosting) > 0:
         page_data.add_section("Events I will be hosting",
                               T.div(class_="hostingevents")[pages.event_page.event_table_section(hosting, who._id, django_request)])
 
     attending = model.timeline.Timeline.future_events(person_field='signed_up', person_id=who._id).events
-    print("attending is", attending)
+    # print("attending is", attending)
     if len(attending) > 0:
         page_data.add_section("Events I have signed up for",
                               T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)])
