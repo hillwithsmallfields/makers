@@ -99,7 +99,6 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
             results]
 
 def equip_name(eqid):
-    print("getting name of", eqid, "of type", type(eqid))
     eqt = model.equipment_type.Equipment_type.find_by_id(eqid)
     if eqt:
         return eqt.name

@@ -323,12 +323,16 @@ class Event(object):
           - have indicated they may be available at that time
           - have not yet been invited, or have replied to an invitation."""
         self.auto_expire_non_replied_invitations()
+        print("invite_available_interested_people")
+        # Is there room for any more at the event?
         if len(self.signed_up) < self.attendance_limit:
             potentials = [whoever for whoever in self.available_interested_people()
                           if (whoever._id not in self.signed_up
                               and whoever._id not in self.invitation_declined)]
+            print("invite_available_interested_people potentials", potentials)
             if len(potentials) > self.attendance_limit:
                 potentials = potentials[:self.attendance_limit]
+            print("invite_available_interested_people trimmed potentials", potentials)
             for whoever in potentials:
                 if whoever._id not in self.invited:
                     whoever.mail_event_invitation(self, "training_invitation")
