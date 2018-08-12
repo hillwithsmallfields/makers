@@ -57,6 +57,8 @@ class Person(object):
         self.visibility = {}        # binds 'general', 'host', 'attendee' to True, False, 'logged-in'
         self.stylesheet = None      # None means use the system default
         self.show_help = True
+        self.notify_by_email = True # todo: put into site controls
+        self.notify_in_site = True  # todo: put into site controls
         self.notifications_read_to = datetime(1970, 1, 1)
         self.announcements_read_to = datetime(1970, 1, 1)
 
@@ -315,7 +317,7 @@ class Person(object):
         return map(model.person.Person.find,
                    model.database.get_people_awaiting_training(event_type, equipment_type))
 
-    def mail_event_invitation(self, m_event, message_template_name):
+    def send_event_invitation(self, m_event, message_template_name):
         """Mail the person about an event.
         They get a link to click on to respond about whether they can attend."""
         invitation_uuid = str(uuid.uuid4())
@@ -328,8 +330,12 @@ class Person(object):
                          'equipment_type': m_event.equipment_type,
                          'date': str(m_event.start)}
         with open(os.path.join(all_conf['messages']['templates_directory'], message_template_name)) as msg_file:
-            makers_server.mailer(self.get_email(),
-                                 msg_file.read() % substitutions)
+            message_body = msg_file.read() % substitutions
+            print("sending message to", self.name(), "text is", message_body)
+            if self.notify_by_email:
+                makers_server.mailer(self.get_email(), message_body)
+            if self.notify_in_site:
+                database.add_notification(self._id, datetime.utcnow(), message_body)
 
     @staticmethod
     def mailed_event_details(rsvp):
