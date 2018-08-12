@@ -1,6 +1,8 @@
 from django.http import HttpResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
 from pages import page_pieces
 from untemplate.throw_out_your_templates_p3 import htmltags as T
+from datetime import datetime
 import model.configuration
 import model.database
 import model.pages
@@ -9,7 +11,6 @@ import model.person as person
 import pages.person_page
 import pages.user_list_page
 import sys
-from django.views.decorators.csrf import ensure_csrf_cookie
 
 @ensure_csrf_cookie
 def all_user_list_page(request):
@@ -123,30 +124,88 @@ def user_match_page(request, pattern):
 
 @ensure_csrf_cookie
 def update_mugshot(request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
     params = request.POST
     who = model.person.Person.find(params['subject_user_uuid'])
     admin_user = model.person.Person.find(request.user.link_id)
     # todo: update photo from upload
-    return HttpResponse(pages.person_page.person_page_contents(who, admin_user, request,
-                                                               extra_top_header="Confirmation",
-                                                               extra_top_body=T.p["Mugshot updated."]).to_string)
+    page_data = model.pages.HtmlPage("Confirmation",
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+    page_data.add_content("Confirmation", [T.p["Photo updated."]])
+    return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
 def update_profile(request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
     params = request.POST
     who = model.person.Person.find(params['subject_user_uuid'])
     admin_user = model.person.Person.find(request.user.link_id)
     who.update_profile(params)
-    return HttpResponse(pages.person_page.person_page_contents(who, admin_user, request,
-                                                               extra_top_header="Confirmation",
-                                                               extra_top_body=T.p["Profile updated."]).to_string)
+    page_data = model.pages.HtmlPage("Confirmation",
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+    page_data.add_content("Confirmation", [T.p["Profile updated."]])
+    return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
 def update_site_controls(request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
     params = request.POST
     who = model.person.Person.find(params['subject_user_uuid'])
     admin_user = model.person.Person.find(request.user.link_id)
-    who.supdate_controls(params)
-    return HttpResponse(pages.person_page.person_page_contents(who, admin_user, request,
-                                                               extra_top_header="Confirmation",
-                                                               extra_top_body=T.p["Profile updated."]).to_string)
+    who.update_controls(params)
+    page_data = model.pages.HtmlPage("Confirmation",
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+    page_data.add_content("Confirmation", [T.p["Controls updated."]])
+    return HttpResponse(str(page_data.to_string()))
+
+def reset_messages(request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    who = model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid']))
+    admin_user = model.person.Person.find(request.user.link_id)
+    who.notifications_read_to = datetime(1970, 1, 1)
+    who.announcements_read_to = datetime(1970, 1, 1)
+    who.save()
+    page_data = model.pages.HtmlPage("Confirmation",
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+    page_data.add_content("Confirmation", [T.p["Messages reset."]])
+    return HttpResponse(str(page_data.to_string()))
+
+def announcements_read(request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    who = model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid']))
+
+    print("announcements_read upto", request.POST['upto'])
+
+    page_data = model.pages.HtmlPage("Confirmation",
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+    page_data.add_content("Confirmation", [T.p["Messages marked as read."]])
+    return HttpResponse(str(page_data.to_string()))
+
+def notifications_read(request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    who = model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid']))
+
+    print("notifications_read upto", request.POST['upto'])
+
+    page_data = model.pages.HtmlPage("Confirmation",
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+    page_data.add_content("Confirmation", [T.p["Messages marked as read."]])
+    return HttpResponse(str(page_data.to_string()))

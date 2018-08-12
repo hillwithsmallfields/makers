@@ -219,8 +219,9 @@ def add_notification(who_id, sent_date, text):
 # Announcements (to all)
 
 def get_announcements(since_date):
+    print("get_announcements query will be", {'when': {'$gt': since_date}}, "and the collection will be", database[collection_names['announcements']])
     return [message
-            for message in database[collection_names['notifications']].find({'when': {'$gt': since_date}})]
+            for message in database[collection_names['announcements']].find({'when': {'$gt': since_date}})]
 
 def add_announcement(sent_date, from_id, text):
     database[collection_names['announcements']].insert({'when': sent_date,

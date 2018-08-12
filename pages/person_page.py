@@ -1,4 +1,5 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
+import bson
 import datetime
 import django.middleware.csrf
 import django.urls
@@ -99,7 +100,16 @@ def profile_section(who, viewer, django_request):
               T.h2["Availability"],
               model.pages.with_help(viewer,
                                     pages.page_pieces.availform(who.available, django_request),
-                                    "availability")]
+                                    "availability"),
+              T.h2["Misc"],
+              T.ul[T.li["Reset notifications and announcements: ",
+                        (T.form(action=base + "/dashboard/reset_messages", method='POST')
+                         [T.input(type="hidden",
+                                  name="csrfmiddlewaretoken",
+                                  value=django.middleware.csrf.get_token(django_request)),
+                          T.input(type='hidden', name='subject_user_uuid', value=who._id),
+                          T.input(type='submit',
+                                  value="Reset notifications")])]]]
     if 'skill_areas' in all_conf:
         result.append([T.h2["Skills and interests"], model.pages.with_help(viewer,
                                                                            user_skills_section(who, django_request),
@@ -291,23 +301,39 @@ def admin_section(viewer, django_request):
 def add_person_page_contents(page_data, who, viewer, django_request, extra_top_header=None, extra_top_body=None):
     """Add the sections of a user dashboard to a sectional page."""
 
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+
     if extra_top_body:
         page_data.add_section(extra_top_header or "Confirmation", extra_top_body)
 
     page_data.add_section("Personal profile", profile_section(who, viewer, django_request))
 
-    announcements = who.read_announcements()
-    notifications = who.read_notifications()
+    (announcements, announcements_upto) = who.read_announcements()
+    (notifications, notifications_upto) = who.read_notifications()
 
     messages = []
     if len(announcements) > 0:
         messages.append([T.h3["Announcements"],
-                         T.dl[[[T.dt["From " + str(anno['from']) + " at " + model.event.timestring(anno['when'])],
-                                T.dd[anno['text']]] for anno in announcements]]])
+                         T.dl[[[T.dt["From "
+                                     + model.person.Person.find(bson.objectid.ObjectId(anno['from'])).name()
+                                     + " at " + model.event.timestring(anno['when'])],
+                                T.dd[anno['text']]] for anno in announcements]],
+                         T.form(base + "/dashboard/announcements_read", method='POST')
+                         [T.input(type='hidden', name='subject_user_uuid', value=who._id),
+                          T.input(type="hidden", name="csrfmiddlewaretoken",
+                                  value=django.middleware.csrf.get_token(django_request)),
+                          T.input(type='hidden', name='upto', value=announcements_upto),
+                          T.input(type='submit', value="Mark as read")]])
     if len(notifications) > 0:
         messages.append([T.h3["Notifications"],
                          T.dl[[[T.dt["At " + model.event.timestring(noti['when'])],
-                                T.dd[noti['text']]] for noti in notifications]]])
+                                T.dd[noti['text']]] for noti in notifications]],
+                         T.form(base + "/dashboard/notifications_read", method='POST')
+                         [T.input(type='hidden', name='subject_user_uuid', value=who._id),
+                          T.input(type="hidden", name="csrfmiddlewaretoken",
+                                  value=django.middleware.csrf.get_token(django_request)),
+                          T.input(type='hidden', name='upto', value=notifications_upto),
+                          T.input(type='submit', value="Mark as read")]])
 
     if len(announcements) > 0 or len(notifications) > 0:
         page_data.add_section("Notifications",

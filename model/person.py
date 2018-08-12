@@ -56,8 +56,8 @@ class Person(object):
         self.visibility = {}        # binds 'general', 'host', 'attendee' to True, False, 'logged-in'
         self.stylesheet = None      # None means use the system default
         self.show_help = True
-        self.notifications_read_to = datetime.utcnow()
-        self.announcements_read_to = datetime.utcnow()
+        self.notifications_read_to = datetime(1970, 1, 1)
+        self.announcements_read_to = datetime(1970, 1, 1)
 
     def __str__(self):
         return ("<member " + str(self.membership_number)
@@ -511,16 +511,26 @@ class Person(object):
     # Announcements and notifications
 
     def read_announcements(self):
-        up_to_time = datetime.utcnow()
+        # get the time before the messages, so if any messages come in
+        # between reading the two, we don't miss any
+        up_to_now_time = datetime.utcnow()
         results = model.database.get_announcements(self.announcements_read_to)
-        self.announcements_read_to = up_to_time
-        return results
+        return results, up_to_now_time
+
+    def mark_announcements_read(self, upto):
+        self.announcements_read_to = upto
+        self.save()
 
     def read_notifications(self):
-        up_to_time = datetime.utcnow()
+        # get the time before the messages, so if any messages come in
+        # between reading the two, we don't miss any
+        up_to_now_time = datetime.utcnow()
         results = model.database.get_notifications(self._id, self.notifications_read_to)
-        self.notifications_read_to = up_to_time
-        return results
+        return results, up_to_now_time
+
+    def mark_notifications_read(self, upto):
+        self.notifications_read_to = upto
+        self.save()
 
     # API
 

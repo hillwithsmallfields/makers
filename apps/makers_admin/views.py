@@ -73,7 +73,9 @@ def announce(django_request):
 
     text = django_request.POST['announcement']
 
-    model.database.add_announcement(datetime.utcnow(),
+    when = datetime.utcnow()
+
+    model.database.add_announcement(when,
                                     model.person.Person.find(django_request.user.link_id)._id,
                                     text)
 
