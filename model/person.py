@@ -40,6 +40,7 @@ class Person(object):
     """
 
     people_by_id = {}
+    training_events_by_params = {}
 
     def __init__(self):
         self._id = None
@@ -290,15 +291,23 @@ class Person(object):
                             result='passed'):
         """Return the training data for this person,
         as a list of training events."""
-        return model.database.get_events(event_type=event_type,
-                                         person_field=result,
-                                         person_id=self._id,
-                                         include_hidden=True,
-                                         latest=when)
+        params = (self._id, event_type, when, result)
+        if params not in model.person.Person.training_events_by_params:
+            model.person.Person.training_events_by_params[params] = model.database.get_events(event_type=event_type,
+                                                                                              person_field=result,
+                                                                                              person_id=self._id,
+                                                                                              include_hidden=True,
+                                                                                              latest=when)
+        return model.person.Person.training_events_by_params[params]
+
+    @staticmethod
+    def invalidate_training_cache():
+        model.person.Person.training_events_by_params = {}
 
     def add_training(self, tr_event):
         """Add the event to the appropriate role list of the person's events, and write it back to the database."""
         tr_event.mark_results([self], [], [])
+        model.person.Person.invalidate_training_cache()
 
     @staticmethod
     def awaiting_training(event_type, equipment_type):
@@ -354,6 +363,7 @@ class Person(object):
                                            role, equipment_type, not enabling,
                                            when=when+timedelta(int(revert_after), 0),
                                            revert_after=False)
+        model.person.Person.invalidate_training_cache()
 
     # Conditions and qualifications
 
