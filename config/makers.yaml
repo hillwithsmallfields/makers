@@ -103,6 +103,10 @@ dietary_avoidances:
   - low carb
   - low sugar
 
+demographics:
+  - Birth year
+  - Gender
+  
 database:
   URI: 
   database_name: Makespace
