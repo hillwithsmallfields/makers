@@ -16,7 +16,7 @@ def equipment_type_section(eqty, viewing_user, django_request):
     """Return a pre-HTML structure describing an equipment type."""
     result = [T.dl[T.dt["Training category"],
                    T.dd[eqty.training_category]]]
-    # todo: add admin-specific buttons
+    # todo: make this into a form, and the data fields into input boxes, when the viewer is an admin or owner
     if eqty.picture:
         result += [T.img(src=eqty.picture, align="right")]
     if eqty.description:

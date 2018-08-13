@@ -1,5 +1,7 @@
 * Makers things to do
 ** TODO display training requests in dashboard "trainers" sections, possibly with timeslot counts
+** TODO button to say you can't make it to an event you've signed up for
+** TOOD more notification channels e.g. telegram, whatsapp, SMS etc
 ** TODO mail sending
 ** TODO trainers to be able to create training sessions
 *** TODO creating a training session to send invitations
