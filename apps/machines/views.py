@@ -27,6 +27,6 @@ def public_index(request, machine):
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)
 
-    page_data.add_content("Machine", pages.machine_page.machine_section(mach))
+    page_data.add_content("Machine", pages.machine_page.machine_section(mach, request))
 
     return HttpResponse(str(page_data.to_string()))

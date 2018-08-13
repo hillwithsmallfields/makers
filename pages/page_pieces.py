@@ -165,21 +165,22 @@ def display_or_form(class_name, action_as_form,
                     labels_dict, data_dict):
     """Display some data either with or without form inputs to update it."""
     table = T.table(class_=class_name)[
-        T.thead[T.tr[[T.th{header] for header in (headers or ["Key", "Value"])]]],
-        T.tbody[[[T.tr[T.th[labels_dict.get(item, item.capitalize()) if labels_dict else item.capitalize()],
+        T.thead[T.tr[[[T.th[header] for header in (headers or ["Key", "Value"])]]]],
+        T.tbody[[[T.tr[T.th(class_='ralabel')[labels_dict.get(item, item.capitalize()) if labels_dict else item.capitalize()],
                        T.td[(T.input(type='text',
                                      name='item',
                                      value=data_dict.get(item, ""))
-                                                            if action_as_form
-                                                            else data_dict.get(item, ""))]]]
+                             if action_as_form
+                             else data_dict.get(item, ""))]]]
                                                 for item in row_order
                                                 if action_as_form or data_dict.get(item, None) != None]],
         T.tfoot[T.tr[T.td[""],
                      T.td[T.input(type='submit',
-                                  value=[labels_dict.get('submit',
-                                                         "Submit changes")])]]]]
+                                  value=[(labels_dict
+                                          or {'submit': "Submit changes"}).get('submit',
+                                                                               "Submit changes")])]]]]
     return T.form(action=action_as_form,
-                  method='POST')[table] if as_form else table
+                  method='POST')[table] if action_as_form else table
 
 def general_equipment_list(who, viewer, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}

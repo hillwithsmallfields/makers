@@ -1,9 +1,9 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.equipment_type
 import model.machine
-import pages.
+import pages.page_pieces
 
-def machine_section(machine):
+def machine_section(machine, django_request):
     eqty = model.equipment_type.Equipment_type.find_by_id(machine.equipment_type)
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     # todo: owners and admin to be able to set some details

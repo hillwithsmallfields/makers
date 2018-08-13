@@ -199,13 +199,13 @@ def demographics_section(who, django_request):
     if 'demographics' not in all_conf:
         return []
     demographics_aspects = all_conf['demographics']
-    demographics = who.get_profile_field('demographics') or []
+    demographics = who.get_profile_field('demographics') or {}
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return [T.div[[T.form(action=base+"/update/demographics", # todo: get from django reverse
                           method='POST')[T.table[[[T.tr[T.th(class_='ralabel')[aspect],
                                                        T.td[T.input(type='text',
                                                                     name='aspect',
-                                                                    value=demographics[aspect])]]]
+                                                                    value=demographics.get(aspect, ""))]]]
                                                   for aspect in demographics_aspects],
                                                  T.tr[T.td[""],
                                                       T.input(type='submit',
@@ -339,10 +339,12 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
     messages = []
     if len(announcements) > 0:
         messages.append([T.h3["Announcements"],
-                         T.dl[[[T.dt["From "
-                                     + model.person.Person.find(bson.objectid.ObjectId(anno['from'])).name()
-                                     + " at " + model.event.timestring(anno['when'])],
-                                T.dd[anno['text']]] for anno in announcements]],
+                         model.pages.with_help(viewer,
+                                               T.dl[[[T.dt["From "
+                                                           + model.person.Person.find(bson.objectid.ObjectId(anno['from'])).name()
+                                                           + " at " + model.event.timestring(anno['when'])],
+                                                      T.dd[anno['text']]] for anno in announcements]],
+                                               "announcements"),
                          T.form(base + "/dashboard/announcements_read", method='POST')
                          [T.input(type='hidden', name='subject_user_uuid', value=who._id),
                           T.input(type="hidden", name="csrfmiddlewaretoken",
@@ -351,8 +353,10 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
                           T.input(type='submit', value="Mark as read")]])
     if len(notifications) > 0:
         messages.append([T.h3["Notifications"],
-                         T.dl[[[T.dt["At " + model.event.timestring(noti['when'])],
-                                T.dd[noti['text']]] for noti in notifications]],
+                         model.pages.with_help(viewer,
+                                               T.dl[[[T.dt["At " + model.event.timestring(noti['when'])],
+                                                      T.dd[noti['text']]] for noti in notifications]],
+                                               "notifications"),
                          T.form(base + "/dashboard/notifications_read", method='POST')
                          [T.input(type='hidden', name='subject_user_uuid', value=who._id),
                           T.input(type="hidden", name="csrfmiddlewaretoken",
@@ -362,20 +366,18 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
 
     if len(announcements) > 0 or len(notifications) > 0:
         page_data.add_section("Notifications",
-                              model.pages.with_help(viewer,
-                                                    T.div(class_="notifications")[messages],
-                                                    "notifications"),
+                              T.div(class_="notifications")[messages],
                               priority=9)
 
     their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
     if len(their_responsible_types) > 0:
         keyed_types = { ty.pretty_name(): ty for ty in their_responsible_types }
         page_data.add_section("Equipment responsibilities",
-                              model.pages.with_help(viewer,
-                                                    T.div(class_="resps")[[[T.h2[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
-                                                                            responsibilities(who, viewer, name, keyed_types, django_request)]
-                                                                           for name in sorted(keyed_types.keys())]],
-                                                    "responsibilities"))
+                              [T.div(class_="resps")[model.pages.with_help(viewer,
+                                                                           [[[T.h3[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
+                                                                              responsibilities(who, viewer, name, keyed_types, django_request)]
+                                                                             for name in sorted(keyed_types.keys())]],
+                                                                           "responsibilities")]])
 
     # print("user types", who.get_equipment_types('user'))
     # print("owner types", who.get_equipment_types('owner'))
@@ -412,7 +414,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
         page_data.add_section("Events I have signed up for",
                               model.pages.with_help(viewer,
                                                     T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)],
-                                                    "attending")
+                                                    "attending"))
 
     hosted = model.timeline.Timeline.past_events(person_field='hosts', person_id=who._id).events
     if len(hosting) > 0:
