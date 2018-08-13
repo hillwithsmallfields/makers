@@ -185,8 +185,12 @@ def display_or_form(class_name, action_as_form,
 def general_equipment_list(who, viewer, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
-    return T.table[T.thead[T.tr[T.th["Equipment type"], T.th["Request"], T.th["Admin action"] if viewer.is_administrator() else ""]],
-                   T.tbody[[[T.tr[T.th[T.a(href=base+server_conf['types']+name)[name.replace('_', ' ').capitalize()]],
+    return T.table[T.thead[T.tr[T.th["Equipment type"],
+                                T.th["Request"],
+                                T.th["Admin action"] if viewer.is_administrator() else ""]],
+                   T.tbody[[[T.tr[T.th[T.a(href=base
+                                           + django.urls.reverse("equiptypes:eqty",
+                                                                 args=(name,)))[keyed_types[name].pretty_name()]],
                                   T.td[machinelist(keyed_types[name],
                                                    who, django_request, False) if detailed else "",
                                        toggle_request(who, keyed_types[name]._id, 'user',

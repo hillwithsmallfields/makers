@@ -1,4 +1,5 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
+import django
 import model.equipment_type
 import model.machine
 import pages.page_pieces
@@ -6,9 +7,11 @@ import pages.page_pieces
 def machine_section(machine, django_request):
     eqty = model.equipment_type.Equipment_type.find_by_id(machine.equipment_type)
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    # todo: owners and admin to be able to set some details
 
-    result = []
+    result = [T.p["This equipment is an instance of type ",
+                  T.a(href=base+django.urls.reverse("equiptypes:eqty",
+                                                    args=(eqty.name,)))[eqty.name],
+                  "."]]
 
     # todo: picture if available
 
