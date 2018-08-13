@@ -264,15 +264,10 @@ def training_requests_section(who, django_request):
     sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
     return T.div(class_="requested")[T.table()[T.thead[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]]],
                                                T.tbody[[T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
-                                                             T.td[model.equipment_type.Equipment_type.find_by_id(req.get('equipment_type',
-                                                                                                                         # todo: remove this back-compat hack
-                                                                                                                         req.get('equipment_types', ["dummy"])[0])).pretty_name()],
+                                                             T.td[model.equipment_type.Equipment_type.find_by_id(req.get('equipment_type')).pretty_name()],
                                                              T.td[str(req['event_type'])[:-len_training]],
                                                              T.td[pages.page_pieces.cancel_button(who,
-                                                                                          req.get('equipment_type',
-                                                                                                  # todo: remove this back-compat hack
-                                                                                                  req.get('equipment_types',
-                                                                                                          ["dummy"])[0]),
+                                                                                          req.get('equipment_type'),
                                                                                                   'user', "Cancel training request",
                                                                                                   django_request)]]
                                                         for req in sorted_requests]]]]
