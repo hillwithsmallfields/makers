@@ -362,16 +362,20 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
 
     if len(announcements) > 0 or len(notifications) > 0:
         page_data.add_section("Notifications",
-                              T.div(class_="notifications")[messages],
+                              model.pages.with_help(viewer,
+                                                    T.div(class_="notifications")[messages],
+                                                    "notifications"),
                               priority=9)
 
     their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
     if len(their_responsible_types) > 0:
         keyed_types = { ty.pretty_name(): ty for ty in their_responsible_types }
         page_data.add_section("Equipment responsibilities",
-                              T.div(class_="resps")[[[T.h2[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
-                                                           responsibilities(who, viewer, name, keyed_types, django_request)]
-                                                          for name in sorted(keyed_types.keys())]])
+                              model.pages.with_help(viewer,
+                                                    T.div(class_="resps")[[[T.h2[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
+                                                                            responsibilities(who, viewer, name, keyed_types, django_request)]
+                                                                           for name in sorted(keyed_types.keys())]],
+                                                    "responsibilities"))
 
     # print("user types", who.get_equipment_types('user'))
     # print("owner types", who.get_equipment_types('owner'))
@@ -406,7 +410,9 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
     # print("attending is", attending)
     if len(attending) > 0:
         page_data.add_section("Events I have signed up for",
-                              T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)])
+                              model.pages.with_help(viewer,
+                                                    T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)],
+                                                    "attending")
 
     hosted = model.timeline.Timeline.past_events(person_field='hosts', person_id=who._id).events
     if len(hosting) > 0:
