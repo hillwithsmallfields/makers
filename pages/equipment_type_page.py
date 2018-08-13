@@ -14,16 +14,24 @@ def role_people(eqty, role):
 
 def equipment_type_section(eqty, viewing_user, django_request):
     """Return a pre-HTML structure describing an equipment type."""
-    result = [T.dl[T.dt["Training category"],
-                   T.dd[eqty.training_category]]]
-    # todo: make this into a form, and the data fields into input boxes, when the viewer is an admin or owner
-    if eqty.picture:
-        result += [T.img(src=eqty.picture, align="right")]
-    if eqty.description:
-        result += [T.p[eqty.description]]
-    if eqty.manufacturer:
-        result += [T.dt["Manufacturer"],
-                   T.dd[eqty.manufacturer]]
+
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+
+   result = []
+
+   if eqty.picture:
+       result += [T.img(src=eqty.picture, align="right")]
+
+    result += [pages.page_pieces.display_or_form(
+        'equipment_type_details',
+        base+"/equipment_type/update_details",
+        None,
+        ['category', 'description', 'manufacturer'],
+        None,
+        {'category':eqty.training_category,
+         'description': eqty.description,
+         'manufacturer': eqty.manufacturer})]
+
     result += [T.h3["Machines"],
                [pages.page_pieces.machinelist(eqty, viewing_user, django_request, viewing_user.is_owner(eqty))]]
     # todo: add list of upcoming training events, using eqty.get_training_events(role, earliest=datetime.utcnow())

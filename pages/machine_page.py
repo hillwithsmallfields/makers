@@ -1,15 +1,31 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.equipment_type
 import model.machine
+import pages.
 
 def machine_section(machine):
     eqty = model.equipment_type.Equipment_type.find_by_id(machine.equipment_type)
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     # todo: owners and admin to be able to set some details
-    rows = [T.tr[T.th(class_='ralabel')["Name"], T.td[machine.name]],
-            T.tr[T.th(class_='ralabel')["Type"], T.td[T.a()[eqty.name]]]]
-    # todo: any logged-in user to be able to make status reports
-    if machine.description:
-        rows += [T.tr[T.th(class_='ralabel')["Description"], T.td[machine.description]]]
-    rows += [T.tr[T.th(class_='ralabel')["Status"], T.td[machine.status]]]
-    result = [T.table[rows]]
+
+    result = []
+
+    # todo: picture if available
+
+    result += [pages.page_pieces.display_or_form(
+        'machine_details',
+        base+"machine/update_details",
+        None, ["name", "type", "description",
+               "status", "status_detail",
+               "location", "model", "serial_number"],
+        None,
+        {"name": machine.name,
+         "type": eqty.name,
+         "description": machine.description,
+         "status": machine.status,
+         "status_detail": machine.status_detail,
+         "location": machine.location,
+         "model": machine.model,
+         "serial_number": machine.serial_number})]
+
     return result
