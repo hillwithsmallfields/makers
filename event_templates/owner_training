@@ -1,4 +1,4 @@
-event_type:             owner training
+event_type:             owner_training
 title:                  $equipment owner training
 duration:               90
 attendance_limit:       2

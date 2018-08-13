@@ -312,12 +312,17 @@ class Event(object):
 
     def available_interested_people(self):
         event_timeslot_bitmap = model.timeslots.time_to_timeslot(self.start)
-        print("converted", self.start, "to bitmap", event_timeslot_bitmap)
+        print("available_interested_people converted", self.start, "to bitmap", event_timeslot_bitmap)
+        print("event_type", self.event_type, "equipment_type", self.equipment_type)
         awaiting = model.person.Person.awaiting_training(self.event_type, self.equipment_type)
-        print("awaiting training:", awaiting)
-        return [whoever
-                for whoever in awaiting
-                if whoever.available & event_timeslot_bitmap]
+        for waiter in awaiting:
+            print(waiter, "is waiting, available at", waiter.available, "yes" if waiter.available & event_timeslot_bitmap else "no")
+        # todo: fix this: there are items in awaiting that meet the condition, but the result is empty
+        result = [whoever
+                  for whoever in awaiting
+                  if (whoever.available & event_timeslot_bitmap)]
+        print("available_interested_people result is", result)
+        return result
 
     def invite_available_interested_people(self):
         """Send event invitations to the relevant people.
@@ -329,7 +334,9 @@ class Event(object):
         print("invite_available_interested_people")
         # Is there room for any more at the event?
         if len(self.signed_up) < self.attendance_limit:
-            potentials = [whoever for whoever in self.available_interested_people()
+            raw_list = self.available_interested_people()
+            print("raw list", raw_list, "signed up already", self.signed_up, "declined already", self.invitation_declined)
+            potentials = [whoever for whoever in raw_list
                           if (whoever._id not in self.signed_up
                               and whoever._id not in self.invitation_declined)]
             print("invite_available_interested_people potentials", potentials)

@@ -40,7 +40,8 @@ def machine_link(name):
     return section_link('machines:index', name, name)
 
 def request_button(who, eqty_id, role, button_text, django_request):
-    return T.form(action=django.urls.reverse("training:request"),
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+    return T.form(action=base+django.urls.reverse("training:request"),
                   method='POST')[T.input(type="hidden", name="equiptype", value=eqty_id),
                                  T.input(type="hidden", name="role", value=role),
                                  T.input(type="hidden", name="person", value=who._id),
@@ -48,7 +49,8 @@ def request_button(who, eqty_id, role, button_text, django_request):
                                  T.button(type="submit", value="request")[button_text]]
 
 def cancel_button(who, eqty_id, role, button_text, django_request):
-    return T.form(action=django.urls.reverse("training:cancel"),
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+    return T.form(action=base+django.urls.reverse("training:cancel"),
                   method='POST')[T.input(type="hidden", name="equiptype", value=eqty_id),
                                  T.input(type="hidden", name="role", value=role),
                                  T.input(type="hidden", name="person", value=who._id),
@@ -184,7 +186,7 @@ def display_or_form(class_name, action_as_form,
 
 def general_equipment_list(who, viewer, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return T.table[T.thead[T.tr[T.th["Equipment type"],
                                 T.th["Request"],
                                 T.th["Admin action"] if viewer.is_administrator() else ""]],

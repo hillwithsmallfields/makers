@@ -53,6 +53,8 @@ def new_event(request):
     if ev is None:
         return event_error_page(request, "New event error", error_message)
 
+    print("Made event", ev, "with type", ev.event_type)
+
     ev.publish()
     ev.invite_available_interested_people()
 

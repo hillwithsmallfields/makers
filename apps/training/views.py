@@ -16,16 +16,26 @@ def list_training(django_request):
 
 @ensure_csrf_cookie
 def request_training(django_request):
-    page_data = model.pages.SectionalPage("Training request confirmation",
-                                          pages.page_pieces.top_navigation(django_request),
-                                          django_request=django_request)
+    page_data = model.pages.HtmlPage("Training request confirmation",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
     params = django_request.POST
     model.database.database_init(model.configuration.get_config())
     who = model.person.Person.find(model.pages.unstring_id(params['person']))
     role = params['role']
     what = model.equipment_type.Equipment_type.find_by_id(model.pages.unstring_id(params['equiptype']))
-    who.add_training_request(role, what)
-    page_data.add_section("Data", [T.p["User " + who.name() + " signed up for " + role + " training on ", what.name + "."]])
+    result, explanation = who.add_training_request(role, what)
+    if result:
+        page_data.add_content("Data", [T.p["User " + who.name()
+                                           + " requested " + role
+                                           + " training on ", what.name # todo: linkify this
+                                           + "."]])
+    else:
+        page_data.add_content("Data", [T.p["User " + who.name()
+                                           + " could not request " + role
+                                           + " training on ", what.name # todo: linkify this
+                                           + " because " + explanation
+                                           + "."]])
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
