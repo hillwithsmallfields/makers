@@ -259,15 +259,17 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                      for name in sorted(keyed_types.keys())]]]]
 
 def training_requests_section(who, django_request):
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     len_training = len("_training")
     keyed_requests = {req['request_date']: req for req in who.training_requests}
     sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
     return T.div(class_="requested")[T.table()[T.thead[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]]],
                                                T.tbody[[T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
-                                                             T.td[model.equipment_type.Equipment_type.find_by_id(req.get('equipment_type')).pretty_name()],
+                                                             T.td[T.a(href=base+django.urls.reverse("equiptypes:eqty",
+                                                                                                    args=(model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).name,)))[model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).pretty_name()]],
                                                              T.td[str(req['event_type'])[:-len_training]],
                                                              T.td[pages.page_pieces.cancel_button(who,
-                                                                                          req.get('equipment_type'),
+                                                                                                  req['equipment_type'],
                                                                                                   'user', "Cancel training request",
                                                                                                   django_request)]]
                                                         for req in sorted_requests]]]]
