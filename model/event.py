@@ -34,6 +34,11 @@ def timestring(when):
             when.replace(second=0)
         return str(when)[:16]
 
+def combine(a, b):
+    r = a & b
+    print("anding", a, "and", b, "with result", r)
+    return r
+
 class Event(object):
 
     """The event class is used for past, present and future events.
@@ -315,16 +320,13 @@ class Event(object):
         print("available_interested_people converted", self.start, "to bitmap", event_timeslot_bitmap)
         print("event_type", self.event_type, "equipment_type", self.equipment_type)
         awaiting = model.person.Person.awaiting_training(self.event_type, self.equipment_type)
-        for waiter in awaiting:
-            print(waiter, "is waiting, available at", waiter.available, "yes" if waiter.available & event_timeslot_bitmap else "no")
-        # todo: fix this: there are items in awaiting that meet the condition, but the result is empty
         result = [whoever
                   for whoever in awaiting
                   if (whoever.available & event_timeslot_bitmap)]
         print("available_interested_people result is", result)
         return result
 
-    def invite_available_interested_people(self):
+    def invite_available_interested_people(self, site_base):
         """Send event invitations to the relevant people.
         These are those who:
           - have expressed an interest
@@ -345,7 +347,7 @@ class Event(object):
             print("invite_available_interested_people trimmed potentials", potentials)
             for whoever in potentials:
                 if whoever._id not in self.invited:
-                    whoever.send_event_invitation(self, "training_invitation")
+                    whoever.send_event_invitation(self, site_base, "training_invitation")
                     self.invited[whoever._id] = datetime.utcnow()
 
     def publish(self):

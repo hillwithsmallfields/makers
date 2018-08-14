@@ -317,25 +317,26 @@ class Person(object):
         return map(model.person.Person.find,
                    model.database.get_people_awaiting_training(event_type, equipment_type))
 
-    def send_event_invitation(self, m_event, message_template_name):
+    def send_event_invitation(self, m_event, site_base, message_template_name):
         """Mail the person about an event.
         They get a link to click on to respond about whether they can attend."""
         invitation_uuid = str(uuid.uuid4())
         all_conf = model.configuration.get_config()
         server_config = all_conf['server']
-        invitation_url = server_config['base_url'] + server_config['rsvp'] + invitation_uuid
+        invitation_url = site_base + "/" + server_config['rsvp'] + invitation_uuid
         self.invitations[invitation_uuid] = m_event._id
         substitutions = {'rsvp': invitation_url,
-                         'queue_position': len(m_event.invited),
-                         'equipment_type': m_event.equipment_type,
-                         'date': str(m_event.start)}
-        with open(os.path.join(all_conf['messages']['templates_directory'], message_template_name)) as msg_file:
+                         'queue_position': len(m_event.invited)+1,
+                         'equipment_type': model.equipment_type.Equipment_type.find_by_id(m_event.equipment_type).pretty_name(),
+                         'datetime': model.event.timestring(m_event.start)}
+        with open(os.path.join(all_conf['messages']['templates_directory'],
+                               message_template_name)) as msg_file:
             message_body = msg_file.read() % substitutions
             print("sending message to", self.name(), "text is", message_body)
             if self.notify_by_email:
-                makers_server.mailer(self.get_email(), message_body)
+                model.makers_server.mailer(self.get_email(), message_body)
             if self.notify_in_site:
-                database.add_notification(self._id, datetime.utcnow(), message_body)
+                model.database.add_notification(self._id, datetime.utcnow(), message_body)
 
     @staticmethod
     def mailed_event_details(rsvp):

@@ -12,6 +12,7 @@ import model.timeline
 import model.timeslots
 import pages.event_page
 import pages.page_pieces
+import untemplate.throw_out_your_templates_p3 as untemplate
 
 all_conf = None
 server_conf = None
@@ -162,6 +163,7 @@ def responsibilities(who, viewer, typename, keyed_types, django_request):
                                                                                 T.input(type="hidden", name="equiptype", value=eqtype._id)],
                                                                                "Schedule user training",
                                                                                django_request),
+                                         T.br,
                                          pages.page_pieces.schedule_event_form(who,
                                                                                [T.input(type="hidden", name="event_type", value="trainer_training"),
                                                                                 T.input(type="hidden", name="role", value="trainer"),
@@ -340,7 +342,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
                                                T.dl[[[T.dt["From "
                                                            + model.person.Person.find(bson.objectid.ObjectId(anno['from'])).name()
                                                            + " at " + model.event.timestring(anno['when'])],
-                                                      T.dd[anno['text']]] for anno in announcements]],
+                                                      T.dd[untemplate.safe_unicode(anno['text'])]] for anno in announcements]],
                                                "announcements"),
                          T.form(base + "/dashboard/announcements_read", method='POST')
                          [T.input(type='hidden', name='subject_user_uuid', value=who._id),
@@ -352,7 +354,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
         messages.append([T.h3["Notifications"],
                          model.pages.with_help(viewer,
                                                T.dl[[[T.dt["At " + model.event.timestring(noti['when'])],
-                                                      T.dd[noti['text']]] for noti in notifications]],
+                                                      T.dd[untemplate.safe_unicode(noti['text'])]] for noti in notifications]],
                                                "notifications"),
                          T.form(base + "/dashboard/notifications_read", method='POST')
                          [T.input(type='hidden', name='subject_user_uuid', value=who._id),

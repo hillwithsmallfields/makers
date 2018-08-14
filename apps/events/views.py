@@ -1,5 +1,6 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 from django.http import HttpResponse
+import django.urls
 import model.equipment_type
 import model.event
 import model.pages
@@ -40,6 +41,8 @@ def new_event(request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
+    base = request.scheme + "://" + request.META['HTTP_HOST']
+
     params = request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
     print("new_event params are", params)
     machine = params.get('machine', None)
@@ -56,7 +59,7 @@ def new_event(request):
     print("Made event", ev, "with type", ev.event_type)
 
     ev.publish()
-    ev.invite_available_interested_people()
+    ev.invite_available_interested_people(base)
 
     page_data = model.pages.HtmlPage("New event confirmation",
                                      pages.page_pieces.top_navigation(request),

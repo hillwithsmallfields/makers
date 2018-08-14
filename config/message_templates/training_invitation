@@ -1,0 +1,5 @@
+<p>A training slot for %(equipment_type)s has become available for you at %(datetime)s.</p>
+
+<p>You are in position %(queue_position)d for this.</p>
+
+<p>Please visit <a href="%(rsvp)s">%(rsvp)s</a> and indicate whether or not you can accept this slot.</p>

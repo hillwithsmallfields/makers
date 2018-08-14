@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
-import bson
-import untemplate.throw_out_your_templates_p3 as untemplate
 from untemplate.throw_out_your_templates_p3 import htmltags as T
+import bson
 import model.configuration as configuration
 import model.person
 import os
 import re
+import untemplate.throw_out_your_templates_p3 as untemplate
 
 def with_help(who, content, help_name):
     if not who.show_help:
