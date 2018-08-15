@@ -147,7 +147,7 @@ def page_string(page_title, content, user=None, initial_tab=None):
                        " and a ",
                        T.a(href="https://docs.djangoproject.com/en/2.1/ref/csrf/")["CSRF protection cookie"],
                        ".  ",
-                       "We don't use any other cookies, and we neither sell your data nor give it away."]]
+                       "We don't use any other cookies that we are aware of, and we neither sell your data nor give it away."]]
     return RawHtmlPage(page_title,
                     untemplate.HTML5Doc([untemplate.safe_unicode(style_text
                                                                  + script_text
