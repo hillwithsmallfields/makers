@@ -230,7 +230,11 @@ def add_announcement(sent_date, from_id, text):
 # invitation replies
 
 def find_rsvp(rsvp_uuid):
-    return database[collection_names['people']].find_one({'invitations.'+rsvp_uuid: {'$exists': True}})['_id']
+    print("find_rsvp collection name", collection_names['people'], "collection", database[collection_names['people']], "rsvp_uuid", rsvp_uuid)
+    rsvp_dict = database[collection_names['people']].find_one({'invitations.'+rsvp_uuid: {'$exists': True}})
+    if rsvp_dict is None:
+        return None
+    return rsvp_dict['_id']
 
 # event templates
 

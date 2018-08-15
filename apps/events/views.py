@@ -124,6 +124,68 @@ def signup_event(request):
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
+def rsvp_event_form(request, id):
+    """View function for choosing whether to sign up for an event from an invitation."""
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    who, what = model.person.Person.mailed_event_details(id)
+
+    if who is None or what is None:
+        return event_error_page(request, "Invitation reply error",
+                                "In rsvp_event_form, could not find invitation with id " + id)
+
+    page_data = model.pages.HtmlPage("Event invitation reply",
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+
+    page_data.add_content("Event details",
+                          pages.event_page.one_event_section(what, request,
+                                                             with_rsvp=True, rsvp_id=id))
+
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
+def rsvp_event(django_request):
+    """View function for signing up for an event from an invitation."""
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    params = django_request.POST
+
+    id = params['rsvp_id']
+    response = params['response']
+
+    who, what = model.person.Person.mailed_event_details(id)
+
+    if who is None or what is None:
+        return event_error_page(django_request, "Invitation reply error",
+                                "In rsvp_event, could not find invitation with id " + id)
+
+    if response == 'accept':
+        what.add_signed_up([who._id])
+    elif response == 'decline':
+        what.add_invitation_declined([who])
+    elif response == 'drop':
+        what.add_invitation_declined([who])
+        # who.remove_training_request........... # todo: complete this
+    else:
+        return event_error_page(django_request, "Invitation reply error",
+                                "In rsvp_event, a invalid response " + response + " was given for invitation with id " + id)
+
+    page_data = model.pages.HtmlPage("Event reply confirmation",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+
+    page_data.add_content("Event details",
+                          pages.event_page.one_event_section(what, django_request,
+                                                             with_completion=True))
+
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
 def complete_event(request, id):
     """View function for handling event completion."""
 

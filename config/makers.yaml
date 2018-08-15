@@ -147,8 +147,8 @@ server:
   login:          login
   update_profile: update_profile/
   update_mugshot: update_mugshot/
-  rsvp_form:      rsvp_form/
-  rsvp:           rsvp/
+  rsvp_form:      events/rsvp_form/
+  rsvp:           events/rsvp/
   users:          dashboard/
   machines:       equipment/
   types:          equiptypes/
