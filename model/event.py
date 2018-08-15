@@ -386,7 +386,7 @@ class Event(object):
         """Add specified people to the signed_up list."""
         # print "event", self._id, "adding", signed_up, "to", self.signed_up, "?"
         for attendee in signed_up:
-            s_up_id = attendee._id if isinstance(attendee, Event) else attendee
+            s_up_id = attendee._id if isinstance(attendee, model.person.Person) else attendee
             if s_up_id not in self.signed_up:
                 # print "yes, adding", attendee, s_up_id
                 self.signed_up.append(s_up_id)
@@ -396,7 +396,7 @@ class Event(object):
     def remove_signed_up(self, signed_up):
         """Remove specified people from the signed_up list."""
         for attendee in signed_up:
-            s_up_id = attendee._id if isinstance(attendee, Event) else attendee
+            s_up_id = attendee._id if isinstance(attendee, model.person.Person) else attendee
             if s_up_id in self.signed_up:
                 self.signed_up.remove(s_up_id)
         self.save()
@@ -405,7 +405,7 @@ class Event(object):
         """Add specified people to the invitation_declined list."""
         # print "event", self._id, "adding", invitation_declined, "to", self.invitation_declined, "?"
         for attendee in invitation_declined:
-            s_up_id = attendee._id if isinstance(attendee, Event) else attendee
+            s_up_id = attendee._id if isinstance(attendee, model.person.Person) else attendee
             if s_up_id not in self.invitation_declined:
                 # print "yes, adding", attendee, s_up_id
                 self.invitation_declined.append(s_up_id)
@@ -415,7 +415,7 @@ class Event(object):
     def remove_invitation_declined(self, invitation_declined):
         """Remove specified people from the invitation_declined list."""
         for attendee in invitation_declined:
-            s_up_id = attendee._id if isinstance(attendee, Event) else attendee
+            s_up_id = attendee._id if isinstance(attendee, model.person.Person) else attendee
             if s_up_id in self.invitation_declined:
                 self.invitation_declined.remove(s_up_id)
         self.save()

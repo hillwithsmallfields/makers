@@ -323,8 +323,9 @@ class Person(object):
         invitation_uuid = str(uuid.uuid4())
         all_conf = model.configuration.get_config()
         server_config = all_conf['server']
-        invitation_url = site_base + "/" + server_config['rsvp'] + invitation_uuid
+        invitation_url = site_base + "/" + server_config['rsvp_form'] + invitation_uuid # todo: use django.reverse
         self.invitations[invitation_uuid] = m_event._id
+        self.save()
         substitutions = {'rsvp': invitation_url,
                          'queue_position': len(m_event.invited)+1,
                          'equipment_type': model.equipment_type.Equipment_type.find_by_id(m_event.equipment_type).pretty_name(),
@@ -342,8 +343,15 @@ class Person(object):
     def mailed_event_details(rsvp):
         """Convert an RSVP UUID into a person and an event."""
         who = model.database.find_rsvp(rsvp)
-        what = who['invitations'][rsvp]
-        return model.person.Person.find(who._id), model.event.Event.find_by_id(what)
+        if who is None:
+            print("Could find not anyone with rsvp", rsvp)
+            return None, None
+        who = model.person.Person.find(who)
+        what = who.invitations[rsvp]
+        if what is None:
+            print("Could not find rsvp in invitations", rsvp)
+            return None, None
+        return who, model.event.Event.find_by_id(what)
 
     def training_individual_event(self, admin_user,
                                   role, equipment_type, enabling,

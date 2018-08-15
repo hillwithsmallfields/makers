@@ -31,7 +31,9 @@ def person_name(who):
     descr = model.person.Person.find(who)
     return descr.name() if descr is not None else "<nobody?>"
 
-def one_event_section(ev, django_request, with_completion=False, completion_as_form=False):
+def one_event_section(ev, django_request,
+                      with_rsvp=False, rsvp_id=None,
+                      with_completion=False, completion_as_form=False):
     all_people_ids = ev.passed + ev.failed + ev.noshow
     all_people_id_to_name = {p: model.person.Person.find(p).name() for p in all_people_ids}
     all_people_name_and_id = [(all_people_id_to_name[id], id) for id in all_people_id_to_name.keys()]
@@ -57,6 +59,16 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
                       T.td(class_="event_equipment_type")[model.equipment_type.Equipment_type.find_by_id(ev.equipment_type).name]],
                  T.tr[T.th(class_="ralabel")["Hosts"],
                       T.td(class_="hosts")[people_list(ev.hosts)]]])]
+    if with_rsvp:
+        results += [T.h4["Reply to invitation"],
+                    T.form(action=base+django.urls.reverse("events:rsvp"),
+                           method='POST')[
+                               T.input(type='hidden', name='rsvp_id', value=rsvp_id),
+                               T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+                               T.ul[T.li[T.input(type='radio', name='response', value='accept'), "Accept"],
+                                    T.li[T.input(type='radio', name='response', value='decline'), "Decline"],
+                                    T.li[T.input(type='radio', name='response', value='drop'), "Decline and cancel request"]],
+                               T.input(type='submit', value="Reply")]]
     if ev.signed_up and len(ev.signed_up) > 0:
         results += [T.h4["Users signed up to event"],
                     T.ul[[[T.li[person_name(sup)]
@@ -88,13 +100,13 @@ def one_event_section(ev, django_request, with_completion=False, completion_as_f
                                                       "passed",
                                                       id in ev.passed)])]
                                                            for id in ids_in_order]]])
+        # todo: signup if in the future
         results += [T.h4["Results"],
                     ((T.form(action=base+django.urls.reverse("event:results"),
                              method="POST")[T.input(type="hidden", name='event_id', value=ev._id),
                                             completion_table])
                      if completion_as_form
                      else completion_table)]
-        # todo: signup if in the future
     return [T.h3[ev.title],
             results]
 
