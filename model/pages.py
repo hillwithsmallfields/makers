@@ -19,6 +19,9 @@ def with_help(who, content, help_name):
     else:
         return content
 
+def debug_string(whatever):
+    return untemplate.Serializer(untemplate.examples_vmap, 'utf-8').serialize(whatever)
+
 class RawHtmlPage(object):
 
     def __init__(self, name, content=[],

@@ -129,56 +129,75 @@ def profile_section(who, viewer, django_request):
 
     return T.div(class_="personal_profile")[result]
 
-def responsibilities(who, viewer, typename, keyed_types, django_request):
-    eqtype = keyed_types[typename]
+def responsibilities(who, viewer, eqtype, django_request):
+    type_name = eqtype.pretty_name()
     is_owner = who.is_owner(eqtype)
     has_requested_owner_training = who.has_requested_training([eqtype._id], 'owner')
+    owner_section = [T.h4[type_name, " owner information and actions"],
+                     (T.div(class_='as_owner')[
+                         ([pages.page_pieces.schedule_event_form(
+                             who, [T.input(type="hidden", name="event_type", value="owner_training"),
+                                   T.input(type="hidden", name="role", value="owner"),
+                                   T.input(type="hidden", name="equiptype", value=eqtype._id)],
+                             "Schedule owner training on " + type_name,
+                             django_request),
+                           ([T.br,
+                             pages.page_pieces.ban_form(eqtype,
+                                                        who._id, who.name(),
+                                                        'owner',
+                                                        django_request)]
+                            if viewer.is_administrator()
+                            else [])])])
+                     if is_owner
+                     else [T.p["Not yet an owner"+(" but has requested owner training"
+                                                   if has_requested_owner_training
+                                                   else "")],
+                           pages.page_pieces.toggle_request(who, eqtype._id, 'owner',
+                                                            has_requested_owner_training,
+                                                            django_request)]]
+    print("owner_section is", model.pages.debug_string(owner_section))
     is_trainer, _ = who.is_trainer(eqtype)
     has_requested_trainer_training = who.has_requested_training([eqtype._id], 'trainer')
-    return [T.h3["Equipment of type " + eqtype.name],
-            [pages.page_pieces.machinelist(eqtype, who, django_request, is_owner)],
-            T.h3[eqtype.name + " owner information and actions"
-                      if is_owner
-                      else "Not yet an owner"+(" but has requested owner training" if has_requested_owner_training else "")],
-            T.div(class_='as_owner')[([pages.page_pieces.schedule_event_form(who, [T.input(type="hidden", name="event_type", value="owner_training"),
-                                                                                   T.input(type="hidden", name="role", value="owner"),
-                                                                                   T.input(type="hidden", name="equiptype", value=eqtype._id)],
-                                                                             "Schedule owner training",
-                                                                             django_request),
-                                       [pages.page_pieces.ban_form(eqtype,
-                                                                   who._id, who.name(),
-                                                                   'owner',
-                                                                   django_request) if viewer.is_administrator() else []]]
-                                      if is_owner
-                                      else pages.page_pieces.toggle_request(who, eqtype._id, 'owner',
-                                                                            has_requested_owner_training,
-                                                                            django_request))],
-            T.h3[eqtype.name + " trainer information and actions"
-                      if is_trainer
-                      else "Not yet a trainer"+(" but has requested trainer training" if has_requested_trainer_training else "")],
-            T.div(class_='as_trainer')[pages.page_pieces.eqty_training_requests(eqtype),
-                                       ([pages.page_pieces.schedule_event_form(who,
-                                                                               [T.input(type="hidden", name="event_type", value="user_training"),
-                                                                                T.input(type="hidden", name="role", value="user"),
-                                                                                T.input(type="hidden", name="equiptype", value=eqtype._id)],
-                                                                               "Schedule user training",
-                                                                               django_request),
-                                         T.br,
-                                         pages.page_pieces.schedule_event_form(who,
-                                                                               [T.input(type="hidden", name="event_type", value="trainer_training"),
-                                                                                T.input(type="hidden", name="role", value="trainer"),
-                                                                                T.input(type="hidden", name="equiptype", value=eqtype._id)],
-                                                                               "Schedule trainer training",
-                                                                               django_request),
-                                         [pages.page_pieces.ban_form(eqtype,
-                                                                     who._id, who.name(),
-                                                                     'trainer',
-                                                                     django_request) if viewer.is_administrator() else []]]
-                                        if is_trainer
-                                        else pages.page_pieces.toggle_request(who, eqtype._id, 'trainer',
-                                                                              has_requested_trainer_training,
-                                                                              django_request))]]
-
+    trainer_section = [T.h4[type_name, " trainer information and actions"],
+                       (T.div(class_='as_trainer')[
+                           pages.page_pieces.eqty_training_requests(eqtype),
+                           ([pages.page_pieces.schedule_event_form(
+                               who,
+                               [T.input(type="hidden", name="event_type", value="user_training"),
+                                T.input(type="hidden", name="role", value="user"),
+                                T.input(type="hidden", name="equiptype", value=eqtype._id)],
+                               "Schedule user training on " + type_name,
+                               django_request),
+                             T.br,
+                             pages.page_pieces.schedule_event_form(
+                                 who,
+                                 [T.input(type="hidden", name="event_type", value="trainer_training"),
+                                  T.input(type="hidden", name="role", value="trainer"),
+                                  T.input(type="hidden", name="equiptype", value=eqtype._id)],
+                                 "Schedule trainer training on  " + type_name,
+                                 django_request),
+                             ([T.br,
+                               pages.page_pieces.ban_form(eqtype,
+                                                          who._id, who.name(),
+                                                          'trainer',
+                                                          django_request)]
+                              if viewer.is_administrator()
+                              else [])])])
+                       if is_trainer
+                       else [T.p["Not yet a trainer"+(" but has requested trainer training"
+                                                      if has_requested_trainer_training
+                                                      else "")],
+                             pages.page_pieces.toggle_request(who, eqtype._id, 'trainer',
+                                                              has_requested_trainer_training,
+                                                              django_request)]]
+    print("trainer section is", model.pages.debug_string(trainer_section))
+    all_resp = [T.h3["Responsibilities for ", who.name(),
+                     " on equipment of type ", type_name],
+                [pages.page_pieces.machinelist(eqtype, who, django_request, is_owner)],
+                owner_section,
+                trainer_section]
+    print("all_resp is", model.pages.debug_string(all_resp))
+    return all_resp
 def user_skills_section(who, django_request):
     return pages.page_pieces.skills_section(who.get_profile_field('skill_levels') or {},
                                             who.get_profile_field('interest_emails', [False, False, False]),
@@ -374,13 +393,9 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
         page_data.add_section("Equipment responsibilities",
                               [T.div(class_="resps")[model.pages.with_help(viewer,
                                                                            [[[T.h3[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
-                                                                              responsibilities(who, viewer, name, keyed_types, django_request)]
+                                                                              responsibilities(who, viewer, keyed_types[name], django_request)]
                                                                              for name in sorted(keyed_types.keys())]],
                                                                            "responsibilities")]])
-
-    # print("user types", who.get_equipment_types('user'))
-    # print("owner types", who.get_equipment_types('owner'))
-    # print("trainer types", who.get_equipment_types('trainer'))
 
     their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
     if len(their_equipment_types) > 0:
