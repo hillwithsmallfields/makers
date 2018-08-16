@@ -1,5 +1,6 @@
 # -*- coding: utf8
 from datetime import datetime, timedelta
+import bson
 import model.access_permissions
 import model.configuration
 import model.database
@@ -38,6 +39,15 @@ def combine(a, b):
     r = a & b
     print("anding", a, "and", b, "with result", r)
     return r
+
+def string_to_person(whoever):
+    if isinstance(whoever, model.person.Person):
+        return whoever
+    if isinstance(whoever, str):
+        whoever = model.pages.unstring_id(whoever)
+    if isinstance(whoever, bson.objectid.ObjectId):
+        return model.person.Person.find(whoever)
+    return None
 
 class Event(object):
 
@@ -430,16 +440,23 @@ class Event(object):
 
     def mark_results(self, successful, failed, noshow):
         """Record the results of a training session."""
-        for whoever in successful:
-            if whoever._id not in self.passed:
+        for whoever in map(string_to_person, successful):
+            print(whoever, "of type", type(whoever), "passed")
+            if isinstance(whoever, model.person.Person) and whoever._id not in self.passed:
+                print("adding", whoever, "to pass list")
                 self.passed.append(whoever._id)
-        for whoever in failed:
-            if whoever._id not in self.failed:
+        for whoever in map(string_to_person, failed):
+            print(whoever, "of type", type(whoever), "failed")
+            if isinstance(whoever, model.person.Person) and whoever._id not in self.failed:
+                print("adding", whoever, "to fail list")
                 self.failed.append(whoever._id)
-        for whoever in noshow:
-            if whoever._id not in self.noshow:
+        for whoever in map(string_to_person, noshow):
+            print(whoever, "of type", type(whoever), "did not show")
+            if isinstance(whoever, model.person.Person) and whoever._id not in self.noshow:
+                print("adding", whoever, "to noshow list")
                 self.noshow.append(whoever._id)
         self.save()
+        model.person.Person.invalidate_training_cache()
 
     def dietary_avoidances(self):
         """Return the dietary avoidance data as a dictionary of avoidance to number of advoidents."""

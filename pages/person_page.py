@@ -418,8 +418,13 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
 
     hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events
     if len(hosting) > 0:
-        page_data.add_section("Events I will be hosting",
-                              T.div(class_="hostingevents")[pages.event_page.event_table_section(hosting, who._id, django_request)])
+        page_data.add_section(
+            "Events I will be hosting",
+            T.div(class_="hostingevents")[
+                pages.event_page.event_table_section(hosting,
+                                                     who._id,
+                                                     django_request,
+                                                     with_completion_link=True)])
 
     attending = model.timeline.Timeline.future_events(person_field='signed_up', person_id=who._id).events
     if len(attending) > 0:

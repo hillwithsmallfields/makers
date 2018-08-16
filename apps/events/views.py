@@ -89,6 +89,9 @@ def one_event(request, id):
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)
 
+    # viewing_user = model.person.Person.find(django_request.user.link_id)
+    # have_host_privileges = viewing_user.is_administrator() or viewing_user._id in ev.hosts
+
     page_data.add_content("Event details",
                           pages.event_page.one_event_section(ev, request))
 
@@ -180,8 +183,7 @@ def rsvp_event(django_request):
                                      django_request=django_request)
 
     page_data.add_content("Event details",
-                          pages.event_page.one_event_section(what, django_request,
-                                                             with_completion=True))
+                          pages.event_page.one_event_section(what, django_request))
 
     return HttpResponse(str(page_data.to_string()))
 
@@ -192,7 +194,7 @@ def complete_event(request, id):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    ev = model.event.Event.find_by_id(params['event_id'])
+    ev = model.event.Event.find_by_id(id)
 
     if ev is None:
         return event_error_page(request, "Event completion page error",
@@ -210,7 +212,7 @@ def complete_event(request, id):
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def store_event_results(request):
+def store_event_results(django_request):
     """View function for handling event completion."""
 
     config_data = model.configuration.get_config()
@@ -222,7 +224,7 @@ def store_event_results(request):
     ev = model.event.Event.find_by_id(params['event_id'])
 
     if ev is None:
-        return event_error_page(request, "Event recording error",
+        return event_error_page(django_request, "Event recording error",
                                 "In store_event_results, could not find event with id " + str(params['event_id']))
 
     noshow = []
@@ -240,11 +242,11 @@ def store_event_results(request):
     ev.mark_results(passed, failed, noshow)
 
     page_data = model.pages.HtmlPage("Event completion",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
 
     page_data.add_content("Event details",
-                          pages.event_page.one_event_section(ev, request,
+                          pages.event_page.one_event_section(ev, django_request,
                                                              with_completion=True))
 
     return HttpResponse(str(page_data.to_string()))

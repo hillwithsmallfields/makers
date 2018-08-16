@@ -1,4 +1,5 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
+import bson
 import datetime
 import django.middleware.csrf
 import model.equipment_type
@@ -18,10 +19,10 @@ def people_list(pl):
     # todo: perhaps a version with a link for each person (needs per-person privacy controls)
     return ", ".join(model.person.Person.find(p).name() for p in pl)
 
-def checkbox(id, which, condition):
-    return (T.input(name=id, value=which, checked='checked')
+def result_button(id, which, condition):
+    return (T.input(type='radio', name=id, value=which, checked='checked')
             if condition
-            else T.input(name=id, value=which))
+            else T.input(type='radio', name=id, value=which))
 
 def event_link(ev, django_request):
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
@@ -34,7 +35,7 @@ def person_name(who):
 def one_event_section(ev, django_request,
                       with_rsvp=False, rsvp_id=None,
                       with_completion=False, completion_as_form=False):
-    all_people_ids = ev.passed + ev.failed + ev.noshow
+    all_people_ids = ev.signed_up
     all_people_id_to_name = {p: model.person.Person.find(p).name() for p in all_people_ids}
     all_people_name_and_id = [(all_people_id_to_name[id], id) for id in all_people_id_to_name.keys()]
     ids_in_order = []
@@ -75,35 +76,43 @@ def one_event_section(ev, django_request,
                            for sup in ev.signed_up]]]]
     if with_completion:
         completion_table = (T.table(class_='event_completion')
-                            [T.tr[T.th["Name"],
-                                  T.th(class_='unknown')["Unknown"],
-                                  T.th(class_='no_show')["No-show"],
-                                  T.th(class_='failed')["Failed"],
-                                  T.th(class_='passed')["Passed"]],
-                             [[T.tr[T.th[all_people_id_to_name[id]],
-                                    (T.td(class_='unknown')
-                                     [result_checkbox(id,
-                                                      "unknown",
-                                                      (id not in ev.noshow
-                                                       and id not in ev.failed
-                                                       and id not in ev.passed))]),
-                                    (T.td(class_='no_show')
-                                     [result_checkbox(id,
-                                                      "noshow",
-                                                      id in ev.noshow)]),
-                                    (T.td(class_='failed')
-                                     [result_checkbox(id,
-                                                      "failed",
-                                                      id in ev.failed)]),
-                                    (T.td(class_='passed')
-                                     [result_checkbox(id,
-                                                      "passed",
-                                                      id in ev.passed)])]
-                                                           for id in ids_in_order]]])
+                            [T.thead[T.tr[T.th["Name"],
+                                          T.th(class_='unknown')["Unknown"],
+                                          T.th(class_='no_show')["No-show"],
+                                          T.th(class_='failed')["Failed"],
+                                          T.th(class_='passed')["Passed"]]],
+                             T.tbody[[[T.tr[T.th[all_people_id_to_name[id]],
+                                            (T.td(class_='unknown')
+                                             [result_button(id,
+                                                            "unknown",
+                                                            (id not in ev.noshow
+                                                             and id not in ev.failed
+                                                             and id not in ev.passed))]),
+                                            (T.td(class_='no_show')
+                                             [result_button(id,
+                                                            "noshow",
+                                                            id in ev.noshow)]),
+                                            (T.td(class_='failed')
+                                             [result_button(id,
+                                                            "failed",
+                                                            id in ev.failed)]),
+                                            (T.td(class_='passed')
+                                             [result_button(id,
+                                                            "passed",
+                                                            id in ev.passed)])]
+                                       for id in ids_in_order]]],
+                             T.tfoot[T.tr[T.td(colspan="2")[""],
+                                          T.td(colspan="3")[T.input(type='submit',
+                                                                    value="Record results")]]]])
         # todo: signup if in the future
         results += [T.h4["Results"],
-                    ((T.form(action=base+django.urls.reverse("event:results"),
-                             method="POST")[T.input(type="hidden", name='event_id', value=ev._id),
+                    ((T.form(action=base+django.urls.reverse("events:results"),
+                             method="POST")[T.input(type="hidden",
+                                                    name='event_id',
+                                                    value=ev._id),
+                                            T.input(type="hidden",
+                                                    name="csrfmiddlewaretoken",
+                                                    value=django.middleware.csrf.get_token(django_request)),
                                             completion_table])
                      if completion_as_form
                      else completion_table)]
@@ -113,16 +122,21 @@ def one_event_section(ev, django_request,
 def equip_name(eqid):
     eqt = model.equipment_type.Equipment_type.find_by_id(eqid)
     if eqt:
-        return eqt.name
+        return eqt.pretty_name()
     else:
         return "unknown"
 
-def event_table_section(tl_or_events, who_id, django_request, show_equiptype=None, with_signup=False):
+def event_table_section(tl_or_events, who_id, django_request,
+                        show_equiptype=None,
+                        with_signup=False,
+                        with_completion_link=False):
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     events = tl_or_events.events() if isinstance(tl_or_events, model.timeline.Timeline) else tl_or_events
     return (T.table(class_="timeline_table")
             [T.thead[T.tr[T.th["Title"], T.th["Event type"], T.th["Start"], T.th["Location"], T.th["Hosts"],
                           T.th["Equipment"] if show_equiptype else "",
-                          T.th["Sign up"] if with_signup else ""]],
+                          T.th["Sign up"] if with_signup else "",
+                          T.th["Record results"] if with_completion_link else ""]],
              T.tbody[[[T.tr[T.th(class_="event_title")[T.a(href=event_link(ev, django_request))[ev.title]],
                             T.td(class_="event_type")[ev.event_type],
                             T.td(class_="event_start")[model.event.timestring(ev.start)],
@@ -133,5 +147,9 @@ def event_table_section(tl_or_events, who_id, django_request, show_equiptype=Non
                              else ""),
                             (T.td[pages.page_pieces.signup_button(ev._id, who_id, "Sign up", django_request)]
                              if with_signup
-                             else "")]]
+                             else ""),
+                            (T.td[T.a(href=base+django.urls.reverse("events:done_event", args=(ev._id,)))["Record results"]]
+                             if with_completion_link
+                             else "")
+                        ]]
                       for ev in events]]])
