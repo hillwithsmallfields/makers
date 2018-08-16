@@ -226,6 +226,8 @@ def machinelist(eqty, who, django_request, as_owner=False):
 def eqty_training_requests(eqtype):
     raw_reqs = eqtype.get_training_requests()
     print("raw_reqs is", raw_reqs)
+    if len(raw_reqs) == 0:
+        return []
     reqs = []
     # we can't use dates as dictionary keys, as they might not be
     # unique, so go through all the dates in order getting all

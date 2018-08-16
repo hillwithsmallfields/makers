@@ -149,13 +149,13 @@ def responsibilities(who, viewer, eqtype, django_request):
                             if viewer.is_administrator()
                             else [])])])
                      if is_owner
-                     else [T.p["Not yet an owner"+(" but has requested owner training"
-                                                   if has_requested_owner_training
-                                                   else "")],
+                     else [T.p["Not yet an owner of ", type_name,
+                               (" but has requested owner training"
+                                if has_requested_owner_training
+                                else "")],
                            pages.page_pieces.toggle_request(who, eqtype._id, 'owner',
                                                             has_requested_owner_training,
                                                             django_request)]]
-    print("owner_section is", model.pages.debug_string(owner_section))
     is_trainer, _ = who.is_trainer(eqtype)
     has_requested_trainer_training = who.has_requested_training([eqtype._id], 'trainer')
     trainer_section = [T.h4[type_name, " trainer information and actions"],
@@ -184,20 +184,19 @@ def responsibilities(who, viewer, eqtype, django_request):
                               if viewer.is_administrator()
                               else [])])])
                        if is_trainer
-                       else [T.p["Not yet a trainer"+(" but has requested trainer training"
-                                                      if has_requested_trainer_training
-                                                      else "")],
+                       else [T.p["Not yet a trainer on ", type_name,
+                                 (" but has requested trainer training"
+                                  if has_requested_trainer_training
+                                  else "")],
                              pages.page_pieces.toggle_request(who, eqtype._id, 'trainer',
                                                               has_requested_trainer_training,
                                                               django_request)]]
-    print("trainer section is", model.pages.debug_string(trainer_section))
-    all_resp = [T.h3["Responsibilities for ", who.name(),
+    return [T.h3["Responsibilities for ", who.name(),
                      " on equipment of type ", type_name],
                 [pages.page_pieces.machinelist(eqtype, who, django_request, is_owner)],
                 owner_section,
                 trainer_section]
-    print("all_resp is", model.pages.debug_string(all_resp))
-    return all_resp
+
 def user_skills_section(who, django_request):
     return pages.page_pieces.skills_section(who.get_profile_field('skill_levels') or {},
                                             who.get_profile_field('interest_emails', [False, False, False]),
@@ -391,11 +390,12 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
     if len(their_responsible_types) > 0:
         keyed_types = { ty.pretty_name(): ty for ty in their_responsible_types }
         page_data.add_section("Equipment responsibilities",
-                              [T.div(class_="resps")[model.pages.with_help(viewer,
-                                                                           [[[T.h3[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
-                                                                              responsibilities(who, viewer, keyed_types[name], django_request)]
-                                                                             for name in sorted(keyed_types.keys())]],
-                                                                           "responsibilities")]])
+                              [T.div(class_="resps")[model.pages.with_help(
+                                  viewer,
+                                  [[T.h3[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
+                                    responsibilities(who, viewer, keyed_types[name], django_request)]
+                                   for name in sorted(keyed_types.keys())],
+                                  "responsibilities")]])
 
     their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
     if len(their_equipment_types) > 0:
@@ -417,13 +417,11 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
         page_data.add_section("Training requests", training_requests_section(who, django_request))
 
     hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events
-    # print("hosting is", hosting)
     if len(hosting) > 0:
         page_data.add_section("Events I will be hosting",
                               T.div(class_="hostingevents")[pages.event_page.event_table_section(hosting, who._id, django_request)])
 
     attending = model.timeline.Timeline.future_events(person_field='signed_up', person_id=who._id).events
-    # print("attending is", attending)
     if len(attending) > 0:
         page_data.add_section("Events I have signed up for",
                               model.pages.with_help(viewer,
