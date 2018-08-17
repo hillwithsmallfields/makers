@@ -106,6 +106,13 @@ def profile_section(who, viewer, django_request):
     address = who.get_profile_field('address') or {}
     telephone = who.get_profile_field('telephone') or ""
     mugshot = who.get_profile_field('mugshot')
+    _, timeslot_times, _ = model.timeslots.get_slots_conf()
+    timeslot_times = {'morning_start': str(timeslot_times['morning'][0]),
+                      'morning_end': str(timeslot_times['morning'][1]),
+                      'afternoon_start': str(timeslot_times['afternoon'][0]),
+                      'afternoon_end': str(timeslot_times['afternoon'][1]),
+                      'evening_start': str(timeslot_times['evening'][0]),
+                      'evening_end': str(timeslot_times['evening'][1])}
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     result = [T.form(action=base + django.urls.reverse("dashboard:update_mugshot"), method='POST')
               [T.img(src=mugshot) if mugshot else "",
@@ -156,7 +163,8 @@ def profile_section(who, viewer, django_request):
               T.h2["Availability"],
               model.pages.with_help(viewer,
                                     pages.page_pieces.availform(who.available, django_request),
-                                    "availability"),
+                                    "availability",
+                                    timeslot_times),
               T.h2["Misc"],
               T.ul[T.li["Reset notifications and announcements: ",
                         (T.form(action=base + "/dashboard/reset_messages", method='POST')

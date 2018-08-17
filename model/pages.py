@@ -8,17 +8,17 @@ import os
 import re
 import untemplate.throw_out_your_templates_p3 as untemplate
 
-def help_for_topic(help_name, default_text=None):
+def help_for_topic(help_name, default_text=None, substitutions={}):
     help_file = os.path.join(configuration.get_config()['page']['help_texts'], help_name + ".html")
     if os.path.isfile(help_file):
         with open(help_file) as helpstream:
-            return helpstream.read()
+            return helpstream.read() % substitutions
     return default_text
 
-def with_help(who, content, help_name):
+def with_help(who, content, help_name, substitutions={}):
     if not who.show_help:
         return content
-    help_text = help_for_topic(help_name)
+    help_text = help_for_topic(help_name, substitutions)
     if help_text:
         return T.table(class_="help_on_right")[T.tr[T.td(class_="helped")[content],
                                                     T.td(class_="help")[untemplate.safe_unicode(help_text)]]]

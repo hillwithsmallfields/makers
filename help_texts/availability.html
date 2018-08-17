@@ -7,8 +7,25 @@ and only mark as unavailable the slots when you are never available
 (i.e. clashes with a regular booked activity, such as your day job,
 sports club training, etc).</p>
 
-<p class="privacy_warning">Later versions of the "Makers" system may
-display a count of how many training requesters are available at each
-timeslot, to the trainers when they are looking for a time at which to
-offer training.  If you are the only requester, this will effectively
-make your availability data visible.</p>
+<p>The times are as follows:</p>
+
+<dl>
+  <dt>Morning:</dt>
+      <dd>From %('morning_start')s to %('morning_end')s</dd>
+  <dt>Afternoon:</dt>
+      <dd>From %('afternoon_start')s to %('afternoon_end')s</dd>
+  <dt>Evening:</dt>
+      <dd>From %('evening_start')s to %('evening_end')s</dd>
+</dl>
+
+<p>Later versions of the system may be able to access cloud calendar
+systems through their APIs (subject to you giving details and
+permission) to make a more specific check on whether you are
+available.  It's a do-ocracy; if you'd really like this feature, feel
+welcome to write and contribute it.</p>
+
+<p class="privacy_warning">The "Makers" system displays a count of how
+many training requesters are available at each timeslot, to the
+trainers when they are looking for a time at which to offer training.
+If you are the only requester, this will effectively make your
+availability data visible.</p>

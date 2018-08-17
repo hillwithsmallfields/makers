@@ -1,6 +1,11 @@
 * Makers things to do
 ** TODO display training requests in dashboard "trainers" sections, possibly with timeslot counts
 ** TODO timeslots display to show what times of day timeslots begin and end at
+** TODO fix training event results
+   training event results are partly working; the people show up as
+   trained in the list of people trained on the equipment, but the
+   equipment doesn't show up in the list of the equipment the people
+   are trained on.
 ** TODO make the address section of the profile run from the config files
 ** TODO dashboard section to say what's in your box, what you want to bring in, what you want to take home
 ** TODO button to say you can't make it to an event you've signed up for
