@@ -53,24 +53,28 @@ def site_controls_sub_section(who, viewer, django_request):
                   T.tr[T.th[""], T.td[T.input(type="submit", value="Update controls")]]],
               "site_controls")]]]
 
+def get_profile_subfield_value(who, group_name, name):
+    group = who.get_profile_field(group_name)
+    if type(group) != dict:
+        return ""
+    return group.get(name, "")
+
 def profile_section(who, viewer, django_request):
 
     profile_fields = all_conf.get('profile_fields')
     print("variable profile fields are", profile_fields)
 
     variable_sections = [[T.tr[T.th(colspan="2", rowspan=str(len(group_fields)))[group_name],
-                               T.th[group_fields[1]],
+                               T.th[group_fields[0]],
                                T.td[T.input(type='text',
-                                            name=group_fields[1],
-                                            value=(who.get_profile_field(group_name)
-                                                   or {}).get(group_fields[1], ""))],
-                               T.td(rowspan=str(len(group_fields)))["" # todo: put help text in here if available
-                               ]],
+                                            name=group_name+':'+group_fields[0],
+                                            value=get_profile_subfield_value(who, group_name, group_fields[0]))],
+                               T.td(rowspan=str(len(group_fields)))[
+                                   untemplate.safe_unicode(model.pages.help_for_topic(group_name))]],
                           [[T.tr[T.th[field],
                                  T.td[T.input(type='text',
-                                              name=field,
-                                              value=(who.get_profile_field(group_name)
-                                                     or {}).get(field, ""))]]]
+                                              name=group_name+':'+field,
+                                              value=get_profile_subfield_value(who, group_name, field))]]]
                            for field in group_fields[1:]]]
                          for group_name, group_fields in profile_fields]
 
