@@ -7,6 +7,8 @@
    equipment doesn't show up in the list of the equipment the people
    are trained on.
 ** TODO make the address section of the profile run from the config files
+** TODO reject signups for events that are full
+** TODO filter "events I can sign up for" to only those for which the user has the prerequisites
 ** TODO dashboard section to say what's in your box, what you want to bring in, what you want to take home
 ** TODO button to say you can't make it to an event you've signed up for
 ** TODO more notification channels e.g. telegram, whatsapp, SMS etc

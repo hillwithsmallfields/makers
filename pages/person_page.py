@@ -512,7 +512,10 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
                         if ev not in known_events]
     if len(available_events) > 0:
         page_data.add_section("Events I can sign up for",
-                              T.div(class_="availableevents")[pages.event_page.event_table_section(available_events, who._id, django_request, True, True)])
+                              T.div(class_="availableevents")[
+                                  pages.event_page.event_table_section(
+                                      available_events, # todo: filter this to only those for which the user has the prerequisites
+                                      who._id, django_request, True, True)])
 
     if viewer.is_administrator() or viewer.is_auditor():
         page_data.add_section("Admin actions",
