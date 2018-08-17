@@ -54,6 +54,26 @@ def site_controls_sub_section(who, viewer, django_request):
               "site_controls")]]]
 
 def profile_section(who, viewer, django_request):
+
+    profile_fields = all_conf.get('profile_fields')
+    print("variable profile fields are", profile_fields)
+
+    variable_sections = [[T.tr[T.th(colspan="2", rowspan=str(len(group_fields)))[group_name],
+                               T.th[group_fields[1]],
+                               T.td[T.input(type='text',
+                                            name=group_fields[1],
+                                            value=(who.get_profile_field(group_name)
+                                                   or {}).get(group_fields[1], ""))],
+                               T.td(rowspan=str(len(group_fields)))["" # todo: put help text in here if available
+                               ]],
+                          [[T.tr[T.th[field],
+                                 T.td[T.input(type='text',
+                                              name=field,
+                                              value=(who.get_profile_field(group_name)
+                                                     or {}).get(field, ""))]]]
+                           for field in group_fields[1:]]]
+                         for group_name, group_fields in profile_fields]
+
     address = who.get_profile_field('address') or {}
     telephone = who.get_profile_field('telephone') or ""
     mugshot = who.get_profile_field('mugshot')
@@ -83,19 +103,12 @@ def profile_section(who, viewer, django_request):
                                   if viewer.is_administrator()
                                   else [str(who.fob)])]],
                        T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
-                       T.tr[T.th(class_="ralabel")["Telephone"], T.td[T.input(type="text", name="telephone", value=str(telephone))]],
-                       T.tr[T.th(class_="ralabel")["Street 1"], T.td[T.input(type="text", name="street_1", value=str(address.get('street_1', "")))]],
-                       T.tr[T.th(class_="ralabel")["Street 2"], T.td[T.input(type="text", name="street_2", value=str(address.get('street_2', "")))]],
-                       T.tr[T.th(class_="ralabel")["Street 3"], T.td[T.input(type="text", name="street_3", value=str(address.get('street_3', "")))]],
-                       T.tr[T.th(class_="ralabel")["City"], T.td[T.input(type="text", name="city", value=str(address.get('city', "")))]],
-                       T.tr[T.th(class_="ralabel")["County"], T.td[T.input(type="text", name="county", value=str(address.get('county', "")))]],
-                       T.tr[T.th(class_="ralabel")["Country"], T.td[T.input(type="text", name="country", value=str(address.get('country', "")))]],
-                       T.tr[T.th(class_="ralabel")["Postcode"], T.td[T.input(type="text", name="postcode", value=str(address.get('postcode', "")))]],
                        T.tr[T.th(class_="ralabel")["No-shows"], T.td[str(len(who.get_noshows()))]],
                        T.tr[T.th(class_="ralabel")["No-show absolutions"], T.td[(T.input(type="text", name="absolutions", value=str(who.noshow_absolutions))
                                                                                  if viewer.is_administrator() else str(who.noshow_absolutions))]],
                        T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]],
-                   "general_user_profile")],
+                   "general_user_profile"),
+               variable_sections],
               T.h2["Site controls"],
               site_controls_sub_section(who, viewer, django_request),
               T.h2["Availability"],

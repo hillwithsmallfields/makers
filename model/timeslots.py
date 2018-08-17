@@ -73,10 +73,31 @@ def sum_availabilities(avlist):
     and the result shows how many people are available in
     each slot."""
     sums = [0] * 32
-    for perav in avlist:
+    for av in avlist:
         for i in range(32):
-            sums[i] += perav >> i
+            sums[i] += (av >> i) & 1
     return sums
 
 def avsums_by_day(avsumlist):
-    return [avsumlist[start:start+3] for start in range(0,8,4)]
+    return [avsumlist[start:start+3] for start in range(0,28,4)]
+
+def test_timeslots():
+    all_evening_slots = [[False, False, True, False]] * 7
+    print("all_evening_slots", all_evening_slots)
+    all_evenings_bitmap = timeslots_to_int(all_evening_slots)
+    all_weekend_slots = [[False, False, False, False]] * 5 + [[True, True, True, False]] * 2
+    print("all_weekend_slots", all_weekend_slots)
+    all_weekend_bitmap = timeslots_to_int(all_weekend_slots)
+    saturday_morning_slots = [[False, False, False, False]] * 5 + [[True, False, False, False]] + [[False, False, False, False]]
+    print("saturday_morning_slots", saturday_morning_slots)
+    saturday_morning_bitmap = timeslots_to_int(saturday_morning_slots)
+    print("evenings bitmap", hex(all_evenings_bitmap))
+    print("weekend bitmap", hex(all_weekend_bitmap))
+    print("saturday morning bitmap", hex(saturday_morning_bitmap))
+    summed = sum_availabilities([all_evenings_bitmap, saturday_morning_bitmap, saturday_morning_bitmap, all_weekend_bitmap])
+    print("summed availabilities", summed)
+    by_day = avsums_by_day(summed)
+    print("by day", by_day)
+
+if __name__ == "__main__":
+    test_timeslots()

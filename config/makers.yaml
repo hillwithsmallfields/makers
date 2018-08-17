@@ -30,7 +30,7 @@ timeslots:
 
 # This section defines the names that can be used as locations in the
 # "events" and "equipment_classes" sections
-      
+
 locations:
   main_space:
     name: Main space
@@ -55,16 +55,30 @@ locations:
 training:
   default_max_requests: 3
   no_shows_limit:       2
-    
+
 page:
   stylesheet:   /usr/local/share/makers/makers.css
   script_file:  /usr/local/share/makers/makers.js
   style_inline: True
   help_texts:   /usr/local/share/makers/help_texts
   heading_logo: static/logo.png
-  # preamble:     
+  # preamble:
   # postamble:  <p>Bottom navigation bar etc will go here.</p>
   motd_file:    config/motd.html
+
+profile_fields:
+  address:
+    - telephone
+    - street 1
+    - street 2
+    - street 3
+    - city
+    - county
+    - country
+    - postcode
+  demographics:
+    - Birth year
+    - Gender
 
 skill_areas:
   - Biohacking
@@ -103,12 +117,8 @@ dietary_avoidances:
   - low carb
   - low sugar
 
-demographics:
-  - Birth year
-  - Gender
-  
 database:
-  URI: 
+  URI:
   database_name: Makespace
   collections:
     people:          MakespacePeople
