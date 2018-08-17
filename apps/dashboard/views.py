@@ -152,6 +152,21 @@ def update_profile(request):
     page_data.add_content("Confirmation", [T.p["Profile updated."]])
     return HttpResponse(str(page_data.to_string()))
 
+def update_configured_profile(request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    params = request.POST
+    who = model.person.Person.find(params['subject_user_uuid'])
+    admin_user = model.person.Person.find(request.user.link_id)
+    who.update_configured_profile(params)
+    page_data = model.pages.HtmlPage("Confirmation",
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+    page_data.add_content("Confirmation", [T.p["Profile updated."]])
+    return HttpResponse(str(page_data.to_string()))
+
+
 @ensure_csrf_cookie
 def update_site_controls(request):
     config_data = model.configuration.get_config()

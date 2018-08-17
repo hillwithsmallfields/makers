@@ -60,7 +60,7 @@ def get_person_profile_field(whoever,
                              role_viewed=None,
                              equipment=None):
     """Return a profile field of a person.
-    You should use model.person.profile_field() instead of this in your programs,
+    You should use model.person.get_profile_field() instead of this in your programs,
     as that handles the privacy controls."""
     person_link = (whoever['link_id']
                    if isinstance(whoever, dict)
@@ -79,7 +79,7 @@ def set_person_profile_field(whoever,
                              role_viewed=None,
                              equipment=None):
     """Return a profile field of a person.
-    You should use model.person.profile_field() instead of this in your programs,
+    You should use model.person.set_profile_field() instead of this in your programs,
     as that handles the privacy controls."""
     person_link = (whoever['link_id']
                    if isinstance(whoever, dict)
@@ -109,6 +109,23 @@ def person_name(whoever,
         return (name_record.get('given_name', "?") + " " + name_record.get('surname', "?"),
                 name_record.get('known_as', name_record.get('given_name', "?")))
 
+def person_set_name(whoever, viewing_person, new_name):
+    """Set the person's email address."""
+    person_link = (whoever['link_id']
+                   if isinstance(whoever, dict)
+                   else (whoever.link_id
+                         if isinstance(whoever, model.person.Person)
+                         else whoever))
+    name_record = database[collection_names['profiles']].find_one({'link_id': person_link})
+    if name_record is None:
+        print("Could not find", person_link, "to set their name")
+    else:
+        given_name, surname = new_name.split(' ', 1) # todo: -1?
+        name_record['given_name'] = given_name
+        name_record['surname'] = surname
+    database[collection_names['profiles']].save(name_record)
+    # todo: tell django that the name has changed
+
 def person_email(whoever, viewing_person):
     """Return the person's email address.
     If they have requested anonymity, only they and the admins can see this."""
@@ -122,6 +139,21 @@ def person_email(whoever, viewing_person):
         return "unknown@example.com"
     else:
         return name_record.get('email', "exists_but_no_email@example.com")
+
+def person_set_email(whoever, viewing_person, new_email):
+    """Set the person's email address."""
+    person_link = (whoever['link_id']
+                   if isinstance(whoever, dict)
+                   else (whoever.link_id
+                         if isinstance(whoever, model.person.Person)
+                         else whoever))
+    name_record = database[collection_names['profiles']].find_one({'link_id': person_link})
+    if name_record is None:
+        print("Could not find", person_link, "to set their email address")
+    else:
+        name_record['email'] = new_email
+    database[collection_names['profiles']].save(name_record)
+    # todo: tell django that the email address has changed
 
 def name_to_id(name):
     name_parts = name.rsplit(" ", 1)

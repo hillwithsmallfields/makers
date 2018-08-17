@@ -76,9 +76,14 @@ profile_fields:
     - county
     - country
     - postcode
+    - icbm
   demographics:
     - Birth year
     - Gender
+    - Education / training main subject
+    - Education / training level
+    - Is your use of the space connected with your work?
+    - Is your use of the space connected with the area of your main training?
 
 skill_areas:
   - Biohacking

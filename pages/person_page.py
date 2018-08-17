@@ -18,12 +18,35 @@ all_conf = None
 server_conf = None
 org_conf = None
 
+def visibility_radio(label, visibility):
+    return ["No", (T.input(type='radio',
+                           name=label,
+                           value='no',
+                           checked='checked')
+                   if visibility == False
+                   else T.input(type='radio',
+                                name=label,
+                                value='no')),
+            "Logged in users only", (T.input(type='radio',
+                                             name=label,
+                                             value='logged_in',
+                                             checked='checked')
+                                     if visibility == 'logged_in'
+                                     else T.input(type='radio',
+                                                  name=label,
+                                                  value='logged_in')),
+            "No", (T.input(type='radio',
+                           name=label,
+                           value='yes',
+                           checked='checked')
+                   if visibility == True
+                   else T.input(type='radio',
+                                name=label,
+                                value='yes'))]
+
 def site_controls_sub_section(who, viewer, django_request):
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     # todo: get these from the person's record
-    visible_as_host = True
-    visible_as_attendee = True
-    visible_generally = False
     return T.div(class_="site_options")[
         [T.form(action=base + django.urls.reverse("dashboard:update_site_controls"), method='POST')
          [T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
@@ -32,24 +55,26 @@ def site_controls_sub_section(who, viewer, django_request):
               viewer,
               T.table(class_="siteoptions")[
                   T.tr[T.th(class_="ralabel")["Visible as host / owner / trainer to attendees / users"],
-                       T.td[T.input(type='checkbox', checked='checked')
-                            if visible_as_host
-                            else T.input(type='checkbox', name='visible_as_host')]],
+                       T.td[visibility_radio("host", who.visibility['visibility_as_host'])]],
                   T.tr[T.th(class_="ralabel")["Visible as attendee / user to hosts / owners / trainers"],
-                       T.td[T.input(type='checkbox', checked='checked')
-                            if visible_as_attendee
-                            else T.input(type='checkbox', name='visible_to_host')]],
+                       T.td[visibility_radio("attendee", who.visibility['visibility_as_attendee'])]],
                   T.tr[T.th(class_="ralabel")["Visible generally"],
-                       T.td[T.input(type='checkbox', name='visible_generally', checked='checked')
-                            if visible_generally
-                            else T.input(type='checkbox', name='visible_generally')]],
+                       T.td[visibility_radio("general", who.visibility['visibility_in_general'])]],
                   T.tr[T.th(class_="ralabel")["Stylesheet"],
-                       T.td[T.select(name="stylesheet")[[T.option[style] # todo: mark current stylesheet as checked
+                       T.td[T.select(name='stylesheet')[[T.option[style] # todo: mark current stylesheet as checked
                                                          for style in model.configuration.get_stylesheets()]]]],
                   T.tr[T.th(class_="ralabel")["Display help beside forms"],
                        T.td[T.input(type='checkbox', name='display_help', checked='checked')
                             if who.show_help
                             else T.input(type='checkbox', name='display_help')]],
+                  T.tr[T.th(class_="ralabel")["Notify training etc by email"],
+                       T.td[T.input(type='checkbox', name='notify_by_email', checked='checked')
+                            if self.notify_by_email
+                            else T.input(type='checkbox', name='notify_by_email')]],
+                  T.tr[T.th(class_="ralabel")["Notify training etc in site"],
+                       T.td[T.input(type='checkbox', name='notify_in_site', checked='checked')
+                            if self.notify_by_email
+                            else T.input(type='checkbox', name='notify_in_site')]],
                   T.tr[T.th[""], T.td[T.input(type="submit", value="Update controls")]]],
               "site_controls")]]]
 
@@ -108,11 +133,24 @@ def profile_section(who, viewer, django_request):
                                   else [str(who.fob)])]],
                        T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
                        T.tr[T.th(class_="ralabel")["No-shows"], T.td[str(len(who.get_noshows()))]],
-                       T.tr[T.th(class_="ralabel")["No-show absolutions"], T.td[(T.input(type="text", name="absolutions", value=str(who.noshow_absolutions))
+                       T.tr[T.th(class_="ralabel")["No-show absolutions"], T.td[(T.input(type="text",
+                                                                                         name="absolutions",
+                                                                                         value=str(who.noshow_absolutions))
                                                                                  if viewer.is_administrator() else str(who.noshow_absolutions))]],
                        T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]],
                    "general_user_profile"),
-               variable_sections],
+               model.pages.with_help(viewer,
+                                     T.form(action=base + django.urls.reverse("dashboard:update_configured_profile"),
+                                            method='POST')[variable_sections,
+                                                           T.input(type="hidden",
+                                                                   name="csrfmiddlewaretoken",
+                                                                   value=django.middleware.csrf.get_token(django_request)),
+                                                           T.input(type="hidden",
+                                                                   name="subject_user_uuid",
+                                                                   value=who._id),
+                                                           T.input(type='submit',
+                                                                   value='Update')],
+                                     "configurable_profile"],
               T.h2["Site controls"],
               site_controls_sub_section(who, viewer, django_request),
               T.h2["Availability"],

@@ -13,6 +13,13 @@ import uuid
 
 # todo: induction input from jotform.com
 
+def to_bool_or_other(vis_string):
+    if vis_string in [True, 'True', 'true', 'Yes', 'yes', 'Y', 'y']:
+        return True
+    if vis_string in [False, None, 'False', 'false', 'No', 'no', 'N', 'n']:
+        return False
+    return vis_string
+
 class Person(object):
 
     """The Person class describes a person, typically but not necessarily a member.
@@ -156,11 +163,14 @@ class Person(object):
                         access_permissions_role=None,
                         access_permissions_equipment=None):
             email = model.database.person_email(self.link_id,
-                                          model.access_permissions.Access_Permissions.get_access_permissions().viewing_person)
+                                                model.access_permissions.Access_Permissions.get_access_permissions().viewing_person)
             return email
         else:
             return ("member_"+str(self.membership_number)
                     +"@"+model.configuration.get_config()['server']['mailhost'])
+
+    def set_email(self, new_email):
+        model.database.person_set_email(self.link_id, new_email)
 
     def get_visibility(self, access_permissions):
         return self.visibility[access_permissions]
@@ -522,16 +532,46 @@ class Person(object):
     # Update from form
 
     def update_profile(self, params):
-        old_address = who.get_profile_field('address') or {}
-        old_telephone = who.get_profile_field('telephone') or ""
         old_mugshot = who.get_profile_field('mugshot')
-        old_email = who.get_email() # email needs special handling as we must tell django too
-        # todo: fill this in
-        # name needs special handling as we must tell django too
+        old_email = who.get_email()
+        old_name = who.get_name()
+        email = params['email']
+        name = params['name']
+        if email != old_email:
+            who.set_email(email)
+        if name != old_name():
+            who.get_name(name)
+        self.save()
+
+    def update_configured_profile(self, params):
+        """Update the configurable profile fields.
+        These are controlled by the config file.
+        The params argument must be a dictionary,
+        of which keys of the form 'a:b' are processed
+        and others are ignored.
+        The values in the dictionary should all be strings,
+        or at least things that can be written directly
+        into mongodb."""
+        groups = self.get_profile_field('configured')
+        for key, value in params:
+            if ':' not in key:
+                continue
+            group_name, field_name = key.split(':')
+            group = groups.get(group_name, {})
+            group[field_name] = value
+            groups[group_name] = group
+        self.set_profile_field('configured', groups)
+        self.save()
 
     def update_controls(self, params):
-        # todo: fill this in
-        pass
+        self.visibility['host'] = to_bool_or_other(params['visibility_as_host'])
+        self.visibility['attendee'] = to_bool_or_other(params['visibility_as_attendee'])
+        self.visibility['general'] = to_bool_or_other(params['visibility_in_general'])
+        self.stylesheet = params['stylesheet']
+        self.show_help = to_bool_or_other(params['display_help'])
+        self.notify_by_email = to_bool_or_other(params['notify_by_email'])
+        self.notify_in_site = to_bool_or_other(params['notify_in_site'])
+        self.save()
 
     # Announcements and notifications
 
