@@ -162,20 +162,30 @@ def skills_section(skill_levels, mail_levels, django_request):
                                  T.input(type='checkbox', name='mail_3'))]]]],
              T.div(align="right")[T.input(type="submit", value="Update interests and skills")]]]
 
+def plain_value(item):
+    return item[0] if type(item) == tuple else item
+
+def linked_value(item):
+    return T.href(a=item[1])[item[0]] if type(item) == tuple else item
+
 def display_or_form(class_name, action_as_form,
                     headers, row_order,
                     labels_dict, data_dict):
     """Display some data either with or without form inputs to update it."""
     table = T.table(class_=class_name)[
         T.thead[T.tr[[[T.th[header] for header in (headers or ["Key", "Value"])]]]],
-        T.tbody[[[T.tr[T.th(class_='ralabel')[labels_dict.get(item, item.capitalize()) if labels_dict else item.capitalize()],
+        T.tbody[[[T.tr[T.th(class_='ralabel')[(labels_dict.get(item, item.capitalize())
+                                               if labels_dict
+                                               else item.capitalize())],
                        T.td[(T.input(type='text',
                                      name='item',
-                                     value=data_dict.get(item, ""))
+                                     value=plain_value(data_dict.get(item, "")))
                              if action_as_form
-                             else data_dict.get(item, ""))]]]
-                                                for item in row_order
-                                                if action_as_form or data_dict.get(item, None) != None]],
+                             else linked_value(data_dict.get(item, "")))]]]
+                 for item in row_order
+                 if (action_as_form # display all the fields, even blank ones, if presenting a form
+                     # if presenting a read-only display, skip any blank fields:
+                     or data_dict.get(item, None) != None)]],
         T.tfoot[T.tr[T.td[""],
                      T.td[T.input(type='submit',
                                   value=[(labels_dict

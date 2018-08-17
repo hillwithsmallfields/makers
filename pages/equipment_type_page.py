@@ -28,7 +28,8 @@ def equipment_type_section(eqty, viewing_user, django_request):
         None,
         ['category', 'description', 'manufacturer'],
         None,
-        {'category':eqty.training_category,
+        {'category': (eqty.training_category,
+                      model.configuration.get_config()['organization']['categories']+eqty.training_category),
          'description': eqty.description,
          'manufacturer': eqty.manufacturer})]
 

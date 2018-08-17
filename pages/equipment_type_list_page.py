@@ -6,11 +6,15 @@ serverconf=None
 
 def equipment_type_list_section(training_category):
     global serverconf
+    global org_conf
     if serverconf == None:
         serverconf = configuration.get_config()['server']
+    if orgconf == None:
+        orgconf = configuration.get_config()['organization']
     eqtys = equipment_type.Equipment_type.list_equipment_types(training_category)
     print("training_category is", training_category, "and its types are", eqtys)
-    return [T.h2[(training_category or "all").capitalize() + " equipment types"],
+    return [T.h2[(T.a(href=orgconf['categories']+training_category.upper())[training_category.capitalize()]
+                  or "All") + " equipment types"],
             [T.dl[[[T.dt[T.a(href=serverconf['types']+eqty.name)[eqty.pretty_name()]],
                     T.dd[T.dl[T.dt["Machines"],
                               [T.ul(class_="compactlist")[[T.li[T.a(href=serverconf['machines']+m.name)[m.name]]

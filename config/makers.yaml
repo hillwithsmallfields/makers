@@ -152,6 +152,7 @@ organization:
   announcements: noticeboard
   home_page:     http://www.makespace.org/
   wiki:          http://wiki.makespace.org/
+  categories:    http://wiki.makespace.org/Equipment/ToolClasses#
   forum:         https://groups.google.com/forum/#!forum/cammakespace
 
 server:
