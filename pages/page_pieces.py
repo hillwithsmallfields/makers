@@ -115,9 +115,9 @@ def avail_table(slot_sums):
                           T.th["Other"]]]],
             T.tbody[[[T.tr[T.th(class_="daylabel")[day],
                            [T.td[str(b)]
-                       for t, b in zip(['M', 'A', 'E', 'O'], day_slots)]]]
-                for (day, day_slots) in zip(days,
-                                            model.timeslots.avsums_by_day(slot_sums))]]]
+                            for t, b in zip(['M', 'A', 'E', 'O'], day_slots)]]]
+                     for (day, day_slots) in zip(days,
+                                                 model.timeslots.avsums_by_day(slot_sums))]]]
 
 def skills_button(area_name, level, which_level):
     return [T.td(class_="level_" + str(which_level))
