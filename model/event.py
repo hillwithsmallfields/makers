@@ -87,6 +87,7 @@ class Event(object):
                  hosts,
                  title=None,
                  signed_up=[],
+                 attendance_limit=60,
                  event_duration=60,
                  equipment_type=None,
                  equipment=[]):
@@ -395,13 +396,21 @@ class Event(object):
     def add_signed_up(self, signed_up):
         """Add specified people to the signed_up list."""
         # print "event", self._id, "adding", signed_up, "to", self.signed_up, "?"
+        accepted = 0
+        rejected = 0
         for attendee in signed_up:
+            if len(self.signed_up) >= self.attendance_limit:
+                rejected += 1
+                break
+            # todo: check eligibility
             s_up_id = attendee._id if isinstance(attendee, model.person.Person) else attendee
             if s_up_id not in self.signed_up:
                 # print "yes, adding", attendee, s_up_id
                 self.signed_up.append(s_up_id)
+                accepted += 1
         self.remove_invitation_declined(signed_up)
         self.save()
+        return accepted, rejected
 
     def remove_signed_up(self, signed_up):
         """Remove specified people from the signed_up list."""

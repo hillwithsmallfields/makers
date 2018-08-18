@@ -48,9 +48,10 @@ def new_event(request):
     machine = params.get('machine', None)
     if machine:
         machine = [machine]
+    submitter = model.pages.unstring_id(params['submitter'])
     ev, error_message = model.event.Event.instantiate_template(params['event_type'],
                                                                params['equiptype'],
-                                                               [model.pages.unstring_id(params['submitter'])],
+                                                               [submitter],
                                                                params['when'],
                                                                machine)
     if ev is None:
@@ -66,7 +67,9 @@ def new_event(request):
                                      django_request=request)
 
     page_data.add_content("Event details",
-                          pages.event_page.one_event_section(ev, request))
+                          pages.event_page.one_event_section(ev,
+                                                             model.person.Person.find(submitter),
+                                                             request))
 
     return HttpResponse(str(page_data.to_string()))
 
@@ -93,7 +96,9 @@ def one_event(request, id):
     # have_host_privileges = viewing_user.is_administrator() or viewing_user._id in ev.hosts
 
     page_data.add_content("Event details",
-                          pages.event_page.one_event_section(ev, request))
+                          pages.event_page.one_event_section(ev,
+                                                             None, # todo: put person here
+                                                             request))
 
     return HttpResponse(str(page_data.to_string()))
 
@@ -114,15 +119,23 @@ def signup_event(request):
         return event_error_page(request, "Event signup page error",
                                 "In signup_event, could not find event with id " + str(params['event_id']))
 
-    ev.add_signed_up([model.pages.unstring_id(params['person_id'])])
+    accepted, rejected = ev.add_signed_up([model.pages.unstring_id(params['person_id'])])
 
-    page_data = model.pages.HtmlPage("Event signup confirmation",
+    page_data = model.pages.HtmlPage("Event signup result",
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)
 
     page_data.add_content("Event details",
-                          pages.event_page.one_event_section(ev, request,
+                          pages.event_page.one_event_section(ev,
+                                                             None,
+                                                             request,
                                                              with_completion=True))
+
+    if accepted == 1:
+        page_data.add_content("Result", T.p["%d users added to event, %d not added."%(accepted, rejected)])
+
+    if rejected == 1 and len(ev.signed_up) == ev.attendance_limit:
+        page_data.append(T.p["The event was already full."])
 
     return HttpResponse(str(page_data.to_string()))
 
@@ -144,7 +157,9 @@ def rsvp_event_form(request, id):
                                      django_request=request)
 
     page_data.add_content("Event details",
-                          pages.event_page.one_event_section(what, request,
+                          pages.event_page.one_event_section(what,
+                                                             who,
+                                                             request,
                                                              with_rsvp=True, rsvp_id=id))
 
     return HttpResponse(str(page_data.to_string()))
@@ -183,7 +198,7 @@ def rsvp_event(django_request):
                                      django_request=django_request)
 
     page_data.add_content("Event details",
-                          pages.event_page.one_event_section(what, django_request))
+                          pages.event_page.one_event_section(what, who, django_request))
 
     return HttpResponse(str(page_data.to_string()))
 
@@ -205,7 +220,8 @@ def complete_event(request, id):
                                      django_request=request)
 
     page_data.add_content("Event details",
-                          pages.event_page.one_event_section(ev, request,
+                          pages.event_page.one_event_section(ev, None,
+                                                             request,
                                                              with_completion=True,
                                                              completion_as_form=True))
 
@@ -246,7 +262,7 @@ def store_event_results(django_request):
                                      django_request=django_request)
 
     page_data.add_content("Event details",
-                          pages.event_page.one_event_section(ev, django_request,
+                          pages.event_page.one_event_section(ev, None, django_request,
                                                              with_completion=True))
 
     return HttpResponse(str(page_data.to_string()))
