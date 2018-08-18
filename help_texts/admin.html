@@ -1,0 +1,10 @@
+<p>Adding a user using "Add user" button will automatically send them
+a password reset email, and then display the form again to add another
+user.</p>
+
+<p>Importing users from a CSV file only makes the mongodb entries for
+them, and doesn't create a django user that can log in (the importer
+is run outside the django environment).  For the latter, you should
+use the "Update django logins" button.  This will check all mongodb
+user entries for missing django user entries, and create the missing
+entries, and send them passowrd reset emails.</p>

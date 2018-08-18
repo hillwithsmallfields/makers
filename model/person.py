@@ -1,3 +1,4 @@
+import django.contrib.auth.forms.PasswordResetForm
 import model.access_permissions
 import model.configuration
 import model.database
@@ -52,6 +53,7 @@ class Person(object):
     def __init__(self):
         self._id = None
         self.link_id = None
+        self.login_name = None
         self.api_authorization = None
         self.membership_number = None
         self.fob = None
@@ -206,6 +208,14 @@ class Person(object):
                         access_permissions_role=None,
                         access_permissions_equipment=None):
             model.database.set_person_profile_field(self, field_name, new_value)
+
+    # account access
+
+    def send_password_reset_email(self):
+        # based on https://stackoverflow.com/questions/5594197/trigger-password-reset-email-in-django-without-browser
+        form = django.contrib.auth.forms.PasswordResetForm({'email': self.get_email()})
+        form.is_valid()
+        form.save()
 
     # training and requests
 
