@@ -527,7 +527,8 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
     known_events = hosting + attending + hosted + attended
     available_events = [ev
                         for ev in model.timeline.Timeline.future_events().events
-                        if ev not in known_events]
+                        if (ev not in known_events
+                            and who.satisfies_conditions(ev.attendee_prerequisites))]
     if len(available_events) > 0:
         page_data.add_section("Events I can sign up for",
                               T.div(class_="availableevents")[

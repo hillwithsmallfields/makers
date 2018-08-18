@@ -482,25 +482,25 @@ class Person(object):
         """Return whether the person is a general inductor."""
         return self.is_trainer(model.configuration.get_config()['organization']['name'])
 
-    def is_trained(self, equipment_class):
-        """Return whether a person is trained to use a particular equipment_class."""
-        return self.qualification(equipment_class, 'user')
+    def is_trained(self, equipment_type):
+        """Return whether a person is trained to use a particular equipment_type."""
+        return self.qualification(equipment_type, 'user')
 
-    def is_owner(self, equipment_class):
-        """Return whether the person is an owner of that equipment_class."""
-        return self.qualification(equipment_class, 'owner')
+    def is_owner(self, equipment_type):
+        """Return whether the person is an owner of that equipment_type."""
+        return self.qualification(equipment_type, 'owner')
 
-    def is_trainer(self, equipment_class):
-        """Return whether the person is a trainer for that equipment_class."""
-        return self.qualification(equipment_class, 'trainer')
+    def is_trainer(self, equipment_type):
+        """Return whether the person is a trainer for that equipment_type."""
+        return self.qualification(equipment_type, 'trainer')
 
-    def satisfies_condition(self, condition, equipment_types):
+    def satisfies_condition(self, condition):
         """Takes a string describing one condition, and check the person meets that requirement.
-        Sample strings are "laser-cutter user" and "mill trainer"."""
+        Sample strings are "hpc_laser user" and "mill trainer"."""
         equiptype, role = condition.split(' ')
         return self.qualification(equiptype, role)
 
-    def satisfies_conditions(self, conditions, equipment_types):
+    def satisfies_conditions(self, conditions):
         """Takes a list of strings describing one or more conditions, and check the person meets those requirements.
 
         This is used from Event.instantiate_template, to check whether
@@ -508,9 +508,10 @@ class Person(object):
         (such as being trainers on equipment they plan to give
         training on).
 
+        It is also used when a user tries to sign up for an event.
         """
         for condition in conditions:
-            if not self.satisfies_condition(condition, equipment_types):
+            if not self.satisfies_condition(condition):
                 return False
         return True
 

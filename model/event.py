@@ -90,7 +90,9 @@ class Event(object):
                  attendance_limit=60,
                  event_duration=60,
                  equipment_type=None,
-                 equipment=[]):
+                 equipment=[],
+                 host_prerequisites,
+                 attendee_prerequisites):
         """Create an event of a given type and datetime.
 
         The event is not saved and scheduled yet."""
@@ -262,7 +264,6 @@ class Event(object):
         if event_datetime < datetime.utcnow() and not allow_past:
             return None, "Cannot create a past event"
         template_dict = Event.find_template(template_name)
-        print("instantiate_template: template_dict is", template_dict)
         if template_dict is None:
             return None, "Could not find a template called " + template_name
         host_prerequisites = Event._preprocess_conditions_(template_dict.get('host_prerequisites',
@@ -275,7 +276,6 @@ class Event(object):
         attendee_prerequisites = Event._preprocess_conditions_(template_dict.get('attendee_prerequisites',
                                                                                  []),
                                                                equipment_type)
-        print("equipment_type is", equipment_type, "of type", type(equipment_type))
         title = template_dict['title'].replace("$equipment", model.equipment_type.Equipment_type.find(equipment_type).name)
 
         instance = Event(template_dict['event_type'],
@@ -402,8 +402,13 @@ class Event(object):
             if len(self.signed_up) >= self.attendance_limit:
                 rejected += 1
                 break
-            # todo: check eligibility
-            s_up_id = attendee._id if isinstance(attendee, model.person.Person) else attendee
+            if not attendee.satisfies_conditions(self.attendee_prerequisites,
+                                                 self.equipment_type):
+                rejected += 1
+                break
+            s_up_id = (attendee._id
+                       if isinstance(attendee,
+                                     model.person.Person) else attendee)
             if s_up_id not in self.signed_up:
                 # print "yes, adding", attendee, s_up_id
                 self.signed_up.append(s_up_id)
