@@ -1,22 +1,56 @@
+#+TODO: TODO OPEN | DONE
 * Makers things to do
-** TODO display training requests in dashboard "trainers" sections, possibly with timeslot counts
-** TODO timeslots display to show what times of day timeslots begin and end at
+** OPEN display training requests in dashboard "trainers" sections, possibly with timeslot counts
+   :PROPERTIES:
+   :last-state-change: [2018-08-18 Sat 21:58]
+   :first-seen: [2018-08-18 Sat 21:58]
+   :END:
+** OPEN timeslots display to show what times of day timeslots begin and end at
+   :PROPERTIES:
+   :last-state-change: [2018-08-18 Sat 21:58]
+   :first-seen: [2018-08-18 Sat 21:58]
+   :END:
+** TODO "add user" command to have a box for whether they've been inducted, and to collect up an induction event over consecutive user adds
 ** TODO fix training event results
    training event results are partly working; the people show up as
    trained in the list of people trained on the equipment, but the
    equipment doesn't show up in the list of the equipment the people
    are trained on.
-** TODO make the address section of the profile run from the config files
-** TODO reject signups for events that are full
-** TODO filter "events I can sign up for" to only those for which the user has the prerequisites
+** OPEN make the address section of the profile run from the config files
+   :PROPERTIES:
+   :last-state-change: [2018-08-18 Sat 21:58]
+   :first-seen: [2018-08-18 Sat 21:58]
+   :END:
+** OPEN reject signups for events that are full
+   :PROPERTIES:
+   :last-state-change: [2018-08-18 Sat 21:58]
+   :first-seen: [2018-08-18 Sat 21:58]
+   :END:
+** OPEN filter "events I can sign up for" to only those for which the user has the prerequisites
+   :PROPERTIES:
+   :last-state-change: [2018-08-18 Sat 21:58]
+   :first-seen: [2018-08-18 Sat 21:58]
+   :END:
 ** TODO dashboard section to say what's in your box, what you want to bring in, what you want to take home
-** TODO button to say you can't make it to an event you've signed up for
+** OPEN button to say you can't make it to an event you've signed up for
+   :PROPERTIES:
+   :last-state-change: [2018-08-18 Sat 21:58]
+   :first-seen: [2018-08-18 Sat 21:58]
+   :END:
 ** TODO more notification channels e.g. telegram, whatsapp, SMS etc
 ** TODO mail sending
-** TODO trainers to be able to create training sessions
+** OPEN trainers to be able to create training sessions
+   :PROPERTIES:
+   :last-state-change: [2018-08-18 Sat 21:58]
+   :first-seen: [2018-08-18 Sat 21:58]
+   :END:
 *** TODO creating a training session to send invitations
 *** TODO training request confirmation to list any pending training sessions
-** TODO get adminstrative grant and ban buttons working
+** OPEN get adminstrative grant and ban buttons working
+   :PROPERTIES:
+   :last-state-change: [2018-08-18 Sat 21:58]
+   :first-seen: [2018-08-18 Sat 21:58]
+   :END:
 ** TODO add a "schedule maintenance" button to the individual machine pages 
    and perhaps remove it from the equipment type page
 ** TODO event timeline display
@@ -25,15 +59,39 @@
      Also give these higher priorities in the tabbing system
 *** TODO event timeline display on equipment type pages
 ** TODO event pages
-*** TODO event signup pages
-*** TODO event pages to have result forms, with receiver for them
-** TODO handle RSVPs to invitations
+*** OPEN event signup pages
+    :PROPERTIES:
+    :last-state-change: [2018-08-18 Sat 21:58]
+    :first-seen: [2018-08-18 Sat 21:58]
+    :END:
+*** OPEN event pages to have result forms, with receiver for them
+    :PROPERTIES:
+    :last-state-change: [2018-08-18 Sat 21:58]
+    :first-seen: [2018-08-18 Sat 21:58]
+    :END:
+** OPEN handle RSVPs to invitations
+   :PROPERTIES:
+   :last-state-change: [2018-08-18 Sat 21:58]
+   :first-seen: [2018-08-18 Sat 21:58]
+   :END:
    Will probably use event signup page code
-** TODO create django accounts from mongo data (small?)
-** TODO check password resets (small)
+** OPEN create django accounts from mongo data (small?)
+   :PROPERTIES:
+   :last-state-change: [2018-08-18 Sat 21:58]
+   :first-seen: [2018-08-18 Sat 21:58]
+   :END:
+** OPEN check password resets (small)
+   :PROPERTIES:
+   :last-state-change: [2018-08-18 Sat 21:58]
+   :first-seen: [2018-08-18 Sat 21:58]
+   :END:
 ** Profiles
 *** TODO receiver for profile updates
-** TODO Equipment type pages to have owner-editable fields
+** OPEN Equipment type pages to have owner-editable fields
+   :PROPERTIES:
+   :last-state-change: [2018-08-18 Sat 21:59]
+   :first-seen: [2018-08-18 Sat 21:59]
+   :END:
    including urls for help (normally pointing to wiki) and for
    pictures (also normally using the wiki)
 ** Admin features
