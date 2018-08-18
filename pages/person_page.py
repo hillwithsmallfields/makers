@@ -390,13 +390,14 @@ def notification_form(viewer, django_request):
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value="Send announcement")]
 
-def add_user_form(django_request):
+def add_user_form(django_request, induction_event_id):
     return T.form(action=base+django.urls.reverse("admin:add_user"))[
         T.input(type="hidden", name="csrfmiddlewaretoken",
                 value=django.middleware.csrf.get_token(django_request)),
         "Given name: ", T.input(type='text', name='given_name'),
         "Surname: ", T.input(type='text', name='surname'),
         "Email: ", T.input(type='text', name='email'),
+        T.input(type='hidden', name='induction_event', value=induction_event_id),
         T.input(type='submit', value="Add user")]
 
 def admin_section(viewer, django_request):

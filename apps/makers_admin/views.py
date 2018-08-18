@@ -137,6 +137,7 @@ def add_user(django_request):
     surname = params['surname']
     email = params['email']
     login = make_login(given_name, surname)
+    induction_event = None
 
     link_id = model.database.add_person({'membership_number': member_no,
                                          'email': row['Email'],
@@ -145,12 +146,23 @@ def add_user(django_request):
                                          'known_as': name_parts[0]},
                                         {'membership_number': member_no})
     create_django_user(login, email, given_name, surname, link_id)
+
+    if params['inducted']:
+        induction_id = params.get('induction_event', None)
+        induction_event = model.event.Event.find(model.pages.unstring_id(induction_id)) if induction_id else None
+        if induction_event is None:
+            induction_event = model.event.Event(configuration.get_config()['organization']['name'] + " training",
+                                                datetime.utcnow(),
+                                                [model.person.Person.find(django_request.user.link_id)._id])
+        induction_event.mark_results([model.person.Person.find(link_id)], [], [])
+
     page_data = model.pages.HtmlPage("Added user",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
     page_data.add_content("Confirmation of adding user " + given_name + " " + surname,
                           [T.h2["Add another user"],
-                           pages.person_page.add_user_form(django_request)])
+                           pages.person_page.add_user_form(django_request,
+                                                           induction_event._id)])
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
