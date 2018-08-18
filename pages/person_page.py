@@ -395,13 +395,28 @@ def admin_section(viewer, django_request):
     return T.ul[T.li[T.a(href=base+"/dashboard/all")["List all users"], " (may be slow and timeout on server)"],
                 T.li["Search by name:", T.form(action=base + "/dashboard/match",
                                                method='GET')[T.form[T.input(type='text', name='pattern'),
+                                                                    T.input(type="hidden", name="csrfmiddlewaretoken",
+                                                                            value=django.middleware.csrf.get_token(django_request)),
                                                                     T.input(type='submit', value='Search')]]],
                 T.li["Create event: ",
-                      create_event_form(viewer, django_request)],
+                     create_event_form(viewer, django_request)],
                 T.li["Send announcement: ", # todo: separate this and control it by whether the person is a trained announcer
                      announcement_form(viewer, django_request)],
                 T.li["Send notification: ",
-                     notification_form(viewer, django_request)]]
+                     notification_form(viewer, django_request)],
+                T.li["Add users: ",
+                     T.form(action=base+django.urls.reverse("admin:add_user"))[
+                         T.input(type="hidden", name="csrfmiddlewaretoken",
+                                 value=django.middleware.csrf.get_token(django_request)),
+                         "Given name: ", T.input(type='text', name='given_name'),
+                         "Surname: ", T.input(type='text', name='surname'),
+                         "Email: ", T.input(type='text', name='email'),
+                         T.input(type='submit', value="Add user")]],
+                T.li["Update django logins: ",
+                     T.form(action=base+django.urls.reverse("admin:update_django"))[
+                         T.input(type="hidden", name="csrfmiddlewaretoken",
+                                 value=django.middleware.csrf.get_token(django_request)),
+                         T.input(type='submit', value="Update django logins")]]]
 
 def add_person_page_contents(page_data, who, viewer, django_request, extra_top_header=None, extra_top_body=None):
     """Add the sections of a user dashboard to a sectional page."""

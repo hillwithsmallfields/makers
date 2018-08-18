@@ -166,11 +166,12 @@ def name_to_id(name):
 
 def add_person(name_record, main_record):
     # todo: convert dates to datetime.datetime
-    linking_id = str(uuid.uuid4())
-    main_record['link_id'] = linking_id # todo: make it index by this
-    name_record['link_id'] = linking_id # todo: make it index by this
+    link_id = str(uuid.uuid4())
+    main_record['link_id'] = link_id # todo: make it index by this
+    name_record['link_id'] = link_id # todo: make it index by this
     database[collection_names['people']].insert(main_record)
     database[collection_names['profiles']].insert(name_record)
+    return link_id
 
 def get_all_person_dicts():
     return [ whoever for whoever in database[collection_names['people']].find({}) ]

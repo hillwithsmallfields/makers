@@ -1,6 +1,9 @@
-from untemplate.throw_out_your_templates_p3 import htmltags as T
-from django.http import HttpResponse
 from datetime import datetime
+from django.contrib.auth.models import User
+from django.http import HttpResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+from untemplate.throw_out_your_templates_p3 import htmltags as T
+import django.urls
 import model.database           # for announcements and notifications; I should probably wrap them so apps don't need to see model.database
 import model.equipment_type
 import model.event
@@ -8,7 +11,6 @@ import model.pages
 import model.person
 import pages.event_page
 import pages.person_page
-from django.views.decorators.csrf import ensure_csrf_cookie
 
 @ensure_csrf_cookie
 def create_event(django_request):
@@ -104,3 +106,67 @@ def notify(django_request):
                                      django_request=django_request)
     page_data.add_content("Confirmation of notification to " + model.person.Person.find(to).name(), text)
     return HttpResponse(str(page_data.to_string()))
+
+def make_login(given_name, surname):
+    login_base = ((given_name[:3] if len(given_name) > 3 else given_name)
+                  + (surname[:3] if len(surname) > 3 else surname))
+    # todo: look for the lowest number that is unused so far for this login_base
+    return login_base + "1"
+
+def create_django_user(login_name, email, given_name, surname, link_id):
+    # based on https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Authentication
+    # Create user and save to the database
+    user = User.objects.create_user(login_name, email, 'mypassword')
+
+    # Update fields and then save again
+    user.first_name = given_name
+    user.last_name = surname
+    user.link_id = link_id
+    user.set_unusable_password()
+    user.save()
+
+@ensure_csrf_cookie
+def add_user(django_request):
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    params = django_request.POST
+    given_name = params['given_name']
+    surname = params['surname']
+    email = params['email']
+    login = make_login(given_name, surname)
+
+    link_id = model.database.add_person({'membership_number': member_no,
+                                         'email': row['Email'],
+                                         'given_name': name_parts[0],
+                                         'surname': name_parts[1],
+                                         'known_as': name_parts[0]},
+                                        {'membership_number': member_no})
+    create_django_user(login, email, given_name, surname, link_id)
+    # todo: send password reset
+
+@ensure_csrf_cookie
+def update_django(django_request):
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    params = django_request.POST
+    include_non_members = params['include_non_members']
+
+    people = person.Person.list_all_people() if include_non_members else person.Person.list_all_members()
+
+    # todo: look for all users whose login_name is None, assign them a login name and setup a django user, and send them a password reset
+
+    for whoever in people:
+        if whoever.login_name is None:
+            name = whoever.name()
+            name_parts = name.split(' ')
+            login = make_login(name_parts[0], name_parts[1])
+            create_django_user(login,
+                               whoever.get_email(),
+                               name_parts[0], name_parts[1],
+                               whoever.link_id)
+            whoever.login_name = login
+            whoever.save()
