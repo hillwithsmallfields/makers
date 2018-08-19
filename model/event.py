@@ -91,8 +91,8 @@ class Event(object):
                  event_duration=60,
                  equipment_type=None,
                  equipment=[],
-                 host_prerequisites,
-                 attendee_prerequisites):
+                 host_prerequisites=[],
+                 attendee_prerequisites=[]):
         """Create an event of a given type and datetime.
 
         The event is not saved and scheduled yet."""

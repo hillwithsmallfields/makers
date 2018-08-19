@@ -1,4 +1,4 @@
-import django.contrib.auth.forms.PasswordResetForm
+import django.contrib.auth.forms
 import model.access_permissions
 import model.configuration
 import model.database

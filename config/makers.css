@@ -15,28 +15,28 @@ BODY {
 }
 
 H1 {
-  padding: 6px;
+  padding:        6px;
   background:     #ffa500;
   color:          #004000;
   border:         2px solid #008000;
 }
 
 H2 {
-  padding: 6px;
+  padding:        6px;
   background:     #ffa500;
   color:          #004000;
   border:         2px solid #008000;
 }
 
 H3 {
-  padding: 6px;
+  padding:        6px;
   background:     #ffa500;
   color:          #004000;
   border:         2px solid #008000;
 }
 
 H4 {
-  padding: 6px;
+  padding:        6px;
   background:     #ffa500;
   color:          #004000;
   border:         2px solid #008000;
@@ -76,6 +76,11 @@ td.level_2, th.level_2 {
 
 td.level_3, th.level_3 {
     background:    gold;
+}
+
+th.profile_group {
+    vertical-align: top;
+    padding:        1em;
 }
 
 /* lists of equipment for which a person has a given role */
@@ -217,6 +222,7 @@ td.level_3, th.level_3 {
 }
 
 .help {
+    padding:    3em;
     font-style: italic;
     width:      30%;
 }

@@ -10,6 +10,6 @@ urlpatterns = [
     path('create_event_2', views.create_event_2, name='create_event_2'),
     path('announce', views.announce, name='announce'),
     path('notify', views.notify, name='notify'),
-    path('adduser', views.add_user, name='add_user'),
-    path('update_django', views.update_django, 'update_django')
+    path('add_user', views.add_user, name='add_user'),
+    path('update_django', views.update_django, name='update_django')
 ]

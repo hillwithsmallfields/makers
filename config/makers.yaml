@@ -66,18 +66,21 @@ page:
   # postamble:  <p>Bottom navigation bar etc will go here.</p>
   motd_file:    config/motd.html
 
+# These are presented in the order given by "profile_group_order"; any
+# groups not mentioned in that will not be presented:
+
 profile_fields:
-  address:
-    - telephone
-    - street 1
-    - street 2
-    - street 3
-    - city
-    - county
-    - country
-    - postcode
-    - icbm
-  demographics:
+  Address:
+    - Telephone
+    - Street 1
+    - Street 2
+    - Street 3
+    - City
+    - County
+    - Country
+    - Postcode
+    - ICBM
+  Demographics:
     - Birth year
     - Gender
     - Education / training main subject
@@ -85,6 +88,10 @@ profile_fields:
     - Is your use of the space connected with your work?
     - Is your use of the space connected with the area of your main training?
 
+profile_group_order:
+  - Address
+  - Demographics
+    
 skill_areas:
   - Biohacking
   - Civic engineering

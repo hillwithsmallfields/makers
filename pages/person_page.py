@@ -35,7 +35,7 @@ def visibility_radio(label, visibility):
                                      else T.input(type='radio',
                                                   name=label,
                                                   value='logged_in')),
-            "No", (T.input(type='radio',
+            "Yes", (T.input(type='radio',
                            name=label,
                            value='yes',
                            checked='checked')
@@ -55,11 +55,11 @@ def site_controls_sub_section(who, viewer, django_request):
               viewer,
               T.table(class_="siteoptions")[
                   T.tr[T.th(class_="ralabel")["Visible as host / owner / trainer to attendees / users"],
-                       T.td[visibility_radio("host", who.visibility['visibility_as_host'])]],
+                       T.td[visibility_radio("host", who.visibility.get('visibility_as_host', True))]],
                   T.tr[T.th(class_="ralabel")["Visible as attendee / user to hosts / owners / trainers"],
-                       T.td[visibility_radio("attendee", who.visibility['visibility_as_attendee'])]],
+                       T.td[visibility_radio("attendee", who.visibility.get('visibility_as_attendee', True))]],
                   T.tr[T.th(class_="ralabel")["Visible generally"],
-                       T.td[visibility_radio("general", who.visibility['visibility_in_general'])]],
+                       T.td[visibility_radio("general", who.visibility.get('visibility_in_general', False))]],
                   T.tr[T.th(class_="ralabel")["Stylesheet"],
                        T.td[T.select(name='stylesheet')[[T.option[style] # todo: mark current stylesheet as checked
                                                          for style in model.configuration.get_stylesheets()]]]],
@@ -69,11 +69,11 @@ def site_controls_sub_section(who, viewer, django_request):
                             else T.input(type='checkbox', name='display_help')]],
                   T.tr[T.th(class_="ralabel")["Notify training etc by email"],
                        T.td[T.input(type='checkbox', name='notify_by_email', checked='checked')
-                            if self.notify_by_email
+                            if who.notify_by_email
                             else T.input(type='checkbox', name='notify_by_email')]],
                   T.tr[T.th(class_="ralabel")["Notify training etc in site"],
                        T.td[T.input(type='checkbox', name='notify_in_site', checked='checked')
-                            if self.notify_by_email
+                            if who.notify_in_site
                             else T.input(type='checkbox', name='notify_in_site')]],
                   T.tr[T.th[""], T.td[T.input(type="submit", value="Update controls")]]],
               "site_controls")]]]
@@ -87,21 +87,23 @@ def get_profile_subfield_value(who, group_name, name):
 def profile_section(who, viewer, django_request):
 
     profile_fields = all_conf.get('profile_fields')
-    print("variable profile fields are", profile_fields)
 
-    variable_sections = [[T.tr[T.th(colspan="2", rowspan=str(len(group_fields)))[group_name],
-                               T.th[group_fields[0]],
-                               T.td[T.input(type='text',
-                                            name=group_name+':'+group_fields[0],
-                                            value=get_profile_subfield_value(who, group_name, group_fields[0]))],
-                               T.td(rowspan=str(len(group_fields)))[
-                                   untemplate.safe_unicode(model.pages.help_for_topic(group_name))]],
-                          [[T.tr[T.th[field],
-                                 T.td[T.input(type='text',
-                                              name=group_name+':'+field,
-                                              value=get_profile_subfield_value(who, group_name, field))]]]
-                           for field in group_fields[1:]]]
-                         for group_name, group_fields in profile_fields]
+    variable_sections = T.table[[[T.tr[T.th(colspan="2",
+                                            class_='profile_group',
+                                            rowspan=str(len(group_fields)))[group_name],
+                                       T.th[group_fields[0]],
+                                       T.td[T.input(type='text',
+                                                    name=group_name+':'+group_fields[0],
+                                                    value=get_profile_subfield_value(who, group_name, group_fields[0]))],
+                                       T.td(rowspan=str(len(group_fields)))[
+                                           T.div(class_="help")[untemplate.safe_unicode(model.pages.help_for_topic(group_name))]]],
+                                  [[T.tr[T.th[field],
+                                         T.td[T.input(type='text',
+                                                      name=group_name+':'+field,
+                                                      value=get_profile_subfield_value(who, group_name, field))]]]
+                                   for field in group_fields[1:]]]
+                                 for group_name, group_fields in [(name, profile_fields[name])
+                                                                  for name in all_conf.get('profile_group_order')]]]
 
     address = who.get_profile_field('address') or {}
     telephone = who.get_profile_field('telephone') or ""
@@ -119,52 +121,54 @@ def profile_section(who, viewer, django_request):
                "Upload new photo: ", T.input(type="text"),
                T.input(type="hidden", name="subject_user_uuid", value=who.link_id),
                T.input(type="submit", value="Update photo")],
-              T.form(action=base + django.urls.reverse("dashboard:update_profile"), method='POST')
-              [T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-               T.input(type="hidden", name="subject_user_uuid", value=who._id),
-               model.pages.with_help(
-                   viewer,
-                   T.table(class_="personaldetails")[
-                       T.tr[T.th(class_="ralabel")["Name"], T.td[T.input(type="text",
-                                                                         name="name",
-                                                                         value=who.name())]],
-                       T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
-                                                                          name="email",
-                                                                          value=who.get_email())]],
-                       T.tr[T.th(class_="ralabel")["Membership number"], T.td[str(who.membership_number)]],
-                       T.tr[T.th(class_="ralabel")['Fob number'],
-                            T.td[(T.input(type="text",
-                                          name="fob",
-                                          value=str(who.fob))
-                                  if viewer.is_administrator()
-                                  else [str(who.fob)])]],
-                       T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
-                       T.tr[T.th(class_="ralabel")["No-shows"], T.td[str(len(who.get_noshows()))]],
-                       T.tr[T.th(class_="ralabel")["No-show absolutions"], T.td[(T.input(type="text",
-                                                                                         name="absolutions",
-                                                                                         value=str(who.noshow_absolutions))
-                                                                                 if viewer.is_administrator() else str(who.noshow_absolutions))]],
-                       T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]],
-                   "general_user_profile"),
+              model.pages.with_help(
+                  viewer,
+                  T.form(action=base + django.urls.reverse("dashboard:update_profile"), method='POST')[
+                      T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+                      T.input(type="hidden", name="subject_user_uuid", value=who._id),
+                      T.table(class_="personaldetails")[
+                          T.tr[T.th(class_="ralabel")["Name"], T.td[T.input(type="text",
+                                                                            name="name",
+                                                                            value=who.name())]],
+                          T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
+                                                                             name="email",
+                                                                             value=who.get_email())]],
+                          T.tr[T.th(class_="ralabel")["Membership number"], T.td[str(who.membership_number)]],
+                          T.tr[T.th(class_="ralabel")['Fob number'],
+                               T.td[(T.input(type="text",
+                                             name="fob",
+                                             value=str(who.fob))
+                                     if viewer.is_administrator()
+                                     else [str(who.fob)])]],
+                          T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
+                          T.tr[T.th(class_="ralabel")["No-shows"], T.td[str(len(who.get_noshows()))]],
+                          T.tr[T.th(class_="ralabel")["No-show absolutions"],
+                               T.td[(T.input(type="text",
+                                             name="absolutions",
+                                             value=str(who.noshow_absolutions))
+                                     if viewer.is_administrator() else str(who.noshow_absolutions))]],
+                          T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]]],
+                  "general_user_profile"),
                model.pages.with_help(viewer,
                                      T.form(action=base + django.urls.reverse("dashboard:update_configured_profile"),
-                                            method='POST')[variable_sections,
-                                                           T.input(type="hidden",
-                                                                   name="csrfmiddlewaretoken",
-                                                                   value=django.middleware.csrf.get_token(django_request)),
-                                                           T.input(type="hidden",
-                                                                   name="subject_user_uuid",
-                                                                   value=who._id),
-                                                           T.input(type='submit',
-                                                                   value='Update')],
-                                     "configurable_profile"],
+                                            method='POST')[
+                                                variable_sections,
+                                                T.input(type="hidden",
+                                                        name="csrfmiddlewaretoken",
+                                                        value=django.middleware.csrf.get_token(django_request)),
+                                                T.input(type="hidden",
+                                                        name="subject_user_uuid",
+                                                        value=who._id),
+                                                T.input(type='submit',
+                                                        value='Update')],
+                                     "configurable_profile"),
               T.h2["Site controls"],
               site_controls_sub_section(who, viewer, django_request),
               T.h2["Availability"],
               model.pages.with_help(viewer,
                                     pages.page_pieces.availform(who.available, django_request),
                                     "availability",
-                                    timeslot_times),
+                                    substitutions=timeslot_times),
               T.h2["Misc"],
               T.ul[T.li["Reset notifications and announcements: ",
                         (T.form(action=base + "/dashboard/reset_messages", method='POST')
@@ -390,14 +394,17 @@ def notification_form(viewer, django_request):
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value="Send announcement")]
 
-def add_user_form(django_request, induction_event_id):
-    return T.form(action=base+django.urls.reverse("admin:add_user"))[
+def add_user_form(django_request, induction_event_id=None):
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
+    return T.form(action=base+django.urls.reverse("makers_admin:add_user"))[
         T.input(type="hidden", name="csrfmiddlewaretoken",
                 value=django.middleware.csrf.get_token(django_request)),
         "Given name: ", T.input(type='text', name='given_name'),
         "Surname: ", T.input(type='text', name='surname'),
         "Email: ", T.input(type='text', name='email'),
-        T.input(type='hidden', name='induction_event', value=induction_event_id),
+        (T.input(type='hidden', name='induction_event', value=induction_event_id)
+         if induction_event_id
+         else ""),
         T.input(type='submit', value="Add user")]
 
 def admin_section(viewer, django_request):
@@ -417,7 +424,7 @@ def admin_section(viewer, django_request):
                 T.li["Add users: ",
                      add_user_form(django_request)],
                 T.li["Update django logins: ",
-                     T.form(action=base+django.urls.reverse("admin:update_django"))[
+                     T.form(action=base+django.urls.reverse("makers_admin:update_django"))[
                          T.input(type="hidden", name="csrfmiddlewaretoken",
                                  value=django.middleware.csrf.get_token(django_request)),
                          T.input(type='submit', value="Update django logins")]]]

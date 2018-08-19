@@ -8,17 +8,24 @@ import os
 import re
 import untemplate.throw_out_your_templates_p3 as untemplate
 
-def help_for_topic(help_name, default_text=None, substitutions={}):
-    help_file = os.path.join(configuration.get_config()['page']['help_texts'], help_name + ".html")
+def help_for_topic(help_name,
+                   default_text="<p>Help text not available for topic %(topic)s</p>",
+                   substitutions={}):
+    help_file = os.path.join(configuration.get_config()['page']['help_texts'],
+                             help_name + ".html")
     if os.path.isfile(help_file):
         with open(help_file) as helpstream:
             return helpstream.read() % substitutions
-    return default_text
+    # this has to be a dictionary substitution because otherwise
+    # default_text must contain a substitution marker:
+    return default_text % {'topic': help_name}
 
 def with_help(who, content, help_name, substitutions={}):
     if not who.show_help:
         return content
-    help_text = help_for_topic(help_name, substitutions)
+    help_text = help_for_topic(help_name,
+                               default_text="",
+                               substitutions=substitutions)
     if help_text:
         return T.table(class_="help_on_right")[T.tr[T.td(class_="helped")[content],
                                                     T.td(class_="help")[untemplate.safe_unicode(help_text)]]]

@@ -74,8 +74,8 @@ def one_event_section(ev, who, django_request,
         results += [T.h4["Users signed up to event"],
                     T.ul[[[T.li[person_name(sup)]
                            for sup in ev.signed_up]]]]
-    if who._id in ev.signed_up:
-        pass                    # todo: form to back out of attending event (must rescan to mail waiting list)
+    # if who._id in ev.signed_up:
+    #     pass                    # todo: form to back out of attending event (must rescan to mail waiting list)
     if with_completion:
         completion_table = (T.table(class_='event_completion')
                             [T.thead[T.tr[T.th["Name"],
