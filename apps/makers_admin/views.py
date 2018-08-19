@@ -176,6 +176,8 @@ def update_django(django_request):
 
     people = person.Person.list_all_people() if include_non_members else person.Person.list_all_members()
 
+    countdown = 12
+
     created = []
     for whoever in people:
         if whoever.login_name is None:
@@ -189,6 +191,9 @@ def update_django(django_request):
             whoever.login_name = login
             whoever.save()
             created.append(who)
+            countdown -= 1
+            if countdown == 0:
+                break
 
     page_data = model.pages.HtmlPage("Created django users",
                                      pages.page_pieces.top_navigation(django_request),

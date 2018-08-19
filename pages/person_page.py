@@ -79,7 +79,8 @@ def site_controls_sub_section(who, viewer, django_request):
               "site_controls")]]]
 
 def get_profile_subfield_value(who, group_name, name):
-    group = who.get_profile_field(group_name)
+    all_groups = who.get_profile_field('configured')
+    group = all_groups.get(group_name, {})
     if type(group) != dict:
         return ""
     return group.get(name, "")

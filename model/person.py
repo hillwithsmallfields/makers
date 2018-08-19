@@ -204,10 +204,7 @@ class Person(object):
 
     def set_profile_field(self, field_name, new_value):
         """Set a field and write it back to the database."""
-        if self.visible(access_permissions_event=access_permissions_event,
-                        access_permissions_role=None,
-                        access_permissions_equipment=None):
-            model.database.set_person_profile_field(self, field_name, new_value)
+        model.database.set_person_profile_field(self, field_name, new_value)
 
     # account access
 
@@ -554,7 +551,7 @@ class Person(object):
             who.get_name(name)
         self.save()
 
-    def update_configured_profile(self, params):
+    def update_configuredprofile(self, params):
         """Update the configurable profile fields.
         These are controlled by the config file.
         The params argument must be a dictionary,
@@ -563,8 +560,10 @@ class Person(object):
         The values in the dictionary should all be strings,
         or at least things that can be written directly
         into mongodb."""
-        groups = self.get_profile_field('configured')
-        for key, value in params:
+        groups = self.get_profile_field('configured') or {}
+        print("config-controlled profile groups are", groups)
+        for key, value in params.items():
+            print("key", key, "value", value)
             if ':' not in key:
                 continue
             group_name, field_name = key.split(':')

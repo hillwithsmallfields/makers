@@ -222,9 +222,10 @@ th.profile_group {
 }
 
 .help {
-    padding:    3em;
-    font-style: italic;
-    width:      30%;
+    vertical-align: top;
+    padding:        3em;
+    font-style:     italic;
+    width:          30%;
 }
 
 .privacy_warning {

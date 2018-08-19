@@ -152,13 +152,22 @@ def update_profile(request):
     page_data.add_content("Confirmation", [T.p["Profile updated."]])
     return HttpResponse(str(page_data.to_string()))
 
+@ensure_csrf_cookie
 def update_configured_profile(request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
     params = request.POST
-    who = model.person.Person.find(params['subject_user_uuid'])
+    who = model.person.Person.find(model.pages.unstring_id(params['subject_user_uuid']))
     admin_user = model.person.Person.find(request.user.link_id)
+    if who is None:
+        page_data = model.pages.HtmlPage("Error",
+                                         pages.page_pieces.top_navigation(request),
+                                         django_request=request)
+        page_data.add_content("Error", [T.p["Could not find user identified by "
+                                            + str(params['subject_user_uuid'])]])
+        return HttpResponse(str(page_data.to_string()))
+
     who.update_configured_profile(params)
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
@@ -173,7 +182,7 @@ def update_site_controls(request):
     model.database.database_init(config_data)
 
     params = request.POST
-    who = model.person.Person.find(params['subject_user_uuid'])
+    who = model.person.Person.find(model.pages.unstring_id(params['subject_user_uuid']))
     admin_user = model.person.Person.find(request.user.link_id)
     who.update_controls(params)
     page_data = model.pages.HtmlPage("Confirmation",
