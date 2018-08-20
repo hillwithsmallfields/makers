@@ -406,6 +406,9 @@ def add_user_form(django_request, induction_event_id=None):
         (T.input(type='hidden', name='induction_event', value=induction_event_id)
          if induction_event_id
          else ""),
+        "Inducted: ", (T.input(type='checkbox', checked='checked', name='inducted')
+                       if induction_event_id
+                       else T.input(type='checkbox', name='inducted')),
         T.input(type='submit', value="Add user")]
 
 def admin_section(viewer, django_request):
