@@ -15,9 +15,9 @@ import uuid
 # todo: induction input from jotform.com
 
 def to_bool_or_other(vis_string):
-    if vis_string in [True, 'True', 'true', 'Yes', 'yes', 'Y', 'y']:
+    if vis_string in [True, 'True', 1, 'true', 'Yes', 'yes', 'Y', 'y', 'On', 'on', 'Checked', 'checked']:
         return True
-    if vis_string in [False, None, 'False', 'false', 'No', 'no', 'N', 'n']:
+    if vis_string in [False, None, 0, 'False', 'false', 'No', 'no', 'N', 'n', 'Off', 'off']:
         return False
     return vis_string
 
@@ -574,13 +574,19 @@ class Person(object):
         self.save()
 
     def update_controls(self, params):
-        self.visibility['host'] = to_bool_or_other(params['visibility_as_host'])
-        self.visibility['attendee'] = to_bool_or_other(params['visibility_as_attendee'])
-        self.visibility['general'] = to_bool_or_other(params['visibility_in_general'])
-        self.stylesheet = params['stylesheet']
-        self.show_help = to_bool_or_other(params['display_help'])
-        self.notify_by_email = to_bool_or_other(params['notify_by_email'])
-        self.notify_in_site = to_bool_or_other(params['notify_in_site'])
+        print("update_controls to", {k:v for k,v in params.items()})
+        config = model.configuration.get_config()
+        default_visibilities = config['privacy_defaults']
+        self.visibility['host'] = to_bool_or_other(params.get('visibility_as_host',
+                                                              default_visibilities['visibility_as_host']))
+        self.visibility['attendee'] = to_bool_or_other(params.get('visibility_as_attendee',
+                                                                  default_visibilities['visibility_as_attendee']))
+        self.visibility['general'] = to_bool_or_other(params.get('visibility_in_general',
+                                                                 default_visibilities['visibility_in_general']))
+        self.stylesheet = params.get('stylesheet', "makers")
+        self.show_help = to_bool_or_other(params.get('display_help', False))
+        self.notify_by_email = to_bool_or_other(params.get('notify_by_email', False))
+        self.notify_in_site = to_bool_or_other(params.get('notify_in_site', False))
         self.save()
 
     # Announcements and notifications

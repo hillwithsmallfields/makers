@@ -19,6 +19,7 @@ server_conf = None
 org_conf = None
 
 def visibility_radio(label, visibility):
+    print("visibility_radio", label, visibility)
     return ["No", (T.input(type='radio',
                            name=label,
                            value='no',
@@ -55,11 +56,11 @@ def site_controls_sub_section(who, viewer, django_request):
               viewer,
               T.table(class_="siteoptions")[
                   T.tr[T.th(class_="ralabel")["Visible as host / owner / trainer to attendees / users"],
-                       T.td[visibility_radio("host", who.visibility.get('visibility_as_host', True))]],
+                       T.td[visibility_radio("visibility_as_host", who.visibility.get('host', True))]],
                   T.tr[T.th(class_="ralabel")["Visible as attendee / user to hosts / owners / trainers"],
-                       T.td[visibility_radio("attendee", who.visibility.get('visibility_as_attendee', True))]],
+                       T.td[visibility_radio("visibility_as_attendee", who.visibility.get('attendee', True))]],
                   T.tr[T.th(class_="ralabel")["Visible generally"],
-                       T.td[visibility_radio("general", who.visibility.get('visibility_in_general', False))]],
+                       T.td[visibility_radio("visibility_in_general", who.visibility.get('general', False))]],
                   T.tr[T.th(class_="ralabel")["Stylesheet"],
                        T.td[T.select(name='stylesheet')[[T.option[style] # todo: mark current stylesheet as checked
                                                          for style in model.configuration.get_stylesheets()]]]],
