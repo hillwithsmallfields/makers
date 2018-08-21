@@ -169,7 +169,7 @@ def profile_section(who, viewer, django_request):
               site_controls_sub_section(who, viewer, django_request),
               T.h2["Availability"],
               model.pages.with_help(viewer,
-                                    pages.page_pieces.availform(who.available, django_request),
+                                    pages.page_pieces.availform(who, who.available, django_request),
                                     "availability",
                                     substitutions=timeslot_times),
               T.h2["Misc"],

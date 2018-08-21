@@ -80,10 +80,11 @@ def schedule_event_form(who, extras, button_text, django_request):
              T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
              T.button(type="submit", value="schedule")[button_text]])
 
-def availform(available, django_request):
+def availform(who, available, django_request):
     days, _, times = model.timeslots.get_slots_conf()
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return (T.div(class_="availability")
-            [T.form(action="updateavail",
+            [T.form(action=base+django.urls.reverse("dashboard:update_availability"),
                     method="POST")
              [T.table(class_="availability")
               [[T.thead[T.tr[T.th(class_="daylabel")["Day"],
@@ -92,18 +93,23 @@ def availform(available, django_request):
                              T.th["Evening"],
                              T.th["Other"]]]],
                T.tbody[[[T.tr[T.th(class_="daylabel")[day],
-                              [T.td[T.input(type="checkbox", name="avail",
-                                            value=day+t, checked="checked")
+                              [T.td[T.input(type="checkbox",
+                                            name=day+"_"+t, checked="checked")
                                     if b
-                                    else T.input(type="checkbox", name="avail",
-                                                 value=day+t)]
-                               for t, b in zip(['M', 'A', 'E', 'O'], day_slots)]]]
+                                    else T.input(type="checkbox",
+                                                 name=day+"_"+t)]
+                               for t, b in zip(['Morning',
+                                                'Afternoon',
+                                                'Evening',
+                                                'Other'],
+                                               day_slots)]]]
                         for (day, day_slots) in zip(days,
-                                                    model.timeslots.timeslots_from_int(available))]]]],
-             # todo: write receiver for this
-             # todo: on changing availability, re-run invite_available_interested_people on the equipment types for which this person has a training request outstanding
-             T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-             T.input(type="submit", value="Update availability")])
+                                                    model.timeslots.timeslots_from_int(available))]]],
+              # todo: write receiver for this
+              # todo: on changing availability, re-run invite_available_interested_people on the equipment types for which this person has a training request outstanding
+              T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+              T.input(type='hidden', name='person', value=str(who._id)),
+              T.input(type="submit", value="Update availability")]])
 
 def avail_table(slot_sums):
     days, _, _ = model.timeslots.get_slots_conf()
@@ -115,7 +121,7 @@ def avail_table(slot_sums):
                           T.th["Other"]]]],
             T.tbody[[[T.tr[T.th(class_="daylabel")[day],
                            [T.td[str(b)]
-                            for t, b in zip(['M', 'A', 'E', 'O'], day_slots)]]]
+                            for t, b in zip(['Morning', 'Afternoon', 'Evening', 'Other'], day_slots)]]]
                      for (day, day_slots) in zip(days,
                                                  model.timeslots.avsums_by_day(slot_sums))]]]
 

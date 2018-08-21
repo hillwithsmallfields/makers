@@ -11,6 +11,7 @@ urlpatterns = [
     path('update_profile', views.update_profile, name='update_profile'),
     path('update_configured_profile', views.update_configured_profile, name='update_configured_profile'),
     path('update_site_controls', views.update_site_controls, name='update_site_controls'),
+    path('update_availability', views.update_availability, name='update_availability'),
     path('announcements_read', views.announcements_read, name='announcements_read'),
     path('notifications_read', views.notifications_read, name='notifications_read'),
     path('reset_messages', views.reset_messages, name='reset_messages'),

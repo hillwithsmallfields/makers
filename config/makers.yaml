@@ -24,6 +24,7 @@ timeslots:
     - Saturday
     - Sunday
   periods:
+    # todo: give the periods their names here, including 'Other'
     morning: 07:00 -- 12:30
     afternoon: 13:00 -- 18:00
     evening: 18:30 -- 22:00
