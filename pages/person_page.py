@@ -98,7 +98,8 @@ def profile_section(who, viewer, django_request):
                                                     name=group_name+':'+group_fields[0],
                                                     value=get_profile_subfield_value(who, group_name, group_fields[0]))],
                                        T.td(rowspan=str(len(group_fields)))[
-                                           T.div(class_="help")[untemplate.safe_unicode(model.pages.help_for_topic(group_name))]]],
+                                           T.div(class_="help")[untemplate.safe_unicode(model.pages.help_for_topic(group_name))]
+                                           if who.show_help else ""]],
                                   [[T.tr[T.th[field],
                                          T.td[T.input(type='text',
                                                       name=group_name+':'+field,
