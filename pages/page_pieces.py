@@ -88,40 +88,28 @@ def availform(who, available, django_request):
                     method="POST")
              [T.table(class_="availability")
               [[T.thead[T.tr[T.th(class_="daylabel")["Day"],
-                             T.th["Morning"],
-                             T.th["Afternoon"],
-                             T.th["Evening"],
-                             T.th["Other"]]]],
+                             [[T.th[slotname]] for slotname in times]]]],
                T.tbody[[[T.tr[T.th(class_="daylabel")[day],
                               [T.td[T.input(type="checkbox",
                                             name=day+"_"+t, checked="checked")
                                     if b
                                     else T.input(type="checkbox",
                                                  name=day+"_"+t)]
-                               for t, b in zip(['Morning',
-                                                'Afternoon',
-                                                'Evening',
-                                                'Other'],
-                                               day_slots)]]]
+                               for t, b in zip(times, day_slots)]]]
                         for (day, day_slots) in zip(days,
                                                     model.timeslots.timeslots_from_int(available))]]],
-              # todo: write receiver for this
-              # todo: on changing availability, re-run invite_available_interested_people on the equipment types for which this person has a training request outstanding
               T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
               T.input(type='hidden', name='person', value=str(who._id)),
               T.input(type="submit", value="Update availability")]])
 
 def avail_table(slot_sums):
-    days, _, _ = model.timeslots.get_slots_conf()
+    days, _, times = model.timeslots.get_slots_conf()
     return [T.table(class_="availability")
             [T.thead[T.tr[T.th(class_="daylabel")["Day"],
-                          T.th["Morning"],
-                          T.th["Afternoon"],
-                          T.th["Evening"],
-                          T.th["Other"]]]],
+                          [[T.th[slotname]] for slotname in times]]]],
             T.tbody[[[T.tr[T.th(class_="daylabel")[day],
                            [T.td[str(b)]
-                            for t, b in zip(['Morning', 'Afternoon', 'Evening', 'Other'], day_slots)]]]
+                            for t, b in zip(times, day_slots)]]]
                      for (day, day_slots) in zip(days,
                                                  model.timeslots.avsums_by_day(slot_sums))]]]
 
@@ -140,7 +128,7 @@ def skills_section(skill_levels, mail_levels, django_request):
     skill_areas = model.configuration.get_config().get('skill_areas', None)
     if skill_areas is None:
         return []
-    (mail_1, mail_2, mail_3) = (mail_levels or [False, False, False])
+    (mail_1, mail_2, mail_3) = mail_levels
     existing_skills = {area_name: skill_levels.get(area_name, 0) for area_name in skill_areas}
     return [T.form(action="update_levels", method="POST")
             [T.table(class_="skills_check_table")
@@ -155,17 +143,17 @@ def skills_section(skill_levels, mail_levels, django_request):
                              skills_button(area, existing_skills[area], 2),
                              skills_button(area, existing_skills[area], 3)]]
                        for area in sorted(skill_areas)]],
-              T.tfoot[T.tr[T.th["Mail me about events"],
-                           T.td[""],
-                           T.td[(T.input(type='checkbox', name='mail_1', checked='checked')
+              (T.tfoot[T.tr[T.th["Mail me about events"],
+                            T.td[""],
+                            T.td[(T.input(type='checkbox', name='mail_1', checked='checked')
                                  if mail_1 else
-                                 T.input(type='checkbox', name='mail_1'))],
-                           T.td[(T.input(type='checkbox', name='mail_2', checked='checked')
+                                  T.input(type='checkbox', name='mail_1'))],
+                            T.td[(T.input(type='checkbox', name='mail_2', checked='checked')
                                  if mail_2 else
-                                 T.input(type='checkbox', name='mail_2'))],
-                           T.td[(T.input(type='checkbox', name='mail_3', checked='checked')
+                                  T.input(type='checkbox', name='mail_2'))],
+                            T.td[(T.input(type='checkbox', name='mail_3', checked='checked')
                                  if mail_3 else
-                                 T.input(type='checkbox', name='mail_3'))]]]],
+                                  T.input(type='checkbox', name='mail_3'))]]] if mail_levels else ""]],
              T.div(align="right")[T.input(type="submit", value="Update interests and skills")]]]
 
 def plain_value(item):

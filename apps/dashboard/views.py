@@ -231,6 +231,8 @@ def update_availability(request):
 
     who.available = available_bits
 
+    print("available_bits is", available_bits)
+
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)

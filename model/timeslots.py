@@ -2,8 +2,8 @@
 
 # Represent availability in a week, within a 32-bit integer.
 
-# Each four bits represents one day's time slots (morning, afternoon,
-# evening, optinally other).
+# Each four bits represents one day's time slots (Morning, Afternoon,
+# Evening, optionally Other which covers any other times).
 
 # When an event is scheduled, it's then easy to search for who may be
 # able to make that time.
@@ -40,6 +40,12 @@ periods = None
 period_order = None
 
 def get_slots_conf():
+    """Get the timeslots information from the configuration file.
+    It is cached once found, as it shouldn't change during a run.
+    The results are a list of days of the week in order, a dictionary
+    defining the named time periods in each day as a list of the
+    start and end times, and a list of the named periods in order
+    of their starting times."""
     global day_order, periods, period_order
     slotconf = configuration.get_config()['timeslots']
     if day_order is None:
@@ -52,7 +58,9 @@ def get_slots_conf():
                     for pname, pdescr in slotconf['periods'].items() }
     if period_order is None:
         tmp = { startend[0]: name for name, startend in periods.items() }
-        period_order = [ tmp[tm] for tm in sorted(tmp.keys()) ] + ['other']
+        period_order = [ tmp[tm] for tm in sorted(tmp.keys()) ]
+        if len(period_order < 4):
+            period_order.append('Other')
     return day_order, periods, period_order
 
 def time_to_timeslot(when):
@@ -79,7 +87,7 @@ def sum_availabilities(avlist):
     return sums
 
 def avsums_by_day(avsumlist):
-    return [avsumlist[start:start+3] for start in range(0,28,4)]
+    return [avsumlist[start:start+4] for start in range(0,28,4)]
 
 def test_timeslots():
     all_evening_slots = [[False, False, True, False]] * 7
@@ -94,6 +102,9 @@ def test_timeslots():
     print("evenings bitmap", hex(all_evenings_bitmap))
     print("weekend bitmap", hex(all_weekend_bitmap))
     print("saturday morning bitmap", hex(saturday_morning_bitmap))
+    print("evenings back to slots", timeslots_from_int(all_evenings_bitmap))
+    print("weekend back to slots", timeslots_from_int(all_weekend_bitmap))
+    print("saturday morning back to slots", timeslots_from_int(saturday_morning_bitmap))
     summed = sum_availabilities([all_evenings_bitmap, saturday_morning_bitmap, saturday_morning_bitmap, all_weekend_bitmap])
     print("summed availabilities", summed)
     by_day = avsums_by_day(summed)

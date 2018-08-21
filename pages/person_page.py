@@ -112,12 +112,12 @@ def profile_section(who, viewer, django_request):
     telephone = who.get_profile_field('telephone') or ""
     mugshot = who.get_profile_field('mugshot')
     _, timeslot_times, _ = model.timeslots.get_slots_conf()
-    timeslot_times = {'morning_start': str(timeslot_times['morning'][0]),
-                      'morning_end': str(timeslot_times['morning'][1]),
-                      'afternoon_start': str(timeslot_times['afternoon'][0]),
-                      'afternoon_end': str(timeslot_times['afternoon'][1]),
-                      'evening_start': str(timeslot_times['evening'][0]),
-                      'evening_end': str(timeslot_times['evening'][1])}
+    timeslot_times = {'morning_start': str(timeslot_times['Morning'][0]),
+                      'morning_end': str(timeslot_times['Morning'][1]),
+                      'afternoon_start': str(timeslot_times['Afternoon'][0]),
+                      'afternoon_end': str(timeslot_times['Afternoon'][1]),
+                      'evening_start': str(timeslot_times['Evening'][0]),
+                      'evening_end': str(timeslot_times['Evening'][1])}
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     result = [T.form(action=base + django.urls.reverse("dashboard:update_mugshot"), method='POST')
               [T.img(src=mugshot) if mugshot else "",
