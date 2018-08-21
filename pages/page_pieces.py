@@ -124,37 +124,24 @@ def skills_button(area_name, level, which_level):
                           name=area_name,
                           value=str(which_level))]]
 
-def skills_section(skill_levels, mail_levels, django_request):
-    skill_areas = model.configuration.get_config().get('skill_areas', None)
-    if skill_areas is None:
+def interests_section(interest_levels, mail_levels, django_request):
+    interest_areas = model.configuration.get_config().get('interest_areas', None)
+    if interest_areas is None:
         return []
-    (mail_1, mail_2, mail_3) = mail_levels
-    existing_skills = {area_name: skill_levels.get(area_name, 0) for area_name in skill_areas}
-    return [T.form(action="update_levels", method="POST")
-            [T.table(class_="skills_check_table")
+    existing_interests = {area_name: interest_levels.get(area_name, 0) for area_name in interest_areas}
+    return [T.form(action=django.urls.reverse("dashboard:update_levels"), method="POST")
+            [T.table(class_="interests_check_table")
              [T.thead[T.tr[[T.th["Area"],
-                            T.th(class_="level_0")["0"],
-                            T.th(class_="level_1")["1"],
-                            T.th(class_="level_2")["2"],
-                            T.th(class_="level_3")["3"]]]],
+                            [[[T.th(class_='level_'+str(lev))[str(lev)]] for lev in range(4)]]]]],
               T.tbody[[[T.tr[T.th[area],
-                             skills_button(area, existing_skills[area], 0),
-                             skills_button(area, existing_skills[area], 1),
-                             skills_button(area, existing_skills[area], 2),
-                             skills_button(area, existing_skills[area], 3)]]
-                       for area in sorted(skill_areas)]],
+                             [[[interests_button(area, existing_interests[area], lev)] for lev in range(4)]]]]
+                       for area in sorted(interest_areas)]],
               (T.tfoot[T.tr[T.th["Mail me about events"],
                             T.td[""],
-                            T.td[(T.input(type='checkbox', name='mail_1', checked='checked')
-                                 if mail_1 else
-                                  T.input(type='checkbox', name='mail_1'))],
-                            T.td[(T.input(type='checkbox', name='mail_2', checked='checked')
-                                 if mail_2 else
-                                  T.input(type='checkbox', name='mail_2'))],
-                            T.td[(T.input(type='checkbox', name='mail_3', checked='checked')
-                                 if mail_3 else
-                                  T.input(type='checkbox', name='mail_3'))]]] if mail_levels else ""]],
-             T.div(align="right")[T.input(type="submit", value="Update interests and skills")]]]
+                            [[[T.td[(T.input(type='checkbox', name='mail_'+str(lev), checked='checked')
+                                     if mail_levels(lev)
+                                     else T.input(type='checkbox', name='mail_'+str(lev)))] for lev in range(1,4)]]]]] if mail_levels else ""]],
+             T.div(align="right")[T.input(type="submit", value="Update interests")]]]
 
 def plain_value(item):
     return item[0] if type(item) == tuple else item

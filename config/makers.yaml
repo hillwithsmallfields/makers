@@ -97,7 +97,7 @@ privacy_defaults:
   visibility_as_attendee:   True
   visibility_in_general:    False
   
-skill_areas:
+interest_areas:
   - Biohacking
   - Civic engineering
   - Clothes-making and modification

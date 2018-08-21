@@ -239,6 +239,23 @@ def update_availability(request):
     page_data.add_content("Confirmation", [T.p["Availability would be updated if this were complete."]])
     return HttpResponse(str(page_data.to_string()))
 
+@ensure_csrf_cookie
+def update_levels(request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    params = request.POST
+    who = model.person.Person.find(model.pages.unstring_id(params['subject_user_uuid']))
+    admin_user = model.person.Person.find(request.user.link_id)
+
+    # todo: update levels
+
+    page_data = model.pages.HtmlPage("Confirmation",
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+    page_data.add_content("Confirmation", [T.p["Controls updated."]])
+    return HttpResponse(str(page_data.to_string()))
+
 def reset_messages(request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)

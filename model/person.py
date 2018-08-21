@@ -515,7 +515,10 @@ class Person(object):
     # Interests and skills
 
     def get_interests(self):
-        return self.profile.get('interests', {})
+        return self.get_profile_field('interests', {})
+
+    def set_interests(self, interests):
+        return self.set_profile_field('interests', interests)
 
     def add_interest(self, interest, level):
         """Interest levels are:
@@ -523,10 +526,12 @@ class Person(object):
         1: would like to learn
         2: already learnt
         3: can teach"""
+        interests = self.get_interests()
         if 'interests' in self.profile:
-            self.profile['interests'][interest] = level
+            interests[interest] = level
         else:
-            self.profile['interests'] = {interest: level}
+            interests = {interest: level}
+        self.set_interests(interest)
         self.save()
 
     # machine use

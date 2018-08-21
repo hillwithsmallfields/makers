@@ -181,11 +181,11 @@ def profile_section(who, viewer, django_request):
                           T.input(type='hidden', name='subject_user_uuid', value=who._id),
                           T.input(type='submit',
                                   value="Reset notifications")])]]]
-    if 'skill_areas' in all_conf:
-        result.append([T.h2["Skills and interests"],
+    if 'interest_areas' in all_conf:
+        result.append([T.h2["Interests and skills"],
                        model.pages.with_help(viewer,
-                                             user_skills_section(who, django_request),
-                                             "skills_interests")])
+                                             user_interests_section(who, django_request),
+                                             "interests")])
     if 'dietary_avoidances' in all_conf:
         result.append([T.h2["Dietary avoidances"],
                        model.pages.with_help(viewer,
@@ -267,10 +267,10 @@ def responsibilities(who, viewer, eqtype, django_request):
                 owner_section,
                 trainer_section]
 
-def user_skills_section(who, django_request):
-    return pages.page_pieces.skills_section(who.get_profile_field('skill_levels') or {},
-                                            who.get_profile_field('interest_emails', [False, False, False]),
-                                            django_request)
+def user_interests_section(who, django_request):
+    return pages.page_pieces.interests_section(who.get_interests(),
+                                               who.get_profile_field('interest_emails', [False, False, False]),
+                                               django_request)
 
 def avoidances_section(who, django_request):
     if 'dietary_avoidances' not in all_conf:

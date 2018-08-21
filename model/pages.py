@@ -86,6 +86,10 @@ class SectionalPage(object):
         self.django_request = django_request
 
     def add_section(self, name, content, priority=1):
+        # http://api.jquery.com/load/ gives an example:
+        # $( "#feeds" ).load( "feeds.html" );
+        # I could use something like that to load big pages such as the dashboard piecemeal
+        # Each tab body could start off with a load call in it, which would be replaced by the loaded content and so not get the loading repeated
         section_id = name.replace(' ', '_')
         self.sections[section_id] = [T.h2[name], content]
         self.presentation_names[section_id] = name
