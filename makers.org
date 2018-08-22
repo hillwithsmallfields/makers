@@ -20,6 +20,11 @@
    :last-state-change: [2018-08-18 Sat 21:58]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
+** TODO fix "mark all as read" in notifications and announcements
+   :PROPERTIES:
+   :last-state-change: [2018-08-22 Wed 16:08]
+   :first-seen: [2018-08-22 Wed 16:08]
+   :END:
 ** TODO event pages to have interests and skills sections
 ** TODO event pages to have optional catering sections
 ** TODO use flexboxes for with_help, so that when the screen is narrow the help text will follow the form instead of being beside it
