@@ -248,13 +248,17 @@ def update_levels(request):
     params = request.POST
     who = model.person.Person.find(model.pages.unstring_id(params['subject_user_uuid']))
 
-    print("update_levels params are", {k:v for k, v in params.items()})
-
     interests = who.get_interests()
     interests.update({topic: int(level)
                       for topic, level in params.items()
-                      if re.match(topic, "[0-9]+")})
+                      if re.match("[0-9]+", level)})
     who.set_interests(interests)
+
+    interest_emails = [False] * 4
+    for lev in range(1,4):
+        if 'mail_'+str(lev) in params:
+            interest_emails[lev] = True
+    who.set_profile_field('interest_emails', interest_emails)
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
@@ -267,7 +271,7 @@ def update_avoidances(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    params = request.POST
+    params = django_request.POST
     who = model.person.Person.find(model.pages.unstring_id(params['subject_user_uuid']))
 
     print("update_avoidances params are", {k:v for k, v in params.items()})
@@ -275,8 +279,8 @@ def update_avoidances(django_request):
     who.update_avoidances(params)
 
     page_data = model.pages.HtmlPage("Confirmation",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
     page_data.add_content("Confirmation", [T.p["Interests updated."]])
     return HttpResponse(str(page_data.to_string()))
 

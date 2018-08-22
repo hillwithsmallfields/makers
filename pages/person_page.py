@@ -280,18 +280,17 @@ def avoidances_section(who, django_request):
                                         T.th["Status"]]],
                            T.tbody[[T.tr[T.th(class_='ralabel')[thing],
                                          T.td[(T.input(type="checkbox",
-                                                       name="dietary",
-                                                       value=thing,
+                                                       name=thing,
                                                        checked="checked")
-                                                      if thing in avoidances
-                                                      else T.input(type="checkbox",
-                                                                   name="dietary",
-                                                                   value=thing))]]
-                                                   for thing in sorted(all_conf['dietary_avoidances'])]]],
-                                  T.input(type="hidden",
-                                          name="csrfmiddlewaretoken",
-                                          value=django.middleware.csrf.get_token(django_request)),
-                                  T.div(align="right")[T.input(type='submit', value="Update avoidances")]]]
+                                               if thing in avoidances
+                                               else T.input(type="checkbox",
+                                                            name=thing))]]
+                                    for thing in sorted(all_conf['dietary_avoidances'])]]],
+                       T.input(type="hidden",
+                               name="csrfmiddlewaretoken",
+                               value=django.middleware.csrf.get_token(django_request)),
+                       T.input(type='hidden', name='subject_user_uuid', value=who._id),
+                       T.div(align="right")[T.input(type='submit', value="Update avoidances")]]]
 
 def name_of_host(host):
     return model.person.Person.find(host).name() if host else "Unknown"

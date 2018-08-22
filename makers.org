@@ -15,26 +15,24 @@
    :last-state-change: [2018-08-18 Sat 21:58]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
-** OPEN timeslots display to show what times of day timeslots begin and end at
+** DONE timeslots display to show what times of day timeslots begin and end at
+   CLOSED: [2018-08-22 Wed 22:27]
    :PROPERTIES:
-   :last-state-change: [2018-08-18 Sat 21:58]
+   :last-state-change: [2018-08-22 Wed 22:27]
    :first-seen: [2018-08-18 Sat 21:58]
-   :END:
-** TODO fix "mark all as read" in notifications and announcements
-   :PROPERTIES:
-   :last-state-change: [2018-08-22 Wed 16:08]
-   :first-seen: [2018-08-22 Wed 16:08]
    :END:
 ** TODO event pages to have interests and skills sections
 ** TODO event pages to have optional catering sections
 ** TODO use flexboxes for with_help, so that when the screen is narrow the help text will follow the form instead of being beside it
 ** TODO fixed profile to include a "box issued" section (probably as a date), editable only by admins
 ** TODO "add user" command to have a box for whether they've been inducted, and to collect up an induction event over consecutive user adds
-** OPEN make the address section of the profile run from the config files
+** DONE make the address section of the profile run from the config files
+   CLOSED: [2018-08-22 Wed 22:28]
    :PROPERTIES:
-   :last-state-change: [2018-08-18 Sat 21:58]
+   :last-state-change: [2018-08-22 Wed 22:28]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
+** OPEN add badger texts to configured profile area
 ** OPEN reject signups for events that are full
    :PROPERTIES:
    :last-state-change: [2018-08-18 Sat 21:58]
@@ -45,7 +43,6 @@
    :last-state-change: [2018-08-18 Sat 21:58]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
-** TODO dashboard section to say what's in your box, what you want to bring in, what you want to take home
 ** OPEN button to say you can't make it to an event you've signed up for
    :PROPERTIES:
    :last-state-change: [2018-08-18 Sat 21:58]
@@ -112,6 +109,7 @@
    :END:
    including urls for help (normally pointing to wiki) and for
    pictures (also normally using the wiki)
+** TODO dashboard section to say what's in your box, what you want to bring in, what you want to take home
 ** Admin features
 *** TODO unconstrained event creation
 *** TODO canned event creation for particular tasks such as bans, reinstatements, and direct grant of permissions

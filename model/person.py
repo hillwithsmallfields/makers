@@ -520,7 +520,6 @@ class Person(object):
         return result
 
     def set_interests(self, interests):
-        print("set_interests", interests)
         return self.set_profile_field('interests', interests)
 
     def add_interest(self, interest, level):
@@ -565,9 +564,7 @@ class Person(object):
         or at least things that can be written directly
         into mongodb."""
         groups = self.get_profile_field('configured') or {}
-        print("config-controlled profile groups are", groups)
         for key, value in params.items():
-            print("key", key, "value", value)
             if ':' not in key:
                 continue
             group_name, field_name = key.split(':')
@@ -577,7 +574,6 @@ class Person(object):
         self.set_profile_field('configured', groups)
 
     def update_controls(self, params):
-        print("update_controls to", {k:v for k,v in params.items()})
         config = model.configuration.get_config()
         default_visibilities = config['privacy_defaults']
         self.visibility['host'] = to_bool_or_other(params.get('visibility_as_host',
