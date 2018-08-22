@@ -87,6 +87,12 @@ profile_fields:
     - Education / training level
     - Is your use of the space connected with your work?
     - Is your use of the space connected with the area of your main training?
+  Main Badger:
+    - First line
+    - Second line
+  Storage Badger:
+    - First line
+    - Second line
 
 profile_group_order:
   - Address
@@ -125,14 +131,14 @@ interest_areas:
   - Woodwork
 
 dietary_avoidances:
-  - kosher
-  - halal
-  - vegetarian
-  - vegan
-  - nut allergy
-  - no gluten
-  - low carb
-  - low sugar
+  - Kosher
+  - Halal
+  - Vegetarian
+  - Vegan
+  - Nut allergy
+  - No gluten
+  - Low Carb
+  - Low Sugar
 
 database:
   URI:

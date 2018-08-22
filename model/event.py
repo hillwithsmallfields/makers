@@ -276,7 +276,8 @@ class Event(object):
         attendee_prerequisites = Event._preprocess_conditions_(template_dict.get('attendee_prerequisites',
                                                                                  []),
                                                                equipment_type)
-        title = template_dict['title'].replace("$equipment", model.equipment_type.Equipment_type.find(equipment_type).name)
+        title = template_dict['title'].replace("$equipment",
+                                               model.equipment_type.Equipment_type.find(equipment_type).name).replace('_', ' ').capitalize()
 
         instance = Event(template_dict['event_type'],
                          event_datetime,
@@ -477,9 +478,11 @@ class Event(object):
         avoidances = {}
         for person_id in self.signed_up:
             whoever = model.person.Person.find(person_id)
-            if whoever and 'avoidances' in whoever.profile:
-                avoids = ", ".join(sorted(whoever.profile['avoidances']))
-                avoidances[avoids] = avoidances.get(avoids, 0) + 1
+            if whoever:
+                individual_avoidances = whoever.get_profile_field('avoidances')
+                if individual_avoidances:
+                    avoids = ", ".join(sorted(individual_avoidances))
+                    avoidances[avoids] = avoidances.get(avoids, 0) + 1
         return avoidances
 
     def dietary_avoidances_summary(self):

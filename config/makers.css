@@ -204,7 +204,12 @@ th.profile_group {
     cursor:           pointer;
     padding:          14px 16px;
     transition:       0.3s;
+    width:            20em;
 }
+
+/* .tablinks { */
+/*     width:  20em; */
+/* } */
 
 .tab button:hover {
     background-color: #ffb510;
@@ -219,6 +224,11 @@ th.profile_group {
     padding: 6px 12px;
     border: 1px solid #ccc;
     border-top: none;
+}
+
+.helped {
+    vertical-align: top;
+    padding:        3em;
 }
 
 .help {

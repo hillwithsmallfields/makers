@@ -191,11 +191,6 @@ def profile_section(who, viewer, django_request):
                        model.pages.with_help(viewer,
                                              avoidances_section(who, django_request),
                                              "dietary_avoidances")])
-    if 'demographics' in all_conf:
-        result.append([T.h2["Demographics"],
-                       model.pages.with_help(viewer,
-                                             demographics_section(who, django_request),
-                                             "demographics")])
 
     return T.div(class_="personal_profile")[result]
 
@@ -278,29 +273,25 @@ def avoidances_section(who, django_request):
         return []
     avoidances = who.get_profile_field('avoidances') or []
     base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return [T.form(action=base+"/update/avoidances",# todo: get from django reverse
-                   method='POST')[T.ul[[T.li[(T.input(type="checkbox", name="dietary", value=thing, checked="checked")[thing]
-                                              if thing in avoidances
-                                              else T.input(type="checkbox", name="dietary", value=thing)[thing])]
-                                        for thing in sorted(all_conf['dietary_avoidances'])]],
-                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+    return [T.form(action=base+django.urls.reverse("dashboard:update_avoidances"),
+                   method='POST')[
+                       T.table[
+                           T.thead[T.tr[T.th(class_='ralabel')["Food"],
+                                        T.th["Status"]]],
+                           T.tbody[[T.tr[T.th(class_='ralabel')[thing],
+                                         T.td[(T.input(type="checkbox",
+                                                       name="dietary",
+                                                       value=thing,
+                                                       checked="checked")
+                                                      if thing in avoidances
+                                                      else T.input(type="checkbox",
+                                                                   name="dietary",
+                                                                   value=thing))]]
+                                                   for thing in sorted(all_conf['dietary_avoidances'])]]],
+                                  T.input(type="hidden",
+                                          name="csrfmiddlewaretoken",
+                                          value=django.middleware.csrf.get_token(django_request)),
                                   T.div(align="right")[T.input(type='submit', value="Update avoidances")]]]
-
-def demographics_section(who, django_request):
-    if 'demographics' not in all_conf:
-        return []
-    demographics_aspects = all_conf['demographics']
-    demographics = who.get_profile_field('demographics') or {}
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return [T.div[[T.form(action=base+"/update/demographics", # todo: get from django reverse
-                          method='POST')[T.table[[[T.tr[T.th(class_='ralabel')[aspect],
-                                                       T.td[T.input(type='text',
-                                                                    name='aspect',
-                                                                    value=demographics.get(aspect, ""))]]]
-                                                  for aspect in demographics_aspects],
-                                                 T.tr[T.td[""],
-                                                      T.input(type='submit',
-                                                              value="update demographic information")]]]]]]
 
 def name_of_host(host):
     return model.person.Person.find(host).name() if host else "Unknown"

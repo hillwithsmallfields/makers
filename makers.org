@@ -1,5 +1,15 @@
 #+TODO: TODO OPEN | DONE
 * Makers things to do
+** TODO fix training event results
+   training event results are partly working; the people show up as
+   trained in the list of people trained on the equipment, but the
+   equipment doesn't show up in the list of the equipment the people
+   are trained on.
+** TODO fix "mark all as read" in notifications and announcements
+   :PROPERTIES:
+   :last-state-change: [2018-08-22 Wed 16:08]
+   :first-seen: [2018-08-22 Wed 16:08]
+   :END:
 ** OPEN display training requests in dashboard "trainers" sections, possibly with timeslot counts
    :PROPERTIES:
    :last-state-change: [2018-08-18 Sat 21:58]
@@ -10,12 +20,11 @@
    :last-state-change: [2018-08-18 Sat 21:58]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
+** TODO event pages to have interests and skills sections
+** TODO event pages to have optional catering sections
+** TODO use flexboxes for with_help, so that when the screen is narrow the help text will follow the form instead of being beside it
+** TODO fixed profile to include a "box issued" section (probably as a date), editable only by admins
 ** TODO "add user" command to have a box for whether they've been inducted, and to collect up an induction event over consecutive user adds
-** TODO fix training event results
-   training event results are partly working; the people show up as
-   trained in the list of people trained on the equipment, but the
-   equipment doesn't show up in the list of the equipment the people
-   are trained on.
 ** OPEN make the address section of the profile run from the config files
    :PROPERTIES:
    :last-state-change: [2018-08-18 Sat 21:58]
@@ -44,7 +53,11 @@
    :last-state-change: [2018-08-18 Sat 21:58]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
-*** TODO creating a training session to send invitations
+*** OPEN creating a training session to send invitations
+    :PROPERTIES:
+    :last-state-change: [2018-08-22 Wed 17:22]
+    :first-seen: [2018-08-22 Wed 17:22]
+    :END:
 *** TODO training request confirmation to list any pending training sessions
 ** OPEN get adminstrative grant and ban buttons working
    :PROPERTIES:
