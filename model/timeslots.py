@@ -59,7 +59,7 @@ def get_slots_conf():
     if period_order is None:
         tmp = { startend[0]: name for name, startend in periods.items() }
         period_order = [ tmp[tm] for tm in sorted(tmp.keys()) ]
-        if len(period_order < 4):
+        if len(period_order) < 4:
             period_order.append('Other')
     return day_order, periods, period_order
 
