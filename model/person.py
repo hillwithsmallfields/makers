@@ -199,21 +199,13 @@ class Person(object):
         if self.visible(access_permissions_event=access_permissions_event,
                         access_permissions_role=None,
                         access_permissions_equipment=None):
-<<<<<<< HEAD
             return model.database.get_person_profile_field(self, field_name, default_value=default_value)
         else:
-=======
-            print("get_profile_field: is visible")
-            return model.database.get_person_profile_field(self, field_name, default_value=default_value)
-        else:
-            print("get_profile_field: not visible")
->>>>>>> 9d1e7a818466e7874c2f3cc736a341bfe6ee885c
             return default_value
 
     def set_profile_field(self, field_name, new_value):
         """Set a field and write it back to the database."""
         model.database.set_person_profile_field(self, field_name, new_value)
-        self.save()
 
     # account access
 
@@ -528,6 +520,7 @@ class Person(object):
         return result
 
     def set_interests(self, interests):
+        print("set_interests", interests)
         return self.set_profile_field('interests', interests)
 
     def add_interest(self, interest, level):
@@ -537,12 +530,8 @@ class Person(object):
         2: already learnt
         3: can teach"""
         interests = self.get_interests()
-        if 'interests' in self.profile:
-            interests[interest] = level
-        else:
-            interests = {interest: level}
+        interests[interest] = int(level)
         self.set_interests(interest)
-        self.save()
 
     # machine use
 
@@ -566,7 +555,7 @@ class Person(object):
             who.get_name(name)
         self.save()
 
-    def update_configuredprofile(self, params):
+    def update_configured_profile(self, params):
         """Update the configurable profile fields.
         These are controlled by the config file.
         The params argument must be a dictionary,
@@ -586,7 +575,6 @@ class Person(object):
             group[field_name] = value
             groups[group_name] = group
         self.set_profile_field('configured', groups)
-        self.save()
 
     def update_controls(self, params):
         print("update_controls to", {k:v for k,v in params.items()})
@@ -604,16 +592,29 @@ class Person(object):
         self.notify_in_site = to_bool_or_other(params.get('notify_in_site', False))
         self.save()
 
+    def update_avoidances(self, incoming_avoidances):
+        avoidance_list = model.configuration.get_config()['dietary_avoidances']
+        my_avoidances = self.get_profile_field('avoidances') or []
+        for avoidance in avoidance_list:
+            if avoidance in incoming_avoidances:
+                my_avoidances.append(avoidance)
+            elif avoidance in my_avoidances:
+                my_avoidances.remove(avoidance)
+        self.set_profile_field('avoidances', my_avoidances)
+        self.save()
+
     # Announcements and notifications
 
     def read_announcements(self):
         # get the time before the messages, so if any messages come in
         # between reading the two, we don't miss any
         up_to_now_time = datetime.utcnow()
+        print("read_announcements up to", up_to_now_time)
         results = model.database.get_announcements(self.announcements_read_to)
         return results, up_to_now_time
 
     def mark_announcements_read(self, upto):
+        print("mark_announcements_read", upto)
         self.announcements_read_to = upto
         self.save()
 
@@ -621,10 +622,12 @@ class Person(object):
         # get the time before the messages, so if any messages come in
         # between reading the two, we don't miss any
         up_to_now_time = datetime.utcnow()
+        print("read_notifications up to", up_to_now_time)
         results = model.database.get_notifications(self._id, self.notifications_read_to)
         return results, up_to_now_time
 
     def mark_notifications_read(self, upto):
+        print("mark_notifications_read", upto)
         self.notifications_read_to = upto
         self.save()
 

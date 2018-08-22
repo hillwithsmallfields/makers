@@ -88,8 +88,10 @@ def set_person_profile_field(whoever,
                          if isinstance(whoever, model.person.Person)
                          else whoever))
     profile_record = database[collection_names['profiles']].find_one({'link_id': person_link})
+    print("set_person_profile_field", person_link, "got record", profile_record, "to write field", profile_field, "with", new_value)
     if profile_record is not None:
         profile_record[profile_field] = new_value
+        print("saving", profile_record)
         database[collection_names['profiles']].save(profile_record)
 
 def person_name(whoever,
@@ -180,6 +182,9 @@ def get_all_person_dicts():
 def save_person(somebody):
     database[collection_names['people']].save(somebody)
 
+def save_profile(somebody_profile):
+    database[collection_names['profiles']].save(somebody_profile)
+
 # Events
 
 def get_event(event_type, event_datetime, hosts, equipment, create=True):
@@ -242,6 +247,7 @@ def save_event(this_event):
 # Notifications (to individuals)
 
 def get_notifications(who_id, since_date):
+    print("get_notifications query will be", {'when': {'$gt': since_date}}, "and the collection will be", database[collection_names['notifications']])
     return [message
             for message in database[collection_names['notifications']].find({'to': who_id, 'when': {'$gt': since_date}})]
 

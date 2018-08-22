@@ -2,5 +2,6 @@ event_type:             hackathon
 title:                  Hackathon
 attendance_limit:       30
 duration:               480
+catered:                True
 host_prerequisites:
   - member

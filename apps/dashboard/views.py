@@ -130,8 +130,9 @@ def update_mugshot(request):
 
     params = request.POST
     who = model.person.Person.find(params['subject_user_uuid'])
-    admin_user = model.person.Person.find(request.user.link_id)
+
     # todo: update photo from upload
+
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)
@@ -145,8 +146,9 @@ def update_profile(request):
 
     params = request.POST
     who = model.person.Person.find(params['subject_user_uuid'])
-    admin_user = model.person.Person.find(request.user.link_id)
+
     who.update_profile(params)
+
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)
@@ -160,7 +162,7 @@ def update_configured_profile(request):
 
     params = request.POST
     who = model.person.Person.find(model.pages.unstring_id(params['subject_user_uuid']))
-    admin_user = model.person.Person.find(request.user.link_id)
+
     if who is None:
         page_data = model.pages.HtmlPage("Error",
                                          pages.page_pieces.top_navigation(request),
@@ -183,8 +185,9 @@ def update_site_controls(request):
 
     params = request.POST
     who = model.person.Person.find(model.pages.unstring_id(params['subject_user_uuid']))
-    admin_user = model.person.Person.find(request.user.link_id)
+
     who.update_controls(params)
+
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)
@@ -210,7 +213,6 @@ def update_availability(request):
 
     available_bits = 0
 
-    print("update_availability", {k: v for k, v in params.items()})
     # these come through as things like 'Saturday_Afternoon': 'on', just for the ones that are on; the others are omitted
     # todo: on changing availability, re-run invite_available_interested_people on the equipment types for which this person has a training request outstanding
     for slot, setting in params.items():
@@ -227,9 +229,7 @@ def update_availability(request):
             print("bad slot name", time_of_day, "not in", slot_names)
             continue
         slot_number = slot_names.index(time_of_day)
-        print("available at", day_number, slot_number)
         available_bits |= 1 << (day_number * 4 + slot_number)
-        print("available_bits is", hex(available_bits))
 
     who.available = available_bits
     who.save()
@@ -237,7 +237,7 @@ def update_availability(request):
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)
-    page_data.add_content("Confirmation", [T.p["Availability would be updated if this were complete."]])
+    page_data.add_content("Confirmation", [T.p["Availability updated."]])
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
@@ -247,9 +247,7 @@ def update_levels(request):
 
     params = request.POST
     who = model.person.Person.find(model.pages.unstring_id(params['subject_user_uuid']))
-    admin_user = model.person.Person.find(request.user.link_id)
 
-    # todo: update levels
     print("update_levels params are", {k:v for k, v in params.items()})
 
     interests = who.get_interests()
@@ -261,7 +259,25 @@ def update_levels(request):
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)
-    page_data.add_content("Confirmation", [T.p["Controls updated."]])
+    page_data.add_content("Confirmation", [T.p["Interests updated."]])
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
+def update_avoidances(django_request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    params = request.POST
+    who = model.person.Person.find(model.pages.unstring_id(params['subject_user_uuid']))
+
+    print("update_avoidances params are", {k:v for k, v in params.items()})
+
+    who.update_avoidances(params)
+
+    page_data = model.pages.HtmlPage("Confirmation",
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+    page_data.add_content("Confirmation", [T.p["Interests updated."]])
     return HttpResponse(str(page_data.to_string()))
 
 def reset_messages(request):
@@ -269,10 +285,11 @@ def reset_messages(request):
     model.database.database_init(config_data)
 
     who = model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid']))
-    admin_user = model.person.Person.find(request.user.link_id)
+
     who.notifications_read_to = datetime(1970, 1, 1)
     who.announcements_read_to = datetime(1970, 1, 1)
     who.save()
+
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)
