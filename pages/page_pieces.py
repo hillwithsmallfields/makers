@@ -113,7 +113,7 @@ def avail_table(slot_sums):
                      for (day, day_slots) in zip(days,
                                                  model.timeslots.avsums_by_day(slot_sums))]]]
 
-def skills_button(area_name, level, which_level):
+def interests_button(area_name, level, which_level):
     return [T.td(class_="level_" + str(which_level))
             [T.input(type='radio',
                      name=area_name,
@@ -124,10 +124,11 @@ def skills_button(area_name, level, which_level):
                           name=area_name,
                           value=str(which_level))]]
 
-def interests_section(interest_levels, mail_levels, django_request):
+def interests_section(interest_levels, mail_levels, django_request, for_person=None):
     interest_areas = model.configuration.get_config().get('interest_areas', None)
     if interest_areas is None:
         return []
+    print("interest_areas", interest_areas, "interest_levels", interest_levels)
     existing_interests = {area_name: interest_levels.get(area_name, 0) for area_name in interest_areas}
     return [T.form(action=django.urls.reverse("dashboard:update_levels"), method="POST")
             [T.table(class_="interests_check_table")
@@ -139,9 +140,13 @@ def interests_section(interest_levels, mail_levels, django_request):
               (T.tfoot[T.tr[T.th["Mail me about events"],
                             T.td[""],
                             [[[T.td[(T.input(type='checkbox', name='mail_'+str(lev), checked='checked')
-                                     if mail_levels(lev)
-                                     else T.input(type='checkbox', name='mail_'+str(lev)))] for lev in range(1,4)]]]]] if mail_levels else ""]],
-             T.div(align="right")[T.input(type="submit", value="Update interests")]]]
+                                     if mail_levels[lev]
+                                     else T.input(type='checkbox', name='mail_'+str(lev)))]] for lev in range(1,4)]]]] if mail_levels else "")],
+             T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+             # This form can be used either for a person, or for an event
+             T.input(type='hidden', name='subject_user_uuid', value=for_person._id) if for_person else "",
+             T.div(align="right")[T.input(type="submit", value="Update interests")]],
+            T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request))]
 
 def plain_value(item):
     return item[0] if type(item) == tuple else item

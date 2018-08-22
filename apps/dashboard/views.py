@@ -10,6 +10,7 @@ import model.person
 import model.person as person
 import pages.person_page
 import pages.user_list_page
+import re
 import sys
 
 @ensure_csrf_cookie
@@ -228,10 +229,10 @@ def update_availability(request):
         slot_number = slot_names.index(time_of_day)
         print("available at", day_number, slot_number)
         available_bits |= 1 << (day_number * 4 + slot_number)
+        print("available_bits is", hex(available_bits))
 
     who.available = available_bits
-
-    print("available_bits is", available_bits)
+    who.save()
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
@@ -249,6 +250,13 @@ def update_levels(request):
     admin_user = model.person.Person.find(request.user.link_id)
 
     # todo: update levels
+    print("update_levels params are", {k:v for k, v in params.items()})
+
+    interests = who.get_interests()
+    interests.update({topic: int(level)
+                      for topic, level in params.items()
+                      if re.match(topic, "[0-9]+")})
+    who.set_interests(interests)
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),

@@ -191,6 +191,7 @@ class Person(object):
         self.save()
 
     def get_profile_field(self, field_name,
+                          default_value=None,
                           access_permissions_event=None,
                           access_permissions_role=None,
                           access_permissions_equipment=None):
@@ -198,13 +199,14 @@ class Person(object):
         if self.visible(access_permissions_event=access_permissions_event,
                         access_permissions_role=None,
                         access_permissions_equipment=None):
-            return model.database.get_person_profile_field(self, field_name)
+            return model.database.get_person_profile_field(self, field_name, default_value=default_value)
         else:
-            return None
+            return default_value
 
     def set_profile_field(self, field_name, new_value):
         """Set a field and write it back to the database."""
         model.database.set_person_profile_field(self, field_name, new_value)
+        self.save()
 
     # account access
 
@@ -515,7 +517,8 @@ class Person(object):
     # Interests and skills
 
     def get_interests(self):
-        return self.get_profile_field('interests', {})
+        result = self.get_profile_field('interests', default_value={})
+        return result
 
     def set_interests(self, interests):
         return self.set_profile_field('interests', interests)

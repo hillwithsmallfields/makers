@@ -58,7 +58,8 @@ def get_person_dict(identification):
 def get_person_profile_field(whoever,
                              profile_field,
                              role_viewed=None,
-                             equipment=None):
+                             equipment=None,
+                             default_value=None):
     """Return a profile field of a person.
     You should use model.person.get_profile_field() instead of this in your programs,
     as that handles the privacy controls."""
@@ -69,9 +70,9 @@ def get_person_profile_field(whoever,
                          else whoever))
     profile_record = database[collection_names['profiles']].find_one({'link_id': person_link})
     if profile_record is None:
-        return None
+        return default_value
     else:
-        return profile_record.get(profile_field, None)
+        return profile_record.get(profile_field, default_value)
 
 def set_person_profile_field(whoever,
                              profile_field,

@@ -269,8 +269,9 @@ def responsibilities(who, viewer, eqtype, django_request):
 
 def user_interests_section(who, django_request):
     return pages.page_pieces.interests_section(who.get_interests(),
-                                               who.get_profile_field('interest_emails', [False, False, False]),
-                                               django_request)
+                                               who.get_profile_field('interest_emails', [False, False, False, False]),
+                                               django_request,
+                                               who)
 
 def avoidances_section(who, django_request):
     if 'dietary_avoidances' not in all_conf:
