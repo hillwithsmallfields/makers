@@ -199,8 +199,15 @@ class Person(object):
         if self.visible(access_permissions_event=access_permissions_event,
                         access_permissions_role=None,
                         access_permissions_equipment=None):
+<<<<<<< HEAD
             return model.database.get_person_profile_field(self, field_name, default_value=default_value)
         else:
+=======
+            print("get_profile_field: is visible")
+            return model.database.get_person_profile_field(self, field_name, default_value=default_value)
+        else:
+            print("get_profile_field: not visible")
+>>>>>>> 9d1e7a818466e7874c2f3cc736a341bfe6ee885c
             return default_value
 
     def set_profile_field(self, field_name, new_value):
