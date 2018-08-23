@@ -129,6 +129,7 @@ class Event(object):
 
     def __str__(self):
         accum = "<" + self.event_type + "_event " + timestring(self.start)
+        accum += " id " + str(self._id)
         if self.hosts and self.hosts != []:
             accum += " with " + ", ".join([model.person.Person.find(host_id).name()
                                           for host_id in self.hosts
@@ -271,7 +272,7 @@ class Event(object):
                                                            equipment_type)
         for host in hosts:
             person_obj = model.person.Person.find(host)
-            if not person_obj.satisfies_conditions(host_prerequisites, equipment_type):
+            if not person_obj.satisfies_conditions(host_prerequisites):
                 return None, person_obj.name() + " is not qualified to host this event"
         attendee_prerequisites = Event._preprocess_conditions_(template_dict.get('attendee_prerequisites',
                                                                                  []),
@@ -313,7 +314,7 @@ class Event(object):
                                                    equipment_type)
         for host in hosts:
             x = model.person.Person.find(host)
-            if not x.satisfies_conditions(host_conds, equipment_type):
+            if not x.satisfies_conditions(host_conds):
                 return False
         return True
 
@@ -400,19 +401,15 @@ class Event(object):
         accepted = 0
         rejected = 0
         for attendee in signed_up:
+            attendee = model.person.Person.find(attendee)
             if len(self.signed_up) >= self.attendance_limit:
                 rejected += 1
                 break
-            if not attendee.satisfies_conditions(self.attendee_prerequisites,
-                                                 self.equipment_type):
+            if not attendee.satisfies_conditions(self.attendee_prerequisites):
                 rejected += 1
                 break
-            s_up_id = (attendee._id
-                       if isinstance(attendee,
-                                     model.person.Person) else attendee)
-            if s_up_id not in self.signed_up:
-                # print "yes, adding", attendee, s_up_id
-                self.signed_up.append(s_up_id)
+            if attendee._id not in self.signed_up:
+                self.signed_up.append(attendee._id)
                 accepted += 1
         self.remove_invitation_declined(signed_up)
         self.save()

@@ -35,6 +35,7 @@ def person_name(who):
 def one_event_section(ev, who, django_request,
                       with_rsvp=False, rsvp_id=None,
                       with_completion=False, completion_as_form=False):
+    print("one_event_section", ev, who, "with_completion", with_completion, "completion_as_form", completion_as_form)
     all_people_ids = ev.signed_up
     all_people_id_to_name = {p: model.person.Person.find(p).name() for p in all_people_ids}
     all_people_name_and_id = [(all_people_id_to_name[id], id) for id in all_people_id_to_name.keys()]
@@ -57,7 +58,7 @@ def one_event_section(ev, who, django_request,
                  T.tr[T.th(class_="ralabel")["Location"],
                       T.td(class_="location")[ev.location]],
                  T.tr[T.th(class_="ralabel")["Equipment type"],
-                      T.td(class_="event_equipment_type")[model.equipment_type.Equipment_type.find_by_id(ev.equipment_type).name]],
+                      T.td(class_="event_equipment_type")[model.equipment_type.Equipment_type.find_by_id(ev.equipment_type).name]], # todo: linkify
                  T.tr[T.th(class_="ralabel")["Hosts"],
                       T.td(class_="hosts")[people_list(ev.hosts)]]])]
     if with_rsvp:
@@ -103,9 +104,11 @@ def one_event_section(ev, who, django_request,
                                                             "passed",
                                                             id in ev.passed)])]
                                        for id in ids_in_order]]],
-                             T.tfoot[T.tr[T.td(colspan="2")[""],
+                             (T.tfoot[T.tr[T.td(colspan="2")[""],
                                           T.td(colspan="3")[T.input(type='submit',
-                                                                    value="Record results")]]]])
+                                                                    value="Record results")]]]
+                              if completion_as_form
+                              else "")])
         # todo: signup if in the future
         results += [T.h4["Results"],
                     ((T.form(action=base+django.urls.reverse("events:results"),

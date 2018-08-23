@@ -86,6 +86,7 @@ def dashboard_page(request, who=""):
         page_data = model.pages.SectionalPage("User dashboard for " + subject_user.name(),
                                               pages.page_pieces.top_navigation(request),
                                               django_request=request)
+        print("subject", subject_user.name(), "being viewed by", viewing_user.name())
         pages.person_page.add_person_page_contents(page_data, subject_user, viewing_user, request)
 
     return HttpResponse(str(page_data.to_string()))

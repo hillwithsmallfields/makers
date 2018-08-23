@@ -320,6 +320,7 @@ def list_equipment_types(training_category=None):
     return [ et for et in database[collection_names['equipment_types']].find(query) ]
 
 def get_eqtype_events(equipment_type, event_type, earliest=None, latest=None):
+    # todo: flag to restrict the events to those in the past only
     query = {'event_type': event_type,
              'equipment_type': equipment_type}
     if earliest:
