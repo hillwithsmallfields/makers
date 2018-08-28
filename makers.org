@@ -1,10 +1,25 @@
 #+TODO: TODO OPEN | DONE
 * Makers things to do
-** TODO fix training event results
+** DONE fix training event results
+   CLOSED: [2018-08-28 Tue 18:48]
+   :PROPERTIES:
+   :last-state-change: [2018-08-28 Tue 18:48]
+   :first-seen: [2018-08-28 Tue 18:47]
+   :END:
    training event results are partly working; the people show up as
    trained in the list of people trained on the equipment, but the
    equipment doesn't show up in the list of the equipment the people
    are trained on.
+
+   It turned out that the people's lists were correct, as the event
+   was still in the future, and so was being ignored; the equipments'
+   lists need fixing.
+** TODO lists of people with training on equipment to take note of the training date
+   and not count people as qualified when their qualification date is
+   still in the future
+** TODO switch to https
+** TODO training success to cancel training requests
+** TODO validate choice of stylesheet
 ** TODO fix "mark all as read" in notifications and announcements
    :PROPERTIES:
    :last-state-change: [2018-08-22 Wed 16:08]
