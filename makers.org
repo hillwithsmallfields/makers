@@ -27,6 +27,7 @@
 ** TODO switch to https
 ** TODO training success to cancel training requests
 ** TODO validate choice of stylesheet
+** OPEN load tabs on demand
 ** TODO fix "mark all as read" in notifications and announcements
    :PROPERTIES:
    :last-state-change: [2018-08-22 Wed 16:08]
@@ -37,6 +38,7 @@
    :last-state-change: [2018-08-18 Sat 21:58]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
+** TODO users to be able to upload mugshots
 ** DONE timeslots display to show what times of day timeslots begin and end at
    CLOSED: [2018-08-22 Wed 22:27]
    :PROPERTIES:
@@ -127,7 +129,12 @@
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
 ** Profiles
-*** TODO receiver for profile updates
+*** DONE receiver for profile updates
+    CLOSED: [2018-08-29 Wed 15:03]
+    :PROPERTIES:
+    :last-state-change: [2018-08-29 Wed 15:03]
+    :first-seen: [2018-08-29 Wed 15:03]
+    :END:
 ** OPEN Equipment type pages to have owner-editable fields
    :PROPERTIES:
    :last-state-change: [2018-08-18 Sat 21:59]

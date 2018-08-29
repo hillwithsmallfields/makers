@@ -71,6 +71,26 @@ class HtmlPage(object):
     def to_string(self):
         return page_string(self.name, self.content)
 
+class PageSection(object):
+
+    """This is for partial pages to be loaded ajaxly."""
+
+    def __init__(self, name, content=[],
+                 visitor_map=untemplate.examples_vmap,
+                 django_request=None,
+                 input_encoding='utf-8'):
+        self.name = name
+        self.content = content
+        self.visitor_map = visitor_map
+        self.input_encoding = input_encoding
+        self.django_request = django_request
+
+    def add_content(self, name, content):
+        self.content.append([T.h2[name], content])
+
+    def to_string(self):
+        return page_string(self.name, self.content)
+
 class SectionalPage(object):
 
     """A page which can be rendered as tabs and possibly other styles."""

@@ -46,7 +46,6 @@ def visibility_radio(label, visibility):
                                 value='yes'))]
 
 def site_controls_sub_section(who, viewer, django_request):
-    # todo: get these from the person's record
     return T.div(class_="site_options")[
         [T.form(action=django.urls.reverse("dashboard:update_site_controls"), method='POST')
          [T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
@@ -77,6 +76,12 @@ def site_controls_sub_section(who, viewer, django_request):
                             else T.input(type='checkbox', name='notify_in_site')]],
                   T.tr[T.th[""], T.td[T.input(type="submit", value="Update controls")]]],
               "site_controls")]]]
+
+def availability_sub_section(who, viewer, django_request):
+    return model.pages.with_help(viewer,
+                                 pages.page_pieces.availform(who, who.available, django_request),
+                                 "availability",
+                                 substitutions=timeslot_times)
 
 def get_profile_subfield_value(who, group_name, name):
     all_groups = who.get_profile_field('configured')
@@ -168,10 +173,7 @@ def profile_section(who, viewer, django_request):
               T.h2["Site controls"],
               site_controls_sub_section(who, viewer, django_request),
               T.h2["Availability"],
-              model.pages.with_help(viewer,
-                                    pages.page_pieces.availform(who, who.available, django_request),
-                                    "availability",
-                                    substitutions=timeslot_times),
+              availability_sub_section(who, viewer, django_request),
               T.h2["Misc"],
               T.ul[T.li["Reset notifications and announcements: ",
                         (T.form(action="/dashboard/reset_messages", method='POST')
@@ -573,3 +575,12 @@ def person_page_contents(who, viewer, django_request, extra_top_header=None, ext
                              extra_top_body=extra_top_body)
 
     return page_data
+
+def profile_sub_page(who, viewer, django_request):
+    person_page_setup()
+
+    page_data = model.pages.PageSection("Profile for " + who.name(),
+                                        content=profile_section(who, viewer, django_request),
+                                        viewer=viewer)
+
+    return page_data.to_string()
