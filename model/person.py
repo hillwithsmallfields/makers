@@ -608,10 +608,10 @@ class Person(object):
     def read_announcements(self):
         # get the time before the messages, so if any messages come in
         # between reading the two, we don't miss any
-        up_to_now_time = datetime.utcnow()
-        print("read_announcements up to", up_to_now_time)
+        self.announcements_read_to = datetime.utcnow()
+        print("read_announcements up to", self.announcements_read_to)
         results = model.database.get_announcements(self.announcements_read_to)
-        return results, up_to_now_time
+        return results, self.announcements_read_to
 
     def mark_announcements_read(self, upto):
         print("mark_announcements_read", upto)
@@ -621,10 +621,10 @@ class Person(object):
     def read_notifications(self):
         # get the time before the messages, so if any messages come in
         # between reading the two, we don't miss any
-        up_to_now_time = datetime.utcnow()
-        print("read_notifications up to", up_to_now_time)
+        self.notifications_read_to = datetime.utcnow()
+        print("read_notifications up to", self.notifications_read_to)
         results = model.database.get_notifications(self._id, self.notifications_read_to)
-        return results, up_to_now_time
+        return results, self.notifications_read_to
 
     def mark_notifications_read(self, upto):
         print("mark_notifications_read", upto)
