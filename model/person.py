@@ -576,13 +576,17 @@ class Person(object):
     def update_controls(self, params):
         config = model.configuration.get_config()
         default_visibilities = config['privacy_defaults']
+        print("update_controls", params)
         self.visibility['host'] = to_bool_or_other(params.get('visibility_as_host',
                                                               default_visibilities['visibility_as_host']))
         self.visibility['attendee'] = to_bool_or_other(params.get('visibility_as_attendee',
                                                                   default_visibilities['visibility_as_attendee']))
         self.visibility['general'] = to_bool_or_other(params.get('visibility_in_general',
                                                                  default_visibilities['visibility_in_general']))
-        self.stylesheet = params.get('stylesheet', "makers")
+        # use basename so the user can't pick unvetted styles (in case
+        # of malicious stuff in them, in case you can do that in css)
+        self.stylesheet = os.path.basename(params.get('stylesheet', "makers"))
+        print("stylesheet is now", self.stylesheet)
         self.show_help = to_bool_or_other(params.get('display_help', False))
         self.notify_by_email = to_bool_or_other(params.get('notify_by_email', False))
         self.notify_in_site = to_bool_or_other(params.get('notify_in_site', False))

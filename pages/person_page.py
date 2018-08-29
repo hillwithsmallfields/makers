@@ -60,7 +60,9 @@ def site_controls_sub_section(who, viewer, django_request):
                   T.tr[T.th(class_="ralabel")["Visible generally"],
                        T.td[visibility_radio("visibility_in_general", who.visibility.get('general', False))]],
                   T.tr[T.th(class_="ralabel")["Stylesheet"],
-                       T.td[T.select(name='stylesheet')[[T.option[style] # todo: mark current stylesheet as checked
+                       T.td[T.select(name='stylesheet')[[(T.option(selected='selected')[style]
+                                                          if style==who.stylesheet
+                                                          else T.option[style])
                                                          for style in model.configuration.get_stylesheets()]]]],
                   T.tr[T.th(class_="ralabel")["Display help beside forms"],
                        T.td[T.input(type='checkbox', name='display_help', checked='checked')

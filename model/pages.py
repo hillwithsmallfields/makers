@@ -154,7 +154,8 @@ def page_string(page_title, content, user=None, initial_tab=None):
             motd = mfile.read()
     stylesheet_name = page_conf['stylesheet']
     if user and user.stylesheet:
-        user_stylesheet_name = os.path.dirname(stylesheet_name) + user.stylesheet + ".css"
+        user_stylesheet_name = os.path.join(os.path.dirname(stylesheet_name), user.stylesheet + ".css")
+        print("made user stylesheet name", user_stylesheet_name)
         if os.path.exists(user_stylesheet_name):
             stylesheet_name = user_stylesheet_name
     if os.path.exists(stylesheet_name):
