@@ -78,10 +78,16 @@ def site_controls_sub_section(who, viewer, django_request):
               "site_controls")]]]
 
 def availability_sub_section(who, viewer, django_request):
+    _, timeslot_times, _ = model.timeslots.get_slots_conf()
     return model.pages.with_help(viewer,
                                  pages.page_pieces.availform(who, who.available, django_request),
                                  "availability",
-                                 substitutions=timeslot_times)
+                                 substitutions={'morning_start': str(timeslot_times['Morning'][0]),
+                                                'morning_end': str(timeslot_times['Morning'][1]),
+                                                'afternoon_start': str(timeslot_times['Afternoon'][0]),
+                                                'afternoon_end': str(timeslot_times['Afternoon'][1]),
+                                                'evening_start': str(timeslot_times['Evening'][0]),
+                                                'evening_end': str(timeslot_times['Evening'][1])})
 
 def get_profile_subfield_value(who, group_name, name):
     all_groups = who.get_profile_field('configured')
@@ -96,34 +102,26 @@ def profile_section(who, viewer, django_request):
 
     profile_fields = all_conf.get('profile_fields')
 
-    variable_sections = T.table[[[T.tr[T.th(colspan="2",
-                                            class_='profile_group',
-                                            rowspan=str(len(group_fields)))[group_name],
-                                       T.th[group_fields[0]],
-                                       T.td[T.input(type='text',
-                                                    name=group_name+':'+group_fields[0],
-                                                    value=get_profile_subfield_value(who, group_name, group_fields[0]))],
-                                       T.td(rowspan=str(len(group_fields)))[
-                                           T.div(class_="help")[untemplate.safe_unicode(model.pages.help_for_topic(group_name))]
-                                           if who.show_help else ""]],
-                                  [[T.tr[T.th[field],
-                                         T.td[T.input(type='text',
-                                                      name=group_name+':'+field,
-                                                      value=get_profile_subfield_value(who, group_name, field))]]]
-                                   for field in group_fields[1:]]]
-                                 for group_name, group_fields in [(name, profile_fields[name])
-                                                                  for name in all_conf.get('profile_group_order')]]]
+    variable_sections = T.table[
+        [[T.tr[T.th(colspan="2",
+                    class_='profile_group',
+                    rowspan=str(len(group_fields)))[group_name],
+               T.th[group_fields[0]],
+               T.td[T.input(type='text',
+                            name=group_name+':'+group_fields[0],
+                            value=get_profile_subfield_value(who, group_name, group_fields[0]))],
+               T.td(rowspan=str(len(group_fields)))[
+                   T.div(class_="help")[untemplate.safe_unicode(model.pages.help_for_topic(group_name))]
+                   if who.show_help else ""]],
+          [[T.tr[T.th[field],
+                 T.td[T.input(type='text',
+                              name=group_name+':'+field,
+                              value=get_profile_subfield_value(who, group_name, field))]]]
+           for field in group_fields[1:]]]
+         for group_name, group_fields in [(name, profile_fields[name])
+                                          for name in all_conf.get('profile_group_order')]]]
 
-    address = who.get_profile_field('address') or {}
-    telephone = who.get_profile_field('telephone') or ""
     mugshot = who.get_profile_field('mugshot')
-    _, timeslot_times, _ = model.timeslots.get_slots_conf()
-    timeslot_times = {'morning_start': str(timeslot_times['Morning'][0]),
-                      'morning_end': str(timeslot_times['Morning'][1]),
-                      'afternoon_start': str(timeslot_times['Afternoon'][0]),
-                      'afternoon_end': str(timeslot_times['Afternoon'][1]),
-                      'evening_start': str(timeslot_times['Evening'][0]),
-                      'evening_end': str(timeslot_times['Evening'][1])}
     result = [T.form(action=django.urls.reverse("dashboard:update_mugshot"), method='POST')
               [T.img(src=mugshot) if mugshot else "",
                "Upload new photo: ", T.input(type="text"),

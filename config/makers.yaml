@@ -97,6 +97,8 @@ profile_fields:
 profile_group_order:
   - Address
   - Demographics
+  - Main Badger
+  - Storage Badger
 
 privacy_defaults:
   visibility_as_host:       True
