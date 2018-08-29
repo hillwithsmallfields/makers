@@ -227,9 +227,15 @@ th.profile_group {
     border-top: none;
 }
 
+.with_help {
+    display:      flex;
+    flex-flow:    row wrap;
+}
+
 .helped {
     vertical-align: top;
     padding:        3em;
+    flex-grow:      3;
 }
 
 .help {
@@ -237,6 +243,7 @@ th.profile_group {
     padding:        3em;
     font-style:     italic;
     width:          30%;
+    flex-grow:      1;
 }
 
 .privacy_warning {

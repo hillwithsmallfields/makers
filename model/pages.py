@@ -27,8 +27,9 @@ def with_help(who, content, help_name, substitutions={}):
                                default_text="",
                                substitutions=substitutions)
     if help_text:
-        return T.table(class_="help_on_right")[T.tr[T.td(class_="helped")[content],
-                                                    T.td(class_="help")[untemplate.safe_unicode(help_text)]]]
+        return T.div(class_="with_help")[
+            T.div(class_="helped")[content],
+            T.div(class_="help")[untemplate.safe_unicode(help_text)]]
     else:
         return content
 

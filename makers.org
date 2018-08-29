@@ -45,7 +45,11 @@
    :END:
 ** TODO event pages to have interests and skills sections
 ** TODO event pages to have optional catering sections
-** TODO use flexboxes for with_help, so that when the screen is narrow the help text will follow the form instead of being beside it
+** OPEN use flexboxes for with_help, so that when the screen is narrow the help text will follow the form instead of being beside it
+   :PROPERTIES:
+   :last-state-change: [2018-08-29 Wed 14:36]
+   :first-seen: [2018-08-29 Wed 14:36]
+   :END:
 ** TODO fixed profile to include a "box issued" section (probably as a date), editable only by admins
 ** TODO "add user" command to have a box for whether they've been inducted, and to collect up an induction event over consecutive user adds
 ** DONE make the address section of the profile run from the config files
