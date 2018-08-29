@@ -452,11 +452,13 @@ class Event(object):
 
     def mark_results(self, successful, failed, noshow):
         """Record the results of a training session."""
+        requesters_to_cancel = []
         for whoever in map(string_to_person, successful):
             print(whoever, "of type", type(whoever), "passed")
             if isinstance(whoever, model.person.Person) and whoever._id not in self.passed:
                 print("adding", whoever, "to pass list")
                 self.passed.append(whoever._id)
+            requesters_to_cancel.append(whoever)
         for whoever in map(string_to_person, failed):
             print(whoever, "of type", type(whoever), "failed")
             if isinstance(whoever, model.person.Person) and whoever._id not in self.failed:
@@ -469,6 +471,10 @@ class Event(object):
                 self.noshow.append(whoever._id)
         self.save()
         model.person.Person.invalidate_training_cache()
+        # now the training result has been saved, we can safely cancel
+        # the training requests:
+        for requester in requesters_to_cancel:
+            requester.remove_training_request(self.training_for_role(), self.equipment_type)
 
     def dietary_avoidances(self):
         """Return the dietary avoidance data as a dictionary of avoidance to number of advoidents."""

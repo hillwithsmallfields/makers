@@ -25,12 +25,16 @@
    and not count people as qualified when their qualification date is
    still in the future
 ** TODO switch to https
-** TODO training success to cancel training requests
+** OPEN training success to cancel training requests
+   :PROPERTIES:
+   :last-state-change: [2018-08-29 Wed 21:44]
+   :first-seen: [2018-08-29 Wed 21:44]
+   :END:
 ** TODO validate choice of stylesheet
 ** OPEN load tabs on demand
-** TODO fix "mark all as read" in notifications and announcements
+** OPEN fix "mark all as read" in notifications and announcements
    :PROPERTIES:
-   :last-state-change: [2018-08-22 Wed 16:08]
+   :last-state-change: [2018-08-29 Wed 21:38]
    :first-seen: [2018-08-22 Wed 16:08]
    :END:
 ** OPEN display training requests in dashboard "trainers" sections, possibly with timeslot counts
