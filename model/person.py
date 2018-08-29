@@ -267,11 +267,11 @@ class Person(object):
         # todo: look for existing training events, and call this_event.invite_available_interested_people on them
         return True, None
 
-    def remove_training_request(self, role, equipment_type):
+    def remove_training_request(self, role, equipment_type_id):
         """Remove a training request."""
         event_type = model.database.role_training(role)
         for req in self.training_requests:
-            if req['event_type'] == event_type and req['equipment_type'] == equipment_type._id:
+            if req['event_type'] == event_type and req['equipment_type'] == equipment_type_id:
                 self.training_requests.remove(req)
                 self.save()
                 return True
