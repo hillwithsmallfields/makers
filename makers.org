@@ -17,7 +17,11 @@
 ** TODO event template editor
 ** TODO event editor for admins
 ** TODO use relative links throughout
-** TODO lists of people with training on equipment to take note of the training date
+** OPEN lists of people with training on equipment to take note of the training date
+   :PROPERTIES:
+   :last-state-change: [2018-08-29 Wed 08:29]
+   :first-seen: [2018-08-29 Wed 08:29]
+   :END:
    and not count people as qualified when their qualification date is
    still in the future
 ** TODO switch to https

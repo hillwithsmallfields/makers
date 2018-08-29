@@ -1,3 +1,4 @@
+import datetime
 import model.database
 import model.machine
 import model.pages
@@ -83,8 +84,13 @@ class Equipment_type(object):
     def get_people(self, role):
         """Return the trained users, owners, or trainers of an equipment type."""
         print("get_people for", self.name, "as", role)
-        training = model.database.get_eqtype_events(self._id, model.database.role_training(role))
-        untraining = model.database.get_eqtype_events(self._id, model.database.role_untraining(role))
+        now = datetime.datetime.now()
+        training = model.database.get_eqtype_events(self._id,
+                                                    model.database.role_training(role),
+                                                    latest=now)
+        untraining = model.database.get_eqtype_events(self._id,
+                                                      model.database.role_untraining(role),
+                                                      latest=now)
         trained = {}
         detrained = {}
         # working our way back in time, we want only the most recent relevant event of each type
