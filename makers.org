@@ -14,6 +14,8 @@
    It turned out that the people's lists were correct, as the event
    was still in the future, and so was being ignored; the equipments'
    lists need fixing.
+** TODO event template editor
+** TODO event editor for admins
 ** TODO use relative links throughout
 ** TODO lists of people with training on equipment to take note of the training date
    and not count people as qualified when their qualification date is
