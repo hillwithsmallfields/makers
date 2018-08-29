@@ -46,10 +46,9 @@ def visibility_radio(label, visibility):
                                 value='yes'))]
 
 def site_controls_sub_section(who, viewer, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     # todo: get these from the person's record
     return T.div(class_="site_options")[
-        [T.form(action=base + django.urls.reverse("dashboard:update_site_controls"), method='POST')
+        [T.form(action=django.urls.reverse("dashboard:update_site_controls"), method='POST')
          [T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
           T.input(type="hidden", name="subject_user_uuid", value=who._id),
           model.pages.with_help(
@@ -120,15 +119,14 @@ def profile_section(who, viewer, django_request):
                       'afternoon_end': str(timeslot_times['Afternoon'][1]),
                       'evening_start': str(timeslot_times['Evening'][0]),
                       'evening_end': str(timeslot_times['Evening'][1])}
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    result = [T.form(action=base + django.urls.reverse("dashboard:update_mugshot"), method='POST')
+    result = [T.form(action=django.urls.reverse("dashboard:update_mugshot"), method='POST')
               [T.img(src=mugshot) if mugshot else "",
                "Upload new photo: ", T.input(type="text"),
                T.input(type="hidden", name="subject_user_uuid", value=who.link_id),
                T.input(type="submit", value="Update photo")],
               model.pages.with_help(
                   viewer,
-                  T.form(action=base + django.urls.reverse("dashboard:update_profile"), method='POST')[
+                  T.form(action=django.urls.reverse("dashboard:update_profile"), method='POST')[
                       T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                       T.input(type="hidden", name="subject_user_uuid", value=who._id),
                       T.table(class_="personaldetails")[
@@ -155,7 +153,7 @@ def profile_section(who, viewer, django_request):
                           T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]]],
                   "general_user_profile"),
                model.pages.with_help(viewer,
-                                     T.form(action=base + django.urls.reverse("dashboard:update_configured_profile"),
+                                     T.form(action=django.urls.reverse("dashboard:update_configured_profile"),
                                             method='POST')[
                                                 variable_sections,
                                                 T.input(type="hidden",
@@ -176,7 +174,7 @@ def profile_section(who, viewer, django_request):
                                     substitutions=timeslot_times),
               T.h2["Misc"],
               T.ul[T.li["Reset notifications and announcements: ",
-                        (T.form(action=base + "/dashboard/reset_messages", method='POST')
+                        (T.form(action="/dashboard/reset_messages", method='POST')
                          [T.input(type="hidden",
                                   name="csrfmiddlewaretoken",
                                   value=django.middleware.csrf.get_token(django_request)),
@@ -274,8 +272,7 @@ def avoidances_section(who, django_request):
     if 'dietary_avoidances' not in all_conf:
         return []
     avoidances = who.get_profile_field('avoidances') or []
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return [T.form(action=base+django.urls.reverse("dashboard:update_avoidances"),
+    return [T.form(action=django.urls.reverse("dashboard:update_avoidances"),
                    method='POST')[
                        T.table[
                            T.thead[T.tr[T.th(class_='ralabel')["Food"],
@@ -342,13 +339,12 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                      for name in sorted(keyed_types.keys())]]]]
 
 def training_requests_section(who, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     len_training = len("_training")
     keyed_requests = {req['request_date']: req for req in who.training_requests}
     sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
     return T.div(class_="requested")[T.table()[T.thead[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]]],
                                                T.tbody[[T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
-                                                             T.td[T.a(href=base+django.urls.reverse("equiptypes:eqty",
+                                                             T.td[T.a(href=django.urls.reverse("equiptypes:eqty",
                                                                                                     args=(model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).name,)))[model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).pretty_name()]],
                                                              T.td[str(req['event_type'])[:-len_training]],
                                                              T.td[pages.page_pieces.cancel_button(who,
@@ -358,12 +354,11 @@ def training_requests_section(who, django_request):
                                                         for req in sorted_requests]]]]
 
 def create_event_form(viewer, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     template_types = {template['name']: template['event_type']
                       for template in model.event.Event.list_templates([], None)}
     equip_types = {etype.name: etype.pretty_name()
                        for etype in model.equipment_type.Equipment_type.list_equipment_types()}
-    return T.form(action=base+"/makers_admin/create_event",
+    return T.form(action="/makers_admin/create_event",
                   method='GET')["Event type ",
                                 T.select(name='template_name')[[[T.option(value=tt)[template_types[tt]]]
                                                                 for tt in sorted(template_types.keys())]],
@@ -374,16 +369,14 @@ def create_event_form(viewer, django_request):
                                 T.input(type='submit', value="Create event")]
 
 def announcement_form(viewer, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return T.form(action=base+"/makers_admin/announce", # todo: use reverse
+    return T.form(action="/makers_admin/announce", # todo: use reverse
                   method='POST')["Announcement text: ",
                                  T.textarea(name='announcement'),
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value="Send announcement")]
 
 def notification_form(viewer, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return T.form(action=base+"/makers_admin/notify", # todo: use reverse
+    return T.form(action="/makers_admin/notify", # todo: use reverse
                   method='POST')["Recipient: ", T.input(type='text', name='to'),
                                  "Notification text: ",
                                  T.textarea(name='message'),
@@ -391,8 +384,7 @@ def notification_form(viewer, django_request):
                                  T.input(type='submit', value="Send announcement")]
 
 def add_user_form(django_request, induction_event_id=None):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return T.form(action=base+django.urls.reverse("makers_admin:add_user"))[
+    return T.form(action=django.urls.reverse("makers_admin:add_user"))[
         T.input(type="hidden", name="csrfmiddlewaretoken",
                 value=django.middleware.csrf.get_token(django_request)),
         "Given name: ", T.input(type='text', name='given_name'),
@@ -407,9 +399,8 @@ def add_user_form(django_request, induction_event_id=None):
         T.input(type='submit', value="Add user")]
 
 def admin_section(viewer, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return T.ul[T.li[T.a(href=base+"/dashboard/all")["List all users"], " (may be slow and timeout on server)"],
-                T.li["Search by name:", T.form(action=base + "/dashboard/match",
+    return T.ul[T.li[T.a(href="/dashboard/all")["List all users"], " (may be slow and timeout on server)"],
+                T.li["Search by name:", T.form(action="/dashboard/match",
                                                method='GET')[T.form[T.input(type='text', name='pattern'),
                                                                     T.input(type="hidden", name="csrfmiddlewaretoken",
                                                                             value=django.middleware.csrf.get_token(django_request)),
@@ -423,15 +414,13 @@ def admin_section(viewer, django_request):
                 T.li["Add users: ",
                      add_user_form(django_request)],
                 T.li["Update django logins: ",
-                     T.form(action=base+django.urls.reverse("makers_admin:update_django"))[
+                     T.form(action=django.urls.reverse("makers_admin:update_django"))[
                          T.input(type="hidden", name="csrfmiddlewaretoken",
                                  value=django.middleware.csrf.get_token(django_request)),
                          T.input(type='submit', value="Update django logins")]]]
 
 def add_person_page_contents(page_data, who, viewer, django_request, extra_top_header=None, extra_top_body=None):
     """Add the sections of a user dashboard to a sectional page."""
-
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
 
     if extra_top_body:
         page_data.add_section(extra_top_header or "Confirmation", extra_top_body)
@@ -450,7 +439,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
                                                            + " at " + model.event.timestring(anno['when'])],
                                                       T.dd[untemplate.safe_unicode(anno['text'])]] for anno in announcements]],
                                                "announcements"),
-                         T.form(base + "/dashboard/announcements_read", method='POST')
+                         T.form("/dashboard/announcements_read", method='POST')
                          [T.input(type='hidden', name='subject_user_uuid', value=who._id),
                           T.input(type="hidden", name="csrfmiddlewaretoken",
                                   value=django.middleware.csrf.get_token(django_request)),
@@ -462,7 +451,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
                                                T.dl[[[T.dt["At " + model.event.timestring(noti['when'])],
                                                       T.dd[untemplate.safe_unicode(noti['text'])]] for noti in notifications]],
                                                "notifications"),
-                         T.form(base + "/dashboard/notifications_read", method='POST')
+                         T.form("/dashboard/notifications_read", method='POST')
                          [T.input(type='hidden', name='subject_user_uuid', value=who._id),
                           T.input(type="hidden", name="csrfmiddlewaretoken",
                                   value=django.middleware.csrf.get_token(django_request)),
@@ -477,10 +466,12 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
     their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
     if len(their_responsible_types) > 0:
         keyed_types = { ty.pretty_name(): ty for ty in their_responsible_types }
+        print("adding responsibilities with keyed_types", keyed_types)
         page_data.add_section("Equipment responsibilities",
                               [T.div(class_="resps")[model.pages.with_help(
                                   viewer,
-                                  [[T.h3[T.a(href=server_conf['base_url']+server_conf['types']+keyed_types[name].name)[name]],
+                                  [[T.h3[T.a(href=django.urls.reverse('equiptypes:eqty',
+                                                                      args=(keyed_types[name].name,)))[name]],
                                     responsibilities(who, viewer, keyed_types[name], django_request)]
                                    for name in sorted(keyed_types.keys())],
                                   "responsibilities")]])
@@ -556,7 +547,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
     # if who.api_authorization is None:
     #     api_link += [T.br,
     #                  "You will need to register to get API access authorization.",
-    #                  T.form(action=server_conf['base_url']+server_conf['userapi']+"authorize",
+    #                  T.form(action=server_conf['userapi']+"authorize",
     #                         method='POST')[T.button(type="submit", value="authorize")["Get API authorization code"]]]
     # page_data.add_section("API links",
     #                       T.div(class_="apilinks")[api_link])

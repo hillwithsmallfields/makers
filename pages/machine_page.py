@@ -6,18 +6,17 @@ import pages.page_pieces
 
 def machine_section(machine, django_request):
     eqty = model.equipment_type.Equipment_type.find_by_id(machine.equipment_type)
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
 
     result = [T.p["This equipment is an instance of type ",
-                  T.a(href=base+django.urls.reverse("equiptypes:eqty",
-                                                    args=(eqty.name,)))[eqty.name],
+                  T.a(href=django.urls.reverse("equiptypes:eqty",
+                                               args=(eqty.name,)))[eqty.name],
                   "."]]
 
     # todo: picture if available
 
     result += [pages.page_pieces.display_or_form(
         'machine_details',
-        base+"machine/update_details",
+        "machine/update_details",
         None, ["name", "type", "description",
                "status", "status_detail",
                "location", "model", "serial_number"],

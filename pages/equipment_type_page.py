@@ -1,4 +1,5 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
+import django.urls
 import model.configuration
 import model.equipment_type
 import model.person
@@ -15,8 +16,6 @@ def role_people(eqty, role):
 def equipment_type_section(eqty, viewing_user, django_request):
     """Return a pre-HTML structure describing an equipment type."""
 
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-
     result = []
 
     if eqty.picture:
@@ -24,7 +23,7 @@ def equipment_type_section(eqty, viewing_user, django_request):
 
     result += [pages.page_pieces.display_or_form(
         'equipment_type_details',
-        base+"/equipment_type/update_details",
+        django.urls.reverse('equiptypes:update_details'),
         None,
         ['category', 'description', 'manufacturer'],
         None,

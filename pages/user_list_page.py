@@ -26,7 +26,6 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
     global serverconf
     if serverconf == None:
         serverconf = configuration.get_config()['server']
-    users_base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     # todo: must have done access_permissions.setup_access_permissions(logged_in_user) by now
     # permissions = access_permissions.get_access_permissions()
     people = person.Person.list_all_people() if include_non_members else person.Person.list_all_members()
@@ -39,8 +38,7 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
                              T.th(class_='user')["User"],
                              T.th(class_='owner')["Owner"],
                              T.th(class_='trainer')["Trainer"]]],
-                       [T.tr[T.th(class_='username')[T.a(href=users_base
-                                      + django.urls.reverse('dashboard:user_dashboard', args=([who.link_id])))[whoname]],
+                       [T.tr[T.th(class_='username')[T.a(href=django.urls.reverse('dashboard:user_dashboard', args=([who.link_id])))[whoname]],
                              T.td(class_='user')[equipment_type_role_name_list(who, 'user')],
                              T.td(class_='owner')[equipment_type_role_name_list(who, 'owner')],
                              T.td(class_='trainer')[equipment_type_role_name_list(who, 'trainer')]]

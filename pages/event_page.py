@@ -25,8 +25,7 @@ def result_button(id, which, condition):
             else T.input(type='radio', name=id, value=which))
 
 def event_link(ev, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return base + django.urls.reverse("events:oneevent", args=[ev._id])
+    return django.urls.reverse("events:oneevent", args=[ev._id])
 
 def person_name(who):
     descr = model.person.Person.find(who)
@@ -35,12 +34,10 @@ def person_name(who):
 def one_event_section(ev, who, django_request,
                       with_rsvp=False, rsvp_id=None,
                       with_completion=False, completion_as_form=False):
-    print("one_event_section", ev, who, "with_completion", with_completion, "completion_as_form", completion_as_form)
     all_people_ids = ev.signed_up
     all_people_id_to_name = {p: model.person.Person.find(p).name() for p in all_people_ids}
     all_people_name_and_id = [(all_people_id_to_name[id], id) for id in all_people_id_to_name.keys()]
     ids_in_order = []
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     for name in sorted(all_people_id_to_name.values()):
         for pair in all_people_name_and_id:
             if name == pair[0]:
@@ -63,7 +60,7 @@ def one_event_section(ev, who, django_request,
                       T.td(class_="hosts")[people_list(ev.hosts)]]])]
     if with_rsvp:
         results += [T.h4["Reply to invitation"],
-                    T.form(action=base+django.urls.reverse("events:rsvp"),
+                    T.form(action=django.urls.reverse("events:rsvp"),
                            method='POST')[
                                T.input(type='hidden', name='rsvp_id', value=rsvp_id),
                                T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
@@ -111,7 +108,7 @@ def one_event_section(ev, who, django_request,
                               else "")])
         # todo: signup if in the future
         results += [T.h4["Results"],
-                    ((T.form(action=base+django.urls.reverse("events:results"),
+                    ((T.form(action=django.urls.reverse("events:results"),
                              method="POST")[T.input(type="hidden",
                                                     name='event_id',
                                                     value=ev._id),
@@ -135,7 +132,6 @@ def event_table_section(tl_or_events, who_id, django_request,
                         show_equiptype=None,
                         with_signup=False,
                         with_completion_link=False):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     events = tl_or_events.events() if isinstance(tl_or_events, model.timeline.Timeline) else tl_or_events
     return (T.table(class_="timeline_table")
             [T.thead[T.tr[T.th["Title"], T.th["Event type"], T.th["Start"], T.th["Location"], T.th["Hosts"],
@@ -153,7 +149,7 @@ def event_table_section(tl_or_events, who_id, django_request,
                             (T.td[pages.page_pieces.signup_button(ev._id, who_id, "Sign up", django_request)]
                              if with_signup
                              else ""),
-                            (T.td[T.a(href=base+django.urls.reverse("events:done_event", args=(ev._id,)))["Record results"]]
+                            (T.td[T.a(href=django.urls.reverse("events:done_event", args=(ev._id,)))["Record results"]]
                              if with_completion_link
                              else "")
                         ]]

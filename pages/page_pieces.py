@@ -19,14 +19,13 @@ def set_server_conf():
 
 def top_navigation(django_request):
     org_conf = model.configuration.get_config()['organization']
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     # todo: make this a bar of buttons, or a dropdow
     return [T.nav(class_='top_nav')
             [T.ul[T.li[T.a(href=org_conf['home_page'])[org_conf['title'] + " home"]],
                   T.li[T.a(href=org_conf['wiki'])["Wiki"]],
                   T.li[T.a(href=org_conf['forum'])["Forum"]],
-                  T.li[T.a(href=base + "/dashboard/")["Your dashboard"]],
-                  T.li[T.a(href=base + '/users/logout')["Logout"]]]]]
+                  T.li[T.a(href="/dashboard/")["Your dashboard"]], # todo: use reverse
+                  T.li[T.a(href='/users/logout')["Logout"]]]]]     # todo: use reverse
 
 # https://stackoverflow.com/questions/2345708/how-can-i-get-the-full-absolute-url-with-domain-in-django
 # request.build_absolute_url()
@@ -40,8 +39,7 @@ def machine_link(name):
     return section_link('machines:index', name, name)
 
 def request_button(who, eqty_id, role, button_text, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return T.form(action=base+django.urls.reverse("training:request"),
+    return T.form(action=django.urls.reverse("training:request"),
                   method='POST')[T.input(type="hidden", name="equiptype", value=eqty_id),
                                  T.input(type="hidden", name="role", value=role),
                                  T.input(type="hidden", name="person", value=who._id),
@@ -49,8 +47,7 @@ def request_button(who, eqty_id, role, button_text, django_request):
                                  T.button(type="submit", value="request")[button_text]]
 
 def cancel_button(who, eqty_id, role, button_text, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return T.form(action=base+django.urls.reverse("training:cancel"),
+    return T.form(action=django.urls.reverse("training:cancel"),
                   method='POST')[T.input(type="hidden", name="equiptype", value=eqty_id),
                                  T.input(type="hidden", name="role", value=role),
                                  T.input(type="hidden", name="person", value=who._id),
@@ -63,16 +60,14 @@ def toggle_request(who, eqty, role, already_requested, django_request):
             else cancel_button(who, eqty, role, "Cancel %s training request"%role, django_request))
 
 def signup_button(event_id, who_id, button_text, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return T.form(action=base+django.urls.reverse("events:signup"),
+    return T.form(action=django.urls.reverse("events:signup"),
                   method='POST')[T.input(type="hidden", name="event_id", value=event_id),
                                  T.input(type="hidden", name="person_id", value=who_id),
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.button(type="submit", value="cancel_request")[button_text]]
 
 def schedule_event_form(who, extras, button_text, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
-    return (T.form(action=base+django.urls.reverse("events:newevent"),
+    return (T.form(action=django.urls.reverse("events:newevent"),
                    method='POST')
             ["Date and time: ", T.input(type="datetime", name="when"), T.br,
              extras,
@@ -82,9 +77,8 @@ def schedule_event_form(who, extras, button_text, django_request):
 
 def availform(who, available, django_request):
     days, _, times = model.timeslots.get_slots_conf()
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return (T.div(class_="availability")
-            [T.form(action=base+django.urls.reverse("dashboard:update_availability"),
+            [T.form(action=django.urls.reverse("dashboard:update_availability"),
                     method="POST")
              [T.table(class_="availability")
               [[T.thead[T.tr[T.th(class_="daylabel")["Day"],
@@ -182,13 +176,11 @@ def display_or_form(class_name, action_as_form,
 
 def general_equipment_list(who, viewer, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     return T.table[T.thead[T.tr[T.th["Equipment type"],
                                 T.th["Request"],
                                 T.th["Admin action"] if viewer.is_administrator() else ""]],
-                   T.tbody[[[T.tr[T.th[T.a(href=base
-                                           + django.urls.reverse("equiptypes:eqty",
-                                                                 args=(name,)))[keyed_types[name].pretty_name()]],
+                   T.tbody[[[T.tr[T.th[T.a(href=django.urls.reverse("equiptypes:eqty",
+                                                                    args=(name,)))[keyed_types[name].pretty_name()]],
                                   T.td[machinelist(keyed_types[name],
                                                    who, django_request, False) if detailed else "",
                                        toggle_request(who, keyed_types[name]._id, 'user',
@@ -242,8 +234,7 @@ def eqty_training_requests(eqtype):
                                                       for req in raw_reqs]))]
 
 def special_event_form(eqtype, who_id, role, enable, css_class, button_label, django_request):
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST'] + "/"
-    return T.form(action=base+"events/special",
+    return T.form(action="events/special", # todo: use django.urls.reverse
                   class_=css_class,
                   method='POST')[T.input(type='hidden', name='eqtype', value=eqtype._id),
                                  T.input(type='hidden', name='who', value=who_id),
