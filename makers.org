@@ -30,6 +30,8 @@
    :last-state-change: [2018-08-29 Wed 21:44]
    :first-seen: [2018-08-29 Wed 21:44]
    :END:
+** TODO export to csv files (same format as original imports) for backup, and put on crontab
+** TODO timed jobs to handle timeout for invitations
 ** TODO validate choice of stylesheet
 ** OPEN load tabs on demand
 ** OPEN fix "mark all as read" in notifications and announcements
@@ -58,6 +60,7 @@
    :END:
 ** TODO fixed profile to include a "box issued" section (probably as a date), editable only by admins
 ** TODO "add user" command to have a box for whether they've been inducted, and to collect up an induction event over consecutive user adds
+** TODO send emails for accepted invitations, with icalendar data
 ** DONE make the address section of the profile run from the config files
    CLOSED: [2018-08-22 Wed 22:28]
    :PROPERTIES:
@@ -81,6 +84,7 @@
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
 ** TODO more notification channels e.g. telegram, whatsapp, SMS etc
+** TODO update pages as buttons are pushed (Ajax)
 ** TODO mail sending
 ** OPEN trainers to be able to create training sessions
    :PROPERTIES:
