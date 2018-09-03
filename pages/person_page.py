@@ -370,6 +370,36 @@ def create_event_form(viewer, django_request):
                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                 T.input(type='submit', value="Create event")]
 
+def search_events_form(viewer, django_request):
+    return T.form(action="/event/match", # todo: use reverse
+                  # todo: write the receiving function
+                  method='GET')[T.form[T.input(type="hidden", name="csrfmiddlewaretoken",
+                                               value=django.middleware.csrf.get_token(django_request)),
+                                       T.table[T.tr[T.th(class_='ralabel')["Event type:"],
+                                                    T.td[T.input()]], # todo: dropdown for these
+                                               T.tr[T.th(class_='ralabel')["Equipment type:"],
+                                                    T.td[T.input()]], # todo: dropdown for these
+                                               T.tr[T.th(class_='ralabel')["Begins after:"],
+                                                    T.td[T.input()]],
+                                               T.tr[T.th(class_='ralabel')["Ends before:"],
+                                                    T.td[T.input()]],
+                                               T.tr[T.th(class_='ralabel')["Hosts include:"],
+                                                    T.td[T.input()]],
+                                               T.tr[T.th(class_='ralabel')["Attendees include:"],
+                                                    T.td[T.input()]],
+                                               T.tr[T.th(class_='ralabel')["Passers include:"],
+                                                    T.td[T.input()]],
+                                               T.tr[T.th(class_='ralabel')["Failers include:"],
+                                                    T.td[T.input()]],
+                                               T.tr[T.th(class_='ralabel')["No-showers include:"],
+                                                    T.td[T.input()]],
+                                               T.tr[T.th(class_='ralabel')[""],
+                                                    T.td[T.input()]],
+                                               T.tr[T.th(class_='ralabel')["Location"],
+                                                    T.td[T.input()]], # todo: dropdown for these
+                                               T.tr[T.td["Warning: unimplemented"], # todo: remove when done
+                                                    T.td[T.input(type='submit', value='Search')]]]]]
+
 def announcement_form(viewer, django_request):
     return T.form(action="/makers_admin/announce", # todo: use reverse
                   method='POST')["Announcement text: ",
@@ -385,13 +415,23 @@ def notification_form(viewer, django_request):
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value="Send announcement")]
 
+def search_users_form(django_request):
+    return T.form(action="/dashboard/match",
+                  method='GET')[T.form[T.input(type='text', name='pattern'),
+                                       T.input(type="hidden", name="csrfmiddlewaretoken",
+                                               value=django.middleware.csrf.get_token(django_request)),
+                                       T.input(type='submit', value='Search')]]
+
 def add_user_form(django_request, induction_event_id=None):
     return T.form(action=django.urls.reverse("makers_admin:add_user"))[
         T.input(type="hidden", name="csrfmiddlewaretoken",
                 value=django.middleware.csrf.get_token(django_request)),
-        "Given name: ", T.input(type='text', name='given_name'),
-        "Surname: ", T.input(type='text', name='surname'),
-        "Email: ", T.input(type='text', name='email'),
+        T.table[T.tr[T.th(class_='ralabel')["Given name: "],
+                     T.td[T.input(type='text', name='given_name')]],
+                T.tr[T.th(class_='ralabel')["Surname: "],
+                     T.td[T.input(type='text', name='surname')]],
+                T.tr[T.th(class_='ralabel')["Email: "],
+                     T.td[T.input(type='text', name='email')]]],
         (T.input(type='hidden', name='induction_event', value=induction_event_id)
          if induction_event_id
          else ""),
@@ -402,13 +442,11 @@ def add_user_form(django_request, induction_event_id=None):
 
 def admin_section(viewer, django_request):
     return T.ul[T.li[T.a(href="/dashboard/all")["List all users"], " (may be slow and timeout on server)"],
-                T.li["Search by name:", T.form(action="/dashboard/match",
-                                               method='GET')[T.form[T.input(type='text', name='pattern'),
-                                                                    T.input(type="hidden", name="csrfmiddlewaretoken",
-                                                                            value=django.middleware.csrf.get_token(django_request)),
-                                                                    T.input(type='submit', value='Search')]]],
+                T.li["Search for users by name:", search_users_form(django_request)],
                 T.li["Create event: ",
                      create_event_form(viewer, django_request)],
+                T.li["Search for events: ",
+                     search_events_form(viewer, django_request)],
                 T.li["Send announcement: ", # todo: separate this and control it by whether the person is a trained announcer
                      announcement_form(viewer, django_request)],
                 T.li["Send notification: ",
