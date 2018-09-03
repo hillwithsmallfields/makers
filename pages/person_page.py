@@ -19,7 +19,7 @@ server_conf = None
 org_conf = None
 
 def visibility_radio(label, visibility):
-    print("visibility_radio", label, visibility)
+    """Make a set of radio buttons for user visibility."""
     return ["No", (T.input(type='radio',
                            name=label,
                            value='no',
@@ -60,10 +60,7 @@ def site_controls_sub_section(who, viewer, django_request):
                   T.tr[T.th(class_="ralabel")["Visible generally"],
                        T.td[visibility_radio("visibility_in_general", who.visibility.get('general', False))]],
                   T.tr[T.th(class_="ralabel")["Stylesheet"],
-                       T.td[T.select(name='stylesheet')[[(T.option(selected='selected')[style]
-                                                          if style==who.stylesheet
-                                                          else T.option[style])
-                                                         for style in model.configuration.get_stylesheets()]]]],
+                       T.td[pages.page_pieces.dropdown('stylesheet', model.configuration.get_stylesheets(), who.stylesheet)]],
                   T.tr[T.th(class_="ralabel")["Display help beside forms"],
                        T.td[T.input(type='checkbox', name='display_help', checked='checked')
                             if who.show_help
@@ -356,89 +353,98 @@ def training_requests_section(who, django_request):
                                                         for req in sorted_requests]]]]
 
 def create_event_form(viewer, django_request):
-    template_types = {template['name']: template['event_type']
-                      for template in model.event.Event.list_templates([], None)}
-    equip_types = {etype.name: etype.pretty_name()
-                       for etype in model.equipment_type.Equipment_type.list_equipment_types()}
     return T.form(action="/makers_admin/create_event",
-                  method='GET')["Event type ",
-                                T.select(name='template_name')[[[T.option(value=tt)[template_types[tt]]]
-                                                                for tt in sorted(template_types.keys())]],
-                                " on equipment type ",
-                                T.select(name='equipment_type')[[[T.option(value=et)[equip_types[et]]]
-                                                                 for et in sorted(equip_types.keys())]],
-                                T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-                                T.input(type='submit', value="Create event")]
+                  method='GET')[T.table[T.tr[T.th(class_='ralabel')["Event type "],
+                                             T.td[pages.page_pieces.event_template_dropdown('template_name')]],
+                                        T.tr[T.th(class_='ralabel')["Equipment type "],
+                                             T.td[pages.page_pieces.equipment_type_dropdown("equipment_type")]],
+                                        T.tr[T.th(class_='ralabel')["Start date and time:"],
+                                             T.td[T.input(name='start', type='datetime')]],
+                                        T.tr[T.th(class_='ralabel')["Location"],
+                                             T.td[pages.page_pieces.location_dropdown('location')]],
+                                        T.tr[T.th(class_='ralabel')["Hosts:"],
+                                             T.td[T.input(name='hosts', type='text')]],
+                                        T.tr[T.th[""],
+                                             T.td[T.input(type='submit', value="Create event")]]],
+                                T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request))]
 
 def search_events_form(viewer, django_request):
+    equip_types = {etype.name: etype.pretty_name()
+                       for etype in model.equipment_type.Equipment_type.list_equipment_types()}
     return T.form(action="/event/match", # todo: use reverse
                   # todo: write the receiving function
                   method='GET')[T.form[T.input(type="hidden", name="csrfmiddlewaretoken",
                                                value=django.middleware.csrf.get_token(django_request)),
                                        T.table[T.tr[T.th(class_='ralabel')["Event type:"],
-                                                    T.td[T.input()]], # todo: dropdown for these
+                                                    T.td[T.input(name='event_type', type='text')]],
                                                T.tr[T.th(class_='ralabel')["Equipment type:"],
-                                                    T.td[T.input()]], # todo: dropdown for these
+                                                    T.td[pages.page_pieces.equipment_type_dropdown("equipment_type")]],
                                                T.tr[T.th(class_='ralabel')["Begins after:"],
-                                                    T.td[T.input()]],
+                                                    T.td[T.input(name='after', type='datetime')]],
                                                T.tr[T.th(class_='ralabel')["Ends before:"],
-                                                    T.td[T.input()]],
+                                                    T.td[T.input(name='before', type='datetime')]],
                                                T.tr[T.th(class_='ralabel')["Hosts include:"],
-                                                    T.td[T.input()]],
+                                                    T.td[T.input(name='host', type='text')]],
                                                T.tr[T.th(class_='ralabel')["Attendees include:"],
-                                                    T.td[T.input()]],
+                                                    T.td[T.input(name='attendees', type='text')]],
                                                T.tr[T.th(class_='ralabel')["Passers include:"],
-                                                    T.td[T.input()]],
+                                                    T.td[T.input(name='passed', type='text')]],
                                                T.tr[T.th(class_='ralabel')["Failers include:"],
-                                                    T.td[T.input()]],
+                                                    T.td[T.input(name='failed', type='text')]],
                                                T.tr[T.th(class_='ralabel')["No-showers include:"],
-                                                    T.td[T.input()]],
-                                               T.tr[T.th(class_='ralabel')[""],
-                                                    T.td[T.input()]],
+                                                    T.td[T.input(name='noshow', type='text')]],
                                                T.tr[T.th(class_='ralabel')["Location"],
-                                                    T.td[T.input()]], # todo: dropdown for these
+                                                    T.td[pages.page_pieces.location_dropdown('location')]],
                                                T.tr[T.td["Warning: unimplemented"], # todo: remove when done
-                                                    T.td[T.input(type='submit', value='Search')]]]]]
+                                                    T.td[T.input(type='submit', value="Search for events")]]]]]
 
 def announcement_form(viewer, django_request):
     return T.form(action="/makers_admin/announce", # todo: use reverse
                   method='POST')["Announcement text: ",
-                                 T.textarea(name='announcement'),
+                                 T.br,
+                                 T.textarea(name='announcement',
+                                            cols=80, rows=12),
+                                 T.br,
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value="Send announcement")]
 
 def notification_form(viewer, django_request):
     return T.form(action="/makers_admin/notify", # todo: use reverse
                   method='POST')["Recipient: ", T.input(type='text', name='to'),
+                                 T.br,
                                  "Notification text: ",
-                                 T.textarea(name='message'),
+                                 T.br,
+                                 T.textarea(name='message',
+                                            cols=80, rows=12),
+                                 T.br,
                                  T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-                                 T.input(type='submit', value="Send announcement")]
+                                 T.input(type='submit', value="Send notification")]
 
 def search_users_form(django_request):
     return T.form(action="/dashboard/match",
                   method='GET')[T.form[T.input(type='text', name='pattern'),
                                        T.input(type="hidden", name="csrfmiddlewaretoken",
                                                value=django.middleware.csrf.get_token(django_request)),
-                                       T.input(type='submit', value='Search')]]
+                                       T.input(type='submit', value="Search for users")]]
 
 def add_user_form(django_request, induction_event_id=None):
     return T.form(action=django.urls.reverse("makers_admin:add_user"))[
         T.input(type="hidden", name="csrfmiddlewaretoken",
                 value=django.middleware.csrf.get_token(django_request)),
-        T.table[T.tr[T.th(class_='ralabel')["Given name: "],
-                     T.td[T.input(type='text', name='given_name')]],
-                T.tr[T.th(class_='ralabel')["Surname: "],
-                     T.td[T.input(type='text', name='surname')]],
-                T.tr[T.th(class_='ralabel')["Email: "],
-                     T.td[T.input(type='text', name='email')]]],
         (T.input(type='hidden', name='induction_event', value=induction_event_id)
          if induction_event_id
          else ""),
-        "Inducted: ", (T.input(type='checkbox', checked='checked', name='inducted')
-                       if induction_event_id
-                       else T.input(type='checkbox', name='inducted')),
-        T.input(type='submit', value="Add user")]
+        T.table[T.tr[T.th(class_='ralabel')["Given name:"],
+                     T.td[T.input(type='text', name='given_name')]],
+                T.tr[T.th(class_='ralabel')["Surname:"],
+                     T.td[T.input(type='text', name='surname')]],
+                T.tr[T.th(class_='ralabel')["Email:"],
+                     T.td[T.input(type='text', name='email')]],
+                T.tr[T.th(class_='ralabel')["Inducted:"],
+                     T.td[T.input(type='checkbox', checked='checked', name='inducted')
+                          if induction_event_id
+                          else T.input(type='checkbox', name='inducted')]],
+                T.tr[T.th[""], T.td[T.input(type='submit', value="Add user")]]]]
 
 def admin_section(viewer, django_request):
     return T.ul[T.li[T.a(href="/dashboard/all")["List all users"], " (may be slow and timeout on server)"],
@@ -451,7 +457,7 @@ def admin_section(viewer, django_request):
                      announcement_form(viewer, django_request)],
                 T.li["Send notification: ",
                      notification_form(viewer, django_request)],
-                T.li["Add users: ",
+                T.li["Add user: ",
                      add_user_form(django_request)],
                 T.li["Update django logins: ",
                      T.form(action=django.urls.reverse("makers_admin:update_django"))[

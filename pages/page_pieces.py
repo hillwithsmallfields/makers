@@ -262,3 +262,37 @@ def ban_form(eqtype, who_id, who_name, role, django_request):
 
 def announcements_section():
     return T.div[T.p["Placeholder."]]
+
+def dropdown(name, choices, current=None):
+    """Make an HTML form dropdown box."""
+    return T.select(name=name)[[(T.option(selected='selected')[item]
+                                 if item==current
+                                 else T.option(value=item)[choices[item]])
+                                for item in sorted(choices.keys())]
+                               if type(choices) == dict
+                               else [(T.option(selected='selected')[item]
+                                      if item==current
+                                      else T.option[item])
+                                     for item in choices]]
+
+def equipment_type_dropdown(name, current=None):
+    """Return a chooser for equipment types."""
+    eq_types = {etype.name: etype.pretty_name()
+                for etype in model.equipment_type.Equipment_type.list_equipment_types()}
+    eq_types.update({'---': None})
+    return dropdown(name,
+                    eq_types,
+                    current or '---')
+
+def event_template_dropdown(name, current=None):
+    templates = {template['name']: template['event_type']
+                 for template in model.event.Event.list_templates([], None)}
+    templates.update({'---': None}),
+    return dropdown(name,
+                    templates,
+                    current or '---')
+
+def location_dropdown(name, current=None):
+    return dropdown(name,
+                    sorted(model.configuration.get_location_names() + ['---']),
+                    current or '---')

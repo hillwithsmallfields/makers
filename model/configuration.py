@@ -19,5 +19,13 @@ def get_config():
     return cached_config
 
 def get_stylesheets():
+    """Return a list of the available stylesheet names."""
     return sorted([css[:-4] for css in os.listdir(os.path.dirname(get_config()['page']['stylesheet']))
                    if css.endswith(".css")])
+
+def get_locations():
+    """Return a dictionary of the available locations."""
+    return {name: location for name, location in get_config()['locations'].items()}
+
+def get_location_names():
+    return sorted([location['name'] for location in get_locations().values()])
