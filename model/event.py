@@ -339,7 +339,7 @@ class Event(object):
         print("available_interested_people result is", result)
         return result
 
-    def invite_available_interested_people(self, site_base):
+    def invite_available_interested_people(self):
         """Send event invitations to the relevant people.
         These are those who:
           - have expressed an interest
@@ -360,7 +360,7 @@ class Event(object):
             print("invite_available_interested_people trimmed potentials", potentials)
             for whoever in potentials:
                 if whoever._id not in self.invited:
-                    whoever.send_event_invitation(self, site_base, "training_invitation")
+                    whoever.send_event_invitation(self, "training_invitation")
                     self.invited[whoever._id] = datetime.utcnow()
 
     def publish(self):

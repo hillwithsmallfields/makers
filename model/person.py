@@ -335,13 +335,13 @@ class Person(object):
         return map(model.person.Person.find,
                    model.database.get_people_awaiting_training(event_type, equipment_type))
 
-    def send_event_invitation(self, m_event, site_base, message_template_name):
+    def send_event_invitation(self, m_event, message_template_name):
         """Mail the person about an event.
         They get a link to click on to respond about whether they can attend."""
         invitation_uuid = str(uuid.uuid4())
         all_conf = model.configuration.get_config()
         server_config = all_conf['server']
-        invitation_url = site_base + "/" + server_config['rsvp_form'] + invitation_uuid # todo: use django.reverse
+        invitation_url = "/" + server_config['rsvp_form'] + invitation_uuid # todo: use django.reverse
         self.invitations[invitation_uuid] = m_event._id
         self.save()
         substitutions = {'rsvp': invitation_url,

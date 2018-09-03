@@ -41,8 +41,6 @@ def new_event(request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    base = request.scheme + "://" + request.META['HTTP_HOST']
-
     params = request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
     print("new_event params are", params)
     machine = params.get('machine', None)
@@ -51,8 +49,8 @@ def new_event(request):
     submitter = model.pages.unstring_id(params['submitter'])
     ev, error_message = model.event.Event.instantiate_template(params['event_type'],
                                                                params['equiptype'],
-                                                               [submitter],
-                                                               params['when'],
+                                                               [submitter], # todo: override from form
+                                                               params['start'],
                                                                machine)
     if ev is None:
         return event_error_page(request, "New event error", error_message)
@@ -60,13 +58,42 @@ def new_event(request):
     print("Made event", ev, "with type", ev.event_type)
 
     ev.publish()
-    ev.invite_available_interested_people(base)
+    ev.invite_available_interested_people()
 
     page_data = model.pages.HtmlPage("New event confirmation",
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)
 
     page_data.add_content("Event details",
+                          pages.event_page.one_event_section(ev,
+                                                             model.person.Person.find(submitter),
+                                                             request))
+
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
+def search_events(django_request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    base = request.scheme + "://" + request.META['HTTP_HOST']
+
+    params = request.GET # when, submitter, event_type, and anything app-specific: such as: role, equiptype
+
+    search_params = {}
+
+    # todo: go through the incoming GET params and add any non-blank ones to search_params
+
+    model.timeline.Timeline.creat_timeline(search_params)
+
+    page_data = model.pages.HtmlPage("Event search",
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+
+    page_data.add_content("Events",
+
+                          # todo: probably use pages.event_page.event_table_section
+
                           pages.event_page.one_event_section(ev,
                                                              model.person.Person.find(submitter),
                                                              request))
@@ -272,7 +299,8 @@ def store_event_results(django_request):
 
 @ensure_csrf_cookie
 def special_event(django_request):
-
+    """Create a special event to train or untrain a user.
+    This is for administrative override."""
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 

@@ -6,7 +6,8 @@ from . import views
 app_name = 'events'
 
 urlpatterns = [
-    path('new', views.new_event, name='newevent'),
+    path('new', views.new_event, name='new_event'),
+    path('search', views.search_events, name='search_events'),
     path('signup', views.signup_event, name="signup"),
     path('rsvp_form/<id>', views.rsvp_event_form, name="rsvp_form"),
     path('rsvp', views.rsvp_event, name="rsvp"),

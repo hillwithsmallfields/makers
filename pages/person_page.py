@@ -355,11 +355,13 @@ def training_requests_section(who, django_request):
 def create_event_form(viewer, django_request):
     return T.form(action="/makers_admin/create_event",
                   method='GET')[T.table[T.tr[T.th(class_='ralabel')["Event type "],
-                                             T.td[pages.page_pieces.event_template_dropdown('template_name')]],
+                                             T.td[pages.page_pieces.event_template_dropdown('event_type')]],
                                         T.tr[T.th(class_='ralabel')["Equipment type "],
-                                             T.td[pages.page_pieces.equipment_type_dropdown("equipment_type")]],
+                                             T.td[pages.page_pieces.equipment_type_dropdown("equiptype")]],
+                                        # todo: add machine
                                         T.tr[T.th(class_='ralabel')["Start date and time:"],
                                              T.td[T.input(name='start', type='datetime')]],
+                                        # todo: add duration
                                         T.tr[T.th(class_='ralabel')["Location"],
                                              T.td[pages.page_pieces.location_dropdown('location')]],
                                         T.tr[T.th(class_='ralabel')["Hosts:"],
