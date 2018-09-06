@@ -184,6 +184,12 @@ class Event(object):
         e.__dict__.update(event_dict)
         return e
 
+    def display_title(self):
+        return self.title or (self.event_type.replace("_", " ").capitalize()
+                              + (" on " + model.equipment_type.Equipment_type.find_by_id(self.equipment_type).pretty_name()
+                                 if self.equipment_type
+                                 else ""))
+
     def get_details(self):
         """Get the details of an event, as a dictionary."""
         return self.__dict__

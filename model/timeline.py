@@ -20,17 +20,17 @@ class Timeline(object):
 
     def __init__(self):
         characteristics = {}
-        events = []
+        cached_events = []
 
     @staticmethod
     def create_timeline(**kwargs):
         TL = Timeline()
-        TL.events = model.database.get_events(**kwargs)
+        TL.cached_events = model.database.get_events(**kwargs)
         TL.characteristics = kwargs # so we can refresh the events list
         return TL
 
     def events(self):
-        return self.events
+        return self.cached_events
 
     @staticmethod
     def future_events(**kwargs):
@@ -61,4 +61,4 @@ class Timeline(object):
         """Update the list of events in this timeline.
 
         The original criteria are used."""
-        self.events = model.database.get_events(**self.characteristics)
+        self.cached_events = model.database.get_events(**self.characteristics)

@@ -82,28 +82,39 @@ def search_events(django_request):
 
     print("Event search params", {k: v for k, v in params.items()})
 
-    # todo: get the subject user from the params
+    viewer = model.person.Person.find(django_request.user.link_id)
 
     search_params = {}
 
-    # todo: go through the incoming GET params and add any non-blank ones to search_params
+    if 'event_type' in params:
+        search_params['event_type'] = params['event_type']
+    if 'equipment_type' in params:
+        search_params['equipment_type'] = model.equipment_type.Equipment_type.find(params['equipment_type'])._id
+    if 'person_field' in params and 'person_id' in params and params['person_id'] != "":
+        search_params['person_field'] = params['person_field']
+        search_params['person_id'] = model.person.Person.find(params['person_id'])._id
+    if 'earliest' in params and params['earliest'] != '':
+        search_params['earliest'] = params['earliest']
+    if 'latest' in params and params['latest'] != '':
+        search_params['latest'] = params['latest']
+    if params.get('include_hidden', 'off') == 'on':
+        search_params['include_hidden'] = params['include_hidden']
+    if params.get('location', '---') != '---':
+        search_params['location'] = params['location']
 
-    events_found = model.timeline.Timeline.create_timeline(*search_params)
+    print("Event query params", search_params)
+
+    events_found = model.timeline.Timeline.create_timeline(**search_params)
 
     page_data = model.pages.HtmlPage("Event search",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
 
     page_data.add_content("Events",
-
-                          # todo: probably use pages.event_page.event_table_section
-                          event_table_section(events_found, who_id, django_request,
-                                              show_equiptype=None,
-                                              with_signup=False,
-                                              with_completion_link=False)
-                          pages.event_page.one_event_section(ev,
-                                                             model.person.Person.find(submitter),
-                                                             django_request))
+                          pages.event_page.event_table_section(events_found, viewer._id, django_request,
+                                                               show_equiptype=True,
+                                                               with_signup=True,
+                                                               with_completion_link=True))
 
     return HttpResponse(str(page_data.to_string()))
 

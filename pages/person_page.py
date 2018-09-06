@@ -378,27 +378,25 @@ def search_events_form(viewer, django_request):
                   # todo: write the receiving function
                   method='GET')[T.form[T.input(type="hidden", name="csrfmiddlewaretoken",
                                                value=django.middleware.csrf.get_token(django_request)),
+                                       T.input(type='hidden', name="viewer", value=viewer._id),
                                        T.table[T.tr[T.th(class_='ralabel')["Event type:"],
                                                     T.td[T.input(name='event_type', type='text')]],
                                                T.tr[T.th(class_='ralabel')["Equipment type:"],
                                                     T.td[pages.page_pieces.equipment_type_dropdown("equipment_type")]],
                                                T.tr[T.th(class_='ralabel')["Begins after:"],
-                                                    T.td[T.input(name='after', type='datetime')]],
+                                                    T.td[T.input(name='earliest', type='datetime')]],
                                                T.tr[T.th(class_='ralabel')["Ends before:"],
-                                                    T.td[T.input(name='before', type='datetime')]],
-                                               T.tr[T.th(class_='ralabel')["Hosts include:"],
-                                                    T.td[T.input(name='host', type='text')]],
-                                               T.tr[T.th(class_='ralabel')["Attendees include:"],
-                                                    T.td[T.input(name='attendees', type='text')]],
-                                               T.tr[T.th(class_='ralabel')["Passers include:"],
-                                                    T.td[T.input(name='passed', type='text')]],
-                                               T.tr[T.th(class_='ralabel')["Failers include:"],
-                                                    T.td[T.input(name='failed', type='text')]],
-                                               T.tr[T.th(class_='ralabel')["No-showers include:"],
-                                                    T.td[T.input(name='noshow', type='text')]],
+                                                    T.td[T.input(name='latest', type='datetime')]],
+                                               T.tr[T.th(class_='ralabel')[
+                                                   T.select(name='person_field')[
+                                                       [T.option(value=opt)[opt]
+                                                        for opt in ['hosts', 'failed', 'passed', 'noshow', 'signed_up']]]],
+                                                    T.td[T.input(name='person_id', type='text')]],
                                                T.tr[T.th(class_='ralabel')["Location"],
                                                     T.td[pages.page_pieces.location_dropdown('location')]],
-                                               T.tr[T.td["Warning: unimplemented"], # todo: remove when done
+                                               T.tr[T.th(class_='ralabel')["Include unpublished"],
+                                                    T.td[T.input(type='checkbox', name='include_hidden')]],
+                                               T.tr[T.td[""],
                                                     T.td[T.input(type='submit', value="Search for events")]]]]]
 
 def announcement_form(viewer, django_request):
@@ -544,7 +542,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
     if len(who.training_requests) > 0:
         page_data.add_section("Training requests", training_requests_section(who, django_request))
 
-    hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events
+    hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events()
     if len(hosting) > 0:
         page_data.add_section(
             "Events I will be hosting",
@@ -554,26 +552,26 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
                                                      django_request,
                                                      with_completion_link=True)])
 
-    attending = model.timeline.Timeline.future_events(person_field='signed_up', person_id=who._id).events
+    attending = model.timeline.Timeline.future_events(person_field='signed_up', person_id=who._id).events()
     if len(attending) > 0:
         page_data.add_section("Events I have signed up for",
                               model.pages.with_help(viewer,
                                                     T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)],
                                                     "attending"))
 
-    hosted = model.timeline.Timeline.past_events(person_field='hosts', person_id=who._id).events
+    hosted = model.timeline.Timeline.past_events(person_field='hosts', person_id=who._id).events()
     if len(hosting) > 0:
         page_data.add_section("Events I have hosted",
                               T.div(class_="hostedevents")[pages.event_page.event_table_section(hosted, who._id, django_request)])
 
-    attended = model.timeline.Timeline.past_events(person_field='signed_up', person_id=who._id).events
+    attended = model.timeline.Timeline.past_events(person_field='signed_up', person_id=who._id).events()
     if len(attended) > 0:
         page_data.add_section("Events I have attended",
                               T.div(class_="attendedingevents")[pages.event_page.event_table_section(attended, who._id, django_request)])
 
     known_events = hosting + attending + hosted + attended
     available_events = [ev
-                        for ev in model.timeline.Timeline.future_events().events
+                        for ev in model.timeline.Timeline.future_events().events()
                         if (ev not in known_events
                             and who.satisfies_conditions(ev.attendee_prerequisites))]
     if len(available_events) > 0:
