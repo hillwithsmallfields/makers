@@ -371,9 +371,10 @@ def create_event_form(viewer, django_request):
                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request))]
 
 def search_events_form(viewer, django_request):
+    # todo: pass the subject user in, and pick that up in the events list, so it can be used for signup
     equip_types = {etype.name: etype.pretty_name()
                        for etype in model.equipment_type.Equipment_type.list_equipment_types()}
-    return T.form(action="/event/match", # todo: use reverse
+    return T.form(action="/events/search", # todo: use reverse
                   # todo: write the receiving function
                   method='GET')[T.form[T.input(type="hidden", name="csrfmiddlewaretoken",
                                                value=django.middleware.csrf.get_token(django_request)),

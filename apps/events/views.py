@@ -76,27 +76,34 @@ def search_events(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    base = request.scheme + "://" + request.META['HTTP_HOST']
+    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
 
-    params = request.GET # when, submitter, event_type, and anything app-specific: such as: role, equiptype
+    params = django_request.GET
+
+    print("Event search params", {k: v for k, v in params.items()})
+
+    # todo: get the subject user from the params
 
     search_params = {}
 
     # todo: go through the incoming GET params and add any non-blank ones to search_params
 
-    model.timeline.Timeline.creat_timeline(search_params)
+    events_found = model.timeline.Timeline.create_timeline(*search_params)
 
     page_data = model.pages.HtmlPage("Event search",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
 
     page_data.add_content("Events",
 
                           # todo: probably use pages.event_page.event_table_section
-
+                          event_table_section(events_found, who_id, django_request,
+                                              show_equiptype=None,
+                                              with_signup=False,
+                                              with_completion_link=False)
                           pages.event_page.one_event_section(ev,
                                                              model.person.Person.find(submitter),
-                                                             request))
+                                                             django_request))
 
     return HttpResponse(str(page_data.to_string()))
 
