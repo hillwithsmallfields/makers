@@ -357,7 +357,7 @@ def create_event_form(viewer, django_request):
                   method='GET')[T.table[T.tr[T.th(class_='ralabel')["Event type "],
                                              T.td[pages.page_pieces.event_template_dropdown('event_type')]],
                                         T.tr[T.th(class_='ralabel')["Equipment type "],
-                                             T.td[pages.page_pieces.equipment_type_dropdown("equiptype")]],
+                                             T.td[pages.page_pieces.equipment_type_dropdown("equipment_type")]],
                                         # todo: add machine
                                         T.tr[T.th(class_='ralabel')["Start date and time:"],
                                              T.td[T.input(name='start', type='datetime')]],

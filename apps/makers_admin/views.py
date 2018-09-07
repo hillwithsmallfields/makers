@@ -12,6 +12,16 @@ import model.person
 import pages.event_page
 import pages.person_page
 
+def admin_error_page(request, label, error_message):
+    page_data = model.pages.HtmlPage(label,
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+
+    page_data.add_content("Details",
+                          T.p[error_message])
+
+    return HttpResponse(str(page_data.to_string()))
+
 @ensure_csrf_cookie
 def create_event(django_request):
 
@@ -22,8 +32,17 @@ def create_event(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    template_name = django_request.GET['template_name']
-    equipment_type = django_request.GET.get('equipment_type', "")
+    viewer = model.person.Person.find(django_request.user.link_id)
+
+    request_params = django_request.GET
+
+    template_name = request_params.get('event_type', None)
+    if template_name is None or template_name == "":
+        return admin_error_page(django_request, "Event creation error",
+                                "No template name given")
+
+    equipment_type = request_params.get('equipment_type', "")
+    suggested_time = request_params.get('start', "")
 
     template = model.event.Event.find_template(template_name)
 
@@ -32,7 +51,13 @@ def create_event(django_request):
                                      django_request=django_request)
 
     form = T.form(action=base+"/makers_admin/create_event_2",
-                  method='POST')[T.table[T.tr[T.th["When"], T.td[T.input(type='datetime', name='start')]],
+                  method='POST')[T.table[T.tr[T.th(class_="ralabel")["When"],
+                                              T.td[T.input(type='datetime',
+                                                           name='start',
+                                                           value=suggested_time)]],
+                                         T.tr[T.th(class_="ralabel")["Equipment type"],
+                                              T.td[pages.page_pieces.equipment_type_dropdown('equipment_type',
+                                                                                             equipment_type)]],
                                          [[T.tr[T.th(class_="ralabel")[k.replace('_', ' ').capitalize()],
                                                 T.td[T.input(type='text',
                                                              name=k,
@@ -42,7 +67,7 @@ def create_event(django_request):
                                           if k != '_id'],
                                          T.tr[T.td[""], T.td[T.input(type='submit', value="Create event")]]]]
 
-    page_data.add_content("Event creation form", form)
+    page_data.add_content("Event creation form", model.pages.with_help(viewer, form, "event_creation"))
     return HttpResponse(str(page_data.to_string()))
 
 def create_event_2(django_request):
