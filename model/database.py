@@ -229,11 +229,11 @@ def get_events(event_type=None,
         query['status'] = 'published'
     if earliest:
         if isinstance(earliest, str):
-            earliest = datetime.datetime.strptime(earliest, "%Y-%m-%dT%H:%M")
+            earliest = model.event.as_time(earliest)
         query['start'] = {'$gt': earliest}
     if latest:
         if isinstance(latest, str):
-            latest = datetime.strptime(latest, "%Y-%m-%dT%H:%M")
+            latest = model.event.as_time(latest)
         query['end'] = {'$lt': latest}
     # print("get_events query", query)
     result = [ model.event.Event.find_by_id(tr_event['_id'])

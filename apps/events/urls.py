@@ -14,6 +14,7 @@ urlpatterns = [
     path('complete/<id>', views.complete_event, name='done_event'),
     path('results', views.store_event_results, name='results'),
     path('special', views.special_event, name='special'),
-    path('<id>', views.one_event, name='oneevent'),
+    path('update', views.update_event, name="update_event"),
+    path('<id>', views.one_event, name='one_event'),
     path('', views.public_index, name='index')
 ]

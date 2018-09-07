@@ -25,7 +25,7 @@ def result_button(id, which, condition):
             else T.input(type='radio', name=id, value=which))
 
 def event_link(ev, django_request):
-    return django.urls.reverse("events:oneevent", args=[ev._id])
+    return django.urls.reverse("events:one_event", args=[ev._id])
 
 def person_name(who):
     descr = model.person.Person.find(who)
@@ -33,7 +33,9 @@ def person_name(who):
 
 def one_event_section(ev, who, django_request,
                       with_rsvp=False, rsvp_id=None,
-                      with_completion=False, completion_as_form=False):
+                      with_completion=False, completion_as_form=False,
+                      allow_editing=False):
+    allow_editing = who.is_administrator()
     all_people_ids = ev.signed_up
     all_people_id_to_name = {p: model.person.Person.find(p).name() for p in all_people_ids}
     all_people_name_and_id = [(all_people_id_to_name[id], id) for id in all_people_id_to_name.keys()]
@@ -42,22 +44,60 @@ def one_event_section(ev, who, django_request,
         for pair in all_people_name_and_id:
             if name == pair[0]:
                 ids_in_order.append(pair[1])
-    print("ev.equipment_type is", ev.equipment_type)
+    hosts = people_list(ev.hosts)
+    eqty_name = model.equipment_type.Equipment_type.find_by_id(ev.equipment_type).name
+    print("ev.equipment_type is", ev.equipment_type, "with name", eqty_name)
     results = [(T.table(class_='event_details')
                 [T.tr[T.th(class_="ralabel")["Title"],
-                      T.td(class_="event_title")[T.a(href=event_link(ev, django_request))[ev.title]]],
+                      T.td(class_="event_title")[
+                          T.input(type='text', name='title', value=ev.display_title())
+                          if allow_editing
+                          else T.a(href=event_link(ev, django_request))[ev.display_title()]]],
                  T.tr[T.th(class_="ralabel")["Event type"],
-                      T.td(class_="event_type")[ev.event_type]],
+                      T.td(class_="event_type")[
+                          T.input(type='text', name='event_type', value=ev.event_type)
+                          if allow_editing
+                          else ev.event_type]],
                  T.tr[T.th(class_="ralabel")["Start time"],
-                      T.td(class_="event_start")[model.event.timestring(ev.start)]],
+                      T.td(class_="event_start")[
+                          T.input(type='datetime', name='start', value=model.event.timestring(ev.start))
+                          if allow_editing
+                          else model.event.timestring(ev.start)]],
+                 T.tr[T.th(class_="ralabel")["Duration"],
+                      T.td[T.input(type='text', name='duration', value=str(ev.end-ev.start))
+                           if allow_editing
+                           else str(ev.end-ev.start)]],
                  T.tr[T.th(class_="ralabel")["End time"],
                       T.td(class_="event_end")[model.event.timestring(ev.end)]],
                  T.tr[T.th(class_="ralabel")["Location"],
-                      T.td(class_="location")[ev.location]],
+                      T.td(class_="location")[
+                          pages.page_pieces.location_dropdown('location', ev.location)
+                          if allow_editing
+                          else ev.location]],
                  T.tr[T.th(class_="ralabel")["Equipment type"],
-                      T.td(class_="event_equipment_type")[model.equipment_type.Equipment_type.find_by_id(ev.equipment_type).name]], # todo: linkify
+                      T.td(class_="event_equipment_type")[
+                          pages.page_pieces.equipment_type_dropdown('event_equipment_type', eqty_name)
+                          if allow_editing
+                          else eqty_name]], # todo: linkify
                  T.tr[T.th(class_="ralabel")["Hosts"],
-                      T.td(class_="hosts")[people_list(ev.hosts)]]])]
+                      T.td(class_="hosts")[
+                          T.input(type='text', name='hosts', value=hosts)
+                          if allow_editing
+                          else hosts]],
+                 (T.tr[T.th(class_="ralabel")[""],
+                       T.td[T.input(type='submit', value="Update event details")]]
+                  if allow_editing
+                  else "")])]
+
+    if allow_editing:
+        results = [T.form(action=django.urls.reverse("events:update_event"),
+                          method='POST')[
+                              results,
+                              T.input(type='hidden', name='event_id', value=ev._id),
+                              T.input(type="hidden",
+                                      name="csrfmiddlewaretoken",
+                                      value=django.middleware.csrf.get_token(django_request))]]
+
     if with_rsvp:
         results += [T.h4["Reply to invitation"],
                     T.form(action=django.urls.reverse("events:rsvp"),
@@ -131,7 +171,8 @@ def equip_name(eqid):
 def event_table_section(tl_or_events, who_id, django_request,
                         show_equiptype=False,
                         with_signup=False,
-                        with_completion_link=False):
+                        with_completion_link=False,
+                        allow_editing=False):
     events = tl_or_events.events() if isinstance(tl_or_events, model.timeline.Timeline) else tl_or_events
     now = datetime.datetime.utcnow()
     return (T.table(class_="timeline_table")

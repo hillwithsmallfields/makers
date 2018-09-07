@@ -1,5 +1,6 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 from django.http import HttpResponse
+import datetime
 import django.urls
 import model.equipment_type
 import model.event
@@ -142,7 +143,66 @@ def one_event(django_request, id):
 
     page_data.add_content("Event details",
                           pages.event_page.one_event_section(ev,
-                                                             None, # todo: put person here
+                                                             viewing_user,
+                                                             django_request,
+                                                             with_completion=hosting, completion_as_form=hosting))
+
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
+def update_event(django_request):
+    """View function for looking at one event."""
+
+    params = django_request.POST
+    id = params['event_id']
+
+    print("update_event with id", id, "of type", type(id))
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    ev = model.event.Event.find_by_id(id)
+
+    if ev is None:
+        return event_error_page(django_request, "Event update error",
+                                "In update_event, could not find event with id " + str(id))
+
+    got_start = 'start' and params['start'] != ""
+    got_duration = 'duration' and params['duration'] != ""
+
+    if 'title' in params and params['title'] != "":
+        ev.title = params['title']
+    if 'event_type' and params['event_type'] != "":
+        ev.event_type = params['event_type']
+    if got_start:
+        ev.start = model.event.as_time(params['start'])
+    if got_duration:
+        duration = params['duration']
+    else:
+        duration = None
+    if got_start or got_duration:
+        if duration == None:
+            duration = ev.end - ev.start
+        ev.end = ev.start+datetime.timedelta(0, model.event.in_minutes(duration))
+    if 'location' and params['location'] != "":
+        ev.location = params['location']
+    if 'event_equipment_type' and params['event_equipment_type'] != "":
+        ev.equipment_type = params['event_equipment_type']
+    if 'hosts' and params['hosts'] != "":
+        ev.hosts = [host.strip() for host in params['hosts'].split(",")]
+
+    ev.save()
+
+    page_data = model.pages.HtmlPage("Updated event details",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+
+    viewing_user = model.person.Person.find(django_request.user.link_id)
+    hosting = True if (viewing_user.is_administrator() or viewing_user._id in ev.hosts) else False
+
+    page_data.add_content("Updated event details",
+                          pages.event_page.one_event_section(ev,
+                                                             viewing_user,
                                                              django_request,
                                                              with_completion=hosting, completion_as_form=hosting))
 

@@ -12,18 +12,22 @@ import re
 
 # todo: event templates to have after-effect fields, so that cancellation of membership can schedule cancellation of equipment training
 
-fulltime = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}:[0-9]{2}")
+fulltime = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}")
 
 def as_time(clue):
     return (clue
             if isinstance(clue, datetime)
             else (datetime.fromordinal(clue)
                   if isinstance(clue, int)
-                  else (datetime.strptime(clue, "%Y-%m-%dT%H:%M:%S"
+                  else (datetime.strptime(clue, "%Y-%m-%dT%H:%M"
                                           if fulltime.match(clue)
                                           else "%Y-%m-%d")
                         if isinstance(clue, str)
                         else None)))
+
+def in_minutes(clue):
+    parts = clue.split(':')
+    return int(parts[0]) if len(parts) == 1 else ((int(parts[0]) * 60) + int(parts[1]))
 
 def timestring(when):
     if when.hour == 0 and when.minute == 0 and when.second == 0:

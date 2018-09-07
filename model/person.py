@@ -48,7 +48,7 @@ class Person(object):
     """
 
     people_by_id = {}
-    training_events_by_params = {}
+    training_events_by_params = {} # todo: store this in django_request.session so it persists between pages
 
     def __init__(self):
         self._id = None

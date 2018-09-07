@@ -135,6 +135,8 @@ def profile_section(who, viewer, django_request):
                           T.tr[T.th(class_="ralabel")["Name"], T.td[T.input(type="text",
                                                                             name="name",
                                                                             value=who.name())]],
+                          T.tr[T.th(class_="ralabel")["login id"], T.td[django_request.user.username]],
+                          # T.tr[T.th(class_="ralabel")["session data"], T.td[str(django_request.session)]], # debug only
                           T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
                                                                              name="email",
                                                                              value=who.get_email())]],
