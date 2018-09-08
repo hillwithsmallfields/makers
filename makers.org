@@ -15,8 +15,18 @@
    was still in the future, and so was being ignored; the equipments'
    lists need fixing.
 ** TODO event template editor
-** TODO event editor for admins
-** TODO use relative links throughout
+** TODO fix notifications and announcements
+** DONE event editor for admins
+   CLOSED: [2018-09-07 Fri 22:16]
+   :PROPERTIES:
+   :last-state-change: [2018-09-07 Fri 22:16]
+   :first-seen: [2018-09-07 Fri 22:16]
+   :END:
+** OPEN use relative links throughout
+   :PROPERTIES:
+   :last-state-change: [2018-09-07 Fri 22:16]
+   :first-seen: [2018-09-07 Fri 22:16]
+   :END:
 ** OPEN lists of people with training on equipment to take note of the training date
    :PROPERTIES:
    :last-state-change: [2018-08-29 Wed 08:29]
@@ -143,6 +153,7 @@
     :last-state-change: [2018-08-29 Wed 15:03]
     :first-seen: [2018-08-29 Wed 15:03]
     :END:
+*** TODO profiles to have uploadable pictures
 ** OPEN Equipment type pages to have owner-editable fields
    :PROPERTIES:
    :last-state-change: [2018-08-18 Sat 21:59]
@@ -165,8 +176,14 @@
 *** TODO pages for events with catering to show the dietary combinations of those who have signed up
 *** TODO event timeline for current events and for today's / tomorrow's events
 *** TODO integrate with other systems' APIs
-*** TODO allow a choice of stylesheet? Maybe as a per-user setting.
-** TODO re-style navigation, add logo, etc (small)
+*** DONE allow a choice of stylesheet? Maybe as a per-user setting.
+    CLOSED: [2018-09-07 Fri 22:16]
+    :PROPERTIES:
+    :last-state-change: [2018-09-07 Fri 22:16]
+    :first-seen: [2018-09-07 Fri 22:16]
+    :END:
+*** TODO re-style navigation, add logo, etc (small)
+*** TODO provide a favicon
 * Makers info
 ** ssh port for server access: 54839
 ** http port for server access: 53672

@@ -89,10 +89,10 @@ def set_person_profile_field(whoever,
                          if isinstance(whoever, model.person.Person)
                          else whoever))
     profile_record = database[collection_names['profiles']].find_one({'link_id': person_link})
-    print("set_person_profile_field", person_link, "got record", profile_record, "to write field", profile_field, "with", new_value)
+    # print("set_person_profile_field", person_link, "got record", profile_record, "to write field", profile_field, "with", new_value)
     if profile_record is not None:
         profile_record[profile_field] = new_value
-        print("saving", profile_record)
+        # print("saving", profile_record)
         database[collection_names['profiles']].save(profile_record)
 
 def person_name(whoever,
@@ -258,7 +258,7 @@ def save_event(this_event):
 # Notifications (to individuals)
 
 def get_notifications(who_id, since_date):
-    print("get_notifications query will be", {'when': {'$gt': since_date}}, "and the collection will be", database[collection_names['notifications']])
+    print("get_notifications query will be", {'when': {'$gt': since_date}})
     return [message
             for message in database[collection_names['notifications']].find({'to': who_id, 'when': {'$gt': since_date}})]
 
@@ -270,7 +270,7 @@ def add_notification(who_id, sent_date, text):
 # Announcements (to all)
 
 def get_announcements(since_date):
-    print("get_announcements query will be", {'when': {'$gt': since_date}}, "and the collection will be", database[collection_names['announcements']])
+    print("get_announcements query will be", {'when': {'$gt': since_date}})
     return [message
             for message in database[collection_names['announcements']].find({'when': {'$gt': since_date}})]
 
@@ -384,7 +384,7 @@ def get_people_awaiting_training(event_type, equipment_type):
     query = {'training_requests': {'$elemMatch':
                                    {'event_type': event_type,
                                     'equipment_type': equipment_type}}}
-    print("get_people_awaiting_training using query", query)
+    # print("get_people_awaiting_training using query", query)
     return [who['_id'] for who in
             database[collection_names['people']]
             .find(query)

@@ -61,7 +61,7 @@ page:
   script_file:  /usr/local/share/makers/makers.js
   style_inline: True
   help_texts:   /usr/local/share/makers/help_texts
-  heading_logo: static/logo.png
+  heading_logo: /static/logo.png
   # preamble:
   # postamble:  <p>Bottom navigation bar etc will go here.</p>
   motd_file:    config/motd.html
