@@ -307,7 +307,9 @@ def announcements_read(request):
 
     who = model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid']))
 
-    print("announcements_read upto", request.POST['upto'])
+    print("announcements_read upto", str(self.announcements_shown_to))
+
+    who.mark_announcements_read()
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
@@ -321,7 +323,9 @@ def notifications_read(request):
 
     who = model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid']))
 
-    print("notifications_read upto", request.POST['upto'])
+    print("notifications_read upto", str(who.notifications_shown_to))
+
+    who.mark_notifications_read()
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),

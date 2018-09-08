@@ -476,8 +476,8 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
 
     page_data.add_section("Personal profile", profile_section(who, viewer, django_request))
 
-    (announcements, announcements_upto) = who.read_announcements()
-    (notifications, notifications_upto) = who.read_notifications()
+    (announcements, _) = who.read_announcements()
+    (notifications, _) = who.read_notifications()
 
     messages = []
     if len(announcements) > 0:
@@ -492,7 +492,6 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
                          [T.input(type='hidden', name='subject_user_uuid', value=who._id),
                           T.input(type="hidden", name="csrfmiddlewaretoken",
                                   value=django.middleware.csrf.get_token(django_request)),
-                          T.input(type='hidden', name='upto', value=announcements_upto),
                           T.input(type='submit', value="Mark as read")]])
     if len(notifications) > 0:
         messages.append([T.h3["Notifications"],
@@ -504,7 +503,6 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
                          [T.input(type='hidden', name='subject_user_uuid', value=who._id),
                           T.input(type="hidden", name="csrfmiddlewaretoken",
                                   value=django.middleware.csrf.get_token(django_request)),
-                          T.input(type='hidden', name='upto', value=notifications_upto),
                           T.input(type='submit', value="Mark as read")]])
 
     if len(announcements) > 0 or len(notifications) > 0:

@@ -68,7 +68,9 @@ class Person(object):
         self.show_help = True
         self.notify_by_email = True # todo: put into site controls
         self.notify_in_site = True  # todo: put into site controls
+        self.notifications_shown_to = datetime(1970, 1, 1)
         self.notifications_read_to = datetime(1970, 1, 1)
+        self.announcements_shown_to = datetime(1970, 1, 1)
         self.announcements_read_to = datetime(1970, 1, 1)
 
     def __str__(self):
@@ -608,27 +610,31 @@ class Person(object):
     def read_announcements(self):
         # get the time before the messages, so if any messages come in
         # between reading the two, we don't miss any
-        self.announcements_read_to = datetime.utcnow()
+        self.announcements_shown_to = datetime.utcnow()
+        self.save()
         print("read_announcements up to", self.announcements_read_to)
         results = model.database.get_announcements(self.announcements_read_to)
-        return results, self.announcements_read_to
+        return results, self.announcements_shown_to
 
-    def mark_announcements_read(self, upto):
-        print("mark_announcements_read", upto)
-        self.announcements_read_to = upto
+    def mark_announcements_read(self, upto=None):
+        print("mark_announcements_read", upto or self.announcements_shown_to)
+        self.announcements_read_to = upto or self.announcements_shown_to
+        print("marked announcements read to", self.announcements_read_to)
         self.save()
 
     def read_notifications(self):
         # get the time before the messages, so if any messages come in
         # between reading the two, we don't miss any
-        self.notifications_read_to = datetime.utcnow()
+        self.notifications_shown_to = datetime.utcnow()
+        self.save()
         print("read_notifications up to", self.notifications_read_to)
         results = model.database.get_notifications(self._id, self.notifications_read_to)
-        return results, self.notifications_read_to
+        return results, self.notifications_shown_to
 
-    def mark_notifications_read(self, upto):
-        print("mark_notifications_read", upto)
-        self.notifications_read_to = upto
+    def mark_notifications_read(self, upto=None):
+        print("mark_notifications_read", upto or self.notifications_shown_to)
+        self.notifications_read_to = upto or self.notifications_shown_to
+        print("marked notifications read to", self.notifications_read_to)
         self.save()
 
     # API
