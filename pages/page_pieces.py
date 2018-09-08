@@ -122,7 +122,6 @@ def interests_section(interest_levels, mail_levels, django_request, for_person=N
     interest_areas = model.configuration.get_config().get('interest_areas', None)
     if interest_areas is None:
         return []
-    print("interest_areas", interest_areas, "interest_levels", interest_levels)
     existing_interests = {area_name: interest_levels.get(area_name, 0) for area_name in interest_areas}
     return [T.form(action=django.urls.reverse("dashboard:update_levels"), method="POST")
             [T.table(class_="interests_check_table")
@@ -213,7 +212,7 @@ def machinelist(eqty, who, django_request, as_owner=False):
 
 def eqty_training_requests(eqtype):
     raw_reqs = eqtype.get_training_requests()
-    print("raw_reqs is", raw_reqs)
+    # print("raw_reqs is", raw_reqs)
     if len(raw_reqs) == 0:
         return []
     reqs = []

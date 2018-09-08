@@ -39,6 +39,13 @@ do
     cp $SOURCE/$PART/*.py $DESTINATION/$PART
 done
 
+echo Copying static files
+mkdir -p $DESTINATION/static
+for APPDIR in $SOURCE/makers $SOURCE/apps/*
+do
+    cp -r $APPDIR/static/* $DESTINATION/static
+done
+
 echo poking password
 $SOURCE/scripts/setpassword
 

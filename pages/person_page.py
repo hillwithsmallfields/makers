@@ -515,7 +515,6 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
     their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
     if len(their_responsible_types) > 0:
         keyed_types = { ty.pretty_name(): ty for ty in their_responsible_types }
-        print("adding responsibilities with keyed_types", keyed_types)
         page_data.add_section("Equipment responsibilities",
                               [T.div(class_="resps")[model.pages.with_help(
                                   viewer,
