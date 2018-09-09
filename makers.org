@@ -2,6 +2,27 @@
 * Makers things to do
 ** TODO [#A] fix newly-created training event not showing up in "Events I will be hosting"
 ** TODO [#A] fix equipment people have just been training on not showing up in "Equipment I can use"
+** TODO [#A] fix equipment type dropdown in one_event, and the thing that receives it (de-pretty the type name
+** TODO [#A] fix output and input of durations
+** TODO [#A] switch to https
+** OPEN [#B] display training requests in dashboard "trainers" sections, possibly with timeslot counts
+   :PROPERTIES:
+   :last-state-change: [2018-08-18 Sat 21:58]
+   :first-seen: [2018-08-18 Sat 21:58]
+   :END:
+** TODO [#B] cache training data in the django session objects
+** OPEN [#B] training success to cancel training requests
+   :PROPERTIES:
+   :last-state-change: [2018-08-29 Wed 21:44]
+   :first-seen: [2018-08-29 Wed 21:44]
+   :END:
+** TODO [#B] fix user interface to searching for users by name
+** OPEN [#C] load tabs on demand
+** TODO [#C] add machine reservation to training events
+** TODO [#C] event pages to have interests and skills sections
+** TODO [#C] event pages to have optional catering sections
+** TODO [#C] send emails for accepted invitations, with icalendar data
+** TODO [#C] timed jobs to handle timeout for invitations
 ** DONE fix training event results
    CLOSED: [2018-08-28 Tue 18:48]
    :PROPERTIES:
@@ -17,7 +38,12 @@
    was still in the future, and so was being ignored; the equipments'
    lists need fixing.
 ** TODO event template editor
-** TODO fix notifications and announcements
+** DONE fix notifications and announcements
+   CLOSED: [2018-09-09 Sun 22:03]
+   :PROPERTIES:
+   :last-state-change: [2018-09-09 Sun 22:03]
+   :first-seen: [2018-09-09 Sun 22:03]
+   :END:
 ** DONE event editor for admins
    CLOSED: [2018-09-07 Fri 22:16]
    :PROPERTIES:
@@ -36,25 +62,14 @@
    :END:
    and not count people as qualified when their qualification date is
    still in the future
-** TODO switch to https
-** OPEN training success to cancel training requests
-   :PROPERTIES:
-   :last-state-change: [2018-08-29 Wed 21:44]
-   :first-seen: [2018-08-29 Wed 21:44]
-   :END:
 ** TODO export to csv files (same format as original imports) for backup, and put on crontab
-** TODO timed jobs to handle timeout for invitations
 ** TODO validate choice of stylesheet
-** OPEN load tabs on demand
-** OPEN fix "mark all as read" in notifications and announcements
+** TODO viewer's stylesheet choice to apply to all pages
+** DONE fix "mark all as read" in notifications and announcements
+   CLOSED: [2018-09-09 Sun 22:02]
    :PROPERTIES:
-   :last-state-change: [2018-08-29 Wed 21:38]
+   :last-state-change: [2018-09-09 Sun 22:02]
    :first-seen: [2018-08-22 Wed 16:08]
-   :END:
-** OPEN display training requests in dashboard "trainers" sections, possibly with timeslot counts
-   :PROPERTIES:
-   :last-state-change: [2018-08-18 Sat 21:58]
-   :first-seen: [2018-08-18 Sat 21:58]
    :END:
 ** TODO users to be able to upload mugshots
 ** DONE timeslots display to show what times of day timeslots begin and end at
@@ -63,23 +78,26 @@
    :last-state-change: [2018-08-22 Wed 22:27]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
-** TODO event pages to have interests and skills sections
-** TODO event pages to have optional catering sections
-** OPEN use flexboxes for with_help, so that when the screen is narrow the help text will follow the form instead of being beside it
+** DONE use flexboxes for with_help, so that when the screen is narrow the help text will follow the form instead of being beside it
+   CLOSED: [2018-09-09 Sun 22:04]
    :PROPERTIES:
-   :last-state-change: [2018-08-29 Wed 14:36]
+   :last-state-change: [2018-09-09 Sun 22:04]
    :first-seen: [2018-08-29 Wed 14:36]
    :END:
 ** TODO fixed profile to include a "box issued" section (probably as a date), editable only by admins
 ** TODO "add user" command to have a box for whether they've been inducted, and to collect up an induction event over consecutive user adds
-** TODO send emails for accepted invitations, with icalendar data
 ** DONE make the address section of the profile run from the config files
    CLOSED: [2018-08-22 Wed 22:28]
    :PROPERTIES:
    :last-state-change: [2018-08-22 Wed 22:28]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
-** OPEN add badger texts to configured profile area
+** DONE add badger texts to configured profile area
+   CLOSED: [2018-09-09 Sun 21:59]
+   :PROPERTIES:
+   :last-state-change: [2018-09-09 Sun 21:59]
+   :first-seen: [2018-09-09 Sun 21:59]
+   :END:
 ** OPEN reject signups for events that are full
    :PROPERTIES:
    :last-state-change: [2018-08-18 Sat 21:58]
@@ -103,9 +121,10 @@
    :last-state-change: [2018-08-18 Sat 21:58]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
-*** OPEN creating a training session to send invitations
+*** DONE creating a training session to send invitations
+    CLOSED: [2018-09-09 Sun 22:00]
     :PROPERTIES:
-    :last-state-change: [2018-08-22 Wed 17:22]
+    :last-state-change: [2018-09-09 Sun 22:00]
     :first-seen: [2018-08-22 Wed 17:22]
     :END:
 *** TODO training request confirmation to list any pending training sessions
@@ -132,9 +151,10 @@
     :last-state-change: [2018-08-18 Sat 21:58]
     :first-seen: [2018-08-18 Sat 21:58]
     :END:
-** OPEN handle RSVPs to invitations
+** DONE handle RSVPs to invitations
+   CLOSED: [2018-09-09 Sun 22:05]
    :PROPERTIES:
-   :last-state-change: [2018-08-18 Sat 21:58]
+   :last-state-change: [2018-09-09 Sun 22:05]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
    Will probably use event signup page code

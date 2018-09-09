@@ -45,8 +45,9 @@ def one_event_section(ev, who, django_request,
             if name == pair[0]:
                 ids_in_order.append(pair[1])
     hosts = people_list(ev.hosts)
+    print("Looking for equipment type", ev.equipment_type)
     eqty_name = model.equipment_type.Equipment_type.find_by_id(ev.equipment_type).name
-    print("ev.equipment_type is", ev.equipment_type, "with name", eqty_name)
+
     results = [(T.table(class_='event_details')
                 [T.tr[T.th(class_="ralabel")["Title"],
                       T.td(class_="event_title")[
@@ -64,9 +65,10 @@ def one_event_section(ev, who, django_request,
                           if allow_editing
                           else model.event.timestring(ev.start)]],
                  T.tr[T.th(class_="ralabel")["Duration"],
-                      T.td[T.input(type='text', name='duration', value=str(ev.end-ev.start))
-                           if allow_editing
-                           else str(ev.end-ev.start)]],
+                      T.td(class_="event_duration")[
+                          T.input(type='text', name='duration', value=str(ev.end-ev.start))
+                          if allow_editing
+                          else str(ev.end-ev.start)]],
                  T.tr[T.th(class_="ralabel")["End time"],
                       T.td(class_="event_end")[model.event.timestring(ev.end)]],
                  T.tr[T.th(class_="ralabel")["Location"],
@@ -84,6 +86,8 @@ def one_event_section(ev, who, django_request,
                           T.input(type='text', name='hosts', value=hosts)
                           if allow_editing
                           else hosts]],
+                 T.tr[T.th(class_="ralabel")["Event ID and link"],
+                      T.td(class_="event_id")[T.a(href=event_link(ev, django_request))[str(ev._id)]]],
                  (T.tr[T.th(class_="ralabel")[""],
                        T.td[T.input(type='submit', value="Update event details")]]
                   if allow_editing
@@ -158,7 +162,7 @@ def one_event_section(ev, who, django_request,
                                             completion_table])
                      if completion_as_form
                      else completion_table)]
-    return [T.h3[ev.title],
+    return [T.h3[ev.title.replace('_', ' ').capitalize()],
             results]
 
 def equip_name(eqid):

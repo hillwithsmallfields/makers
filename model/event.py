@@ -12,6 +12,16 @@ import re
 
 # todo: event templates to have after-effect fields, so that cancellation of membership can schedule cancellation of equipment training
 
+# Use this version on Python >= 3.7:
+# def as_time(clue):
+#     return (clue
+#             if isinstance(clue, datetime)
+#             else (datetime.fromordinal(clue)
+#                   if isinstance(clue, int)
+#                   else (datetime.fromisoformat(clue)
+#                         if isinstance(clue, str)
+#                         else None)))
+
 fulltime = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}")
 
 def as_time(clue):
@@ -26,6 +36,8 @@ def as_time(clue):
                         else None)))
 
 def in_minutes(clue):
+    if type(clue) == int:
+        return clue
     parts = clue.split(':')
     return int(parts[0]) if len(parts) == 1 else ((int(parts[0]) * 60) + int(parts[1]))
 
@@ -37,7 +49,7 @@ def timestring(when):
         if when.second >= 59:
             when.replace(minute=when.minute + 1)
             when.replace(second=0)
-        return str(when)[:16]
+        return when.isoformat()[:16]
 
 def combine(a, b):
     r = a & b

@@ -463,7 +463,10 @@ def admin_section(viewer, django_request):
         admin_subsection("Search for users by name:",
                          search_users_form(django_request)),
         admin_subsection("Create event: ",
-                         create_event_form(viewer, django_request)),
+                         model.pages.with_help(
+                             viewer,
+                             create_event_form(viewer, django_request),
+                             "event_creation")),
         admin_subsection("Search for events: ",
                          model.pages.with_help(
                              viewer,

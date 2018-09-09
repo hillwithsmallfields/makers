@@ -107,37 +107,47 @@ th.profile_group {
 
 /* lists of events */
 
-.event_title  {
+.event_title {
     background-color: #fff8d0;
     padding:          0.5em;
 }
 
-.event_type  {
+.event_type {
     background-color: #fff8d0;
     padding:          0.5em;
 }
 
-.event_start  {
+.event_start {
     background-color: #fff8d0;
     padding:          0.5em;
 }
 
-.event_end  {
+.event_duration {
     background-color: #fff8d0;
     padding:          0.5em;
 }
 
-.location  {
+.event_end {
     background-color: #fff8d0;
     padding:          0.5em;
 }
 
-.hosts  {
+.location {
     background-color: #fff8d0;
     padding:          0.5em;
 }
 
-.event_equipment_type  {
+.hosts {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.event_equipment_type {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.event_id {
     background-color: #fff8d0;
     padding:          0.5em;
 }

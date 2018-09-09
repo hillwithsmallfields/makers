@@ -127,8 +127,6 @@ def search_events(django_request):
 def one_event(django_request, id):
     """View function for looking at one event."""
 
-    print("one_event with id", id, "of type", type(id))
-
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
@@ -347,7 +345,7 @@ def store_event_results(django_request):
     model.database.database_init(config_data)
 
     viewer = model.person.Person.find(django_request.user.link_id)
-    
+
     params = django_request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
     print("in store_event_results with params", params)
 
