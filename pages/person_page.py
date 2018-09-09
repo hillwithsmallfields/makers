@@ -481,29 +481,36 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
 
     messages = []
     if len(announcements) > 0:
-        messages.append([T.h3["Announcements"],
-                         model.pages.with_help(viewer,
-                                               T.dl[[[T.dt["From "
-                                                           + model.person.Person.find(bson.objectid.ObjectId(anno['from'])).name()
-                                                           + " at " + model.event.timestring(anno['when'])],
-                                                      T.dd[untemplate.safe_unicode(anno['text'])]] for anno in announcements]],
-                                               "announcements"),
-                         T.form("/dashboard/announcements_read", method='POST')
-                         [T.input(type='hidden', name='subject_user_uuid', value=who._id),
-                          T.input(type="hidden", name="csrfmiddlewaretoken",
-                                  value=django.middleware.csrf.get_token(django_request)),
-                          T.input(type='submit', value="Mark as read")]])
+        messages.append(
+            [T.h3["Announcements"],
+             model.pages.with_help(
+                 viewer,
+                 T.dl[[[T.dt["From "
+                             + model.person.Person.find(bson.objectid.ObjectId(anno['from'])).name()
+                             + " at " + model.event.timestring(anno['when'])],
+                        T.dd[untemplate.safe_unicode(anno['text'])]]
+                       for anno in announcements]],
+                 "announcements"),
+             T.form(action=django.urls.reverse("dashboard:announcements_read"),
+                    method='POST')
+             [T.input(type='hidden', name='subject_user_uuid', value=who._id),
+              T.input(type="hidden", name="csrfmiddlewaretoken",
+                      value=django.middleware.csrf.get_token(django_request)),
+              T.input(type='submit', value="Mark as read")]])
     if len(notifications) > 0:
-        messages.append([T.h3["Notifications"],
-                         model.pages.with_help(viewer,
-                                               T.dl[[[T.dt["At " + model.event.timestring(noti['when'])],
-                                                      T.dd[untemplate.safe_unicode(noti['text'])]] for noti in notifications]],
-                                               "notifications"),
-                         T.form("/dashboard/notifications_read", method='POST')
-                         [T.input(type='hidden', name='subject_user_uuid', value=who._id),
-                          T.input(type="hidden", name="csrfmiddlewaretoken",
-                                  value=django.middleware.csrf.get_token(django_request)),
-                          T.input(type='submit', value="Mark as read")]])
+        messages.append(
+            [T.h3["Notifications"],
+             model.pages.with_help(viewer,
+                                   T.dl[[[T.dt["At "
+                                               + model.event.timestring(noti['when'])],
+                                          T.dd[untemplate.safe_unicode(noti['text'])]] for noti in notifications]],
+                                   "notifications"),
+             T.form(action=django.urls.reverse("dashboard:notifications_read"),
+                    method='POST')
+             [T.input(type='hidden', name='subject_user_uuid', value=who._id),
+              T.input(type="hidden", name="csrfmiddlewaretoken",
+                      value=django.middleware.csrf.get_token(django_request)),
+              T.input(type='submit', value="Mark as read")]])
 
     if len(announcements) > 0 or len(notifications) > 0:
         page_data.add_section("Notifications",

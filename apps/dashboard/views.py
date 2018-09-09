@@ -305,11 +305,18 @@ def announcements_read(request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
+    print("Marking announcements as read")
+    
     who = model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid']))
 
-    print("announcements_read upto", str(self.announcements_shown_to))
-
+    print("person", who)
+    
+    print("announcements_shown upto", str(who.announcements_shown_to))
+    print("announcements_read upto", str(who.announcements_read_to))
+    
     who.mark_announcements_read()
+
+    print("announcements_read now upto", str(who.announcements_read_to))
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
@@ -321,11 +328,18 @@ def notifications_read(request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
+    print("marking notifications as read")
+    
     who = model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid']))
 
-    print("notifications_read upto", str(who.notifications_shown_to))
+    print("person", who)
+    
+    print("notifications_shown upto", str(who.notifications_shown_to))
+    print("notifications_read upto", str(who.notifications_read_to))
 
     who.mark_notifications_read()
+
+    print("notifications_read now upto", str(who.notifications_read_to))
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
