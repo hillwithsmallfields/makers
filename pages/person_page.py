@@ -449,24 +449,49 @@ def add_user_form(django_request, induction_event_id=None):
                           else T.input(type='checkbox', name='inducted')]],
                 T.tr[T.th[""], T.td[T.input(type='submit', value="Add user")]]]]
 
+def admin_subsection(title, body):
+    return T.div(class_='admin_action')[
+        T.h3(class_='admin_action_heading')[title],
+        T.div(class_='admin_action_body')[body]]
+
 def admin_section(viewer, django_request):
-    return T.ul[T.li[T.a(href="/dashboard/all")["List all users"], " (may be slow and timeout on server)"],
-                T.li["Search for users by name:", search_users_form(django_request)],
-                T.li["Create event: ",
-                     create_event_form(viewer, django_request)],
-                T.li["Search for events: ",
-                     search_events_form(viewer, django_request)],
-                T.li["Send announcement: ", # todo: separate this and control it by whether the person is a trained announcer
-                     announcement_form(viewer, django_request)],
-                T.li["Send notification: ",
-                     notification_form(viewer, django_request)],
-                T.li["Add user: ",
-                     add_user_form(django_request)],
-                T.li["Update django logins: ",
-                     T.form(action=django.urls.reverse("makers_admin:update_django"))[
-                         T.input(type="hidden", name="csrfmiddlewaretoken",
-                                 value=django.middleware.csrf.get_token(django_request)),
-                         T.input(type='submit', value="Update django logins")]]]
+    return T.div(class_='admin_action_list')[
+        admin_subsection("List all users",
+                         model.pages.with_help(viewer,
+                                               [T.a(href="/dashboard/all")["List all users"]],
+                                               "list_all_users")),
+        admin_subsection("Search for users by name:",
+                         search_users_form(django_request)),
+        admin_subsection("Create event: ",
+                         create_event_form(viewer, django_request)),
+        admin_subsection("Search for events: ",
+                         model.pages.with_help(
+                             viewer,
+                             search_events_form(viewer, django_request),
+                             "events_search")),
+        admin_subsection("Send announcement: ", # todo: separate this and control it by whether the person is a trained announcer
+                         model.pages.with_help(
+                             viewer,
+                             announcement_form(viewer, django_request),
+                             "send_announcement")),
+        admin_subsection("Send notification: ",
+                         model.pages.with_help(
+                             viewer,
+                             notification_form(viewer, django_request),
+                             "send_notification")),
+        admin_subsection("Add user: ",
+                         model.pages.with_help(
+                             viewer,
+                             add_user_form(django_request),
+                             "admin_add_user")),
+        admin_subsection("Update django logins: ",
+                         model.pages.with_help(
+                             viewer,
+                             [T.form(action=django.urls.reverse("makers_admin:update_django"))[
+                             T.input(type="hidden", name="csrfmiddlewaretoken",
+                                     value=django.middleware.csrf.get_token(django_request)),
+                                 T.input(type='submit', value="Update django logins")]],
+                             "admin_update_logins"))]
 
 def add_person_page_contents(page_data, who, viewer, django_request, extra_top_header=None, extra_top_body=None):
     """Add the sections of a user dashboard to a sectional page."""
