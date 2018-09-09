@@ -51,7 +51,7 @@ def new_event(request):
     ev, error_message = model.event.Event.instantiate_template(params['event_type'],
                                                                params['equiptype'],
                                                                [submitter], # todo: override from form
-                                                               params['start'],
+                                                               params['when'],
                                                                machine)
     if ev is None:
         return event_error_page(request, "New event error", error_message)
@@ -89,11 +89,15 @@ def search_events(django_request):
 
     if 'event_type' in params:
         search_params['event_type'] = params['event_type']
-    if 'equipment_type' in params:
-        search_params['equipment_type'] = model.equipment_type.Equipment_type.find(params['equipment_type'])._id
+    if 'equipment_type' in params and params['equipment_type'] != "":
+        eqty = model.equipment_type.Equipment_type.find(params['equipment_type'])
+        if eqty:
+            search_params['equipment_type'] = eqty._id
     if 'person_field' in params and 'person_id' in params and params['person_id'] != "":
-        search_params['person_field'] = params['person_field']
-        search_params['person_id'] = model.person.Person.find(params['person_id'])._id
+        subject = model.person.Person.find(params['person_id'])
+        if subject:
+            search_params['person_field'] = params['person_field']
+            search_params['person_id'] = subject._id
     if 'earliest' in params and params['earliest'] != '':
         search_params['earliest'] = params['earliest']
     if 'latest' in params and params['latest'] != '':
@@ -342,6 +346,8 @@ def store_event_results(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
+    viewer = model.person.Person.find(django_request.user.link_id)
+    
     params = django_request.POST # when, submitter, event_type, and anything app-specific: such as: role, equiptype
     print("in store_event_results with params", params)
 
@@ -370,7 +376,7 @@ def store_event_results(django_request):
                                      django_request=django_request)
 
     page_data.add_content("Event details",
-                          pages.event_page.one_event_section(ev, None, django_request,
+                          pages.event_page.one_event_section(ev, viewer, django_request,
                                                              with_completion=True))
 
     return HttpResponse(str(page_data.to_string()))

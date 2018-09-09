@@ -1,5 +1,7 @@
 #+TODO: TODO OPEN | DONE
 * Makers things to do
+** TODO [#A] fix newly-created training event not showing up in "Events I will be hosting"
+** TODO [#A] fix equipment people have just been training on not showing up in "Equipment I can use"
 ** DONE fix training event results
    CLOSED: [2018-08-28 Tue 18:48]
    :PROPERTIES:
