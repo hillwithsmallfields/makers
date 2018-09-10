@@ -585,10 +585,14 @@ class Person(object):
                                                                   default_visibilities['visibility_as_attendee']))
         self.visibility['general'] = to_bool_or_other(params.get('visibility_in_general',
                                                                  default_visibilities['visibility_in_general']))
-        # use basename so the user can't pick unvetted styles (in case
-        # of malicious stuff in them, in case you can do that in css)
-        self.stylesheet = os.path.basename(params.get('stylesheet', "makers"))
-        print("stylesheet is now", self.stylesheet)
+        stylesheet = os.path.basename(params.get('stylesheet', "makers"))
+        if stylesheet in model.configuration.get_stylesheets():
+            # use basename so the user can't pick unvetted styles (in case
+            # of malicious stuff in them, in case you can do that in css)
+            self.stylesheet = stylesheet
+        else:
+            # use the default if the specified one doesn't exist
+            self.stylesheet = configuration.get_config()['page']['stylesheet']
         self.show_help = to_bool_or_other(params.get('display_help', False))
         self.notify_by_email = to_bool_or_other(params.get('notify_by_email', False))
         self.notify_in_site = to_bool_or_other(params.get('notify_in_site', False))

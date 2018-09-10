@@ -17,6 +17,7 @@
    :first-seen: [2018-08-29 Wed 21:44]
    :END:
 ** TODO [#B] fix user interface to searching for users by name
+** TODO [#B] remove "everyone is an admin" hack, and check the privacy code
 ** OPEN [#C] load tabs on demand
 ** TODO [#C] add machine reservation to training events
 ** TODO [#C] event pages to have interests and skills sections
@@ -37,6 +38,11 @@
    It turned out that the people's lists were correct, as the event
    was still in the future, and so was being ignored; the equipments'
    lists need fixing.
+** OPEN [#C] use relative links throughout
+   :PROPERTIES:
+   :last-state-change: [2018-09-07 Fri 22:16]
+   :first-seen: [2018-09-07 Fri 22:16]
+   :END:
 ** TODO event template editor
 ** DONE fix notifications and announcements
    CLOSED: [2018-09-09 Sun 22:03]
@@ -46,11 +52,6 @@
    :END:
 ** DONE event editor for admins
    CLOSED: [2018-09-07 Fri 22:16]
-   :PROPERTIES:
-   :last-state-change: [2018-09-07 Fri 22:16]
-   :first-seen: [2018-09-07 Fri 22:16]
-   :END:
-** OPEN use relative links throughout
    :PROPERTIES:
    :last-state-change: [2018-09-07 Fri 22:16]
    :first-seen: [2018-09-07 Fri 22:16]
@@ -206,6 +207,20 @@
     :END:
 *** TODO re-style navigation, add logo, etc (small)
 *** TODO provide a favicon
+* Testing
+  - change and save some profile and control fields
+  - use admin's list of people to enter training requests on behalf of
+    various users, for an equipment type for which you are a trainer
+  - as yourself, schedule a training event in the very near future
+    (maybe about 10 minutes ahead)
+  - look at the other users' dashboards, look in their notifications,
+    respond to the invitations
+  - go to the training event page, refresh it to see the users on it,
+    mark them as having passed
+  - check that the equipment type is now shown on the list of types
+    that each of those users can use
+  - check that those users are listed on the equipment type page as
+    users of that equipment type
 * Makers info
 ** ssh port for server access: 54839
 ** http port for server access: 53672
