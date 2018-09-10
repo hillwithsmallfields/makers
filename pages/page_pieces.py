@@ -279,9 +279,12 @@ def equipment_type_dropdown(name, current=None):
     eq_types = {etype.name: etype.pretty_name()
                 for etype in model.equipment_type.Equipment_type.list_equipment_types()}
     eq_types.update({'---': None})
+    print("equipment_type_dropdown given current =", current)
     return dropdown(name,
                     {eqty: eqty.replace('_', ' ').capitalize() for eqty in eq_types},
-                    current.replace('_', ' ').capitalize() if current else '---')
+                    # current.replace('_', ' ').capitalize() if current else '---'
+                    current if current else '---'
+    )
 
 def event_template_dropdown(name, current=None):
     templates = {template['name']: template['event_type']

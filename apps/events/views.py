@@ -56,7 +56,7 @@ def new_event(request):
     if ev is None:
         return event_error_page(request, "New event error", error_message)
 
-    print("Made event", ev, "with type", ev.event_type)
+    print("Made event", ev, "with type", ev.event_type, "details", ev.__dict__)
 
     ev.publish()
     ev.invite_available_interested_people()
@@ -189,7 +189,11 @@ def update_event(django_request):
     if 'location' and params['location'] != "":
         ev.location = params['location']
     if 'event_equipment_type' and params['event_equipment_type'] != "":
-        ev.equipment_type = params['event_equipment_type']
+        eqty = model.equipment_type.Equipment_type.find(params['event_equipment_type'])
+        if eqty:
+            ev.equipment_type = eqty._id
+        else:
+            pass                # todo: make an error page
     if 'hosts' and params['hosts'] != "":
         ev.hosts = [host.strip() for host in params['hosts'].split(",")]
 
