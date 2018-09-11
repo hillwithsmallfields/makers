@@ -1,6 +1,12 @@
 #+TODO: TODO OPEN | DONE
 * Makers things to do
-** TODO [#A] fix equipment people have just been training on not showing up in "Equipment I can use"
+** DONE [#A] fix equipment people have just been training on not showing up in "Equipment I can use"
+   CLOSED: [2018-09-11 Tue 22:13]
+   :PROPERTIES:
+   :last-state-change: [2018-09-11 Tue 22:13]
+   :first-seen: [2018-09-11 Tue 22:13]
+   :END:
+** TODO [#A] fix time zone handling
 ** OPEN [#A] fix equipment type dropdown in one_event, and the thing that receives it (de-pretty the type name?)
    :PROPERTIES:
    :last-state-change: [2018-09-10 Mon 21:52]

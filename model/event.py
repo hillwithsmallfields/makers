@@ -8,6 +8,7 @@ import model.equipment_type
 import model.pages
 import model.person
 import model.timeslots
+import pytz
 import re
 
 # todo: event templates to have after-effect fields, so that cancellation of membership can schedule cancellation of equipment training
@@ -22,9 +23,12 @@ import re
 #                         if isinstance(clue, str)
 #                         else None)))
 
+organizational_timezone = pytz.timezone(model.configuration.get_config()['organization']['timezone'])
+
 fulltime = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}")
 
 def as_time(clue):
+    # todo: parse it as a local time, but return result in UTC
     return (clue
             if isinstance(clue, datetime)
             else (datetime.fromordinal(clue)
@@ -49,7 +53,7 @@ def timestring(when):
         if when.second >= 59:
             when.replace(minute=when.minute + 1)
             when.replace(second=0)
-        return when.isoformat()[:16]
+        return when.astimezone(organizational_timezone).isoformat()[:16]
 
 def combine(a, b):
     r = a & b
