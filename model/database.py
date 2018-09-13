@@ -258,7 +258,7 @@ def save_event(this_event):
 # Notifications (to individuals)
 
 def get_notifications(who_id, since_date):
-    print("get_notifications query will be", {'when': {'$gt': since_date}})
+    # print("get_notifications query will be", {'when': {'$gt': since_date}})
     return [message
             for message in database[collection_names['notifications']].find({'to': who_id, 'when': {'$gt': since_date}})]
 
@@ -270,7 +270,7 @@ def add_notification(who_id, sent_date, text):
 # Announcements (to all)
 
 def get_announcements(since_date):
-    print("get_announcements query will be", {'when': {'$gt': since_date}})
+    # print("get_announcements query will be", {'when': {'$gt': since_date}})
     return [message
             for message in database[collection_names['announcements']].find({'when': {'$gt': since_date}})]
 

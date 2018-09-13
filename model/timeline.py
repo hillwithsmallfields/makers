@@ -1,5 +1,6 @@
 from datetime import datetime
 import model.database
+import model.times
 
 class Timeline(object):
 
@@ -37,7 +38,7 @@ class Timeline(object):
         """List the events which have not yet started.
 
         See the class documentation for the available search criteria."""
-        return Timeline.create_timeline(earliest=datetime.utcnow(),
+        return Timeline.create_timeline(earliest=model.times.now(),
                                         **kwargs)
 
     @staticmethod
@@ -45,8 +46,8 @@ class Timeline(object):
         """List the events which have started but not finished.
 
         See the class documentation for the available search criteria."""
-        return Timeline.create_timeline(earliest=datetime.utcnow(),
-                                        latest=datetime.utcnow(),
+        return Timeline.create_timeline(earliest=model.times.now(),
+                                        latest=model.times.now(),
                                         **kwargs)
 
     @staticmethod
@@ -54,7 +55,7 @@ class Timeline(object):
         """List the events which have finished.
 
         See the class documentation for the available search criteria."""
-        return Timeline.create_timeline(latest=datetime.utcnow(),
+        return Timeline.create_timeline(latest=model.times.now(),
                                         **kwargs)
 
     def refresh(self):

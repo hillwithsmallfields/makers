@@ -4,7 +4,7 @@ import datetime
 import django.middleware.csrf
 import model.equipment_type
 import model.equipment_type
-import model.event
+import model.times
 import model.pages
 import model.person
 import model.timeline
@@ -61,16 +61,16 @@ def one_event_section(ev, who, django_request,
                           else ev.event_type]],
                  T.tr[T.th(class_="ralabel")["Start time"],
                       T.td(class_="event_start")[
-                          T.input(type='datetime', name='start', value=model.event.timestring(ev.start))
+                          T.input(type='datetime', name='start', value=model.times.timestring(ev.start))
                           if allow_editing
-                          else model.event.timestring(ev.start)]],
+                          else model.times.timestring(ev.start)]],
                  T.tr[T.th(class_="ralabel")["Duration"],
                       T.td(class_="event_duration")[
                           T.input(type='text', name='duration', value=str(ev.end-ev.start))
                           if allow_editing
                           else str(ev.end-ev.start)]],
                  T.tr[T.th(class_="ralabel")["End time"],
-                      T.td(class_="event_end")[model.event.timestring(ev.end)]],
+                      T.td(class_="event_end")[model.times.timestring(ev.end)]],
                  T.tr[T.th(class_="ralabel")["Location"],
                       T.td(class_="location")[
                           pages.page_pieces.location_dropdown('location', ev.location)
@@ -178,7 +178,7 @@ def event_table_section(tl_or_events, who_id, django_request,
                         with_completion_link=False,
                         allow_editing=False):
     events = tl_or_events.events() if isinstance(tl_or_events, model.timeline.Timeline) else tl_or_events
-    now = datetime.datetime.utcnow()
+    now = model.times.now()
     return (T.table(class_="timeline_table")
             [T.thead[T.tr[T.th["Title"], T.th["Event type"], T.th["Start"], T.th["Location"], T.th["Hosts"],
                           T.th["Equipment"] if show_equiptype else "",
@@ -186,17 +186,17 @@ def event_table_section(tl_or_events, who_id, django_request,
                           T.th["Record results"] if with_completion_link else ""]],
              T.tbody[[[T.tr[T.th(class_="event_title")[T.a(href=event_link(ev, django_request))[ev.display_title()]],
                             T.td(class_="event_type")[ev.event_type],
-                            T.td(class_="event_start")[model.event.timestring(ev.start)],
+                            T.td(class_="event_start")[model.times.timestring(ev.start)],
                             T.td(class_="location")[ev.location],
                             T.td(class_="hosts")[people_list(ev.hosts)],
                             (T.td(class_="event_equipment_type")[equip_name(ev.equipment_type)]
                              if show_equiptype
                              else ""),
                             (T.td[pages.page_pieces.signup_button(ev._id, who_id, "Sign up", django_request)
-                                  if with_signup and ev.start > now
+                                  if with_signup and model.times.as_utc(ev.start) > now
                                   else ""]),
                             (T.td[T.a(href=django.urls.reverse("events:done_event", args=(ev._id,)))["Record results"]
-                                  if with_completion_link and ev.start < now
+                                  if with_completion_link and model.times.as_utc(ev.start) < now
                                   else ""])
                         ]]
                       for ev in events]]])

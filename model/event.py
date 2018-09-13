@@ -1,5 +1,5 @@
 # -*- coding: utf8
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import bson
 import model.access_permissions
 import model.configuration
@@ -7,63 +7,8 @@ import model.database
 import model.equipment_type
 import model.pages
 import model.person
+import model.times
 import model.timeslots
-import pytz
-import re
-
-# todo: event templates to have after-effect fields, so that cancellation of membership can schedule cancellation of equipment training
-
-# Use this version on Python >= 3.7:
-# def as_time(clue):
-#     # todo: parse it as a local time, but return result in UTC
-#     return (clue
-#             if isinstance(clue, datetime)
-#             else (datetime.fromordinal(clue)
-#                   if isinstance(clue, int)
-#                   else (datetime.fromisoformat(clue)
-#                         if isinstance(clue, str)
-#                         else None)))
-
-organizational_timezone = pytz.timezone(model.configuration.get_config()['organization']['timezone'])
-
-fulltime = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}")
-
-def as_time(clue):
-    # print("as_time parsing", clue)
-    return (clue
-            if isinstance(clue, datetime)
-            else (datetime.fromordinal(clue)
-                  if isinstance(clue, int)
-                  else (datetime.strptime(clue, "%Y-%m-%dT%H:%M"
-                                          if fulltime.match(clue)
-                                          else "%Y-%m-%d").replace(tzinfo=organizational_timezone)
-                        if isinstance(clue, str)
-                        else None)))
-
-def in_minutes(clue):
-    if type(clue) == int:
-        return clue
-    parts = clue.split(':')
-    return int(parts[0]) if len(parts) == 1 else ((int(parts[0]) * 60) + int(parts[1]))
-
-def in_seconds(clue):
-    return in_minutes(clue) * 60
-
-def timestring(when):
-    # print("timestring called with", when)
-    if when.tzinfo is None:
-        when = when.replace(tzinfo=timezone.utc)
-        # print("timestring set tz to utc, producing", when)
-    if when.hour == 0 and when.minute == 0 and when.second == 0:
-        # print("timestring returning", str(when.date()))
-        return str(when.date())
-    else:
-        when.replace(microsecond=0)
-        if when.second >= 59:
-            when.replace(minute=when.minute + 1)
-            when.replace(second=0)
-        # print("timestring returning", when.astimezone(organizational_timezone).isoformat()[:16])
-        return when.astimezone(organizational_timezone).isoformat()[:16]
 
 def combine(a, b):
     r = a & b
@@ -129,7 +74,7 @@ class Event(object):
         # self.details = get_event_template(event_type)
         self.title = title
         self.event_type = event_type
-        self.start = as_time(event_datetime)
+        self.start = model.times.as_time(event_datetime)
         self.end = self.start + (event_duration
                                  if isinstance(event_duration, timedelta)
                                  else (timedelta(0, event_duration * 60) # given in minutes
@@ -158,7 +103,7 @@ class Event(object):
         self.interest_areas = []
 
     def __str__(self):
-        accum = "<" + self.event_type + "_event " + timestring(self.start)
+        accum = "<" + self.event_type + "_event " + model.times.timestring(self.start)
         accum += " id " + str(self._id)
         if self.hosts and self.hosts != []:
             accum += " with " + ", ".join([model.person.Person.find(host_id).name()
@@ -179,7 +124,7 @@ class Event(object):
     @staticmethod
     def find(event_type, event_datetime, hosts, equipment_type):
         """Find an event by giving enough information to describe it."""
-        event_datetime = as_time(event_datetime)
+        event_datetime = model.times.as_time(event_datetime)
         event_dict = model.database.get_event(event_type, event_datetime,
                                         hosts,
                                         model.pages.unstring_id(equipment_type),
@@ -298,7 +243,7 @@ class Event(object):
         """
         if isinstance(event_datetime, str):
             event_datetime = datetime.strptime(event_datetime, "%Y-%m-%dT%H:%M")
-        if event_datetime < datetime.utcnow() and not allow_past:
+        if event_datetime < model.times.now() and not allow_past:
             return None, "Cannot create a past event"
         template_dict = Event.find_template(template_name)
         if template_dict is None:
@@ -397,7 +342,7 @@ class Event(object):
             for whoever in potentials:
                 if whoever._id not in self.invited:
                     whoever.send_event_invitation(self, "training_invitation")
-                    self.invited[whoever._id] = datetime.utcnow()
+                    self.invited[whoever._id] = model.times.now()
 
     def publish(self):
         """Make the event appear in the list of scheduled events."""
@@ -479,7 +424,7 @@ class Event(object):
         self.save()
 
     def auto_expire_non_replied_invitations(self):
-        cutoff = datetime.utcnow() - timedelta(self.invitation_timeout,0)
+        cutoff = model.times.now() - timedelta(self.invitation_timeout,0)
         for who, when in self.invited.items():
             if when < cutoff:
                 if (who._id not in self.signed_up
@@ -510,6 +455,7 @@ class Event(object):
         # now the training result has been saved, we can safely cancel
         # the training requests:
         for requester in requesters_to_cancel:
+            print("Removing fulfilled training request for", self.training_for_role(), "on", model.equipment_type.Equipment_type.find_by_id(self.equipment_type).pretty_name())
             requester.remove_training_request(self.training_for_role(), self.equipment_type)
 
     def dietary_avoidances(self):

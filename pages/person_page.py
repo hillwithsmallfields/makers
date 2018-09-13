@@ -324,7 +324,7 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                           T.td[", ".join([name_of_host(host)
                                      # todo: linkify these if admin? but that would mean not using the easy "join"
                                                                  for host in keyed_types[name][1][0].hosts])],
-                          T.td[model.event.timestring(keyed_types[name][1][0].start)],
+                          T.td[model.times.timestring(keyed_types[name][1][0].start)],
                           T.td[pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'trainer',
                                                                 who.has_requested_training([keyed_types[name][0]._id], 'trainer'),
                                                                 django_request)],
@@ -515,7 +515,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
                  viewer,
                  T.dl[[[T.dt["From "
                              + model.person.Person.find(bson.objectid.ObjectId(anno['from'])).name()
-                             + " at " + model.event.timestring(anno['when'])],
+                             + " at " + model.times.timestring(anno['when'])],
                         T.dd[untemplate.safe_unicode(anno['text'])]]
                        for anno in announcements]],
                  "announcements"),
@@ -530,7 +530,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
             [T.h3["Notifications"],
              model.pages.with_help(viewer,
                                    T.dl[[[T.dt["At "
-                                               + model.event.timestring(noti['when'])],
+                                               + model.times.timestring(noti['when'])],
                                           T.dd[untemplate.safe_unicode(noti['text'])]] for noti in notifications]],
                                    "notifications"),
              T.form(action=django.urls.reverse("dashboard:notifications_read"),

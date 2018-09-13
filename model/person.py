@@ -8,6 +8,7 @@ import model.machine
 import model.makers_server
 import model.timeline
 import model.person
+import model.times
 from datetime import datetime, timedelta
 import os
 import uuid
@@ -260,7 +261,7 @@ class Person(object):
         for existing in self.training_requests:
             if equipment_type == existing['equipment_type']:
                 return False, "Equipment type training already requested"
-        self.training_requests.append({'request_date': when or datetime.utcnow(),
+        self.training_requests.append({'request_date': when or model.times.now(),
                                        'requester': self._id,
                                        'equipment_type': equipment_type._id,
                                        'event_type': role_training,
@@ -349,7 +350,7 @@ class Person(object):
         substitutions = {'rsvp': invitation_url,
                          'queue_position': len(m_event.invited)+1,
                          'equipment_type': model.equipment_type.Equipment_type.find_by_id(m_event.equipment_type).pretty_name(),
-                         'datetime': model.event.timestring(m_event.start)}
+                         'datetime': model.times.timestring(m_event.start)}
         with open(os.path.join(all_conf['messages']['templates_directory'],
                                message_template_name)) as msg_file:
             message_body = msg_file.read() % substitutions
@@ -357,7 +358,7 @@ class Person(object):
             if self.notify_by_email:
                 model.makers_server.mailer(self.get_email(), message_body)
             if self.notify_in_site:
-                model.database.add_notification(self._id, datetime.utcnow(), message_body)
+                model.database.add_notification(self._id, model.times.now(), message_body)
 
     @staticmethod
     def mailed_event_details(rsvp):
@@ -380,7 +381,7 @@ class Person(object):
         This is mostly for administrators to fix the record to match reality,
         and for banning and unbanning users."""
         if when is None:
-            when = datetime.utcnow()
+            when = model.times.now()
         special_event = model.event.Event(({'user': 'user_training',
                                             'owner': 'owner_training',
                                             'trainer': 'trainer_training'}
@@ -407,10 +408,10 @@ class Person(object):
         trained = {}
         detrained = {}
         for ev in self.get_training_events(event_type = model.database.role_training(role),
-                                           when=when or datetime.utcnow()):
+                                           when=when or model.times.now()):
             trained[ev.equipment_type] = ev.start
         for ev in self.get_training_events(event_type = model.database.role_untraining(role),
-                                           when=when or datetime.utcnow()):
+                                           when=when or model.times.now()):
             detrained[ev.equipment_type] = ev.start
         return [model.equipment_type.Equipment_type.find_by_id(e)
                 for e in trained.keys()
@@ -442,12 +443,12 @@ class Person(object):
         detrained = None
         equipment_id = model.equipment_type.Equipment_type.find(equipment_type_name)._id
         for ev in self.get_training_events(event_type = model.database.role_training(role),
-                                           when=when or datetime.utcnow()):
+                                           when=when or model.times.now()):
             if equipment_id == ev.equipment_type:
                 trained = ev
                 break
         for ev in self.get_training_events(event_type = model.database.role_untraining(role),
-                                           when=when or datetime.utcnow()):
+                                           when=when or model.times.now()):
             if equipment_id == ev.equipment_type:
                 detrained = ev.start
                 break
@@ -614,9 +615,9 @@ class Person(object):
     def read_announcements(self):
         # get the time before the messages, so if any messages come in
         # between reading the two, we don't miss any
-        self.announcements_shown_to = datetime.utcnow()
+        self.announcements_shown_to = model.times.now()
         self.save()
-        print("read_announcements up to", self.announcements_read_to)
+        # print("read_announcements up to", self.announcements_read_to)
         results = model.database.get_announcements(self.announcements_read_to)
         return results, self.announcements_shown_to
 
@@ -629,9 +630,9 @@ class Person(object):
     def read_notifications(self):
         # get the time before the messages, so if any messages come in
         # between reading the two, we don't miss any
-        self.notifications_shown_to = datetime.utcnow()
+        self.notifications_shown_to = model.times.now()
         self.save()
-        print("read_notifications up to", self.notifications_read_to)
+        # print("read_notifications up to", self.notifications_read_to)
         results = model.database.get_notifications(self._id, self.notifications_read_to)
         return results, self.notifications_shown_to
 
@@ -662,7 +663,7 @@ class Person(object):
             for field, title in [('hosts', 'hosting_events'), ('attendees', 'attending_events')]:
                 my_events = model.timeline.Timeline.create_timeline(person_field=field, person_id=self._id).events
                 if len(my_events) > 0:
-                    my_event_api_data = [ { 'start': model.event.timestring(tl_event.start),
+                    my_event_api_data = [ { 'start': model.times.timestring(tl_event.start),
                                             'type': str(tl_event.event_type),
                                             'equipment_types': [ model.equipment_type.Equipment_type.find_by_id(eqty).name
                                                                     for eqty in tl_event.equipment_types]} for tl_event in my_events ]
