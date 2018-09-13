@@ -25,6 +25,7 @@
    :first-seen: [2018-09-13 Thu 20:07]
    :END:
 ** TODO [#A] switch to https
+** TODO [#B] In users' lists of "Other equipment", "Request user training" doesn't change to "Cancel user training request" when training has been requested
 ** OPEN [#B] display training requests in dashboard "trainers" sections, possibly with timeslot counts
    :PROPERTIES:
    :last-state-change: [2018-08-18 Sat 21:58]
@@ -41,6 +42,7 @@
 ** TODO [#B] remove "everyone is an admin" hack, and check the privacy code
 ** OPEN [#C] load tabs on demand
 ** TODO [#C] add machine reservation to training events
+** TODO [#C] the queue positions reported on the signup page might be wrong
 ** TODO [#C] event pages to have interests and skills sections
 ** TODO [#C] event pages to have optional catering sections
 ** TODO [#C] send emails for accepted invitations, with icalendar data

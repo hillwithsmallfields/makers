@@ -242,7 +242,8 @@ class Event(object):
 
         """
         if isinstance(event_datetime, str):
-            event_datetime = datetime.strptime(event_datetime, "%Y-%m-%dT%H:%M")
+            event_datetime = model.times.as_time(event_datetime)
+        event_datetime = model.times.as_utc(event_datetime)
         if event_datetime < model.times.now() and not allow_past:
             return None, "Cannot create a past event"
         template_dict = Event.find_template(template_name)
