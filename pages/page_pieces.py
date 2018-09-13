@@ -223,7 +223,7 @@ def eqty_training_requests(eqtype):
         for r in raw_reqs:
             if r['request_date'] == d:
                 reqs.append(r)
-    print("reqs are", reqs)
+    # print("reqs are", reqs)
     return [T.table[T.thead[T.tr[T.th["Date requested"],
                                 T.th["Requester"]]],
                    T.tbody[[[T.tr[T.td[event.timestring(req['request_date'])],
@@ -264,14 +264,16 @@ def announcements_section():
 
 def dropdown(name, choices, current=None):
     """Make an HTML form dropdown box."""
-    return T.select(name=name)[[(T.option(selected='selected')[item]
+    return T.select(name=name)[[(T.option(value=item,
+                                          selected='selected')[choices[item]]
                                  if item==current
                                  else T.option(value=item)[choices[item]])
                                 for item in sorted(choices.keys())]
                                if type(choices) == dict
-                               else [(T.option(selected='selected')[item]
+                               else [(T.option(value=item,
+                                               selected='selected')[item]
                                       if item==current
-                                      else T.option[item])
+                                      else T.option(value=item)[item])
                                      for item in choices]]
 
 def equipment_type_dropdown(name, current=None):
@@ -279,7 +281,6 @@ def equipment_type_dropdown(name, current=None):
     eq_types = {etype.name: etype.pretty_name()
                 for etype in model.equipment_type.Equipment_type.list_equipment_types()}
     eq_types.update({'---': None})
-    print("equipment_type_dropdown given current =", current)
     return dropdown(name,
                     {eqty: eqty.replace('_', ' ').capitalize() for eqty in eq_types},
                     # current.replace('_', ' ').capitalize() if current else '---'

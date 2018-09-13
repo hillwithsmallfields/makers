@@ -185,7 +185,7 @@ def update_event(django_request):
     if got_start or got_duration:
         if duration == None:
             duration = ev.end - ev.start
-        ev.end = ev.start+datetime.timedelta(0, model.event.in_minutes(duration))
+        ev.end = ev.start+datetime.timedelta(0, model.event.in_seconds(duration))
     if 'location' and params['location'] != "":
         ev.location = params['location']
     if 'event_equipment_type' and params['event_equipment_type'] != "":

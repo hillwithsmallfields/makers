@@ -6,19 +6,31 @@
    :last-state-change: [2018-09-11 Tue 22:13]
    :first-seen: [2018-09-11 Tue 22:13]
    :END:
-** TODO [#A] fix time zone handling
-** OPEN [#A] fix equipment type dropdown in one_event, and the thing that receives it (de-pretty the type name?)
+** DONE [#A] fix time zone handling
+   CLOSED: [2018-09-13 Thu 20:06]
    :PROPERTIES:
-   :last-state-change: [2018-09-10 Mon 21:52]
+   :last-state-change: [2018-09-13 Thu 20:06]
+   :first-seen: [2018-09-13 Thu 09:05]
+   :END:
+** DONE [#A] fix equipment type dropdown in one_event, and the thing that receives it (de-pretty the type name?)
+   CLOSED: [2018-09-13 Thu 20:07]
+   :PROPERTIES:
+   :last-state-change: [2018-09-13 Thu 20:07]
    :first-seen: [2018-09-10 Mon 21:52]
    :END:
-** TODO [#A] fix output and input of durations
+** DONE [#A] fix output and input of durations
+   CLOSED: [2018-09-13 Thu 20:07]
+   :PROPERTIES:
+   :last-state-change: [2018-09-13 Thu 20:07]
+   :first-seen: [2018-09-13 Thu 20:07]
+   :END:
 ** TODO [#A] switch to https
 ** OPEN [#B] display training requests in dashboard "trainers" sections, possibly with timeslot counts
    :PROPERTIES:
    :last-state-change: [2018-08-18 Sat 21:58]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
+** TODO [#B] command to delete personally identifying data
 ** TODO [#B] cache training data in the django session objects
 ** OPEN [#B] training success to cancel training requests
    :PROPERTIES:

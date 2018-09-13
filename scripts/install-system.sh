@@ -20,6 +20,7 @@ virtualenv --python=python3 --always-copy makers_venv
 source makers_venv/bin/activate
 pip install django
 pip install gunicorn
+pip install pytz
 pip install yaml
 pip install yattag
 
