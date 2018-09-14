@@ -431,7 +431,8 @@ def search_users_form(django_request):
                                        T.input(type='submit', value="Search for users")]]
 
 def add_user_form(django_request, induction_event_id=None):
-    return T.form(action=django.urls.reverse("makers_admin:add_user"))[
+    return T.form(action=django.urls.reverse("makers_admin:add_user"),
+                  method='POST')[
         T.input(type="hidden", name="csrfmiddlewaretoken",
                 value=django.middleware.csrf.get_token(django_request)),
         (T.input(type='hidden', name='induction_event', value=induction_event_id)

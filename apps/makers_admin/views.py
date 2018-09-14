@@ -1,9 +1,9 @@
 from datetime import datetime
-from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import django.urls
+import model.configuration
 import model.database           # for announcements and notifications; I should probably wrap them so apps don't need to see model.database
 import model.equipment_type
 import model.event
@@ -11,6 +11,11 @@ import model.pages
 import model.person
 import pages.event_page
 import pages.person_page
+
+# from https://stackoverflow.com/questions/17873855/manager-isnt-available-user-has-been-swapped-for-pet-person,
+# replacing: from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 def admin_error_page(request, label, error_message):
     page_data = model.pages.HtmlPage(label,
@@ -141,15 +146,20 @@ def make_login(given_name, surname):
 def create_django_user(login_name, email, given_name, surname, link_id):
     # based on https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Authentication
     # Create user and save to the database
+    print("create_django_user creating django_user")
     django_user = User.objects.create_user(login_name, email, '')
 
     # Update fields and then save again
     django_user.first_name = given_name
     django_user.last_name = surname
     django_user.link_id = link_id
+    print("create_django_user setting unusable password")
     django_user.set_unusable_password()
+    print("create_django_user saving data")
     django_user.save()
-    model.person.Person.find(link_id).send_password_reset_email(user)
+    print("create_django_user sending email")
+    model.person.Person.find(link_id).send_password_reset_email()
+    print("create_django_user complete")
 
 @ensure_csrf_cookie
 def add_user(django_request):
@@ -158,27 +168,29 @@ def add_user(django_request):
     model.database.database_init(config_data)
 
     params = django_request.POST
+    print("add_user params are", {k:v for k, v in params.items()})
     given_name = params['given_name']
     surname = params['surname']
     email = params['email']
     login = make_login(given_name, surname)
     induction_event = None
 
-    link_id = model.database.add_person({'membership_number': member_no,
-                                         'email': row['Email'],
-                                         'given_name': name_parts[0],
-                                         'surname': name_parts[1],
-                                         'known_as': name_parts[0]},
-                                        {'membership_number': member_no})
+    link_id = model.database.add_person({'email': email,
+                                         'given_name': given_name,
+                                         'surname': surname,
+                                         'known_as': given_name},
+                                        {'login_name': login})
     create_django_user(login, email, given_name, surname, link_id)
 
     if params['inducted']:
         induction_id = params.get('induction_event', None)
         induction_event = model.event.Event.find(model.pages.unstring_id(induction_id)) if induction_id else None
         if induction_event is None:
-            induction_event = model.event.Event(configuration.get_config()['organization']['name'] + " training",
+            facility_name = model.configuration.get_config()['organization']['name']
+            induction_event = model.event.Event(facility_name + "_training",
                                                 datetime.utcnow(),
-                                                [model.person.Person.find(django_request.user.link_id)._id])
+                                                [model.person.Person.find(django_request.user.link_id)._id],
+                                                equipment_type=model.equipment_type.Equipment_type.find(facility_name)._id)
         induction_event.mark_results([model.person.Person.find(link_id)], [], [])
 
     page_data = model.pages.HtmlPage("Added user",

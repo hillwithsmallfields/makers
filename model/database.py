@@ -170,9 +170,12 @@ def name_to_id(name):
 
 def add_person(name_record, main_record):
     # todo: convert dates to datetime.datetime
+    membership_number = 1234;   # todo: get membership number, and lock it somehow until the data is saved
     link_id = str(uuid.uuid4())
     main_record['link_id'] = link_id # todo: make it index by this
     name_record['link_id'] = link_id # todo: make it index by this
+    main_record['membership_number'] = membership_number
+    name_record['membership_number'] = membership_number
     database[collection_names['people']].insert(main_record)
     database[collection_names['profiles']].insert(name_record)
     return link_id

@@ -6,10 +6,9 @@
    :last-state-change: [2018-09-11 Tue 22:13]
    :first-seen: [2018-09-11 Tue 22:13]
    :END:
-** DONE [#A] fix time zone handling
-   CLOSED: [2018-09-13 Thu 20:06]
+** TODO [#A] fix time zone handling
    :PROPERTIES:
-   :last-state-change: [2018-09-13 Thu 20:06]
+   :last-state-change: [2018-09-14 Fri 22:23]
    :first-seen: [2018-09-13 Thu 09:05]
    :END:
 ** DONE [#A] fix equipment type dropdown in one_event, and the thing that receives it (de-pretty the type name?)
@@ -25,6 +24,7 @@
    :first-seen: [2018-09-13 Thu 20:07]
    :END:
 ** TODO [#A] switch to https
+** TODO [#A] look at importing and creating users, and how to interface to django's part of it
 ** DONE [#B] In users' lists of "Other equipment", "Request user training" doesn't change to "Cancel user training request" when training has been requested
    CLOSED: [2018-09-14 Fri 20:51]
    :PROPERTIES:
