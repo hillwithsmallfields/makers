@@ -86,7 +86,6 @@ def dashboard_page(request, who=""):
         page_data = model.pages.SectionalPage("User dashboard for " + subject_user.name(),
                                               pages.page_pieces.top_navigation(request),
                                               django_request=request)
-        print("subject", subject_user.name(), "being viewed by", viewing_user.name())
         pages.person_page.add_person_page_contents(page_data, subject_user, viewing_user, request)
 
     return HttpResponse(str(page_data.to_string()))
@@ -275,14 +274,12 @@ def update_avoidances(django_request):
     params = django_request.POST
     who = model.person.Person.find(model.pages.unstring_id(params['subject_user_uuid']))
 
-    print("update_avoidances params are", {k:v for k, v in params.items()})
-
     who.update_avoidances(params)
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
-    page_data.add_content("Confirmation", [T.p["Interests updated."]])
+    page_data.add_content("Confirmation", [T.p["Dietary info updated."]])
     return HttpResponse(str(page_data.to_string()))
 
 def reset_messages(request):
@@ -305,18 +302,9 @@ def announcements_read(request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    print("Marking announcements as read")
-    
     who = model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid']))
 
-    print("person", who)
-    
-    print("announcements_shown upto", str(who.announcements_shown_to))
-    print("announcements_read upto", str(who.announcements_read_to))
-    
     who.mark_announcements_read()
-
-    print("announcements_read now upto", str(who.announcements_read_to))
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
@@ -328,18 +316,9 @@ def notifications_read(request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    print("marking notifications as read")
-    
     who = model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid']))
 
-    print("person", who)
-    
-    print("notifications_shown upto", str(who.notifications_shown_to))
-    print("notifications_read upto", str(who.notifications_read_to))
-
     who.mark_notifications_read()
-
-    print("notifications_read now upto", str(who.notifications_read_to))
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),

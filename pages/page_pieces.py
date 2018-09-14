@@ -183,7 +183,7 @@ def general_equipment_list(who, viewer, these_types, django_request, detailed=Fa
                                   T.td[machinelist(keyed_types[name],
                                                    who, django_request, False) if detailed else "",
                                        toggle_request(who, keyed_types[name]._id, 'user',
-                                                      who.has_requested_training([keyed_types[name]._id], 'user'),
+                                                      who.has_requested_training(keyed_types[name]._id, 'user'),
                                                       django_request)],
                                   T.td[permit_form(keyed_types[name],
                                                    who._id, who.name(),

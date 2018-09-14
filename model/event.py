@@ -223,7 +223,7 @@ class Event(object):
 
     def training_for_role(self):
         """Return the role for which this event gives training."""
-        return (self.event_type[:-len("__training")]
+        return (self.event_type[:-len("_training")]
                 if self.event_type.endswith("_training")
                 else None)
 

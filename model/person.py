@@ -302,9 +302,7 @@ class Person(object):
         for a given equipment and role."""
         event_type = model.database.role_training(role)
         for req in self.training_requests:
-            if req['event_type'] == event_type and req.get('equipment_type',
-                                                           # todo: remove this hack left for read compatibility with an earlier version
-                                                           (req.get('equipment_types', ["compat-dummy"])[0])) == equipment_type:
+            if req['event_type'] == event_type and req['equipment_type'] == equipment_type:
                 return req
         return None
 
@@ -421,7 +419,7 @@ class Person(object):
     def get_equipment_type_names(self, role):
         """Get the list of names of equipment types for which the person has a given role.
         Aimed mostly at the JSON API."""
-        return [ eq.name for eq in self.get_equipment_types(role) ]
+        return [ eq.pretty_name() for eq in self.get_equipment_types(role) ]
 
     def get_qualifications(self, detailed=False):
         # aimed at JSON API

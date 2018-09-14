@@ -6,6 +6,7 @@ import model.equipment_type
 import model.event
 import model.pages
 import model.person
+import model.times
 import pages.event_page
 import pages.person_page
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -158,8 +159,6 @@ def update_event(django_request):
     params = django_request.POST
     id = params['event_id']
 
-    print("update_event with id", id, "of type", type(id))
-
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
@@ -177,7 +176,7 @@ def update_event(django_request):
     if 'event_type' and params['event_type'] != "":
         ev.event_type = params['event_type']
     if got_start:
-        ev.start = model.event.as_time(params['start'])
+        ev.start = model.times.as_time(params['start'])
     if got_duration:
         duration = params['duration']
     else:
@@ -185,7 +184,7 @@ def update_event(django_request):
     if got_start or got_duration:
         if duration == None:
             duration = ev.end - ev.start
-        ev.end = ev.start+datetime.timedelta(0, model.event.in_seconds(duration))
+        ev.end = ev.start+datetime.timedelta(0, model.times.in_seconds(duration))
     if 'location' and params['location'] != "":
         ev.location = params['location']
     if 'event_equipment_type' and params['event_equipment_type'] != "":

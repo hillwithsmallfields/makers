@@ -25,7 +25,12 @@
    :first-seen: [2018-09-13 Thu 20:07]
    :END:
 ** TODO [#A] switch to https
-** TODO [#B] In users' lists of "Other equipment", "Request user training" doesn't change to "Cancel user training request" when training has been requested
+** DONE [#B] In users' lists of "Other equipment", "Request user training" doesn't change to "Cancel user training request" when training has been requested
+   CLOSED: [2018-09-14 Fri 20:51]
+   :PROPERTIES:
+   :last-state-change: [2018-09-14 Fri 20:51]
+   :first-seen: [2018-09-14 Fri 20:51]
+   :END:
 ** OPEN [#B] display training requests in dashboard "trainers" sections, possibly with timeslot counts
    :PROPERTIES:
    :last-state-change: [2018-08-18 Sat 21:58]
@@ -33,14 +38,21 @@
    :END:
 ** TODO [#B] command to delete personally identifying data
 ** TODO [#B] cache training data in the django session objects
-** OPEN [#B] training success to cancel training requests
+** DONE [#B] training success to cancel training requests
+   CLOSED: [2018-09-14 Fri 21:51]
    :PROPERTIES:
-   :last-state-change: [2018-08-29 Wed 21:44]
+   :last-state-change: [2018-09-14 Fri 21:51]
    :first-seen: [2018-08-29 Wed 21:44]
    :END:
 ** TODO [#B] fix user interface to searching for users by name
 ** TODO [#B] remove "everyone is an admin" hack, and check the privacy code
 ** OPEN [#C] load tabs on demand
+** DONE [#C] equipment type names in list of users to be prettified
+   CLOSED: [2018-09-14 Fri 20:42]
+   :PROPERTIES:
+   :last-state-change: [2018-09-14 Fri 20:42]
+   :first-seen: [2018-09-14 Fri 20:41]
+   :END:
 ** TODO [#C] add machine reservation to training events
 ** TODO [#C] the queue positions reported on the signup page might be wrong
 ** TODO [#C] event pages to have interests and skills sections

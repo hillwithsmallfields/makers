@@ -45,7 +45,7 @@ def one_event_section(ev, who, django_request,
             if name == pair[0]:
                 ids_in_order.append(pair[1])
     hosts = people_list(ev.hosts)
-    print("Looking for equipment type", ev.equipment_type)
+    # print("Looking for equipment type", ev.equipment_type)
     eqty_name = model.equipment_type.Equipment_type.find_by_id(ev.equipment_type).name
 
     results = [(T.table(class_='event_details')
