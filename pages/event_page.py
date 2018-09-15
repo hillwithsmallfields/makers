@@ -31,6 +31,11 @@ def person_name(who):
     descr = model.person.Person.find(who)
     return descr.name() if descr is not None else "<nobody?>"
 
+def avoidances_subsection(ev):
+    return T.table(class_="dietary_summary")[
+        [[T.tr[T.td(class_="radata")[str(count)], T.th[what]]]
+         for (what, count) in ev.dietary_avoidances_summary()]]
+
 def one_event_section(ev, who, django_request,
                       with_rsvp=False, rsvp_id=None,
                       with_completion=False, completion_as_form=False,
@@ -92,6 +97,10 @@ def one_event_section(ev, who, django_request,
                        T.td[T.input(type='submit', value="Update event details")]]
                   if allow_editing
                   else "")])]
+
+    if ev.catered:
+        result += [T.h3["Catering information"],
+                   avoidances_subsection(ev)]
 
     if allow_editing:
         results = [T.form(action=django.urls.reverse("events:update_event"),

@@ -56,7 +56,10 @@ def create_event(django_request):
                                      django_request=django_request)
 
     form = T.form(action=base+"/makers_admin/create_event_2",
-                  method='POST')[T.table[T.tr[T.th(class_="ralabel")["When"],
+                  method='POST')[T.input(type="hidden",
+                                         name="csrfmiddlewaretoken",
+                                         value=django.middleware.csrf.get_token(django_request)),
+                                 T.table[T.tr[T.th(class_="ralabel")["When"],
                                               T.td[T.input(type='datetime',
                                                            name='start',
                                                            value=suggested_time)]],

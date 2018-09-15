@@ -201,10 +201,8 @@ def responsibilities(who, viewer, eqtype, django_request):
     has_requested_owner_training = who.has_requested_training([eqtype._id], 'owner')
     owner_section = [T.h4[type_name, " owner information and actions"],
                      (T.div(class_='as_owner')[
-                         ([pages.page_pieces.schedule_event_form(
-                             who, [T.input(type="hidden", name="event_type", value="owner_training"),
-                                   T.input(type="hidden", name="role", value="owner"),
-                                   T.input(type="hidden", name="equiptype", value=eqtype._id)],
+                         ([pages.page_pieces.schedule_training_event_form(
+                             who, "owner", eqtype, [],
                              "Schedule owner training on " + type_name,
                              django_request),
                            ([T.br,
@@ -226,20 +224,14 @@ def responsibilities(who, viewer, eqtype, django_request):
     has_requested_trainer_training = who.has_requested_training([eqtype._id], 'trainer')
     trainer_section = [T.h4[type_name, " trainer information and actions"],
                        (T.div(class_='as_trainer')[
-                           pages.page_pieces.eqty_training_requests(eqtype),
-                           ([pages.page_pieces.schedule_event_form(
-                               who,
-                               [T.input(type="hidden", name="event_type", value="user_training"),
-                                T.input(type="hidden", name="role", value="user"),
-                                T.input(type="hidden", name="equiptype", value=eqtype._id)],
+                           pages.page_pieces.eqty_training_requests(eqtype, django_request),
+                           ([pages.page_pieces.schedule_training_event_form(
+                               who, "user", eqtype, [],
                                "Schedule user training on " + type_name,
                                django_request),
                              T.br,
-                             pages.page_pieces.schedule_event_form(
-                                 who,
-                                 [T.input(type="hidden", name="event_type", value="trainer_training"),
-                                  T.input(type="hidden", name="role", value="trainer"),
-                                  T.input(type="hidden", name="equiptype", value=eqtype._id)],
+                             pages.page_pieces.schedule_training_event_form(
+                                 who, "trainer", eqtype, [],
                                  "Schedule trainer training on  " + type_name,
                                  django_request),
                              ([T.br,

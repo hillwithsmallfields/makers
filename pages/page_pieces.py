@@ -96,16 +96,33 @@ def availform(who, available, django_request):
               T.input(type='hidden', name='person', value=str(who._id)),
               T.input(type="submit", value="Update availability")]])
 
-def avail_table(slot_sums):
+def avail_table(who, slot_sums):
     days, _, times = model.timeslots.get_slots_conf()
-    return [T.table(class_="availability")
-            [T.thead[T.tr[T.th(class_="daylabel")["Day"],
-                          [[T.th[slotname]] for slotname in times]]]],
-            T.tbody[[[T.tr[T.th(class_="daylabel")[day],
-                           [T.td[str(b)]
-                            for t, b in zip(times, day_slots)]]]
-                     for (day, day_slots) in zip(days,
-                                                 model.timeslots.avsums_by_day(slot_sums))]]]
+    return [T.div(class_="avail_table")[
+        [T.h4["Availability of people who have requested training"],
+         T.table(class_="availability")
+         [T.thead[T.tr[T.th(class_="daylabel")["Day"],
+                       [[T.th[slotname]] for slotname in times]]],
+          T.tbody[[[T.tr[T.th(class_="daylabel")[day],
+                         [T.td[str(b) # todo: make bold, and a different style, if "who" (the viewing user) is available then
+                           ]
+                          for t, b in zip(times, day_slots)]]]
+                   for (day, day_slots) in zip(days,
+                                               model.timeslots.avsums_by_day(slot_sums))]]]]]]
+
+def schedule_training_event_form(who, role, eqtype, extras, button_text, django_request):
+    event_type = role+"_training"
+    people_awaiting_training = [who for who in model.person.Person.awaiting_training(event_type, eqtype._id)]
+    return [
+        avail_table(who,
+                    model.timeslots.sum_availabilities([
+            who.available
+            for who in people_awaiting_training])) if len(people_awaiting_training) > 0 else "",
+        T.br,
+        schedule_event_form(who, [T.input(type="hidden", name="event_type", value=event_type),
+                                  T.input(type="hidden", name="role", value=role),
+                                  T.input(type="hidden", name="equiptype", value=eqtype._id)] + extras,
+                            button_text, django_request)]
 
 def interests_button(area_name, level, which_level):
     return [T.td(class_="level_" + str(which_level))
@@ -210,7 +227,7 @@ def machinelist(eqty, who, django_request, as_owner=False):
             if mclist
             else [])
 
-def eqty_training_requests(eqtype):
+def eqty_training_requests(eqtype, django_request):
     raw_reqs = eqtype.get_training_requests()
     # print("raw_reqs is", raw_reqs)
     if len(raw_reqs) == 0:
@@ -229,7 +246,8 @@ def eqty_training_requests(eqtype):
                    T.tbody[[[T.tr[T.td[event.timestring(req['request_date'])],
                                  T.td[person.Person.find(req['requester']).name()]]]
                             for req in reqs]]],
-            avail_table(model.timeslots.sum_availabilities([person.Person.find(req['requester']).available
+            avail_table(model.person.Person.find(django_request.user.link_id),
+                        model.timeslots.sum_availabilities([person.Person.find(req['requester']).available
                                                       for req in raw_reqs]))]
 
 def special_event_form(eqtype, who_id, role, enable, css_class, button_label, django_request):

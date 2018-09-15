@@ -54,6 +54,10 @@ th.ralabel {
     text-align: right;
 }
 
+td.radata {
+    text-align: right;
+}
+
 ul.compactlist {
     display: inline;
 }

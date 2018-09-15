@@ -23,6 +23,7 @@
    :last-state-change: [2018-09-13 Thu 20:07]
    :first-seen: [2018-09-13 Thu 20:07]
    :END:
+** TODO [#A] complete create_event_2
 ** TODO [#A] switch to https
 ** TODO [#A] look at importing and creating users, and how to interface to django's part of it
 ** DONE [#B] In users' lists of "Other equipment", "Request user training" doesn't change to "Cancel user training request" when training has been requested
@@ -31,9 +32,10 @@
    :last-state-change: [2018-09-14 Fri 20:51]
    :first-seen: [2018-09-14 Fri 20:51]
    :END:
-** OPEN [#B] display training requests in dashboard "trainers" sections, possibly with timeslot counts
+** DONE [#B] display training requests in dashboard "trainers" sections, possibly with timeslot counts
+   CLOSED: [2018-09-15 Sat 22:12]
    :PROPERTIES:
-   :last-state-change: [2018-08-18 Sat 21:58]
+   :last-state-change: [2018-09-15 Sat 22:12]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
 ** TODO [#B] command to delete personally identifying data

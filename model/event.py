@@ -460,7 +460,7 @@ class Event(object):
             requester.remove_training_request(self.training_for_role(), self.equipment_type)
 
     def dietary_avoidances(self):
-        """Return the dietary avoidance data as a dictionary of avoidance to number of advoidents."""
+        """Return the dietary avoidance data as a dictionary of avoidance to number of avoidents."""
         avoidances = {}
         for person_id in self.signed_up:
             whoever = model.person.Person.find(person_id)
@@ -472,7 +472,7 @@ class Event(object):
         return avoidances
 
     def dietary_avoidances_summary(self):
-        """Return the dietary avoidance data as an alphabetically sorted list of pairs of avoidance to number of advoidents."""
+        """Return the dietary avoidance data as an alphabetically sorted list of pairs of avoidance to number of avoidents."""
         avoidances = self.dietary_avoidances()
         return [ (avkey, avoidances[avkey]) for avkey in sorted(avoidances.keys()) ]
 

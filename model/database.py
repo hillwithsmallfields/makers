@@ -383,10 +383,10 @@ def get_user_log(user):
 
 # training requests
 
-def get_people_awaiting_training(event_type, equipment_type):
+def get_people_awaiting_training(event_type, equipment_type_id):
     query = {'training_requests': {'$elemMatch':
                                    {'event_type': event_type,
-                                    'equipment_type': equipment_type}}}
+                                    'equipment_type': equipment_type_id}}}
     # print("get_people_awaiting_training using query", query)
     return [who['_id'] for who in
             database[collection_names['people']]

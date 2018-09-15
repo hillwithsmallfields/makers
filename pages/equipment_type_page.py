@@ -35,10 +35,10 @@ def equipment_type_section(eqty, viewing_user, django_request):
     result += [T.h3["Machines"],
                [pages.page_pieces.machinelist(eqty, viewing_user, django_request, viewing_user.is_owner(eqty))]]
     # todo: add list of upcoming training events, using eqty.get_training_events(role, earliest=times.event.now())
-    # todo: add lists of training requests, using eqty.get_training_requests(role); may be able to use eqty_training_requests from person_page.py
+    # todo: add lists of training requests, using eqty.get_training_requests(role, django_request); may be able to use eqty_training_requests from person_page.py
     if viewing_user.is_trainer(eqty):
         result += [T.h3["Training requests"],
-                   pages.page_pieces.eqty_training_requests(eqty)]
+                   pages.page_pieces.eqty_training_requests(eqty, django_request)]
     roles = [("Owners", 'owner'),
              ("Trainers", 'trainer')]
     if viewing_user.is_administrator() or viewing_user.is_auditor() or viewing_user.is_owner(eqty) or viewing_user.is_trainer(eqty):
