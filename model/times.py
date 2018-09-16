@@ -1,3 +1,9 @@
+from __future__ import print_function
+
+if __name__ == "__main__":
+    import sys
+    sys.path.append('..')    # for running tests
+
 from datetime import datetime, timedelta, timezone
 import model.configuration
 import pytz
@@ -64,3 +70,21 @@ def as_utc(when):
     return (when
             if when.tzinfo
             else when.replace(tzinfo=timezone.utc))
+
+def test_times():
+    our_now = now()
+    print("our now is", our_now)
+    sample_input = "2018-04-18T18:00"
+    sample_as_time = as_time(sample_input)
+    print("sample_as_time is", sample_as_time)
+    sample_as_utc = as_utc(sample_as_time)
+    print("sample_as_utc is", sample_as_time)
+    sample_timestring = timestring(sample_as_time)
+    print("sample_timestring is", sample_timestring)
+    for dur_string in ["20", "60", "80", "1:00", "1:20", , "1:00:00", "1:20:00"]:
+        dur = in_minutes(dur_string)
+        print("string", dur_string, "reads as", dur, "minutes")
+    pass
+
+if __name__ == "__main__":
+    test_times()
