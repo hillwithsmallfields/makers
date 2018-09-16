@@ -102,6 +102,8 @@ class Equipment_type(object):
             for detrained_person in ev.passed:
                 if detrained_person not in detrained:
                     detrained[detrained_person] = ev
+        # print("people trained on", self.name, "are", trained)
+        # print("people detrained on", self.name, "are", detrained)
         return [ model.person.Person.find(trained_person) for trained_person in trained.keys()
                  if (trained_person not in detrained
                      or trained[trained_person].start > detrained[trained_person].start) ]

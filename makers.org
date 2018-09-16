@@ -148,7 +148,11 @@
    :first-seen: [2018-08-29 Wed 14:36]
    :END:
 ** TODO fixed profile to include a "box issued" section (probably as a date), editable only by admins
-** TODO "add user" command to have a box for whether they've been inducted, and to collect up an induction event over consecutive user adds
+** OPEN "add user" command to have a box for whether they've been inducted, and to collect up an induction event over consecutive user adds
+   :PROPERTIES:
+   :last-state-change: [2018-09-16 Sun 20:58]
+   :first-seen: [2018-09-16 Sun 20:58]
+   :END:
 ** DONE make the address section of the profile run from the config files
    CLOSED: [2018-08-22 Wed 22:28]
    :PROPERTIES:

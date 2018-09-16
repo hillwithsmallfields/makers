@@ -216,13 +216,16 @@ def add_user(django_request):
 
     if params['inducted']:
         induction_id = params.get('induction_event', None)
-        induction_event = model.event.Event.find(model.pages.unstring_id(induction_id)) if induction_id else None
+        induction_event = model.event.Event.find_by_id(model.pages.unstring_id(induction_id)) if induction_id else None
+        print("Marking new user as inducted, induction_id is", induction_id, "and induction_event is", induction_event)
         if induction_event is None:
             facility_name = model.configuration.get_config()['organization']['name']
+            eqty = model.equipment_type.Equipment_type.find(facility_name)
+            print("Making new induction event for facility named", facility_name, "which is equipment type", eqty)
             induction_event = model.event.Event(facility_name + "_training",
-                                                datetime.utcnow(),
+                                                model.times.now(),
                                                 [model.person.Person.find(django_request.user.link_id)._id],
-                                                equipment_type=model.equipment_type.Equipment_type.find(facility_name)._id)
+                                                equipment_type=eqty._id)
         induction_event.mark_results([model.person.Person.find(link_id)], [], [])
 
     page_data = model.pages.HtmlPage("Added user",

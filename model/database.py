@@ -169,7 +169,9 @@ def name_to_id(name):
     return record and record.get('link_id', None)
 
 def get_highest_membership_number():
-    return database[collection_names['profiles']].find({}).sort('membership_number', pymongo.DESCENDING)[0].get('membership_number', 0)
+    result = int(database[collection_names['profiles']].find({}).sort('membership_number', pymongo.DESCENDING)[0].get('membership_number', 0))
+    print("highest membership number is", result, "of type", type(result))
+    return result
 
 def add_person(name_record, main_record):
     # todo: convert dates to datetime.datetime

@@ -69,11 +69,14 @@ def now():
 def as_utc(when):
     return (when
             if when.tzinfo
-            else when.replace(tzinfo=timezone.utc))
+            else when.replace(tzinfo=timezone.utc)).astimezone(pytz.timezone('utc'))
 
 def test_times():
     our_now = now()
     print("our now is", our_now)
+    our_now_output = timestring(our_now)
+    print("as timestring, that is", our_now_output)
+    print("")
     sample_input = "2018-04-18T18:00"
     sample_as_time = as_time(sample_input)
     print("sample_as_time is", sample_as_time)
@@ -81,6 +84,7 @@ def test_times():
     print("sample_as_utc is", sample_as_time)
     sample_timestring = timestring(sample_as_time)
     print("sample_timestring is", sample_timestring)
+    print("")
     for dur_string in ["20", "60", "80", "1:00", "1:20", "1:00:00", "1:20:00"]:
         dur = in_minutes(dur_string)
         print("string", dur_string, "reads as", dur, "minutes")
