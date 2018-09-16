@@ -114,7 +114,7 @@ def person_name(whoever,
                 name_record.get('known_as', name_record.get('given_name', "?")))
 
 def person_set_name(whoever, viewing_person, new_name):
-    """Set the person's email address."""
+    """Set the person's name."""
     person_link = (whoever['link_id']
                    if isinstance(whoever, dict)
                    else (whoever.link_id
@@ -168,9 +168,12 @@ def name_to_id(name):
                     or collection.find_one({"email" : name})))
     return record and record.get('link_id', None)
 
+def get_highest_membership_number():
+    return database[collection_names['profiles']].find({}).sort('membership_number', pymongo.DESCENDING)[0].membership_number
+
 def add_person(name_record, main_record):
     # todo: convert dates to datetime.datetime
-    membership_number = 1234;   # todo: get membership number, and lock it somehow until the data is saved
+    membership_number = get_highest_membership_number()+1;   # todo: make a critical region here, maybe with redis or memcached or django-locking
     link_id = str(uuid.uuid4())
     main_record['link_id'] = link_id # todo: make it index by this
     name_record['link_id'] = link_id # todo: make it index by this

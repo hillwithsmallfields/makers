@@ -453,6 +453,8 @@ def admin_section(viewer, django_request):
                          model.pages.with_help(viewer,
                                                [T.a(href="/dashboard/all")["List all users"]],
                                                "list_all_users")),
+        admin_subsection("Member stats",
+                         [T.p["Highest membership number is ", str(model.database.get_highest_membership_number())]]),
         admin_subsection("Search for users by name:",
                          search_users_form(django_request)),
         admin_subsection("Create event: ",
