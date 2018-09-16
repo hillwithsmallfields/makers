@@ -78,6 +78,24 @@ def create_event(django_request):
     page_data.add_content("Event creation form", model.pages.with_help(viewer, form, "event_creation"))
     return HttpResponse(str(page_data.to_string()))
 
+# todo: get these from the config file
+values_requiring_splitting = ['hosts', 'attendees', 'passed', 'failed', 'noshow',
+                              'host_prerequisites', 'attendee_prerequisites',
+                              'interest_areas', 'equipment']
+
+values_as_integers = ['attendance_limit']
+
+values_as_times = ['start', 'end']
+
+def process_value(k, v):
+    return ([v.strip() for v in v.split(',')]
+            if k in values_requiring_splitting
+            else (int(v)
+                  if k in values_as_integers
+                  else (model.times.as_time(v)
+                        if k in values_as_times
+                        else v)))
+
 def create_event_2(django_request):
 
     """The second stage of event creation."""
@@ -88,15 +106,26 @@ def create_event_2(django_request):
 
     params = django_request.POST
 
-    # todo: create an event, and 'update' the params onto its __dict__, with appropriate type conversions (including of the lists of conditions etc)
+    ev = model.event.Event(params['event_type'],
+                           params['start'], # ?
+                           params['hosts'].split(','))
 
-    page_data = model.pages.HtmlPage("Create event",
-                                     pages.page_pieces.top_navigation(django_request),
-                                     django_request=django_request)
+    ev.__dict__.update({k:process_value(k, v) for k, v in params.items()})
 
-    result = "placeholder"
+    ev.save()
 
-    page_data.add_content("Event creation confirmation", result)
+    page_data = model.pages.HtmlPage(
+        "Event created",
+        pages.page_pieces.top_navigation(django_request),
+        django_request=django_request)
+
+    page_data.add_content(
+        "Event creation confirmation",
+        pages.event_page.one_event_section(
+            ev,
+            model.person.Person.find(django_request.user.link_id),
+            django_request))
+
     return HttpResponse(str(page_data.to_string()))
 
 def announce(django_request):
