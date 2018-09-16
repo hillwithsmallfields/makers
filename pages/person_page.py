@@ -467,6 +467,11 @@ def admin_section(viewer, django_request):
                              viewer,
                              search_events_form(viewer, django_request),
                              "events_search")),
+        admin_subsection("Edit event template",
+                         model.pages.with_help(
+                             viewer,
+                             [""],
+                             "edit_event_template")),
         admin_subsection("Send announcement: ", # todo: separate this and control it by whether the person is a trained announcer
                          model.pages.with_help(
                              viewer,
@@ -482,6 +487,11 @@ def admin_section(viewer, django_request):
                              viewer,
                              add_user_form(django_request),
                              "admin_add_user")),
+        admin_subsection("Delete user according to GDPR",
+                         model.pages.with_help(
+                             viewer,
+                             [""],
+                             "gdpr_delete_user")),
         admin_subsection("Update django logins: ",
                          model.pages.with_help(
                              viewer,

@@ -235,6 +235,40 @@ def add_user(django_request):
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
+def edit_event_template(django_request):
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    params = django_request.POST
+
+    # todo: fill in
+
+    page_data = model.pages.HtmlPage("",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("",
+                          [""])
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
+def gdpr_delete_user(django_request):
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    params = django_request.POST
+
+    # todo: fill in
+
+    page_data = model.pages.HtmlPage("",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("",
+                          [""])
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
 def update_django(django_request):
 
     config_data = model.configuration.get_config()

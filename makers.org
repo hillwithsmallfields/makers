@@ -23,9 +23,17 @@
    :last-state-change: [2018-09-13 Thu 20:07]
    :first-seen: [2018-09-13 Thu 20:07]
    :END:
-** TODO [#A] complete create_event_2
+** OPEN [#A] complete create_event_2
+   :PROPERTIES:
+   :last-state-change: [2018-09-16 Sun 13:46]
+   :first-seen: [2018-09-16 Sun 13:46]
+   :END:
 ** TODO [#A] switch to https
-** TODO [#A] look at importing and creating users, and how to interface to django's part of it
+** OPEN [#A] look at importing and creating users, and how to interface to django's part of it
+   :PROPERTIES:
+   :last-state-change: [2018-09-16 Sun 13:46]
+   :first-seen: [2018-09-16 Sun 13:46]
+   :END:
 ** DONE [#B] In users' lists of "Other equipment", "Request user training" doesn't change to "Cancel user training request" when training has been requested
    CLOSED: [2018-09-14 Fri 20:51]
    :PROPERTIES:
