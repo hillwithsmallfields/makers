@@ -482,6 +482,11 @@ def admin_section(viewer, django_request):
                              viewer,
                              notification_form(viewer, django_request),
                              "send_notification")),
+        admin_subsection("Backup_database",
+                         model.pages.with_help(
+                             viewer,
+                             [""],
+                             "backup_database")),
         admin_subsection("Add user: ",
                          model.pages.with_help(
                              viewer,
