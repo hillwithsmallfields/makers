@@ -234,21 +234,87 @@ def add_user(django_request):
                                                            induction_event._id)])
     return HttpResponse(str(page_data.to_string()))
 
+def template_field(name, value):
+    return (value
+            if name == '_id'
+            else (pages.page_pieces.equipment_type_dropdown('equipment_type', value)
+                  if name == 'equipment_type'
+                  else (pages.page_pieces.location_dropdown('location', value)
+                        if name == 'location'
+                        else T.input(type='text', name=name, value=str(value)))))
+
 @ensure_csrf_cookie
 def edit_event_template(django_request):
 
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    params = django_request.POST
+    params = django_request.GET
 
-    # todo: fill in
+    if 'event_template_name' not in params:
+        return admin_error_page(django_request,
+                                "Missing parameter",
+                                "'event_template_name' not set in params")
 
-    page_data = model.pages.HtmlPage("",
+    template_name = params['event_template_name']
+    template_data = {key:"" for key in config_data['event_template_standard_fields']}
+    template_data.update(model.database.find_event_template(template_name))
+    form = [T.form(action=django.urls.reverse('makers_admin:save_template_edits'),
+                   method='POST')[
+        T.input(type="hidden",
+                name="csrfmiddlewaretoken",
+                value=django.middleware.csrf.get_token(django_request)),
+        T.input(type='hidden',
+                name='original_template_name',
+                value=template_name),
+        T.table[[T.tr[T.th(class_='ralabel')[name],
+                      T.td[template_field(name, template_data[name])]]
+                 for name in sorted(template_data.keys())],
+                T.tr[T.td[""], T.td[T.input(type='submit', value="Save template")]]]]]
+
+    page_data = model.pages.HtmlPage("Event template editor",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
-    page_data.add_content("",
-                          [""])
+    page_data.add_content(template_name + " event template",
+                          form)
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
+def save_template_edits(django_request):
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    params = django_request.POST
+
+    if 'original_template_name' not in params:
+        return admin_error_page(django_request,
+                                "Missing parameter",
+                                "'original_template_name' not set in params")
+
+    template_name = params['event_template_name']
+    base_template_name = params['original_template_name']
+
+    template_data = model.database.find_event_template(template_name)
+    template_data.update({key: value
+                          for key, value in params.items()
+                          if key not in ['original_template_name'
+                                         # probably some system stuff to filter too
+                                     ]})
+
+    if template_name != base_template_name:
+        print("Creating new template", template_name)
+        del template_data['_id']
+    else:
+        print("Modifying existing template", template_name)
+
+    database.save_event_template(template_data)
+
+    page_data = model.pages.HtmlPage("Event template saved",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("Event template " + template_name + " saved",
+                          [T.p[str(template_data)]])
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
@@ -257,15 +323,15 @@ def backup_database(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    params = django_request.POST
+    params = django_request.GET
 
     # todo: fill in
 
-    page_data = model.pages.HtmlPage("",
+    page_data = model.pages.HtmlPage("Database backup",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
-    page_data.add_content("",
-                          [""])
+    page_data.add_content("Unimplemented",
+                          [T.p["This feature has not been written yet."]])
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie

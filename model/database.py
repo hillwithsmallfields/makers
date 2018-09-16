@@ -169,7 +169,7 @@ def name_to_id(name):
     return record and record.get('link_id', None)
 
 def get_highest_membership_number():
-    return database[collection_names['profiles']].find({}).sort('membership_number', pymongo.DESCENDING)[0].membership_number
+    return database[collection_names['profiles']].find({}).sort('membership_number', pymongo.DESCENDING)[0].get('membership_number', 0)
 
 def add_person(name_record, main_record):
     # todo: convert dates to datetime.datetime
@@ -301,8 +301,8 @@ def find_event_template(name):
 def list_event_templates():
     return [ template for template in database[collection_names['event_templates']].find({}) ]
 
-def add_template(template):
-    database[collection_names['event_templates']].update({'title': template['title']},
+def save_event_template(template):
+    database[collection_names['event_templates']].update({'template_name': template['template_name']},
                                                          template,
                                                          upsert=True)
 

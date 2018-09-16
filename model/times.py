@@ -81,7 +81,7 @@ def test_times():
     print("sample_as_utc is", sample_as_time)
     sample_timestring = timestring(sample_as_time)
     print("sample_timestring is", sample_timestring)
-    for dur_string in ["20", "60", "80", "1:00", "1:20", , "1:00:00", "1:20:00"]:
+    for dur_string in ["20", "60", "80", "1:00", "1:20", "1:00:00", "1:20:00"]:
         dur = in_minutes(dur_string)
         print("string", dur_string, "reads as", dur, "minutes")
     pass

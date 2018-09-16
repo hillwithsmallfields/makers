@@ -455,14 +455,14 @@ def admin_section(viewer, django_request):
                                                "list_all_users")),
         admin_subsection("Member stats",
                          [T.p["Highest membership number is ", str(model.database.get_highest_membership_number())]]),
-        admin_subsection("Search for users by name:",
+        admin_subsection("Search for users by name",
                          search_users_form(django_request)),
-        admin_subsection("Create event: ",
+        admin_subsection("Create event",
                          model.pages.with_help(
                              viewer,
                              create_event_form(viewer, django_request),
                              "event_creation")),
-        admin_subsection("Search for events: ",
+        admin_subsection("Search for events",
                          model.pages.with_help(
                              viewer,
                              search_events_form(viewer, django_request),
@@ -470,14 +470,19 @@ def admin_section(viewer, django_request):
         admin_subsection("Edit event template",
                          model.pages.with_help(
                              viewer,
-                             [""],
+                             [T.form(action=django.urls.reverse('makers_admin:edit_event_template'),
+                                     method='GET')[
+                                         T.input(type="hidden", name="csrfmiddlewaretoken",
+                                                 value=django.middleware.csrf.get_token(django_request)),
+                                         pages.page_pieces.event_template_dropdown('event_template_name'),
+                                         T.input(type='submit', value="Edit event template")]],
                              "edit_event_template")),
-        admin_subsection("Send announcement: ", # todo: separate this and control it by whether the person is a trained announcer
+        admin_subsection("Send announcement", # todo: separate this and control it by whether the person is a trained announcer
                          model.pages.with_help(
                              viewer,
                              announcement_form(viewer, django_request),
                              "send_announcement")),
-        admin_subsection("Send notification: ",
+        admin_subsection("Send notification",
                          model.pages.with_help(
                              viewer,
                              notification_form(viewer, django_request),
@@ -485,9 +490,13 @@ def admin_section(viewer, django_request):
         admin_subsection("Backup_database",
                          model.pages.with_help(
                              viewer,
-                             [""],
+                             [T.form(action=django.urls.reverse('makers_admin:backup_database'),
+                                     method='GET')[
+                                         T.input(type="hidden", name="csrfmiddlewaretoken",
+                                                 value=django.middleware.csrf.get_token(django_request)),
+                                         T.input(type='submit', value="Backup database")]],
                              "backup_database")),
-        admin_subsection("Add user: ",
+        admin_subsection("Add user",
                          model.pages.with_help(
                              viewer,
                              add_user_form(django_request),
@@ -497,13 +506,14 @@ def admin_section(viewer, django_request):
                              viewer,
                              [""],
                              "gdpr_delete_user")),
-        admin_subsection("Update django logins: ",
+        admin_subsection("Update django logins",
                          model.pages.with_help(
                              viewer,
-                             [T.form(action=django.urls.reverse("makers_admin:update_django"))[
-                             T.input(type="hidden", name="csrfmiddlewaretoken",
-                                     value=django.middleware.csrf.get_token(django_request)),
-                                 T.input(type='submit', value="Update django logins")]],
+                             [T.form(action=django.urls.reverse("makers_admin:update_django"),
+                                     method='POST')[
+                                         T.input(type="hidden", name="csrfmiddlewaretoken",
+                                                 value=django.middleware.csrf.get_token(django_request)),
+                                         T.input(type='submit', value="Update django logins")]],
                              "admin_update_logins"))]
 
 def add_person_page_contents(page_data, who, viewer, django_request, extra_top_header=None, extra_top_body=None):

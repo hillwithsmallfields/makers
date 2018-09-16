@@ -142,6 +142,20 @@ dietary_avoidances:
   - Low Carb
   - Low Sugar
 
+event_template_standard_fields:
+  - alchohol_authorized
+  - attendance_limit
+  - attendee_prerequisites
+  - catered
+  - duration
+  - equipment_type
+  - event_type
+  - host_prerequisites
+  - location
+  - name
+  - status
+  - title
+  
 database:
   URI:
   database_name: Makespace
