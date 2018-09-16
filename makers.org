@@ -88,7 +88,18 @@
    :last-state-change: [2018-09-07 Fri 22:16]
    :first-seen: [2018-09-07 Fri 22:16]
    :END:
-** TODO event template editor
+** OPEN event template editor
+   :PROPERTIES:
+   :last-state-change: [2018-09-16 Sun 14:35]
+   :first-seen: [2018-09-16 Sun 14:35]
+   :END:
+** TODO training video player, with registration of having watched it
+   - https://developers.google.com/youtube/iframe_api_reference
+   - https://developers.google.com/youtube/player_parameters
+   - integrate with event prerequisites
+** TODO multiple-choice tests, with registration of results
+   - integrate with event prerequisites
+** TODO voting and opinion-gathering
 ** DONE fix notifications and announcements
    CLOSED: [2018-09-09 Sun 22:03]
    :PROPERTIES:
