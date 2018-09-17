@@ -155,6 +155,7 @@ def responsibilities_only(request, who=""):
                        who)
 
 def trained_on_only(request, who=""):
+    print("Getting equipment I can use") # to see when it's done when loading lazily; todo: remove this print
     return one_section(request,
                        pages.person_page.equipment_trained_on_section,
                        "Equipment trained on",

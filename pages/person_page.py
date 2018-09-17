@@ -669,7 +669,10 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
 
     trained_on = equipment_trained_on_section(who, viewer, django_request)
     if trained_on:
-        page_data.add_section("Equipment I can use", trained_on)
+        if False:
+            page_data.add_lazy_section("Equipment I can use", django.urls.reverse('dashboard:trained_on_only'))
+        else:
+            page_data.add_section("Equipment I can use", trained_on)
 
     other_equipment = other_equipment_section(who, viewer, django_request)
     if other_equipment:

@@ -103,6 +103,7 @@ class SectionalPage(object):
         self.initial_tab_priority = -1
         self.presentation_names = {}
         self.index = []
+        self.lazy = False
         self.viewer = viewer
         self.django_request = django_request
 
@@ -119,10 +120,28 @@ class SectionalPage(object):
             self.initial_tab = section_id
         self.index.append(section_id)
 
+    def add_lazy_section(self, name, content_loader_url, priority=1):
+        """Add a lazily-loaded section to the page data.
+        This section will be loaded when its tab is first looked at."""
+        # http://api.jquery.com/load/ gives an example:
+        # $( "#feeds" ).load( "feeds.html" );
+        # I could use something like that to load big pages such as the dashboard piecemeal
+        # Each tab body could start off with a load call in it, which would be replaced by the loaded content and so not get the loading repeated
+        section_id = name.replace(' ', '_')
+        self.sections[section_id] = content_loader_url
+        self.presentation_names[section_id] = name
+        if priority > self.initial_tab_priority:
+            self.initial_tab_priority = priority
+            self.initial_tab = section_id
+        self.index.append(section_id)
+        self.lazy = True
+
     def to_string(self):
         index = [T.div(class_="tabset")[
             [T.button(class_="tablinks",
-                      onclick="openTab(event, '" + section_id + "')",
+                      onclick=(("openLazyTab(event, '" + section_id + "', '" + self.sections[section_id] + "')")
+                               if isinstance(self.sections[section_id], str)
+                               else ("openTab(event, '" + section_id + "')")),
                       id=section_id+"_button")[self.presentation_names[section_id]]
                                       for section_id in self.index]],
                  T.br(clear='all')]
@@ -133,9 +152,10 @@ class SectionalPage(object):
                            user=self.viewer or (model.person.Person.find(self.django_request.user.link_id)
                                                 if self.django_request
                                                 else None),
-                           initial_tab=(self.initial_tab+"_button") if self.initial_tab else None)
+                           initial_tab=(self.initial_tab+"_button") if self.initial_tab else None,
+                           needs_jquery=self.lazy)
 
-def page_string(page_title, content, user=None, initial_tab=None):
+def page_string(page_title, content, user=None, initial_tab=None, needs_jquery = False):
     """Make up a complete page as a string."""
     conf = configuration.get_config()
     page_conf = conf['page']
@@ -146,7 +166,9 @@ def page_string(page_title, content, user=None, initial_tab=None):
     if os.path.exists(script_file):
         with open(script_file) as mfile:
             script_body = mfile.read()
-    script_text = """<script type="text/javascript">""" + script_body + """</script>"""
+    script_text = """<script type="text/javascript">""" + script_body + """</script>\n"""
+    if needs_jquery:
+        script_text += """<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>\n"""
     motd = ""
     motd_file = page_conf['motd_file']
     if os.path.exists(motd_file):
