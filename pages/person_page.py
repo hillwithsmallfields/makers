@@ -88,6 +88,35 @@ def availability_sub_section(who, viewer, django_request):
                                                 'evening_start': str(timeslot_times['Evening'][0]),
                                                 'evening_end': str(timeslot_times['Evening'][1])})
 
+def user_interests_section(who, django_request):
+    return pages.page_pieces.interests_section(who.get_interests(),
+                                               who.get_profile_field('interest_emails', [False, False, False, False]),
+                                               django_request,
+                                               who)
+
+def avoidances_section(who, django_request):
+    if 'dietary_avoidances' not in all_conf:
+        return []
+    avoidances = who.get_profile_field('avoidances') or []
+    return [T.form(action=django.urls.reverse("dashboard:update_avoidances"),
+                   method='POST')[
+                       T.table[
+                           T.thead[T.tr[T.th(class_='ralabel')["Food"],
+                                        T.th["Status"]]],
+                           T.tbody[[T.tr[T.th(class_='ralabel')[thing],
+                                         T.td[(T.input(type="checkbox",
+                                                       name=thing,
+                                                       checked="checked")
+                                               if thing in avoidances
+                                               else T.input(type="checkbox",
+                                                            name=thing))]]
+                                    for thing in sorted(all_conf['dietary_avoidances'])]]],
+                       T.input(type="hidden",
+                               name="csrfmiddlewaretoken",
+                               value=django.middleware.csrf.get_token(django_request)),
+                       T.input(type='hidden', name='subject_user_uuid', value=who._id),
+                       T.div(align="right")[T.input(type='submit', value="Update avoidances")]]]
+
 def get_profile_subfield_value(who, group_name, name):
     all_groups = who.get_profile_field('configured')
     if all_groups is None:
@@ -195,6 +224,49 @@ def profile_section(who, viewer, django_request):
 
     return T.div(class_="personal_profile")[result]
 
+def notifications_section(who, viewer, django_request):
+
+    (announcements, _) = who.read_announcements()
+    (notifications, _) = who.read_notifications()
+
+    messages = []
+    if len(announcements) > 0:
+        messages.append(
+            [T.h3["Announcements"],
+             model.pages.with_help(
+                 viewer,
+                 T.dl[[[T.dt["From "
+                             + model.person.Person.find(bson.objectid.ObjectId(anno['from'])).name()
+                             + " at " + model.times.timestring(anno['when'])],
+                        T.dd[untemplate.safe_unicode(anno['text'])]]
+                       for anno in announcements]],
+                 "announcements"),
+             T.form(action=django.urls.reverse("dashboard:announcements_read"),
+                    method='POST')
+             [T.input(type='hidden', name='subject_user_uuid', value=who._id),
+              T.input(type="hidden", name="csrfmiddlewaretoken",
+                      value=django.middleware.csrf.get_token(django_request)),
+              T.input(type='submit', value="Mark as read")]])
+    if len(notifications) > 0:
+        messages.append(
+            [T.h3["Notifications"],
+             model.pages.with_help(viewer,
+                                   T.dl[[[T.dt["At "
+                                               + model.times.timestring(noti['when'])],
+                                          T.dd[untemplate.safe_unicode(noti['text'])]] for noti in notifications]],
+                                   "notifications"),
+             T.form(action=django.urls.reverse("dashboard:notifications_read"),
+                    method='POST')
+             [T.input(type='hidden', name='subject_user_uuid', value=who._id),
+              T.input(type="hidden", name="csrfmiddlewaretoken",
+                      value=django.middleware.csrf.get_token(django_request)),
+              T.input(type='submit', value="Mark as read")]])
+
+
+    if len(messages) == 0:
+        return None
+    return messages
+
 def responsibilities(who, viewer, eqtype, django_request):
     type_name = eqtype.pretty_name()
     is_owner = who.is_owner(eqtype)
@@ -255,34 +327,46 @@ def responsibilities(who, viewer, eqtype, django_request):
                 owner_section,
                 trainer_section]
 
-def user_interests_section(who, django_request):
-    return pages.page_pieces.interests_section(who.get_interests(),
-                                               who.get_profile_field('interest_emails', [False, False, False, False]),
-                                               django_request,
-                                               who)
+def responsibilities_section(who, viewer, django_request):
+    their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
+    if len(their_responsible_types) == 0:
+        return None
+    keyed_types = { ty.pretty_name(): ty for ty in their_responsible_types }
+    return [T.div(class_="resps")[
+        model.pages.with_help(
+            viewer,
+            [[T.h3[T.a(href=django.urls.reverse('equiptypes:eqty',
+                                                args=(keyed_types[name].name,)))[name]],
+              responsibilities(who, viewer, keyed_types[name], django_request)]
+             for name in sorted(keyed_types.keys())],
+            "responsibilities")]]
 
-def avoidances_section(who, django_request):
-    if 'dietary_avoidances' not in all_conf:
-        return []
-    avoidances = who.get_profile_field('avoidances') or []
-    return [T.form(action=django.urls.reverse("dashboard:update_avoidances"),
-                   method='POST')[
-                       T.table[
-                           T.thead[T.tr[T.th(class_='ralabel')["Food"],
-                                        T.th["Status"]]],
-                           T.tbody[[T.tr[T.th(class_='ralabel')[thing],
-                                         T.td[(T.input(type="checkbox",
-                                                       name=thing,
-                                                       checked="checked")
-                                               if thing in avoidances
-                                               else T.input(type="checkbox",
-                                                            name=thing))]]
-                                    for thing in sorted(all_conf['dietary_avoidances'])]]],
-                       T.input(type="hidden",
-                               name="csrfmiddlewaretoken",
-                               value=django.middleware.csrf.get_token(django_request)),
-                       T.input(type='hidden', name='subject_user_uuid', value=who._id),
-                       T.div(align="right")[T.input(type='submit', value="Update avoidances")]]]
+def equipment_trained_on_section(who, viewer, django_request):
+    their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
+    their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
+    if len(their_equipment_types) == 0:
+        return None
+    return [T.div(class_='trained_on')[
+        model.pages.with_help(viewer,
+                              equipment_trained_on(who, viewer,
+                                                   their_equipment_types,
+                                                   django_request),
+                              "equipment_as_user")]]
+
+def other_equipment_section(who, viewer, django_request):
+    their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
+    their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
+    all_remaining_types = ((set(model.equipment_type.Equipment_type.list_equipment_types())
+                            -their_responsible_types)
+                           -their_equipment_types)
+    if len(all_remaining_types) == 0:
+        return None
+    return [T.div(class_='other_equipment')[
+        model.pages.with_help(viewer,
+                              pages.page_pieces.general_equipment_list(who, viewer,
+                                                                       all_remaining_types,
+                                                                       django_request),
+                              "other_equipment")]]
 
 def name_of_host(host):
     return model.person.Person.find(host).name() if host else "Unknown"
@@ -331,20 +415,68 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                                                            or viewer.is_trainer(name)) else [])]
                      for name in sorted(keyed_types.keys())]]]]
 
-def training_requests_section(who, django_request):
+def training_requests_section(who, viewer, django_request):
     len_training = len("_training")
     keyed_requests = {req['request_date']: req for req in who.training_requests}
     sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
-    return T.div(class_="requested")[T.table()[T.thead[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]]],
-                                               T.tbody[[T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
-                                                             T.td[T.a(href=django.urls.reverse("equiptypes:eqty",
-                                                                                                    args=(model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).name,)))[model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).pretty_name()]],
-                                                             T.td[str(req['event_type'])[:-len_training]],
-                                                             T.td[pages.page_pieces.cancel_button(who,
-                                                                                                  req['equipment_type'],
-                                                                                                  'user', "Cancel training request",
-                                                                                                  django_request)]]
-                                                        for req in sorted_requests]]]]
+    return [T.div(class_="requested")[
+        T.table()[
+            T.thead[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]]],
+            T.tbody[
+                [T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
+                      T.td[T.a(href=django.urls.reverse("equiptypes:eqty",
+                                                        args=(model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).name,)))[model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).pretty_name()]],
+                      T.td[str(req['event_type'])[:-len_training]],
+                      T.td[pages.page_pieces.cancel_button(who,
+                                                           req['equipment_type'],
+                                                           'user', "Cancel training request",
+                                                           django_request)]]
+                 for req in sorted_requests]]]]]
+
+def events_hosting_section(who, viewer, django_request):
+    hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events()
+    if len(hosting) == 0:
+        return None
+    return [T.div(class_="hostingevents")[
+        pages.event_page.event_table_section(hosting,
+                                             who._id,
+                                             django_request,
+                                             with_completion_link=True)]]
+
+def events_attending_section(who, viewer, django_request):
+    attending = model.timeline.Timeline.future_events(person_field='signed_up', person_id=who._id).events()
+    if len(attending) == 0:
+        return None
+    return [model.pages.with_help(viewer,
+                                  T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)],
+                                  "attending")]
+
+def events_hosted_section(who, viewer, django_request):
+    hosted = model.timeline.Timeline.past_events(person_field='hosts', person_id=who._id).events()
+    if len(hosted) == 0:
+        return None
+    return [T.div(class_="hostedevents")[pages.event_page.event_table_section(hosted, who._id, django_request)]]
+
+def events_attended_section(who, viewer, django_request):
+    attended = model.timeline.Timeline.past_events(person_field='signed_up', person_id=who._id).events()
+    if len(attended) == 0:
+        return None
+    return [T.div(class_="attendedingevents")[pages.event_page.event_table_section(attended, who._id, django_request)]]
+
+def events_available_section(who, viewer, django_request):
+    hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events()
+    attending = model.timeline.Timeline.future_events(person_field='signed_up', person_id=who._id).events()
+    known_events = hosting + attending
+    available_events = [ev
+                        for ev in model.timeline.Timeline.future_events().events()
+                        if (ev not in known_events
+                            and who.satisfies_conditions(ev.attendee_prerequisites))]
+    if len(available_events) == 0:
+        return None
+    return [T.div(class_="availableevents")[
+        pages.event_page.event_table_section(
+            available_events, # todo: filter this to only those for which the user has the prerequisites
+            who._id, django_request, True, True)]]
 
 def create_event_form(viewer, django_request):
     return T.form(action="/makers_admin/create_event",
@@ -447,7 +579,7 @@ def admin_subsection(title, body):
         T.h3(class_='admin_action_heading')[title],
         T.div(class_='admin_action_body')[body]]
 
-def admin_section(viewer, django_request):
+def admin_section(who, viewer, django_request):
     return T.div(class_='admin_action_list')[
         admin_subsection("List all users",
                          model.pages.with_help(viewer,
@@ -524,122 +656,59 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
 
     page_data.add_section("Personal profile", profile_section(who, viewer, django_request))
 
-    (announcements, _) = who.read_announcements()
-    (notifications, _) = who.read_notifications()
+    messages = notifications_section(who, viewer, django_request)
 
-    messages = []
-    if len(announcements) > 0:
-        messages.append(
-            [T.h3["Announcements"],
-             model.pages.with_help(
-                 viewer,
-                 T.dl[[[T.dt["From "
-                             + model.person.Person.find(bson.objectid.ObjectId(anno['from'])).name()
-                             + " at " + model.times.timestring(anno['when'])],
-                        T.dd[untemplate.safe_unicode(anno['text'])]]
-                       for anno in announcements]],
-                 "announcements"),
-             T.form(action=django.urls.reverse("dashboard:announcements_read"),
-                    method='POST')
-             [T.input(type='hidden', name='subject_user_uuid', value=who._id),
-              T.input(type="hidden", name="csrfmiddlewaretoken",
-                      value=django.middleware.csrf.get_token(django_request)),
-              T.input(type='submit', value="Mark as read")]])
-    if len(notifications) > 0:
-        messages.append(
-            [T.h3["Notifications"],
-             model.pages.with_help(viewer,
-                                   T.dl[[[T.dt["At "
-                                               + model.times.timestring(noti['when'])],
-                                          T.dd[untemplate.safe_unicode(noti['text'])]] for noti in notifications]],
-                                   "notifications"),
-             T.form(action=django.urls.reverse("dashboard:notifications_read"),
-                    method='POST')
-             [T.input(type='hidden', name='subject_user_uuid', value=who._id),
-              T.input(type="hidden", name="csrfmiddlewaretoken",
-                      value=django.middleware.csrf.get_token(django_request)),
-              T.input(type='submit', value="Mark as read")]])
-
-    if len(announcements) > 0 or len(notifications) > 0:
+    if messages:
         page_data.add_section("Notifications",
                               T.div(class_="notifications")[messages],
                               priority=9)
 
-    their_responsible_types = set(who.get_equipment_types('owner') + who.get_equipment_types('trainer'))
-    if len(their_responsible_types) > 0:
-        keyed_types = { ty.pretty_name(): ty for ty in their_responsible_types }
-        page_data.add_section("Equipment responsibilities",
-                              [T.div(class_="resps")[model.pages.with_help(
-                                  viewer,
-                                  [[T.h3[T.a(href=django.urls.reverse('equiptypes:eqty',
-                                                                      args=(keyed_types[name].name,)))[name]],
-                                    responsibilities(who, viewer, keyed_types[name], django_request)]
-                                   for name in sorted(keyed_types.keys())],
-                                  "responsibilities")]])
+    responsibilities = responsibilities_section(who, viewer, django_request)
+    if responsibilities:
+        page_data.add_section("Equipment responsibilities", responsibilities)
 
-    their_equipment_types = set(who.get_equipment_types('user')) - their_responsible_types
-    if len(their_equipment_types) > 0:
-        page_data.add_section("Equipment I can use",
-                              model.pages.with_help(viewer,
-                                                    equipment_trained_on(who, viewer, their_equipment_types, django_request),
-                                                    "equipment_as_user"))
+    trained_on = equipment_trained_on_section(who, viewer, django_request)
+    if trained_on:
+        page_data.add_section("Equipment I can use", trained_on)
 
-    all_remaining_types = ((set(model.equipment_type.Equipment_type.list_equipment_types())
-                            -their_responsible_types)
-                           -their_equipment_types)
-    if len(all_remaining_types) > 0:
+    other_equipment = other_equipment_section(who, viewer, django_request)
+    if other_equipment:
         page_data.add_section("Other equipment",
-                              model.pages.with_help(viewer,
-                                                    pages.page_pieces.general_equipment_list(who, viewer, all_remaining_types, django_request),
-                                                    "other_equipment"))
+                              other_equipment)
 
     if len(who.training_requests) > 0:
-        page_data.add_section("Training requests", training_requests_section(who, django_request))
+        page_data.add_section("Training requests", training_requests_section(who, viewer, django_request))
 
-    hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events()
-    if len(hosting) > 0:
-        page_data.add_section(
-            "Events I will be hosting",
-            T.div(class_="hostingevents")[
-                pages.event_page.event_table_section(hosting,
-                                                     who._id,
-                                                     django_request,
-                                                     with_completion_link=True)])
 
-    attending = model.timeline.Timeline.future_events(person_field='signed_up', person_id=who._id).events()
-    if len(attending) > 0:
-        page_data.add_section("Events I have signed up for",
-                              model.pages.with_help(viewer,
-                                                    T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)],
-                                                    "attending"))
+    hosting_section = events_hosting_section(who, viewer, django_request)
 
-    hosted = model.timeline.Timeline.past_events(person_field='hosts', person_id=who._id).events()
-    if len(hosting) > 0:
-        page_data.add_section("Events I have hosted",
-                              T.div(class_="hostedevents")[pages.event_page.event_table_section(hosted, who._id, django_request)])
+    if hosting_section:
+        page_data.add_section("Events I will be hosting", hosting_section)
 
-    attended = model.timeline.Timeline.past_events(person_field='signed_up', person_id=who._id).events()
-    if len(attended) > 0:
-        page_data.add_section("Events I have attended",
-                              T.div(class_="attendedingevents")[pages.event_page.event_table_section(attended, who._id, django_request)])
+    attending_section = events_attending_section(who, viewer, django_request)
 
-    known_events = hosting + attending + hosted + attended
-    available_events = [ev
-                        for ev in model.timeline.Timeline.future_events().events()
-                        if (ev not in known_events
-                            and who.satisfies_conditions(ev.attendee_prerequisites))]
-    if len(available_events) > 0:
-        page_data.add_section("Events I can sign up for",
-                              T.div(class_="availableevents")[
-                                  pages.event_page.event_table_section(
-                                      available_events, # todo: filter this to only those for which the user has the prerequisites
-                                      who._id, django_request, True, True)])
+    if attending_section:
+        page_data.add_section("Events I have signed up for", attending_section)
+
+    hosted_section = events_hosted_section(who, viewer, django_request)
+
+    if hosted_section:
+        page_data.add_section("Events I have hosted", hosted_section)
+
+    attended_section = events_attended_section(who, viewer, django_request)
+
+    if attended_section:
+        page_data.add_section("Events I have attended", attended_section)
+
+    available_events = events_available_section(who, viewer, django_request)
+    if available_events:
+        page_data.add_section("Events I can sign up for", available_events)
 
     if viewer.is_administrator() or viewer.is_auditor():
         page_data.add_section("Admin actions",
                               model.pages.with_help(
                                   viewer,
-                                  admin_section(viewer, django_request),
+                                  admin_section(who, viewer, django_request),
                                   "admin"))
 
     # todo: reinstate when I've created a userapi section in the django setup

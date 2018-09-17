@@ -17,6 +17,20 @@ urlpatterns = [
     path('announcements_read', views.announcements_read, name='announcements_read'),
     path('notifications_read', views.notifications_read, name='notifications_read'),
     path('reset_messages', views.reset_messages, name='reset_messages'),
+    # individual sections for loading into tabs
+    path('profile', views.profile_only, name='profile_only'),
+    path('notifications', views.notifications_only, name='notifications_only'),
+    path('responsibilities', views.responsibilities_only, name='responsibilities_only'),
+    path('trained_on', views.trained_on_only, name='trained_on_only'),
+    path('other_equipment', views.other_equipment_only, name='other_equipment_only'),
+    path('training_requests', views.training_requests_only, name='training_requests_only'),
+    path('hosting', views.events_hosting_only, name='events_hosting_only'),
+    path('attending', views.events_attending_only, name='events_attending_only'),
+    path('hosted', views.events_hosted_only, name='events_hosted_only'),
+    path('attended', views.events_attended_only, name='events_attended_only'),
+    path('available', views.events_available_only, name='events_available_only'),
+    path('admin', views.admin_only, name='admin_only'),
+    # general default paths etc
     path('<who>', views.dashboard_page, name='user_dashboard'),
     path('match/<pattern>', views.user_match_page, name='matching_users'),
     re_path('match?pattern=.+', views.user_match_page, name='matching_users'), # todo: fix this

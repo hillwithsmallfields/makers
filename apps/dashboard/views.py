@@ -91,6 +91,124 @@ def dashboard_page(request, who=""):
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
+def one_section(request, data_function, title, who=""):
+    """
+    View function for a single part of the user dashboard page.
+    Intended for loading tabs on demand, Ajax-style.
+    """
+
+    config_data = model.configuration.get_config()
+
+    model.database.database_init(config_data)
+
+    pages.person_page.person_page_setup()
+
+    if request.user.is_anonymous:
+        return HttpResponse("""<html><head><title>This will be the public page</title></head>
+        <body><h1>This will be the public page</h1>
+
+        <p>It should display general status, and <a
+        href="../users/login">login</a> and <a
+        href="../users/signup">signup</a> boxes.</p> </body></html>""")
+
+    viewing_user = model.person.Person.find(request.user.link_id)
+
+    if who == "":
+        subject_user = viewing_user
+    else:
+        # todo: remove this dirty hack for early debugging
+        if True or viewing_user.is_administrator() or viewing_user.is_auditor():
+            subject_user = model.person.Person.find(who)
+        else:
+            page_data = model.pages.HtmlPage("Error",
+                                             pages.page_pieces.top_navigation(request),
+                                             django_request=request)
+            page_data.add_content("Error", [T.p["You do not have permission to view other users."]])
+    if subject_user is None:
+        page_data = model.pages.HtmlPage("Error",
+                                         pages.page_pieces.top_navigation(request),
+                                         django_request=request)
+        page_data.add_content("Error", [T.p["Could not find the user " + who + "."]])
+    else:
+        page_data = model.pages.PageSection(title,
+                                            [data_function(subject_user, viewing_user, request)],
+                                            django_request=request)
+
+    return HttpResponse(str(page_data.to_string()))
+
+def profile_only(request, who=""):
+    return one_section(request,
+                       pages.person_page.profile_section,
+                       "User profile",
+                       who)
+
+def notifications_only(request, who=""):
+    return one_section(request,
+                       pages.person_page.notifications_section,
+                       "Notifications and announcements",
+                       who)
+
+def responsibilities_only(request, who=""):
+    return one_section(request,
+                       pages.person_page.responsibilities_section,
+                       "Equipment responsibilities",
+                       who)
+
+def trained_on_only(request, who=""):
+    return one_section(request,
+                       pages.person_page.equipment_trained_on_section,
+                       "Equipment trained on",
+                       who)
+
+def other_equipment_only(request, who=""):
+    return one_section(request,
+                       pages.person_page.other_equipment_section,
+                       "Other equipment",
+                       who)
+
+def training_requests_only(request, who=""):
+    return one_section(request,
+                       pages.person_page.training_requests_section,
+                       "Outstanding training requests",
+                       who)
+
+def events_hosting_only(request, who=""):
+    return one_section(request,
+                       pages.person_page.events_hosting_section,
+                       "Events I will be hosting",
+                       who)
+
+def events_attending_only(request, who=""):
+    return one_section(request,
+                       pages.person_page.events_attending_section,
+                       "Events I have signed up for",
+                       who)
+
+def events_hosted_only(request, who=""):
+    return one_section(request,
+                       pages.person_page.events_hosted_section,
+                       "Events I have hosted",
+                       who)
+
+def events_attended_only(request, who=""):
+    return one_section(request,
+                       pages.person_page.events_attended_section,
+                       "Events I have attended",
+                       who)
+
+def events_available_only(request, who=""):
+    return one_section(request,
+                       pages.person_page.events_available_section,
+                       "Events I can sign up for",
+                       who)
+
+def admin_only(request, who=""):
+    return one_section(request,
+                       pages.person_page.admin_section,
+                       "Admin actions",
+                       who)
+
+@ensure_csrf_cookie
 def user_match_page(request, pattern):
 
     config_data = model.configuration.get_config()
