@@ -98,6 +98,7 @@
    :last-state-change: [2018-09-16 Sun 14:35]
    :first-seen: [2018-09-16 Sun 14:35]
    :END:
+** TODO index main and profile databases by link_id
 ** TODO training video player, with registration of having watched it
    - https://developers.google.com/youtube/iframe_api_reference
    - https://developers.google.com/youtube/player_parameters

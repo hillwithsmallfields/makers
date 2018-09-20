@@ -175,13 +175,21 @@ def get_highest_membership_number():
 
 def add_person(name_record, main_record):
     # todo: convert dates to datetime.datetime
-    membership_number = get_highest_membership_number()+1;   # todo: make a critical region here, maybe with redis or memcached or django-locking
-    link_id = str(uuid.uuid4())
-    main_record['link_id'] = link_id # todo: make it index by this
+    print("Given", main_record, "to add to operational database")
+    print("Given", name_record, "to add to profiles database")
+    membership_number = main_record.get('membership_number',
+                                        name_record.get('membership_number',
+                                                        get_highest_membership_number()+1))
+    link_id = main_record.get('link_id',
+                              name_record.get('link_id',
+                                              str(uuid.uuid4())))
+    main_record['link_id'] = link_id
     name_record['link_id'] = link_id # todo: make it index by this
     main_record['membership_number'] = membership_number
     name_record['membership_number'] = membership_number
+    print("Adding", main_record, "to operational database")
     database[collection_names['people']].insert(main_record)
+    print("Adding", name_record, "to profiles database")
     database[collection_names['profiles']].insert(name_record)
     return link_id
 

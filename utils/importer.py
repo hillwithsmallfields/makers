@@ -111,7 +111,7 @@ def import0(args):
             for row in csv.DictReader(members_file):
                 name_parts = row['Name'].rsplit(" ", 1)
                 member_no = row['Member no']
-                database.add_person({'membership_number': member_no,
+                database.add_person({'membership_number': int(member_no),
                                      'email': row['Email'],
                                      'given_name': name_parts[0],
                                      'surname': name_parts[1],
