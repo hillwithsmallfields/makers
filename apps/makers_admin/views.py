@@ -214,7 +214,7 @@ def add_user(django_request):
     model.database.database_init(config_data)
 
     params = django_request.POST
-    print("add_user params are", {k:v for k, v in params.items()})
+    # print("add_user params are", {k:v for k, v in params.items()})
     given_name = params['given_name']
     surname = params['surname']
     email = params['email']
@@ -231,16 +231,18 @@ def add_user(django_request):
     if params['inducted']:
         induction_id = params.get('induction_event', None)
         induction_event = model.event.Event.find_by_id(model.pages.unstring_id(induction_id)) if induction_id else None
-        print("Marking new user as inducted, induction_id is", induction_id, "and induction_event is", induction_event)
+        # print("Marking new user as inducted, induction_id is", induction_id, "and induction_event is", induction_event)
         if induction_event is None:
             facility_name = model.configuration.get_config()['organization']['name']
             eqty = model.equipment_type.Equipment_type.find(facility_name)
-            print("Making new induction event for facility named", facility_name, "which is equipment type", eqty)
-            induction_event = model.event.Event(facility_name + "_training",
+            induction_event = model.event.Event("user_training",
                                                 model.times.now(),
                                                 [model.person.Person.find(django_request.user.link_id)._id],
-                                                equipment_type=eqty._id)
+                                                equipment_type=eqty._id,
+                                                event_duration=0)
+            # print("Made new induction event", induction_event, "for facility named", facility_name, "which is equipment type", eqty)
         induction_event.mark_results([model.person.Person.find(link_id)], [], [])
+        # print("induction event has _id", induction_event._id)
 
     page_data = model.pages.HtmlPage("Added user",
                                      pages.page_pieces.top_navigation(django_request),
