@@ -33,7 +33,6 @@ def create_event(django_request):
     """The first stage of event creation.
     This sets up the parameters based on the event template."""
 
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
@@ -55,7 +54,7 @@ def create_event(django_request):
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
 
-    form = T.form(action=base+"/makers_admin/create_event_2",
+    form = T.form(action=django.urls.reverse("makers_admin:create_event_2"),
                   method='POST')[T.input(type="hidden",
                                          name="csrfmiddlewaretoken",
                                          value=django.middleware.csrf.get_token(django_request)),
@@ -78,14 +77,13 @@ def create_event(django_request):
     page_data.add_content("Event creation form", model.pages.with_help(viewer, form, "event_creation"))
     return HttpResponse(str(page_data.to_string()))
 
-# todo: get these from the config file
-values_requiring_splitting = ['hosts', 'attendees', 'passed', 'failed', 'noshow',
-                              'host_prerequisites', 'attendee_prerequisites',
-                              'interest_areas', 'equipment']
+def as_boolean(x):
+    return x in [True, 'True', 'Yes', 'yes', 'On', 'on']
 
-values_as_integers = ['attendance_limit']
-
-values_as_times = ['start', 'end']
+values_requiring_splitting = None
+values_as_integers = None
+values_as_booleans = None
+values_as_times = None
 
 def process_value(k, v):
     return ([v.strip() for v in v.split(',')]
@@ -94,21 +92,37 @@ def process_value(k, v):
                   if k in values_as_integers
                   else (model.times.as_time(v)
                         if k in values_as_times
-                        else v)))
+                        else (as_boolean(v)
+                              if k in values_as_booleans
+                              else v))))
+
+def host_list(host_string, user):
+    if host_string is None or host_string == "":
+        return [model.person.Person.find(user)._id]
+    return [model.person.Person.find(host)._id for host in host_string.split(',')]
 
 def create_event_2(django_request):
 
     """The second stage of event creation."""
 
-    base = django_request.scheme + "://" + django_request.META['HTTP_HOST']
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
+    global values_requiring_splitting, values_as_integers, values_as_times
+    if values_requiring_splitting is None:
+        values_requiring_splitting = config_data['event_templates']['needing_splitting']
+    if values_as_integers is None:
+        values_as_integers = config_data['event_templates']['as_integers']
+    if values_as_booleans is None:
+        values_as_booleans = config_data['event_templates']['as_booleans']
+    if values_as_times is None:
+        values_as_times = config_data['event_templates']['as_times']
     params = django_request.POST
 
-    ev = model.event.Event(params['event_type'],
-                           params['start'], # ?
-                           params['hosts'].split(','))
+    ev = model.event.Event(params.get('event_type', 'Meeting'),
+                           model.times.as_time(params.get('start')),
+                           host_list(params.get('hosts', None),
+                                 django_request.user.link_id))
 
     ev.__dict__.update({k:process_value(k, v) for k, v in params.items()})
 
@@ -260,7 +274,7 @@ def edit_event_template(django_request):
                                 "'event_template_name' not set in params")
 
     template_name = params['event_template_name']
-    template_data = {key:"" for key in config_data['event_template_standard_fields']}
+    template_data = {key:"" for key in config_data['event_templates']['standard_fields']}
     template_data.update(model.database.find_event_template(template_name))
     form = [T.form(action=django.urls.reverse('makers_admin:save_template_edits'),
                    method='POST')[

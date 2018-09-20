@@ -104,7 +104,7 @@ privacy_defaults:
   visibility_as_host:       True
   visibility_as_attendee:   True
   visibility_in_general:    False
-  
+
 interest_areas:
   - Biohacking
   - Civic engineering
@@ -142,20 +142,38 @@ dietary_avoidances:
   - Low Carb
   - Low Sugar
 
-event_template_standard_fields:
-  - alchohol_authorized
-  - attendance_limit
-  - attendee_prerequisites
-  - catered
-  - duration
-  - equipment_type
-  - event_type
-  - host_prerequisites
-  - location
-  - name
-  - status
-  - title
-  
+event_templates:
+  standard_fields:
+    - alchohol_authorized
+    - attendance_limit
+    - attendee_prerequisites
+    - catered
+    - duration
+    - equipment_type
+    - event_type
+    - host_prerequisites
+    - location
+    - name
+    - status
+    - title
+  needing_splitting:
+    - hosts
+    - attendees
+    - passed
+    - failed
+    - noshow
+    - host_prerequisites
+    - attendee_prerequisites
+    - interest_areas
+    - equipment
+  as_integers:
+    - attendance_limit
+  as_times:
+    - start
+    - end
+  as_booleans:
+    - catered
+
 database:
   URI:
   database_name: Makespace

@@ -23,9 +23,10 @@
    :last-state-change: [2018-09-13 Thu 20:07]
    :first-seen: [2018-09-13 Thu 20:07]
    :END:
-** OPEN [#A] complete create_event_2
+** DONE [#A] complete create_event_2
+   CLOSED: [2018-09-20 Thu 20:13]
    :PROPERTIES:
-   :last-state-change: [2018-09-16 Sun 13:46]
+   :last-state-change: [2018-09-20 Thu 20:13]
    :first-seen: [2018-09-16 Sun 13:46]
    :END:
 ** TODO [#A] switch to https
@@ -66,7 +67,11 @@
 ** TODO [#C] add machine reservation to training events
 ** TODO [#C] the queue positions reported on the signup page might be wrong
 ** TODO [#C] event pages to have interests and skills sections
-** TODO [#C] event pages to have optional catering sections
+** OPEN [#C] event pages to have optional catering sections
+   :PROPERTIES:
+   :last-state-change: [2018-09-20 Thu 20:02]
+   :first-seen: [2018-09-20 Thu 20:02]
+   :END:
 ** TODO [#C] send emails for accepted invitations, with icalendar data
 ** TODO [#C] timed jobs to handle timeout for invitations
 ** DONE fix training event results

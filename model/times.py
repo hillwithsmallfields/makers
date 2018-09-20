@@ -28,6 +28,8 @@ fulltime = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}")
 
 def as_time(clue):
     # print("as_time parsing", clue)
+    if clue is None or clue == "":
+        return now + timedelta.timedelta(1, 0) # default to this time tomorrow, just so there is a default
     return (clue
             if isinstance(clue, datetime)
             else (datetime.fromordinal(clue)
