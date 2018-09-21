@@ -15,6 +15,9 @@
 ** TODO [#B] cache training data in the django session objects
 ** TODO [#B] fix user interface to searching for users by name
 ** TODO [#B] remove "everyone is an admin" hack, and check the privacy code
+** TODO [#B] log admin actions
+** TODO [#B] log user logins
+** TODO [#B] divert ex-users on login
 ** OPEN [#C] load tabs on demand
 ** TODO [#C] add machine reservation to training events
 ** TODO [#C] the queue positions reported on the signup page might be wrong
@@ -31,6 +34,7 @@
    :last-state-change: [2018-09-07 Fri 22:16]
    :first-seen: [2018-09-07 Fri 22:16]
    :END:
+** TODO multiple keyfobs
 ** OPEN event template editor
    :PROPERTIES:
    :last-state-change: [2018-09-16 Sun 14:35]
