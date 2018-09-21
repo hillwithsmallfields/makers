@@ -1,33 +1,9 @@
 #+TODO: TODO OPEN | DONE
 * Makers things to do
-** DONE [#A] fix equipment people have just been training on not showing up in "Equipment I can use"
-   CLOSED: [2018-09-11 Tue 22:13]
-   :PROPERTIES:
-   :last-state-change: [2018-09-11 Tue 22:13]
-   :first-seen: [2018-09-11 Tue 22:13]
-   :END:
 ** TODO [#A] fix time zone handling
    :PROPERTIES:
    :last-state-change: [2018-09-14 Fri 22:23]
    :first-seen: [2018-09-13 Thu 09:05]
-   :END:
-** DONE [#A] fix equipment type dropdown in one_event, and the thing that receives it (de-pretty the type name?)
-   CLOSED: [2018-09-13 Thu 20:07]
-   :PROPERTIES:
-   :last-state-change: [2018-09-13 Thu 20:07]
-   :first-seen: [2018-09-10 Mon 21:52]
-   :END:
-** DONE [#A] fix output and input of durations
-   CLOSED: [2018-09-13 Thu 20:07]
-   :PROPERTIES:
-   :last-state-change: [2018-09-13 Thu 20:07]
-   :first-seen: [2018-09-13 Thu 20:07]
-   :END:
-** DONE [#A] complete create_event_2
-   CLOSED: [2018-09-20 Thu 20:13]
-   :PROPERTIES:
-   :last-state-change: [2018-09-20 Thu 20:13]
-   :first-seen: [2018-09-16 Sun 13:46]
    :END:
 ** TODO [#A] switch to https
 ** OPEN [#A] look at importing and creating users, and how to interface to django's part of it
@@ -35,35 +11,11 @@
    :last-state-change: [2018-09-16 Sun 13:46]
    :first-seen: [2018-09-16 Sun 13:46]
    :END:
-** DONE [#B] In users' lists of "Other equipment", "Request user training" doesn't change to "Cancel user training request" when training has been requested
-   CLOSED: [2018-09-14 Fri 20:51]
-   :PROPERTIES:
-   :last-state-change: [2018-09-14 Fri 20:51]
-   :first-seen: [2018-09-14 Fri 20:51]
-   :END:
-** DONE [#B] display training requests in dashboard "trainers" sections, possibly with timeslot counts
-   CLOSED: [2018-09-15 Sat 22:12]
-   :PROPERTIES:
-   :last-state-change: [2018-09-15 Sat 22:12]
-   :first-seen: [2018-08-18 Sat 21:58]
-   :END:
 ** TODO [#B] command to delete personally identifying data
 ** TODO [#B] cache training data in the django session objects
-** DONE [#B] training success to cancel training requests
-   CLOSED: [2018-09-14 Fri 21:51]
-   :PROPERTIES:
-   :last-state-change: [2018-09-14 Fri 21:51]
-   :first-seen: [2018-08-29 Wed 21:44]
-   :END:
 ** TODO [#B] fix user interface to searching for users by name
 ** TODO [#B] remove "everyone is an admin" hack, and check the privacy code
 ** OPEN [#C] load tabs on demand
-** DONE [#C] equipment type names in list of users to be prettified
-   CLOSED: [2018-09-14 Fri 20:42]
-   :PROPERTIES:
-   :last-state-change: [2018-09-14 Fri 20:42]
-   :first-seen: [2018-09-14 Fri 20:41]
-   :END:
 ** TODO [#C] add machine reservation to training events
 ** TODO [#C] the queue positions reported on the signup page might be wrong
 ** TODO [#C] event pages to have interests and skills sections
@@ -74,20 +26,6 @@
    :END:
 ** TODO [#C] send emails for accepted invitations, with icalendar data
 ** TODO [#C] timed jobs to handle timeout for invitations
-** DONE fix training event results
-   CLOSED: [2018-08-28 Tue 18:48]
-   :PROPERTIES:
-   :last-state-change: [2018-08-28 Tue 18:48]
-   :first-seen: [2018-08-28 Tue 18:47]
-   :END:
-   training event results are partly working; the people show up as
-   trained in the list of people trained on the equipment, but the
-   equipment doesn't show up in the list of the equipment the people
-   are trained on.
-
-   It turned out that the people's lists were correct, as the event
-   was still in the future, and so was being ignored; the equipments'
-   lists need fixing.
 ** OPEN [#C] use relative links throughout
    :PROPERTIES:
    :last-state-change: [2018-09-07 Fri 22:16]
@@ -106,18 +44,6 @@
 ** TODO multiple-choice tests, with registration of results
    - integrate with event prerequisites
 ** TODO voting and opinion-gathering
-** DONE fix notifications and announcements
-   CLOSED: [2018-09-09 Sun 22:03]
-   :PROPERTIES:
-   :last-state-change: [2018-09-09 Sun 22:03]
-   :first-seen: [2018-09-09 Sun 22:03]
-   :END:
-** DONE event editor for admins
-   CLOSED: [2018-09-07 Fri 22:16]
-   :PROPERTIES:
-   :last-state-change: [2018-09-07 Fri 22:16]
-   :first-seen: [2018-09-07 Fri 22:16]
-   :END:
 ** OPEN lists of people with training on equipment to take note of the training date
    :PROPERTIES:
    :last-state-change: [2018-08-29 Wed 08:29]
@@ -125,51 +51,15 @@
    :END:
    and not count people as qualified when their qualification date is
    still in the future
-** DONE [#A] fix newly-created training event not showing up in "Events I will be hosting"
-   CLOSED: [2018-09-10 Mon 20:55]
-   :PROPERTIES:
-   :last-state-change: [2018-09-10 Mon 20:55]
-   :first-seen: [2018-09-10 Mon 20:55]
-   :END:
 ** TODO export to csv files (same format as original imports) for backup, and put on crontab
 ** TODO validate choice of stylesheet
 ** TODO viewer's stylesheet choice to apply to all pages
-** DONE fix "mark all as read" in notifications and announcements
-   CLOSED: [2018-09-09 Sun 22:02]
-   :PROPERTIES:
-   :last-state-change: [2018-09-09 Sun 22:02]
-   :first-seen: [2018-08-22 Wed 16:08]
-   :END:
 ** TODO users to be able to upload mugshots
-** DONE timeslots display to show what times of day timeslots begin and end at
-   CLOSED: [2018-08-22 Wed 22:27]
-   :PROPERTIES:
-   :last-state-change: [2018-08-22 Wed 22:27]
-   :first-seen: [2018-08-18 Sat 21:58]
-   :END:
-** DONE use flexboxes for with_help, so that when the screen is narrow the help text will follow the form instead of being beside it
-   CLOSED: [2018-09-09 Sun 22:04]
-   :PROPERTIES:
-   :last-state-change: [2018-09-09 Sun 22:04]
-   :first-seen: [2018-08-29 Wed 14:36]
-   :END:
 ** TODO fixed profile to include a "box issued" section (probably as a date), editable only by admins
 ** OPEN "add user" command to have a box for whether they've been inducted, and to collect up an induction event over consecutive user adds
    :PROPERTIES:
    :last-state-change: [2018-09-16 Sun 20:58]
    :first-seen: [2018-09-16 Sun 20:58]
-   :END:
-** DONE make the address section of the profile run from the config files
-   CLOSED: [2018-08-22 Wed 22:28]
-   :PROPERTIES:
-   :last-state-change: [2018-08-22 Wed 22:28]
-   :first-seen: [2018-08-18 Sat 21:58]
-   :END:
-** DONE add badger texts to configured profile area
-   CLOSED: [2018-09-09 Sun 21:59]
-   :PROPERTIES:
-   :last-state-change: [2018-09-09 Sun 21:59]
-   :first-seen: [2018-09-09 Sun 21:59]
    :END:
 ** OPEN reject signups for events that are full
    :PROPERTIES:
@@ -194,12 +84,6 @@
    :last-state-change: [2018-08-18 Sat 21:58]
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
-*** DONE creating a training session to send invitations
-    CLOSED: [2018-09-09 Sun 22:00]
-    :PROPERTIES:
-    :last-state-change: [2018-09-09 Sun 22:00]
-    :first-seen: [2018-08-22 Wed 17:22]
-    :END:
 *** TODO training request confirmation to list any pending training sessions
 ** OPEN get adminstrative grant and ban buttons working
    :PROPERTIES:
@@ -224,13 +108,6 @@
     :last-state-change: [2018-08-18 Sat 21:58]
     :first-seen: [2018-08-18 Sat 21:58]
     :END:
-** DONE handle RSVPs to invitations
-   CLOSED: [2018-09-09 Sun 22:05]
-   :PROPERTIES:
-   :last-state-change: [2018-09-09 Sun 22:05]
-   :first-seen: [2018-08-18 Sat 21:58]
-   :END:
-   Will probably use event signup page code
 ** OPEN create django accounts from mongo data (small?)
    :PROPERTIES:
    :last-state-change: [2018-08-18 Sat 21:58]
@@ -242,12 +119,6 @@
    :first-seen: [2018-08-18 Sat 21:58]
    :END:
 ** Profiles
-*** DONE receiver for profile updates
-    CLOSED: [2018-08-29 Wed 15:03]
-    :PROPERTIES:
-    :last-state-change: [2018-08-29 Wed 15:03]
-    :first-seen: [2018-08-29 Wed 15:03]
-    :END:
 *** TODO profiles to have uploadable pictures
 ** OPEN Equipment type pages to have owner-editable fields
    :PROPERTIES:
@@ -271,12 +142,6 @@
 *** TODO pages for events with catering to show the dietary combinations of those who have signed up
 *** TODO event timeline for current events and for today's / tomorrow's events
 *** TODO integrate with other systems' APIs
-*** DONE allow a choice of stylesheet? Maybe as a per-user setting.
-    CLOSED: [2018-09-07 Fri 22:16]
-    :PROPERTIES:
-    :last-state-change: [2018-09-07 Fri 22:16]
-    :first-seen: [2018-09-07 Fri 22:16]
-    :END:
 *** TODO re-style navigation, add logo, etc (small)
 *** TODO provide a favicon
 * Testing
