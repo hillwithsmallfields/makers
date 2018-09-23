@@ -2,7 +2,7 @@
 
 # Enough overrides to let you install a testing version too, I hope:
 MAINCONF=${1-makers.yaml}
-SOURCE=${2-$USER/open-projects/makers}
+SOURCE=${2-$HOME/open-projects/makers}
 DESTINATION=${3-/var/www/makers}
 CONFDEST=${4-/usr/local/share/makers}
 

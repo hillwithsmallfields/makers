@@ -21,7 +21,10 @@ source makers_venv/bin/activate
 pip install django
 pip install gunicorn
 pip install pytz
-pip install yaml
+if [ ! pip install yaml ]
+then
+    pip install pyyaml
+fi
 pip install yattag
 
 # later
