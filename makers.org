@@ -1,5 +1,12 @@
 #+TODO: TODO OPEN | DONE
 * Makers things to do
+** TODO mugshot that only admin can alter
+** TODO export phone number and email to badger
+** TODO interlock booking of equipment
+** TODO members detraining
+** TODO notify people about event updates
+** TODO set location automatically from equipment
+** TODO import from orcascan
 ** TODO [#A] fix time zone handling
    :PROPERTIES:
    :last-state-change: [2018-09-14 Fri 22:23]
