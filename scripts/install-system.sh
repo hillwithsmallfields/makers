@@ -15,6 +15,7 @@ ALTER ROLE makersuser SET timezone to 'UTC';
 GRANT ALL PRIVILEGES ON DATABASE makers to makersuser;
 \q
 EOF
+apt-get install postgresql-server-dev-all
 cd /var/www
 virtualenv --python=python3 --always-copy makers_venv
 source makers_venv/bin/activate

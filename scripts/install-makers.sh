@@ -33,7 +33,7 @@ do
 done
 
 echo Copying common code
-for PART in model pages untemplate
+for PART in model pages untemplate makers scripts
 do
     mkdir -p $DESTINATION/$PART
     cp $SOURCE/$PART/*.py $DESTINATION/$PART
