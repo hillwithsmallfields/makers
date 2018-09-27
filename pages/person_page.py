@@ -578,6 +578,8 @@ def admin_subsection(title, body):
         T.h3(class_='admin_action_heading')[title],
         T.div(class_='admin_action_body')[body]]
 
+import decouple                 # debug only (at least for now)
+
 def admin_section(who, viewer, django_request):
     return T.div(class_='admin_action_list')[
         admin_subsection("List all users",
@@ -638,7 +640,8 @@ def admin_section(who, viewer, django_request):
                              [""],
                              "gdpr_delete_user")),
         admin_subsection("Send test message",
-                         [T.form(action=django.urls.reverse("makers_admin:test_message"),
+                         [T.p["Key is ", decouple.config('SMTP_PASSWORD')],
+                          T.form(action=django.urls.reverse("makers_admin:test_message"),
                                  method='POST')[
                                      T.input(type="hidden", name="csrfmiddlewaretoken",
                                              value=django.middleware.csrf.get_token(django_request)),
