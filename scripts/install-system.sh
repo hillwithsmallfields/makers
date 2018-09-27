@@ -27,6 +27,7 @@ then
     pip install pyyaml
 fi
 pip install yattag
+pip install python-decouple
 
 # later
 # ./manage.py makemigrations

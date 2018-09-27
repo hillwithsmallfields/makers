@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
+import decouple
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -81,7 +82,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'makers',
         'USER': 'makersuser',
-        'PASSWORD': 'PGPASSWORD',
+        'PASSWORD': decouple.config('POSTGRES_PASSWORD'),
         'HOST': 'localhost',
         'PORT': '',
     }
@@ -132,7 +133,7 @@ USE_TZ = True
 EMAIL_HOST = 'email-smtp.eu-west-1.amazonaws.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'makers'
-EMAIL_HOST_PASSWORD = 'SMTPPASSWORD'
+EMAIL_HOST_PASSWORD = decouple.config('SMTP_PASSWORD')
 EMAIL_USE_TLS = True
 
 # Static files (CSS, JavaScript, Images)
