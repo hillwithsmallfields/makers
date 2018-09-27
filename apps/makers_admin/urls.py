@@ -15,5 +15,6 @@ urlpatterns = [
     path('add_user', views.add_user, name='add_user'),
     path('backup_database', views.backup_database, name='backup_database'),
     path('GDPR_delete_user', views.gdpr_delete_user, name='gdpr_delete_user'),
+    path('test_message', views.test_message, name='test_message'),
     path('update_django', views.update_django, name='update_django')
 ]

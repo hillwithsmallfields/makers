@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'w69sqpmjfxnt0arni+(()j5jlzxm#(3!*edxs_@h(#srixrf$$'
 DEBUG = True
 
 ALLOWED_HOSTS = ['fragaria', 'js64.twilightparadox.com', '127.0.0.1']
-
 
 # Application definition
 
@@ -115,7 +113,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
@@ -129,6 +126,14 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Mail sending:
+# based on https://simpleisbetterthancomplex.com/tutorial/2016/06/13/how-to-send-email.html
+
+EMAIL_HOST = 'email-smtp.eu-west-1.amazonaws.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'makers'
+EMAIL_HOST_PASSWORD = 'SMTPPASSWORD'
+EMAIL_USE_TLS = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/

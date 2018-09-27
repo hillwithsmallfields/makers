@@ -370,6 +370,29 @@ def gdpr_delete_user(django_request):
                           [""])
     return HttpResponse(str(page_data.to_string()))
 
+import django.core.mail
+
+@ensure_csrf_cookie
+def test_message(django_request):
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    params = django_request.POST
+
+    subject = params['subject']
+    body = params['message']
+    recipient = params['to']
+
+    sent = django.core.mail.send_mail(subject, body, "makers@makespace.org", [recipient])
+
+    page_data = model.pages.HtmlPage("Message apparently sent" if sent > 0 else "Message apparently not sent",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("Test stub",
+                          [T.p["Message count ", str(sent), " may have been sent to ", recipient]])
+    return HttpResponse(str(page_data.to_string()))
+
 @ensure_csrf_cookie
 def update_django(django_request):
 

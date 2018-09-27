@@ -262,7 +262,6 @@ def notifications_section(who, viewer, django_request):
                       value=django.middleware.csrf.get_token(django_request)),
               T.input(type='submit', value="Mark as read")]])
 
-
     if len(messages) == 0:
         return None
     return messages
@@ -638,6 +637,21 @@ def admin_section(who, viewer, django_request):
                              viewer,
                              [""],
                              "gdpr_delete_user")),
+        admin_subsection("Send test message",
+                         [T.form(action=django.urls.reverse("makers_admin:test_message"),
+                                 method='POST')[
+                                     T.input(type="hidden", name="csrfmiddlewaretoken",
+                                             value=django.middleware.csrf.get_token(django_request)),
+                                     T.label(for_='to')["To: "],
+                                     T.input(type='text', name='to', id='to', value="makers.test.1@makespace.org"),
+                                     T.br,
+                                     T.label(for_='subject')["Subject: "],
+                                     T.input(type='text', name='subject', id='subject', value="Test message sent from the web app"),
+                                     T.br,
+                                     T.label(for_='message')["Message text: "],
+                                     T.input(type='text', name='message', id='subject', value="Test message sent from the web app's admin section"),
+                                     T.br,
+                                     T.input(type='submit', value="Send test message")]]),
         admin_subsection("Update django logins",
                          model.pages.with_help(
                              viewer,
@@ -681,7 +695,6 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
 
     if len(who.training_requests) > 0:
         page_data.add_section("Training requests", training_requests_section(who, viewer, django_request))
-
 
     hosting_section = events_hosting_section(who, viewer, django_request)
 
