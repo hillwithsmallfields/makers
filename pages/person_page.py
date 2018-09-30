@@ -209,8 +209,15 @@ def profile_section(who, viewer, django_request):
                                   name="csrfmiddlewaretoken",
                                   value=django.middleware.csrf.get_token(django_request)),
                           T.input(type='hidden', name='subject_user_uuid', value=who._id),
-                          T.input(type='submit',
-                                  value="Reset notifications")])]]]
+                          T.input(type='Reset notifications and announcements',
+                                  value="Reset notifications")])],
+                   T.li["Send password reset email: ",
+                        T.form(action=django.urls.reverse("dashboard:send_pw_reset"),
+                               method='POST')
+                        [T.input(type='hidden', name='subject_user_uuid', value=who._id),
+                         T.input(type="hidden", name="csrfmiddlewaretoken",
+                                 value=django.middleware.csrf.get_token(django_request)),
+                         T.input(type='submit', value="Send password reset")]]]]
     if 'interest_areas' in all_conf:
         result.append([T.h2["Interests and skills"],
                        model.pages.with_help(viewer,

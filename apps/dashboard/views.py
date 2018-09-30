@@ -421,9 +421,7 @@ def announcements_read(request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    who = model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid']))
-
-    who.mark_announcements_read()
+    model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid'])).mark_announcements_read()
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
@@ -435,12 +433,22 @@ def notifications_read(request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    who = model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid']))
-
-    who.mark_notifications_read()
+    model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid'])).mark_notifications_read()
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),
                                      django_request=request)
     page_data.add_content("Confirmation", [T.p["Messages marked as read."]])
+    return HttpResponse(str(page_data.to_string()))
+
+def send_password_reset(request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid'])).send_password_reset_email()
+
+    page_data = model.pages.HtmlPage("Confirmation",
+                                     pages.page_pieces.top_navigation(request),
+                                     django_request=request)
+    page_data.add_content("Confirmation", [T.p["Password reset sent."]])
     return HttpResponse(str(page_data.to_string()))
