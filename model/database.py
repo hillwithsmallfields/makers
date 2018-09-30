@@ -11,6 +11,7 @@ import json
 import model.configuration
 import model.event
 import model.person
+import model.times
 import os
 import pymongo
 import re
@@ -385,8 +386,11 @@ def add_machine(name, equipment_type,
 def save_machine(something):
     database[collection_names['machines']].save(something)
 
-def log_machine_use(machine, person, when):
-    database[collection_names['machine_logs']].insert({'start': when, 'machine': machine, 'user': person})
+def log_machine_use(machine, person, details=None, when=None):
+    database[collection_names['machine_logs']].insert({'start': when or model.times.now(),
+                                                       'machine': machine,
+                                                       'details': details or "use",
+                                                       'user': person})
 
 def get_machine_log(machine):
     return [ entry for entry in database[collection_names['machine_logs']].find({'machine': machine}).sort('start', pymongo.DESCENDING) ]
