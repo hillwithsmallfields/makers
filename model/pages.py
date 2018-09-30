@@ -3,6 +3,7 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import bson
 import model.configuration as configuration
+import model.database
 import model.person
 import os
 import re
@@ -57,18 +58,25 @@ class HtmlPage(object):
 
     def __init__(self, name, content=[],
                  visitor_map=untemplate.examples_vmap,
+                 viewer=None,
                  django_request=None,
                  input_encoding='utf-8'):
         self.name = name
         self.content = content
         self.visitor_map = visitor_map
         self.input_encoding = input_encoding
+        self.viewer = viewer
         self.django_request = django_request
 
     def add_content(self, name, content):
         self.content.append([T.h2[name], content])
 
     def to_string(self):
+        user = self.viewer or (model.person.Person.find(self.django_request.user.link_id)
+                               if self.django_request
+                               else None)
+        if user:
+            model.database.log_machine_use("makers", user, details=self.name)
         return page_string(self.name, self.content)
 
 class PageSection(object):
@@ -137,6 +145,13 @@ class SectionalPage(object):
         self.lazy = True
 
     def to_string(self):
+        user = self.viewer or (model.person.Person.find(self.django_request.user.link_id)
+                               if self.django_request
+                               else None)
+        if user:
+            model.database.log_machine_use("makers",
+                                           user._id if user else None,
+                                           details=self.name)
         index = [T.div(class_="tabset")[
             [T.button(class_="tablinks",
                       onclick=(("openLazyTab(event, '" + section_id + "', '" + self.sections[section_id] + "')")
@@ -149,9 +164,7 @@ class SectionalPage(object):
                    for section_id in self.index]
         return page_string(self.name,
                            self.top_content + index + tabs,
-                           user=self.viewer or (model.person.Person.find(self.django_request.user.link_id)
-                                                if self.django_request
-                                                else None),
+                           user=user,
                            initial_tab=(self.initial_tab+"_button") if self.initial_tab else None,
                            needs_jquery=self.lazy)
 
