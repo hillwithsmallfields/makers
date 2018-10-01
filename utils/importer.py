@@ -102,8 +102,8 @@ def import0(args):
                     print("Adding machine", row)
                 database.add_machine(row['name'],
                                      Equipment_type.find(row['equipment_type'])._id,
-                                     row['location'],
-                                     row['acquired'])
+                                     row.get('location', "?"),
+                                     row.get('acquired', "?"))
 
     if args.members != "None":
         induction_event = None
