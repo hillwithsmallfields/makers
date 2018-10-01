@@ -200,6 +200,10 @@ th.profile_group {
     background:    #ffa500;
 }
 
+.tabbedarea {
+    flex-flow:        column wrap;
+}
+
 .tabset {
     overflow:         hidden;
     border:           1px solid #ccc;

@@ -163,7 +163,8 @@ class SectionalPage(object):
         tabs = [[T.div(class_="tabcontent", id_=section_id)[self.sections[section_id]]]
                    for section_id in self.index]
         return page_string(self.name,
-                           self.top_content + index + tabs,
+                           self.top_content + [T.div(class_="tabbedarea")[index,
+                                                                          [T.div(class_="tabcontents")[tabs]]]],
                            user=user,
                            initial_tab=(self.initial_tab+"_button") if self.initial_tab else None,
                            needs_jquery=self.lazy)
