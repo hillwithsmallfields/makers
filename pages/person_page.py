@@ -150,6 +150,7 @@ def profile_section(who, viewer, django_request):
                                           for name in all_conf.get('profile_group_order')]]]
 
     mugshot = who.get_profile_field('mugshot')
+    membership_number = str(who.membership_number)
     result = [T.form(action=django.urls.reverse("dashboard:update_mugshot"), method='POST')
               [T.img(src=mugshot) if mugshot else "",
                "Upload new photo: ", T.input(type="text"),
@@ -169,7 +170,13 @@ def profile_section(who, viewer, django_request):
                           T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
                                                                              name="email",
                                                                              value=who.get_email())]],
-                          T.tr[T.th(class_="ralabel")["Membership number"], T.td[str(who.membership_number)]],
+                          T.tr[T.th(class_="ralabel")["Membership number"],
+                               T.td[(T.input(type="text",
+                                             name='membership_number',
+                                             value=membership_number)
+                                     if (viewer.is_administrator()
+                                         and (membership_number == "" or membership_number == "0"))
+                                     else [membership_number])]],
                           T.tr[T.th(class_="ralabel")['Fob number'],
                                T.td[(T.input(type="text",
                                              name="fob",

@@ -553,6 +553,10 @@ class Person(object):
             who.set_email(email)
         if name != old_name():
             who.get_name(name)
+        if 'membership_number' in params:
+            membership_number = int(params['membership_number'])
+            if membership_number > 0:
+                who.membership_number = membership_number
         self.save()
 
     def update_configured_profile(self, params):
