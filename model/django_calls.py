@@ -4,7 +4,7 @@
 # classes outside our django apps (in particular, in the importer,
 # which runs from the command line).
 
-import mode.person.Person
+import model.person
 import django.contrib.auth.forms
 
 # account access
