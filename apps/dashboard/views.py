@@ -5,6 +5,7 @@ from untemplate.throw_out_your_templates_p3 import htmltags as T
 from datetime import datetime
 import model.configuration
 import model.database
+import model.django_calls
 import model.pages
 import model.person
 import model.person as person
@@ -445,7 +446,7 @@ def send_password_reset(request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid'])).send_password_reset_email()
+    model.django_calls.send_password_reset_email(model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid'])))
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(request),

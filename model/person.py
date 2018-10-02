@@ -1,4 +1,3 @@
-import django.contrib.auth.forms
 import model.access_permissions
 import model.configuration
 import model.database
@@ -209,14 +208,6 @@ class Person(object):
     def set_profile_field(self, field_name, new_value):
         """Set a field and write it back to the database."""
         model.database.set_person_profile_field(self, field_name, new_value)
-
-    # account access
-
-    def send_password_reset_email(self):
-        # based on https://stackoverflow.com/questions/5594197/trigger-password-reset-email-in-django-without-browser
-        form = django.contrib.auth.forms.PasswordResetForm({'email': self.get_email()})
-        form.is_valid()
-        form.save()
 
     # training and requests
 

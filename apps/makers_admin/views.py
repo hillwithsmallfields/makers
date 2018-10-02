@@ -5,6 +5,7 @@ from untemplate.throw_out_your_templates_p3 import htmltags as T
 import django.urls
 import model.configuration
 import model.database           # for announcements and notifications; I should probably wrap them so apps don't need to see model.database
+import model.django_calls
 import model.equipment_type
 import model.event
 import model.pages
@@ -204,7 +205,7 @@ def create_django_user(login_name, email, given_name, surname, link_id):
     print("create_django_user saving data")
     django_user.save()
     print("create_django_user sending email")
-    model.person.Person.find(link_id).send_password_reset_email()
+    model.django_calls.send_password_reset_email(model.person.Person.find(link_id))
     print("create_django_user complete")
 
 @ensure_csrf_cookie
