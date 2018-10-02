@@ -75,7 +75,7 @@ def import0(args):
     collection_names = db_config['collections']
     if verbose:
         print("collection names are", collection_names)
-    database.database_init(config, args.delete_existing)
+    database.database_init(config)
 
     # todo: fix these
     # database[collection_names['people']].create_index('link_id')
