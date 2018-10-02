@@ -29,6 +29,7 @@ fi
 pip install yattag
 pip install python-decouple
 pip install bson
+pip install pymongo
 
 # later
 # ./manage.py makemigrations
