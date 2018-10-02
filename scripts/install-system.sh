@@ -28,6 +28,7 @@ then
 fi
 pip install yattag
 pip install python-decouple
+pip install bson
 
 # later
 # ./manage.py makemigrations
