@@ -175,8 +175,9 @@ event_templates:
     - catered
 
 database:
-  URI:
-  database_name: Makespace
+  URI:               mongodb://localhost:27017/
+  user:              makers
+  database_name:     Makespace
   collections:
     people:          MakespacePeople
     profiles:        MakespaceProfiles

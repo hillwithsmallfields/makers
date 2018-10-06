@@ -7,6 +7,7 @@ from __future__ import print_function
 
 import bson
 import datetime
+import decouple
 import json
 import model.configuration
 import model.event
@@ -15,6 +16,7 @@ import model.times
 import os
 import pymongo
 import re
+import urllib.parse
 import uuid
 
 client = None
@@ -29,7 +31,13 @@ def database_init(config):
     database_initted = True
     db_config = config['database']
     collection_names = db_config['collections']
-    client = pymongo.MongoClient(db_config['URI'])
+    uri = db_config['URI']
+    client = pymongo.MongoClient(
+        uri,
+        username=urllib.parse.quote_plus(db_config.get('user', "makers")),
+        password=urllib.parse.quote_plus(decouple.config('MONGOPASSWORD', "")),
+        authSource=db_config['database_name'],
+        authMechanism='SCRAM-SHA-1')
     database = client[db_config['database_name']]
     if database is None:
         raise ConnectionError

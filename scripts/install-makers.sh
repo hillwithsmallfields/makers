@@ -46,9 +46,6 @@ do
     cp -r $APPDIR/static/* $DESTINATION/static
 done
 
-echo poking password
-$SOURCE/scripts/setpassword
-
 echo activating venv
 source /var/www/makers_venv/bin/activate
 
