@@ -98,10 +98,14 @@ def import0(args):
             print("loading equipment")
         with open(args.equipment) as machines_file:
             for row in csv.DictReader(machines_file):
+                eqty = Equipment_type.find(row['equipment_type'])
+                if eqty is None:
+                    print("Could not add machine", row, "as its type", row['equipment_type'], "could not be found")
+                    continue
                 if verbose:
-                    print("Adding machine", row)
+                    print("Adding machine", row, "of type", eqty)
                 database.add_machine(row['name'],
-                                     Equipment_type.find(row['equipment_type'])._id,
+                                     eqty._id,
                                      row.get('location', "?"),
                                      row.get('acquired', "?"))
 

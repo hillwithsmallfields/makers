@@ -347,7 +347,9 @@ def add_equipment_type(name, training_category,
             'training_category': training_category}
     if manufacturer:
         data['manufacturer'] = manufacturer
-    database[collection_names['equipment_types']].insert(data)
+    database[collection_names['equipment_types']].update({'name': name},
+                                                         data,
+                                                         upsert=True)
 
 def list_equipment_types(training_category=None):
     query = {}
@@ -389,7 +391,9 @@ def add_machine(name, equipment_type,
         data['location'] = location
     if acquired:
         data['acquired'] = acquired
-    database[collection_names['machines']].insert(data)
+    database[collection_names['machines']].update({'name': name},
+                                                  data,
+                                                  upsert=True)
 
 def save_machine(something):
     database[collection_names['machines']].save(something)

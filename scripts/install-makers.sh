@@ -20,7 +20,8 @@ chmod -R a+r $CONFDEST/*
 mkdir -p $DESTINATION
 
 echo copying python files
-cp $SOURCE/manage.py $SOURCE/makers/*.py $DESTINATION/makers
+cp $SOURCE/manage.py $DESTINATION
+cp $SOURCE/makers/*.py $DESTINATION/makers
 
 echo copying scripts
 cp $SOURCE/scripts/* $DESTINATION/scripts
