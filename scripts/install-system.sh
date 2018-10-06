@@ -5,7 +5,7 @@
 
 # Postgresql setup commands based on https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postgres-nginx-and-gunicorn-on-ubuntu-16-04
 
-apt-get install nginx virtualenv postgresql postgresql-server-dev-all
+apt-get install nginx virtualenv postgresql postgresql-server-dev-all mongodb
 sudo -u postgres psql <<EOF
 CREATE DATABASE makers;
 CREATE USER makersuser WITH PASSWORD '$POSTGRESNEWPW';
