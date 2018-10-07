@@ -131,11 +131,11 @@ def import0(args):
                 inductor = Person.find(row['Inductor'])
                 if verbose:
                     print("inductor is", inductor)
-                inductor_id = inductor._id
+                inductor_id = inductor._id if inductor else None
                 # todo: record that the inductor is trained as an inducotr
                 induction_event = Event.find('user_training',
                                               row['Date inducted'],
-                                              [inductor_id],
+                                              [inductor_id] if inductor_id else [],
                                               [Equipment_type.find(config['organization']['name'])._id])
                 induction_event.add_invitation_accepted([added])
                 induction_event.mark_results([added], [], [])
