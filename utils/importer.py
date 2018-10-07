@@ -128,14 +128,16 @@ def import0(args):
                 # todo: find or create a training event to match row['Date inducted']
                 if verbose:
                     print("added person record", added)
-                inductor = Person.find(row['Inductor'])
+                # if no inductor, treat them as self-inducted, as was
+                # presumably done while bootstrapping the induction
+                # system:
+                inductor = Person.find(row['Inductor']) or added
                 if verbose:
                     print("inductor is", inductor)
-                inductor_id = inductor._id if inductor else None
                 # todo: record that the inductor is trained as an inducotr
                 induction_event = Event.find('user_training',
                                               row['Date inducted'],
-                                              [inductor_id] if inductor_id else [],
+                                              [inductor_id],
                                               [Equipment_type.find(config['organization']['name'])._id])
                 induction_event.add_invitation_accepted([added])
                 induction_event.mark_results([added], [], [])
