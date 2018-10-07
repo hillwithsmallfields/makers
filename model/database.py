@@ -323,7 +323,7 @@ def list_event_templates():
     return [ template for template in database[collection_names['event_templates']].find({}) ]
 
 def save_event_template(template):
-    database[collection_names['event_templates']].update({'template_name': template['template_name']},
+    database[collection_names['event_templates']].update({'name': template['name']},
                                                          template,
                                                          upsert=True)
 

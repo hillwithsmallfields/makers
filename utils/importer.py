@@ -26,7 +26,8 @@ def import_template_file(file):
                 incoming_template = yaml.load(confstream)
                 if 'name' not in incoming_template:
                     incoming_template['name'] = os.path.splitext(os.path.basename(file))[0]
-                database.add_template(incoming_template)
+                print("adding template", incoming_template)
+                database.save_event_template(incoming_template)
 
 def import_role_file(role, csv_file, verbose):
     if csv_file != "None":
@@ -39,7 +40,12 @@ def import_role_file(role, csv_file, verbose):
                 trainer = Person.find(row.get('Trainer', "Joe Bloggs"))
                 trainer_id = trainer._id if trainer else None
                 equipment_type_name = row['Equipment']
-                equipment_type_id = Equipment_type.find(equipment_type_name)._id
+                equipment_type = Equipment_type.find(equipment_type_name)
+                if equipment_type is None:
+                    print("Could not find equipment type", equipment_type_name,
+                          "and so skipping row", row, "of file", csv_file)
+                    continue
+                equipment_type_id = equipment_type._id
                 if verbose:
                     print("equipment", equipment_type_name, equipment_type_id)
                 training_event = Event.find(database.role_training(role),
@@ -137,9 +143,9 @@ def import0(args):
                 # todo: record that the inductor is trained as an inducotr
                 induction_event = Event.find('user_training',
                                               row['Date inducted'],
-                                              [inductor_id],
-                                              [Equipment_type.find(config['organization']['name'])._id])
-                induction_event.add_invitation_accepted([added])
+                                              [inductor._id],
+                                              Equipment_type.find(config['organization']['name'])._id)
+                induction_event.add_signed_up([added])
                 induction_event.mark_results([added], [], [])
                 # print("induction event is now", induction_event)
                 added.add_training(induction_event)
