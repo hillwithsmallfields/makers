@@ -186,9 +186,11 @@ def add_person(name_record, main_record):
     # todo: convert dates to datetime.datetime
     print("Given", main_record, "to add to operational database")
     print("Given", name_record, "to add to profiles database")
+    # default_membership_number = get_highest_membership_number()+1
+    default_membership_number = 0
     membership_number = main_record.get('membership_number',
                                         name_record.get('membership_number',
-                                                        get_highest_membership_number()+1))
+                                                        default_membership_number))
     link_id = main_record.get('link_id',
                               name_record.get('link_id',
                                               str(uuid.uuid4())))
