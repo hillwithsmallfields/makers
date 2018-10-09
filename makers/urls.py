@@ -23,7 +23,7 @@ from django.views.generic.base import RedirectView, TemplateView
 import makers_admin.views
 import dashboard.views
 import equiptypes.views
-import equipment.views
+import machines.views
 import events.views
 import training.views
 
