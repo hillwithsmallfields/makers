@@ -76,7 +76,7 @@ class HtmlPage(object):
                                if self.django_request
                                else None)
         if user:
-            model.database.log_machine_use("makers", user, details=self.name)
+            model.database.log_machine_use("makers", user.link_id, details=self.name)
         return page_string(self.name, self.content)
 
 class PageSection(object):
