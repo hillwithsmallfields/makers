@@ -79,8 +79,8 @@ WSGI_APPLICATION = 'makers.wsgi.application'
 
 DATABASES = {
     'default': {
-        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'ENGINE': 'django.db.backends.postgresql', # Ian suggests trying this one
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # 'ENGINE': 'django.db.backends.postgresql', # Ian suggests trying this one
         'NAME': 'makers',
         'USER': 'makersuser',
         'PASSWORD': decouple.config('POSTGRES_PASSWORD'),
