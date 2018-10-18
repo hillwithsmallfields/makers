@@ -15,7 +15,7 @@ import re
 import sys
 
 @ensure_csrf_cookie
-def all_user_list_page(request):
+def all_user_list_page(django_request):
 
     config_data = model.configuration.get_config()
 
@@ -23,29 +23,29 @@ def all_user_list_page(request):
 
     pages.person_page.person_page_setup()
 
-    if request.user.is_anonymous:
+    if django_request.user.is_anonymous:
         return HttpResponse("""<html><head><title>Error</title></head>
         <body><h1>Information not publicly available</h1>
         <p>The user list is not publicly visible.
         To see this, you must <a href="../users/login">login</a> as a user with admin rights.</p>
         </body></html>""")
 
-    viewing_user = model.person.Person.find(request.user.link_id)
+    viewing_user = model.person.Person.find(django_request.user.link_id)
 
     page_data = model.pages.HtmlPage("User list page",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
 
     if viewing_user.is_administrator() or viewing_user.is_auditor():
         page_data.add_content("User list",
-                              pages.user_list_page.user_list_section(request))
+                              pages.user_list_page.user_list_section(django_request))
     else:
         page_data.add_content("Error", [T.p["You do not have permission to view the list of users."]])
 
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def dashboard_page(request, who=""):
+def dashboard_page(django_request, who=""):
     """
     View function for the landing page.
     """
@@ -57,7 +57,7 @@ def dashboard_page(request, who=""):
 
     pages.person_page.person_page_setup()
 
-    if request.user.is_anonymous:
+    if django_request.user.is_anonymous:
         return HttpResponse("""<html><head><title>This will be the public page</title></head>
         <body><h1>This will be the public page</h1>
 
@@ -65,7 +65,7 @@ def dashboard_page(request, who=""):
         href="../users/login">login</a> and <a
         href="../users/signup">signup</a> boxes.</p> </body></html>""")
 
-    viewing_user = model.person.Person.find(request.user.link_id)
+    viewing_user = model.person.Person.find(django_request.user.link_id)
 
     if who == "":
         subject_user = viewing_user
@@ -75,24 +75,24 @@ def dashboard_page(request, who=""):
             subject_user = model.person.Person.find(who)
         else:
             page_data = model.pages.HtmlPage("Error",
-                                             pages.page_pieces.top_navigation(request),
-                                             django_request=request)
+                                             pages.page_pieces.top_navigation(django_request),
+                                             django_request=django_request)
             page_data.add_content("Error", [T.p["You do not have permission to view other users."]])
     if subject_user is None:
         page_data = model.pages.HtmlPage("Error",
-                                         pages.page_pieces.top_navigation(request),
-                                         django_request=request)
+                                         pages.page_pieces.top_navigation(django_request),
+                                         django_request=django_request)
         page_data.add_content("Error", [T.p["Could not find the user " + who + "."]])
     else:
         page_data = model.pages.SectionalPage("User dashboard for " + subject_user.name(),
-                                              pages.page_pieces.top_navigation(request),
-                                              django_request=request)
-        pages.person_page.add_person_page_contents(page_data, subject_user, viewing_user, request)
+                                              pages.page_pieces.top_navigation(django_request),
+                                              django_request=django_request)
+        pages.person_page.add_person_page_contents(page_data, subject_user, viewing_user, django_request)
 
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def one_section(request, data_function, title, who=""):
+def one_section(django_request, data_function, title, who=""):
     """
     View function for a single part of the user dashboard page.
     Intended for loading tabs on demand, Ajax-style.
@@ -104,7 +104,7 @@ def one_section(request, data_function, title, who=""):
 
     pages.person_page.person_page_setup()
 
-    if request.user.is_anonymous:
+    if django_request.user.is_anonymous:
         return HttpResponse("""<html><head><title>This will be the public page</title></head>
         <body><h1>This will be the public page</h1>
 
@@ -112,7 +112,7 @@ def one_section(request, data_function, title, who=""):
         href="../users/login">login</a> and <a
         href="../users/signup">signup</a> boxes.</p> </body></html>""")
 
-    viewing_user = model.person.Person.find(request.user.link_id)
+    viewing_user = model.person.Person.find(django_request.user.link_id)
 
     if who == "":
         subject_user = viewing_user
@@ -122,212 +122,212 @@ def one_section(request, data_function, title, who=""):
             subject_user = model.person.Person.find(who)
         else:
             page_data = model.pages.HtmlPage("Error",
-                                             pages.page_pieces.top_navigation(request),
-                                             django_request=request)
+                                             pages.page_pieces.top_navigation(django_request),
+                                             django_request=django_request)
             page_data.add_content("Error", [T.p["You do not have permission to view other users."]])
     if subject_user is None:
         page_data = model.pages.HtmlPage("Error",
-                                         pages.page_pieces.top_navigation(request),
-                                         django_request=request)
+                                         pages.page_pieces.top_navigation(django_request),
+                                         django_request=django_request)
         page_data.add_content("Error", [T.p["Could not find the user " + who + "."]])
     else:
         page_data = model.pages.PageSection(title,
-                                            [data_function(subject_user, viewing_user, request)],
-                                            django_request=request)
+                                            [data_function(subject_user, viewing_user, django_request)],
+                                            django_request=django_request)
 
     return HttpResponse(str(page_data.to_string()))
 
-def profile_only(request, who=""):
-    return one_section(request,
+def profile_only(django_request, who=""):
+    return one_section(django_request,
                        pages.person_page.profile_section,
                        "User profile",
                        who)
 
-def notifications_only(request, who=""):
-    return one_section(request,
+def notifications_only(django_request, who=""):
+    return one_section(django_request,
                        pages.person_page.notifications_section,
                        "Notifications and announcements",
                        who)
 
-def responsibilities_only(request, who=""):
-    return one_section(request,
+def responsibilities_only(django_request, who=""):
+    return one_section(django_request,
                        pages.person_page.responsibilities_section,
                        "Equipment responsibilities",
                        who)
 
-def trained_on_only(request, who=""):
+def trained_on_only(django_request, who=""):
     print("Getting equipment I can use") # to see when it's done when loading lazily; todo: remove this print
-    return one_section(request,
+    return one_section(django_request,
                        pages.person_page.equipment_trained_on_section,
                        "Equipment trained on",
                        who)
 
-def other_equipment_only(request, who=""):
-    return one_section(request,
+def other_equipment_only(django_request, who=""):
+    return one_section(django_request,
                        pages.person_page.other_equipment_section,
                        "Other equipment",
                        who)
 
-def training_requests_only(request, who=""):
-    return one_section(request,
+def training_requests_only(django_request, who=""):
+    return one_section(django_request,
                        pages.person_page.training_requests_section,
                        "Outstanding training requests",
                        who)
 
-def events_hosting_only(request, who=""):
-    return one_section(request,
+def events_hosting_only(django_request, who=""):
+    return one_section(django_request,
                        pages.person_page.events_hosting_section,
                        "Events I will be hosting",
                        who)
 
-def events_attending_only(request, who=""):
-    return one_section(request,
+def events_attending_only(django_request, who=""):
+    return one_section(django_request,
                        pages.person_page.events_attending_section,
                        "Events I have signed up for",
                        who)
 
-def events_hosted_only(request, who=""):
-    return one_section(request,
+def events_hosted_only(django_request, who=""):
+    return one_section(django_request,
                        pages.person_page.events_hosted_section,
                        "Events I have hosted",
                        who)
 
-def events_attended_only(request, who=""):
-    return one_section(request,
+def events_attended_only(django_request, who=""):
+    return one_section(django_request,
                        pages.person_page.events_attended_section,
                        "Events I have attended",
                        who)
 
-def events_available_only(request, who=""):
-    return one_section(request,
+def events_available_only(django_request, who=""):
+    return one_section(django_request,
                        pages.person_page.events_available_section,
                        "Events I can sign up for",
                        who)
 
-def admin_only(request, who=""):
-    return one_section(request,
+def admin_only(django_request, who=""):
+    return one_section(django_request,
                        pages.person_page.admin_section,
                        "Admin actions",
                        who)
 
 @ensure_csrf_cookie
-def user_match_page(request, pattern):
+def user_match_page(django_request, pattern):
 
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    params = request.GET
+    params = django_request.GET
     if 'pattern' in params:
         pattern = params['pattern']
 
     pages.person_page.person_page_setup()
 
-    if request.user.is_anonymous:
+    if django_request.user.is_anonymous:
         return HttpResponse("""<html><head><title>Error</title></head>
         <body><h1>Information not publicly available</h1>
         <p>The user list is not publicly visible.
         To see this, you must <a href="../users/login">login</a> as a user with admin rights.</p>
         </body></html>""")
 
-    viewing_user = model.person.Person.find(request.user.link_id)
+    viewing_user = model.person.Person.find(django_request.user.link_id)
 
     page_data = model.pages.HtmlPage("Matching user list page",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
 
     if viewing_user.is_administrator() or viewing_user.is_auditor():
         page_data.add_content("User list",
-                              pages.user_list_page.user_list_matching_section(request, pattern, False))
+                              pages.user_list_page.user_list_matching_section(django_request, pattern, False))
     else:
         page_data.add_content("Error", [T.p["You do not have permission to view the list of users."]])
 
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def update_mugshot(request):
+def update_mugshot(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    params = request.POST
+    params = django_request.POST
     who = model.person.Person.find(params['subject_user_uuid'])
 
     # todo: update photo from upload
 
     page_data = model.pages.HtmlPage("Confirmation",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
     page_data.add_content("Confirmation", [T.p["Photo updated."]])
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def update_profile(request):
+def update_profile(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    params = request.POST
+    params = django_request.POST
     who = model.person.Person.find(params['subject_user_uuid'])
 
     who.update_profile(params)
 
     page_data = model.pages.HtmlPage("Confirmation",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
     page_data.add_content("Confirmation", [T.p["Profile updated."]])
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def update_configured_profile(request):
+def update_configured_profile(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    params = request.POST
+    params = django_request.POST
     who = model.person.Person.find(model.pages.unstring_id(params['subject_user_uuid']))
 
     if who is None:
         page_data = model.pages.HtmlPage("Error",
-                                         pages.page_pieces.top_navigation(request),
-                                         django_request=request)
+                                         pages.page_pieces.top_navigation(django_request),
+                                         django_request=django_request)
         page_data.add_content("Error", [T.p["Could not find user identified by "
                                             + str(params['subject_user_uuid'])]])
         return HttpResponse(str(page_data.to_string()))
 
     who.update_configured_profile(params)
     page_data = model.pages.HtmlPage("Confirmation",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
     page_data.add_content("Confirmation", [T.p["Profile updated."]])
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def update_site_controls(request):
+def update_site_controls(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    params = request.POST
+    params = django_request.POST
     who = model.person.Person.find(model.pages.unstring_id(params['subject_user_uuid']))
 
     who.update_controls(params)
 
     page_data = model.pages.HtmlPage("Confirmation",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
     page_data.add_content("Confirmation", [T.p["Controls updated."]])
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def update_availability(request):
+def update_availability(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
     day_names = config_data['timeslots']['days']
     slot_names = ['Morning', 'Afternoon', 'Evening', 'Other']
 
-    params = request.POST
+    params = django_request.POST
     who = model.person.Person.find(model.pages.unstring_id(params['person']))
     if who is None:
         page_data = model.pages.HtmlPage("Error",
-                                         pages.page_pieces.top_navigation(request),
-                                         django_request=request)
+                                         pages.page_pieces.top_navigation(django_request),
+                                         django_request=django_request)
         page_data.add_content("Error", [T.p["Person not found"]])
         return HttpResponse(str(page_data.to_string()))
 
@@ -355,17 +355,17 @@ def update_availability(request):
     who.save()
 
     page_data = model.pages.HtmlPage("Confirmation",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
     page_data.add_content("Confirmation", [T.p["Availability updated."]])
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def update_levels(request):
+def update_levels(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    params = request.POST
+    params = django_request.POST
     who = model.person.Person.find(model.pages.unstring_id(params['subject_user_uuid']))
 
     interests = who.get_interests()
@@ -381,8 +381,8 @@ def update_levels(request):
     who.set_profile_field('interest_emails', interest_emails)
 
     page_data = model.pages.HtmlPage("Confirmation",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
     page_data.add_content("Confirmation", [T.p["Interests updated."]])
     return HttpResponse(str(page_data.to_string()))
 
@@ -402,54 +402,60 @@ def update_avoidances(django_request):
     page_data.add_content("Confirmation", [T.p["Dietary info updated."]])
     return HttpResponse(str(page_data.to_string()))
 
-def reset_messages(request):
+def person_from_request(django_request):
+    return model.person.Person.find(
+        model.pages.unstring_id(
+            django_request.POST['subject_user_uuid']))
+
+def reset_messages(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    who = model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid']))
+    who = person_from_request(django_request)
 
     who.notifications_read_to = datetime(1970, 1, 1)
     who.announcements_read_to = datetime(1970, 1, 1)
     who.save()
 
     page_data = model.pages.HtmlPage("Confirmation",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
     page_data.add_content("Confirmation", [T.p["Messages reset."]])
     return HttpResponse(str(page_data.to_string()))
 
-def announcements_read(request):
+def announcements_read(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid'])).mark_announcements_read()
+    person_from_request(django_request).mark_announcements_read()
 
     page_data = model.pages.HtmlPage("Confirmation",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
     page_data.add_content("Confirmation", [T.p["Messages marked as read."]])
     return HttpResponse(str(page_data.to_string()))
 
-def notifications_read(request):
+def notifications_read(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid'])).mark_notifications_read()
+    person_from_request(django_request).mark_notifications_read()
 
     page_data = model.pages.HtmlPage("Confirmation",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
     page_data.add_content("Confirmation", [T.p["Messages marked as read."]])
     return HttpResponse(str(page_data.to_string()))
 
-def send_password_reset(request):
+def send_password_reset(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    model.django_calls.send_password_reset_email(model.person.Person.find(model.pages.unstring_id(request.POST['subject_user_uuid'])))
+    model.django_calls.send_password_reset_email(person_from_request(django_request),
+                                                 django_request)
 
     page_data = model.pages.HtmlPage("Confirmation",
-                                     pages.page_pieces.top_navigation(request),
-                                     django_request=request)
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
     page_data.add_content("Confirmation", [T.p["Password reset sent."]])
     return HttpResponse(str(page_data.to_string()))
