@@ -210,22 +210,10 @@ organization:
   timezone:      Europe/London
 
 server:
-  mailhost:       makespace.org
-  # base_url:       https://makers.makespace.org/
-  base_url:       http://fragaria:8000/ # todo: use a django mechanism for this
-  # todo: use django's "reverse" instead of these:`
-  login:          login
-  update_profile: update_profile/
-  update_mugshot: update_mugshot/
-  rsvp_form:      events/rsvp_form/
-  rsvp:           events/rsvp/
-  users:          dashboard/
-  machines:       equipment/
-  types:          equiptypes/
-  events:         event/
-  admin:          admin/
-  userapi:        api/users/
-  head_preamble:  head.html
+  mailhost:                    makespace.org
+  password_reset_from_address: makers@makespace.org
+  # todo: use django's "reverse" instead of this:
+  rsvp_form:                   events/rsvp_form/
 
 messages:
   templates_directory: /usr/local/share/makers/message_templates

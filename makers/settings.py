@@ -131,9 +131,9 @@ USE_TZ = True
 # Mail sending:
 # based on https://simpleisbetterthancomplex.com/tutorial/2016/06/13/how-to-send-email.html
 
-EMAIL_HOST = 'email-smtp.eu-west-1.amazonaws.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'makers'
+EMAIL_HOST = decouple.config('SMTP_HOST')
+EMAIL_PORT = int(decouple.config('SMTP_PORT'))
+EMAIL_HOST_USER = decouple.config('SMTP_USERNAME')
 EMAIL_HOST_PASSWORD = decouple.config('SMTP_PASSWORD')
 EMAIL_USE_TLS = True
 
