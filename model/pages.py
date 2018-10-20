@@ -257,3 +257,13 @@ def unstring_id(poss_id):
         if re.match("[0-9a-fA-F]+$", poss_id):
             return bson.objectid.ObjectId(poss_id)
     return poss_id
+
+def bare_string_id(id):
+    """Produce just the ID string, without the ObjectId() syntax around it."""
+    if not isinstance(id, str):
+        id = str(id)
+    matched = re.match("ObjectId\\('([-0-9a-fA-F]+)'\\)", id)
+    if matched:
+        id = matched.group(1)
+    return id
+
