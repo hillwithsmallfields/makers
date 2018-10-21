@@ -5,6 +5,7 @@
 
 from __future__ import print_function
 
+from users.models import CustomUser
 import bson
 import datetime
 import decouple
@@ -166,7 +167,10 @@ def person_set_email(whoever, viewing_person, new_email):
     else:
         name_record['email'] = new_email
     database[collection_names['profiles']].save(name_record)
-    # todo: tell django that the email address has changed
+    # tell django that the email address has changed; there should
+    # only be one entry to change, but django treats it as though
+    # there could be several:
+    CustomUser.objects.filter(link_id=person_link).update(email=new_email)
 
 def name_to_id(name):
     name_parts = name.rsplit(" ", 1)
