@@ -1,3 +1,4 @@
+import django.urls
 import model.access_permissions
 import model.configuration
 import model.database
@@ -333,7 +334,7 @@ class Person(object):
         invitation_uuid = str(uuid.uuid4())
         all_conf = model.configuration.get_config()
         server_config = all_conf['server']
-        invitation_url = "/" + server_config['rsvp_form'] + invitation_uuid # todo: use django.reverse
+        invitation_url = django.urls.reverse("events:rsvp_form", args=[invitation_uuid])
         self.invitations[invitation_uuid] = m_event._id
         self.save()
         substitutions = {'rsvp': invitation_url,

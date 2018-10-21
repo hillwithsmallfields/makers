@@ -1,4 +1,5 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
+import django.urls
 import model.configuration
 import model.database
 import model.event
@@ -17,7 +18,7 @@ def invitation_response_form_page(rsvp_uuid):
     access_permissions.Access_Permissions.setup_access_permissions(person_responding.link_id)
     # todo: also tell django that they are effectively logged in?
     event_responding = event.Event.find_by_id(person_responding.invitations[rsvp_uuid])
-    form_act = server_conf["rsvp_form"]
+    form_act = django.urls.reverse("events:rsvp_form", args=[rsvp_uuid])
     return T.div(class_="invitresp")[
         T.h1["RSVP for " + person_responding.name(access_permissions_event=event_responding)],
         T.p["This is a " + event_responding.event_type
