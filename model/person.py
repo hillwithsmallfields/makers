@@ -146,6 +146,9 @@ class Person(object):
         else:
             return ("member_"+str(self.membership_number))
 
+    def set_name(self, new_name):
+        model.database.person_set_name(self.link_id, new_name)
+        
     def nickname(self,
                  access_permissions_event=None,
                  access_permissions_role=None,
@@ -536,19 +539,19 @@ class Person(object):
     # Update from form
 
     def update_profile(self, params):
-        old_mugshot = who.get_profile_field('mugshot')
-        old_email = who.get_email()
-        old_name = who.get_name()
+        old_mugshot = self.get_profile_field('mugshot')
+        old_email = self.get_email()
+        old_name = self.name()
         email = params['email']
         name = params['name']
         if email != old_email:
-            who.set_email(email)
-        if name != old_name():
-            who.get_name(name)
+            self.set_email(email)
+        if name != old_name:
+            self.set_name(name)
         if 'membership_number' in params:
             membership_number = int(params['membership_number'])
             if membership_number > 0:
-                who.membership_number = membership_number
+                self.membership_number = membership_number
         self.save()
 
     def update_configured_profile(self, params):

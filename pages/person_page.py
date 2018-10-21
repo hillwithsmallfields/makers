@@ -49,7 +49,9 @@ def site_controls_sub_section(who, viewer, django_request):
     return T.div(class_="site_options")[
         [T.form(action=django.urls.reverse("dashboard:update_site_controls"), method='POST')
          [T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-          T.input(type="hidden", name="subject_user_uuid", value=who._id),
+          T.input(type="hidden",
+                  name="subject_user_uuid",
+                  value=model.pages.bare_string_id(who._id)),
           model.pages.with_help(
               viewer,
               T.table(class_="siteoptions")[
@@ -114,7 +116,9 @@ def avoidances_section(who, django_request):
                        T.input(type="hidden",
                                name="csrfmiddlewaretoken",
                                value=django.middleware.csrf.get_token(django_request)),
-                       T.input(type='hidden', name='subject_user_uuid', value=who._id),
+                       T.input(type='hidden',
+                               name='subject_user_uuid',
+                               value=model.pages.bare_string_id(who._id)),
                        T.div(align="right")[T.input(type='submit', value="Update avoidances")]]]
 
 def get_profile_subfield_value(who, group_name, name):
@@ -154,13 +158,17 @@ def profile_section(who, viewer, django_request):
     result = [T.form(action=django.urls.reverse("dashboard:update_mugshot"), method='POST')
               [T.img(src=mugshot) if mugshot else "",
                "Upload new photo: ", T.input(type="text"),
-               T.input(type="hidden", name="subject_user_uuid", value=who.link_id),
+               T.input(type="hidden",
+                       name="subject_user_uuid",
+                       value=model.pages.bare_string_id(who.link_id)),
                T.input(type="submit", value="Update photo")],
               model.pages.with_help(
                   viewer,
                   T.form(action=django.urls.reverse("dashboard:update_profile"), method='POST')[
                       T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-                      T.input(type="hidden", name="subject_user_uuid", value=who._id),
+                      T.input(type="hidden",
+                              name="subject_user_uuid",
+                              value=model.pages.bare_string_id(who._id)),
                       T.table(class_="personaldetails")[
                           T.tr[T.th(class_="ralabel")["Name"], T.td[T.input(type="text",
                                                                             name="name",
@@ -201,7 +209,7 @@ def profile_section(who, viewer, django_request):
                                                         value=django.middleware.csrf.get_token(django_request)),
                                                 T.input(type="hidden",
                                                         name="subject_user_uuid",
-                                                        value=who._id),
+                                                        value=model.pages.bare_string_id(who._id)),
                                                 T.input(type='submit',
                                                         value='Update')],
                                      "configurable_profile"),
@@ -215,13 +223,17 @@ def profile_section(who, viewer, django_request):
                          [T.input(type="hidden",
                                   name="csrfmiddlewaretoken",
                                   value=django.middleware.csrf.get_token(django_request)),
-                          T.input(type='hidden', name='subject_user_uuid', value=who._id),
+                          T.input(type='hidden',
+                                  name='subject_user_uuid',
+                                  value=model.pages.bare_string_id(who._id)),
                           T.input(type='Reset notifications and announcements',
                                   value="Reset notifications")])],
                    T.li["Send password reset email: ",
                         T.form(action=django.urls.reverse("dashboard:send_pw_reset"),
                                method='POST')
-                        [T.input(type='hidden', name='subject_user_uuid', value=who._id),
+                        [T.input(type='hidden',
+                                 name='subject_user_uuid',
+                                 value=model.pages.bare_string_id(who._id)),
                          T.input(type="hidden", name="csrfmiddlewaretoken",
                                  value=django.middleware.csrf.get_token(django_request)),
                          T.input(type='submit', value="Send password reset")]]]]
@@ -257,8 +269,11 @@ def notifications_section(who, viewer, django_request):
                  "announcements"),
              T.form(action=django.urls.reverse("dashboard:announcements_read"),
                     method='POST')
-             [T.input(type='hidden', name='subject_user_uuid', value=who._id),
-              T.input(type="hidden", name="csrfmiddlewaretoken",
+             [T.input(type='hidden',
+                      name='subject_user_uuid',
+                      value=model.pages.bare_string_id(who._id)),
+              T.input(type="hidden",
+                      name="csrfmiddlewaretoken",
                       value=django.middleware.csrf.get_token(django_request)),
               T.input(type='submit', value="Mark as read")]])
     if len(notifications) > 0:
@@ -271,7 +286,9 @@ def notifications_section(who, viewer, django_request):
                                    "notifications"),
              T.form(action=django.urls.reverse("dashboard:notifications_read"),
                     method='POST')
-             [T.input(type='hidden', name='subject_user_uuid', value=who._id),
+             [T.input(type='hidden',
+                      name='subject_user_uuid',
+                      value=model.pages.bare_string_id(who._id)),
               T.input(type="hidden", name="csrfmiddlewaretoken",
                       value=django.middleware.csrf.get_token(django_request)),
               T.input(type='submit', value="Mark as read")]])

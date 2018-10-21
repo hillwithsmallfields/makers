@@ -123,7 +123,7 @@ def person_name(whoever,
         return (name_record.get('given_name', "?") + " " + name_record.get('surname', "?"),
                 name_record.get('known_as', name_record.get('given_name', "?")))
 
-def person_set_name(whoever, viewing_person, new_name):
+def person_set_name(whoever, new_name):
     """Set the person's name."""
     person_link = (whoever['link_id']
                    if isinstance(whoever, dict)
@@ -154,7 +154,7 @@ def person_email(whoever, viewing_person):
     else:
         return name_record.get('email', "exists_but_no_email@example.com")
 
-def person_set_email(whoever, viewing_person, new_email):
+def person_set_email(whoever, new_email):
     """Set the person's email address."""
     person_link = (whoever['link_id']
                    if isinstance(whoever, dict)
