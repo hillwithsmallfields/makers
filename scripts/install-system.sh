@@ -31,6 +31,9 @@ pip install python-decouple
 pip install bson
 pip install pymongo
 
+# I think this will be the way to save mugshot files etc
+pip install boto
+
 # later
 # ./manage.py makemigrations
 # ./manage.py migrate
