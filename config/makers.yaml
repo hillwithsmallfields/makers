@@ -215,6 +215,7 @@ server:
   password_reset_from_address: makers@makespace.org
   # todo: use django's "reverse" instead of this:
   rsvp_form:                   events/rsvp_form/
+  mugshot_directory:           "images/people"
 
 messages:
   templates_directory: /usr/local/share/makers/message_templates

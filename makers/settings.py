@@ -70,6 +70,7 @@ TEMPLATES = [
     },
 ]
 
+LOGIN_URL = '/users/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 
 WSGI_APPLICATION = 'makers.wsgi.application'
@@ -142,3 +143,15 @@ EMAIL_USE_TLS = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
+# mugshots etc
+# See https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# not ready for this one yet, I think:
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_ACCESS_KEY_ID = decouple.config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = decouple.config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = decouple.config('AWS_STORAGE_BUCKET_NAME')
+AWS_AUTO_CREATE_BUCKET = True
+AWS_QUERYSTRING_AUTH = False    # I think I want this
+AWS_BUCKET_ACL = 'public-read'

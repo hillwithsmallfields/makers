@@ -157,7 +157,9 @@ def profile_section(who, viewer, django_request):
     membership_number = str(who.membership_number)
     result = [T.form(action=django.urls.reverse("dashboard:update_mugshot"), method='POST')
               [T.img(src=mugshot) if mugshot else "",
-               "Upload new photo: ", T.input(type="text"),
+               "Upload new photo: ", T.input(type="file",
+                                             name="mugshot",
+                                             accept='image/jpeg'),
                T.input(type="hidden",
                        name="subject_user_uuid",
                        value=model.pages.bare_string_id(who.link_id)),
@@ -165,15 +167,19 @@ def profile_section(who, viewer, django_request):
               model.pages.with_help(
                   viewer,
                   T.form(action=django.urls.reverse("dashboard:update_profile"), method='POST')[
-                      T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+                      T.input(type="hidden",
+                              name="csrfmiddlewaretoken",
+                              value=django.middleware.csrf.get_token(django_request)),
                       T.input(type="hidden",
                               name="subject_user_uuid",
                               value=model.pages.bare_string_id(who._id)),
                       T.table(class_="personaldetails")[
-                          T.tr[T.th(class_="ralabel")["Name"], T.td[T.input(type="text",
-                                                                            name="name",
-                                                                            value=who.name())]],
-                          T.tr[T.th(class_="ralabel")["login id"], T.td[django_request.user.username]],
+                          T.tr[T.th(class_="ralabel")["Name"],
+                               T.td[T.input(type="text",
+                                            name="name",
+                                            value=who.name())]],
+                          T.tr[T.th(class_="ralabel")["login id"],
+                               T.td[django_request.user.username]],
                           # T.tr[T.th(class_="ralabel")["session data"], T.td[str(django_request.session)]], # debug only
                           T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
                                                                              name="email",

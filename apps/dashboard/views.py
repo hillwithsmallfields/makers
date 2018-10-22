@@ -9,6 +9,7 @@ import model.django_calls
 import model.pages
 import model.person
 import model.person as person
+import os.path
 import pages.person_page
 import pages.user_list_page
 import re
@@ -252,6 +253,12 @@ def update_mugshot(django_request):
     who = model.person.Person.find(params['subject_user_uuid'])
 
     # todo: update photo from upload
+    mugshot = django_request.FILES['mugshot']
+    mugshot_filename = os.path.join(config_data['server']['mugshot_directory'],
+                                    who.link_id + ".jpg")
+    with open(mugshot_filename, 'w') as destination:
+        for chunk in mugshot.chunks():
+            destination.write(chunk)
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(django_request),
