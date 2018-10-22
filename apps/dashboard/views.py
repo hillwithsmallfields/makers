@@ -1,3 +1,4 @@
+from django.core.files.storage import default_storage
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from pages import page_pieces
@@ -246,17 +247,20 @@ def user_match_page(django_request, pattern):
 
 @ensure_csrf_cookie
 def update_mugshot(django_request):
+    # I think https://simpleisbetterthancomplex.com/tutorial/2017/08/01/how-to-setup-amazon-s3-in-a-django-project.html may tell me what to do with the saved pictures
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
     params = django_request.POST
     who = model.person.Person.find(params['subject_user_uuid'])
 
-    # todo: update photo from upload
     mugshot = django_request.FILES['mugshot']
     mugshot_filename = os.path.join(config_data['server']['mugshot_directory'],
-                                    who.link_id + ".jpg")
-    with open(mugshot_filename, 'w') as destination:
+                                    ('uploaded_' # todo: also have 'verified_' photos
+                                     + who.link_id + ".jpg"))
+    # todo: save it to a local temporary file, adjust the size, then write that
+    # probably use resize_contain as described on https://pypi.org/project/python-resize-image/ and https://opensource.com/life/15/2/resize-images-python
+    with default_storage.open(mugshot_filename, 'w') as destination:
         for chunk in mugshot.chunks():
             destination.write(chunk)
 
