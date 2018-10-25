@@ -17,7 +17,7 @@ cp $MAINCONF *.css makers.js $CONFDEST
 cp -r message_templates $CONFDEST
 chmod -R a+r $CONFDEST/*
 
-mkdir -p $DESTINATION
+mkdir -p $DESTINATION ${DESTINATION}-files
 
 echo copying python files
 cp $SOURCE/manage.py $DESTINATION
@@ -46,6 +46,10 @@ for APPDIR in $SOURCE/makers $SOURCE/apps/*
 do
     cp -r $APPDIR/static/* $DESTINATION/static
 done
+
+echo Copying static pages
+mkdir -p $DESTINATION/files
+cp -r $SOURCE/files/* $DESTINATION/files
 
 echo activating venv
 source /var/www/makers_venv/bin/activate
