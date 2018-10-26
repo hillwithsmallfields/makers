@@ -30,6 +30,7 @@ pip install yattag
 pip install python-decouple
 pip install bson
 pip install pymongo
+pip install python-resize-image
 
 # I think this will be the way to save mugshot files etc
 pip install boto
