@@ -1,10 +1,10 @@
-from PIL import Image
+# from pillow import Image
 from datetime import datetime
 from django.core.files.storage import default_storage
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from pages import page_pieces
-from resizeimage import resizeimage
+# from resizeimage import resizeimage
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import model.configuration
 import model.database
@@ -261,15 +261,15 @@ def update_mugshot(django_request):
     mugshot_filename = os.path.join(mugshot_config['directory'],
                                     ('uploaded_' # todo: also have 'verified_' photos
                                      + who.link_id + ".jpg"))
-    with tempfile.TemporaryFile() as incoming_image_file:
-        for chunk in mugshot.chunks():
-            incoming_image_file.write(chunk)
-            incoming_image_file.seek(0)
-            with Image.open(incoming_image_file) as image:
-                resized_image = resizeimage.resize_contain(image,
-                                                           [int(mugshot_config['width']),
-                                                            int(mugshot_config['height'])])
-                resized_image.save(mugshot_filename)
+    # with tempfile.TemporaryFile() as incoming_image_file:
+    #     for chunk in mugshot.chunks():
+    #         incoming_image_file.write(chunk)
+    #         incoming_image_file.seek(0)
+    #         with Image.open(incoming_image_file) as image:
+    #             resized_image = resizeimage.resize_contain(image,
+    #                                                        [int(mugshot_config['width']),
+    #                                                         int(mugshot_config['height'])])
+    #             resized_image.save(mugshot_filename)
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(django_request),
