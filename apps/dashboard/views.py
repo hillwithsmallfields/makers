@@ -1,9 +1,11 @@
+from PIL import Image
+from datetime import datetime
 from django.core.files.storage import default_storage
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from pages import page_pieces
+from resizeimage import resizeimage
 from untemplate.throw_out_your_templates_p3 import htmltags as T
-from datetime import datetime
 import model.configuration
 import model.database
 import model.django_calls
@@ -249,20 +251,25 @@ def user_match_page(django_request, pattern):
 def update_mugshot(django_request):
     # I think https://simpleisbetterthancomplex.com/tutorial/2017/08/01/how-to-setup-amazon-s3-in-a-django-project.html may tell me what to do with the saved pictures
     config_data = model.configuration.get_config()
+    mugshot_config = config_data['mugshots']
     model.database.database_init(config_data)
 
     params = django_request.POST
     who = model.person.Person.find(params['subject_user_uuid'])
 
     mugshot = django_request.FILES['mugshot']
-    mugshot_filename = os.path.join(config_data['server']['mugshot_directory'],
+    mugshot_filename = os.path.join(mugshot_config['directory'],
                                     ('uploaded_' # todo: also have 'verified_' photos
                                      + who.link_id + ".jpg"))
-    # todo: save it to a local temporary file, adjust the size, then write that
-    # probably use resize_contain as described on https://pypi.org/project/python-resize-image/ and https://opensource.com/life/15/2/resize-images-python
-    with default_storage.open(mugshot_filename, 'w') as destination:
+    with tempfile.TemporaryFile() as incoming_image_file:
         for chunk in mugshot.chunks():
-            destination.write(chunk)
+            incoming_image_file.write(chunk)
+            incoming_image_file.seek(0)
+            with Image.open(incoming_image_file) as image:
+                resized_image = resizeimage.resize_contain(image,
+                                                           [int(mugshot_config['width']),
+                                                            int(mugshot_config['height'])])
+                resized_image.save(mugshot_filename)
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(django_request),
