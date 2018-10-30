@@ -52,9 +52,13 @@ server {
         error_log /var/www/makers/logs/nginx-error.log warn;
 }
 
-# redirect http to https, as explained on https://serverfault.com/questions/67316/in-nginx-how-can-i-rewrite-all-http-requests-to-https-while-maintaining-sub-dom:
+# Redirect http to https, as explained on
+# https://aws.amazon.com/premiumsupport/knowledge-center/redirect-http-https-elb/
+
 server {
-       listen         80;
-       server_name makers.makespace.org fragaria.home;
-       return         301 https://$server_name$request_uri;
+    listen 80;
+    server_name _;
+    if ($http_x_forwarded_proto = 'http'){
+    return 301 https://$host$request_uri;
+    }
 }
