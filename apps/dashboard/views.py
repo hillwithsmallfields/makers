@@ -18,6 +18,13 @@ import pages.user_list_page
 import re
 import sys
 
+def logged_in_only():
+    return HttpResponse("""<html><head><title>Error</title></head>
+    <body><h1>Information not publicly available</h1>
+    <p>The user list is not publicly visible.
+    To see this, you must <a href="../users/login">login</a> as a user with admin rights.</p>
+    </body></html>""")
+
 @ensure_csrf_cookie
 def all_user_list_page(django_request):
 
@@ -28,11 +35,7 @@ def all_user_list_page(django_request):
     pages.person_page.person_page_setup()
 
     if django_request.user.is_anonymous:
-        return HttpResponse("""<html><head><title>Error</title></head>
-        <body><h1>Information not publicly available</h1>
-        <p>The user list is not publicly visible.
-        To see this, you must <a href="../users/login">login</a> as a user with admin rights.</p>
-        </body></html>""")
+        return logged_in_only()
 
     viewing_user = model.person.Person.find(django_request.user.link_id)
 
@@ -62,26 +65,21 @@ def dashboard_page(django_request, who=""):
     pages.person_page.person_page_setup()
 
     if django_request.user.is_anonymous:
-        return HttpResponse("""<html><head><title>This will be the public page</title></head>
-        <body><h1>This will be the public page</h1>
-
-        <p>It should display general status, and <a
-        href="../users/login">login</a> and <a
-        href="../users/signup">signup</a> boxes.</p> </body></html>""")
+        return logged_in_only()
 
     viewing_user = model.person.Person.find(django_request.user.link_id)
 
     if who == "":
         subject_user = viewing_user
     else:
-        # todo: remove this dirty hack for early debugging
-        if True or viewing_user.is_administrator() or viewing_user.is_auditor():
+        if viewing_user.is_administrator() or viewing_user.is_auditor():
             subject_user = model.person.Person.find(who)
         else:
             page_data = model.pages.HtmlPage("Error",
                                              pages.page_pieces.top_navigation(django_request),
                                              django_request=django_request)
             page_data.add_content("Error", [T.p["You do not have permission to view other users."]])
+            return HttpResponse(str(page_data.to_string()))
     if subject_user is None:
         page_data = model.pages.HtmlPage("Error",
                                          pages.page_pieces.top_navigation(django_request),
@@ -121,14 +119,14 @@ def one_section(django_request, data_function, title, who=""):
     if who == "":
         subject_user = viewing_user
     else:
-        # todo: remove this dirty hack for early debugging
-        if True or viewing_user.is_administrator() or viewing_user.is_auditor():
+        if viewing_user.is_administrator() or viewing_user.is_auditor():
             subject_user = model.person.Person.find(who)
         else:
             page_data = model.pages.HtmlPage("Error",
                                              pages.page_pieces.top_navigation(django_request),
                                              django_request=django_request)
             page_data.add_content("Error", [T.p["You do not have permission to view other users."]])
+            return HttpResponse(str(page_data.to_string()))
     if subject_user is None:
         page_data = model.pages.HtmlPage("Error",
                                          pages.page_pieces.top_navigation(django_request),
@@ -227,11 +225,7 @@ def user_match_page(django_request, pattern):
     pages.person_page.person_page_setup()
 
     if django_request.user.is_anonymous:
-        return HttpResponse("""<html><head><title>Error</title></head>
-        <body><h1>Information not publicly available</h1>
-        <p>The user list is not publicly visible.
-        To see this, you must <a href="../users/login">login</a> as a user with admin rights.</p>
-        </body></html>""")
+        return logged_in_only()
 
     viewing_user = model.person.Person.find(django_request.user.link_id)
 

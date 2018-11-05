@@ -12,7 +12,12 @@
    :last-state-change: [2018-09-14 Fri 22:23]
    :first-seen: [2018-09-13 Thu 09:05]
    :END:
-** TODO [#A] switch to https
+** DONE [#A] switch to https
+   CLOSED: [2018-11-05 Mon 21:27]
+   :PROPERTIES:
+   :last-state-change: [2018-11-05 Mon 21:27]
+   :first-seen: [2018-11-05 Mon 21:27]
+   :END:
 ** OPEN [#A] look at importing and creating users, and how to interface to django's part of it
    :PROPERTIES:
    :last-state-change: [2018-09-16 Sun 13:46]
@@ -21,7 +26,11 @@
 ** TODO [#B] command to delete personally identifying data
 ** TODO [#B] cache training data in the django session objects
 ** TODO [#B] fix user interface to searching for users by name
-** TODO [#B] remove "everyone is an admin" hack, and check the privacy code
+** OPEN [#B] remove "everyone is an admin" hack, and check the privacy code
+   :PROPERTIES:
+   :last-state-change: [2018-11-05 Mon 21:28]
+   :first-seen: [2018-11-05 Mon 21:28]
+   :END:
 ** TODO [#B] log admin actions
 ** TODO [#B] log user logins
 ** TODO [#B] divert ex-users on login

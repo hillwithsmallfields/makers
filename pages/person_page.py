@@ -536,7 +536,7 @@ def search_events_form(viewer, django_request):
     # todo: pass the subject user in, and pick that up in the events list, so it can be used for signup
     equip_types = {etype.name: etype.pretty_name()
                        for etype in model.equipment_type.Equipment_type.list_equipment_types()}
-    return T.form(action="/events/search", # todo: use reverse
+    return T.form(action=django.urls.reverse("events:search_events"),
                   # todo: write the receiving function
                   method='GET')[T.form[T.input(type="hidden", name="csrfmiddlewaretoken",
                                                value=django.middleware.csrf.get_token(django_request)),
@@ -562,17 +562,19 @@ def search_events_form(viewer, django_request):
                                                     T.td[T.input(type='submit', value="Search for events")]]]]]
 
 def announcement_form(viewer, django_request):
-    return T.form(action="/makers_admin/announce", # todo: use reverse
+    return T.form(action=django.urls.reverse("makers_admin:announce"),
                   method='POST')["Announcement text: ",
                                  T.br,
                                  T.textarea(name='announcement',
                                             cols=80, rows=12),
                                  T.br,
-                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+                                 T.input(type="hidden",
+                                         name="csrfmiddlewaretoken",
+                                         value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value="Send announcement")]
 
 def notification_form(viewer, django_request):
-    return T.form(action="/makers_admin/notify", # todo: use reverse
+    return T.form(action=django.urls.reverse("makers_admin:notify"),
                   method='POST')["Recipient: ", T.input(type='text', name='to'),
                                  T.br,
                                  "Notification text: ",
@@ -580,7 +582,9 @@ def notification_form(viewer, django_request):
                                  T.textarea(name='message',
                                             cols=80, rows=12),
                                  T.br,
-                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+                                 T.input(type="hidden",
+                                         name="csrfmiddlewaretoken",
+                                         value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value="Send notification")]
 
 def search_users_form(django_request):
@@ -677,8 +681,7 @@ def admin_section(who, viewer, django_request):
                              [""],
                              "gdpr_delete_user")),
         admin_subsection("Send test message",
-                         [T.p["Key is ", decouple.config('SMTP_PASSWORD')],
-                          T.form(action=django.urls.reverse("makers_admin:test_message"),
+                         [T.form(action=django.urls.reverse("makers_admin:test_message"),
                                  method='POST')[
                                      T.input(type="hidden", name="csrfmiddlewaretoken",
                                              value=django.middleware.csrf.get_token(django_request)),

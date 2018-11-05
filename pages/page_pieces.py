@@ -19,13 +19,13 @@ def set_server_conf():
 
 def top_navigation(django_request):
     org_conf = model.configuration.get_config()['organization']
-    # todo: make this a bar of buttons, or a dropdow
+    # todo: make this a bar of buttons, or a dropdown
     return [T.nav(class_='top_nav')
             [T.ul[T.li[T.a(href=org_conf['home_page'])[org_conf['title'] + " home"]],
                   T.li[T.a(href=org_conf['wiki'])["Wiki"]],
                   T.li[T.a(href=org_conf['forum'])["Forum"]],
-                  T.li[T.a(href="/dashboard/")["Your dashboard"]], # todo: use reverse
-                  T.li[T.a(href='/users/logout')["Logout"]]]]]     # todo: use reverse
+                  T.li[T.a(href=django.urls.reverse("dashboard:own_dashboard"))["Your dashboard"]],
+                  T.li[T.a(href='/users/logout')["Logout"]]]]]     # todo: use reverse when I can find its name
 
 # https://stackoverflow.com/questions/2345708/how-can-i-get-the-full-absolute-url-with-domain-in-django
 # request.build_absolute_url()
@@ -251,7 +251,7 @@ def eqty_training_requests(eqtype, django_request):
                                                       for req in raw_reqs]))]
 
 def special_event_form(eqtype, who_id, role, enable, css_class, button_label, django_request):
-    return T.form(action="events/special", # todo: use django.urls.reverse
+    return T.form(action=django.urls.reverse("events:special"),
                   class_=css_class,
                   method='POST')[T.input(type='hidden', name='eqtype', value=eqtype._id),
                                  T.input(type='hidden', name='who', value=who_id),
