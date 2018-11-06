@@ -35,6 +35,9 @@ pip install python-resize-image
 # I think this will be the way to save mugshot files etc
 pip install boto
 
+echo Using sudo to create log directory
+echo "mkdir -p /var/log/gunicorn; chown nginx:nginx /var/log/gunicorn" | sudo su
+
 # later
 # ./manage.py makemigrations
 # ./manage.py migrate
