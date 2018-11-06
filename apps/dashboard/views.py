@@ -21,8 +21,10 @@ import sys
 def logged_in_only():
     return HttpResponse("""<html><head><title>Error</title></head>
     <body><h1>Information not publicly available</h1>
-    <p>The user list is not publicly visible.
-    To see this, you must <a href="../users/login">login</a> as a user with admin rights.</p>
+    <p>Other users' information, including the user list,
+    is not publicly visible.
+    To see this, you must <a href="../users/login">login</a>
+    as a user with admin rights.</p>
     </body></html>""")
 
 @ensure_csrf_cookie
@@ -463,11 +465,17 @@ def send_password_reset(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    model.django_calls.send_password_reset_email(person_from_request(django_request),
+    who = person_from_request(django_request)
+    recipient = who.get_email()
+
+    model.django_calls.send_password_reset_email(who,
                                                  django_request)
 
-    page_data = model.pages.HtmlPage("Confirmation",
+    page_data = model.pages.HtmlPage("Password reset confirmation",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
-    page_data.add_content("Confirmation", [T.p["Password reset sent."]])
+    page_data.add_content("Confirmation",
+                          [T.p[("Password reset sent to " + who.name()
+                                + " <", T.a(href="mailto:"+recipient)[recipient], ">.")]])
+
     return HttpResponse(str(page_data.to_string()))

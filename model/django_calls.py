@@ -20,6 +20,7 @@ def send_password_reset_email(who, django_request):
     config = model.configuration.get_config()['server']
     from_email = config['password_reset_from_address']
     to_email = who.get_email()
+    print("Sending password reset to", to_email)
     domain = config['domain']
     form = django.contrib.auth.forms.PasswordResetForm(
         {'email': to_email,
