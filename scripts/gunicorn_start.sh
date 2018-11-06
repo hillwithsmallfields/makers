@@ -29,5 +29,8 @@ exec /var/www/makers_venv/bin/gunicorn ${DJANGO_WSGI_MODULE}:application \
   --name $NAME \
   --workers $NUM_WORKERS \
   --user $USER \
+  --capture-output \
+  --log-file /var/log/gunicorn/stdout \
+  --error-logfile /var/log/gunicorn/stderr \
   --bind=unix:$SOCKFILE
 #   --bind 0.0.0.0:8000
