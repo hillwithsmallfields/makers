@@ -130,6 +130,97 @@ def get_profile_subfield_value(who, group_name, name):
         return ""
     return group.get(name, "")
 
+def mugshot_section(who, viewer, django_request):
+    return [T.form(action=django.urls.reverse("dashboard:update_mugshot"), method='POST')
+            [T.img(src=mugshot) if mugshot else "",
+             "Upload new photo: ", T.input(type="file",
+                                           name="mugshot",
+                                           accept='image/jpeg'),
+             T.input(type="hidden",
+                     name="subject_user_uuid",
+                     value=model.pages.bare_string_id(who.link_id)),
+             T.input(type="submit", value="Update photo")]]
+
+def general_profile_section(who, viewer, django_request):
+    return [model.pages.with_help(
+        viewer,
+        T.form(action=django.urls.reverse("dashboard:update_profile"), method='POST')[
+            T.input(type="hidden",
+                    name="csrfmiddlewaretoken",
+                    value=django.middleware.csrf.get_token(django_request)),
+            T.input(type="hidden",
+                    name="subject_user_uuid",
+                    value=model.pages.bare_string_id(who._id)),
+            T.table(class_="personaldetails")[
+                T.tr[T.th(class_="ralabel")["Name"],
+                     T.td[T.input(type="text",
+                                  name="name",
+                                  value=who.name())]],
+                T.tr[T.th(class_="ralabel")["login id"],
+                     T.td[django_request.user.username]],
+                # T.tr[T.th(class_="ralabel")["session data"], T.td[str(django_request.session)]], # debug only
+                          T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
+                                                                             name="email",
+                                                                             value=who.get_email())]],
+                T.tr[T.th(class_="ralabel")["Membership number"],
+                     T.td[(T.input(type="text",
+                                   name='membership_number',
+                                   value=membership_number)
+                                     if (viewer.is_administrator()
+                                         and (membership_number == "" or membership_number == "0"))
+                                     else [membership_number])]],
+                T.tr[T.th(class_="ralabel")['Fob number'],
+                     T.td[(T.input(type="text",
+                                   name="fob",
+                                   value=str(who.fob))
+                                     if viewer.is_administrator()
+                                     else [str(who.fob)])]],
+                T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
+                T.tr[T.th(class_="ralabel")["No-shows"], T.td[str(len(who.get_noshows()))]],
+                T.tr[T.th(class_="ralabel")["No-show absolutions"],
+                     T.td[(T.input(type="text",
+                                   name="absolutions",
+                                   value=str(who.noshow_absolutions))
+                                     if viewer.is_administrator() else str(who.noshow_absolutions))]],
+                T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]]],
+        "general_user_profile")]
+
+def configurable_profile_section(who, viewer, django_request):
+    return [model.pages.with_help(viewer,
+                                  T.form(action=django.urls.reverse("dashboard:update_configured_profile"),
+                                         method='POST')[
+                                             variable_sections,
+                                             T.input(type="hidden",
+                                                     name="csrfmiddlewaretoken",
+                                                     value=django.middleware.csrf.get_token(django_request)),
+                                             T.input(type="hidden",
+                                                     name="subject_user_uuid",
+                                                     value=model.pages.bare_string_id(who._id)),
+                                             T.input(type='submit',
+                                                     value='Update')],
+                                  "configurable_profile")]
+
+def misc_section(who, viewer, django_request):
+    return [T.ul[T.li["Reset notifications and announcements: ",
+                      (T.form(action="/dashboard/reset_messages", method='POST')
+                       [T.input(type="hidden",
+                                name="csrfmiddlewaretoken",
+                                value=django.middleware.csrf.get_token(django_request)),
+                        T.input(type='hidden',
+                                name='subject_user_uuid',
+                                value=model.pages.bare_string_id(who._id)),
+                        T.input(type='Reset notifications and announcements',
+                                value="Reset notifications")])],
+                 T.li["Send password reset email: ",
+                      T.form(action=django.urls.reverse("dashboard:send_pw_reset"),
+                             method='POST')
+                      [T.input(type='hidden',
+                               name='subject_user_uuid',
+                               value=model.pages.bare_string_id(who._id)),
+                       T.input(type="hidden", name="csrfmiddlewaretoken",
+                               value=django.middleware.csrf.get_token(django_request)),
+                       T.input(type='submit', value="Send password reset")]]]]
+
 def profile_section(who, viewer, django_request):
 
     profile_fields = all_conf.get('profile_fields')
@@ -155,104 +246,25 @@ def profile_section(who, viewer, django_request):
 
     mugshot = who.get_profile_field('mugshot')
     membership_number = str(who.membership_number)
-    result = [T.form(action=django.urls.reverse("dashboard:update_mugshot"), method='POST')
-              [T.img(src=mugshot) if mugshot else "",
-               "Upload new photo: ", T.input(type="file",
-                                             name="mugshot",
-                                             accept='image/jpeg'),
-               T.input(type="hidden",
-                       name="subject_user_uuid",
-                       value=model.pages.bare_string_id(who.link_id)),
-               T.input(type="submit", value="Update photo")],
-              model.pages.with_help(
-                  viewer,
-                  T.form(action=django.urls.reverse("dashboard:update_profile"), method='POST')[
-                      T.input(type="hidden",
-                              name="csrfmiddlewaretoken",
-                              value=django.middleware.csrf.get_token(django_request)),
-                      T.input(type="hidden",
-                              name="subject_user_uuid",
-                              value=model.pages.bare_string_id(who._id)),
-                      T.table(class_="personaldetails")[
-                          T.tr[T.th(class_="ralabel")["Name"],
-                               T.td[T.input(type="text",
-                                            name="name",
-                                            value=who.name())]],
-                          T.tr[T.th(class_="ralabel")["login id"],
-                               T.td[django_request.user.username]],
-                          # T.tr[T.th(class_="ralabel")["session data"], T.td[str(django_request.session)]], # debug only
-                          T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
-                                                                             name="email",
-                                                                             value=who.get_email())]],
-                          T.tr[T.th(class_="ralabel")["Membership number"],
-                               T.td[(T.input(type="text",
-                                             name='membership_number',
-                                             value=membership_number)
-                                     if (viewer.is_administrator()
-                                         and (membership_number == "" or membership_number == "0"))
-                                     else [membership_number])]],
-                          T.tr[T.th(class_="ralabel")['Fob number'],
-                               T.td[(T.input(type="text",
-                                             name="fob",
-                                             value=str(who.fob))
-                                     if viewer.is_administrator()
-                                     else [str(who.fob)])]],
-                          T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
-                          T.tr[T.th(class_="ralabel")["No-shows"], T.td[str(len(who.get_noshows()))]],
-                          T.tr[T.th(class_="ralabel")["No-show absolutions"],
-                               T.td[(T.input(type="text",
-                                             name="absolutions",
-                                             value=str(who.noshow_absolutions))
-                                     if viewer.is_administrator() else str(who.noshow_absolutions))]],
-                          T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]]],
-                  "general_user_profile"),
-               model.pages.with_help(viewer,
-                                     T.form(action=django.urls.reverse("dashboard:update_configured_profile"),
-                                            method='POST')[
-                                                variable_sections,
-                                                T.input(type="hidden",
-                                                        name="csrfmiddlewaretoken",
-                                                        value=django.middleware.csrf.get_token(django_request)),
-                                                T.input(type="hidden",
-                                                        name="subject_user_uuid",
-                                                        value=model.pages.bare_string_id(who._id)),
-                                                T.input(type='submit',
-                                                        value='Update')],
-                                     "configurable_profile"),
-              T.h2["Site controls"],
-              site_controls_sub_section(who, viewer, django_request),
-              T.h2["Availability"],
-              availability_sub_section(who, viewer, django_request),
-              T.h2["Misc"],
-              T.ul[T.li["Reset notifications and announcements: ",
-                        (T.form(action="/dashboard/reset_messages", method='POST')
-                         [T.input(type="hidden",
-                                  name="csrfmiddlewaretoken",
-                                  value=django.middleware.csrf.get_token(django_request)),
-                          T.input(type='hidden',
-                                  name='subject_user_uuid',
-                                  value=model.pages.bare_string_id(who._id)),
-                          T.input(type='Reset notifications and announcements',
-                                  value="Reset notifications")])],
-                   T.li["Send password reset email: ",
-                        T.form(action=django.urls.reverse("dashboard:send_pw_reset"),
-                               method='POST')
-                        [T.input(type='hidden',
-                                 name='subject_user_uuid',
-                                 value=model.pages.bare_string_id(who._id)),
-                         T.input(type="hidden", name="csrfmiddlewaretoken",
-                                 value=django.middleware.csrf.get_token(django_request)),
-                         T.input(type='submit', value="Send password reset")]]]]
+    result_parts = {'Mugshot': mugshot_section(who, viewer, django_request),
+                    'General': general_profile_section(who, viewer, django_request),
+                    'Configurable': configurable_profile_section(who, viewer, django_request),
+                    "Site controls": site_controls_sub_section(who, viewer, django_request),
+                    "Availability": availability_sub_section(who, viewer, django_request),
+                    "Misc": misc_section(who, viewer, django_request)}
     if 'interest_areas' in all_conf:
-        result.append([T.h2["Interests and skills"],
-                       model.pages.with_help(viewer,
-                                             user_interests_section(who, django_request),
-                                             "interests")])
+        result_parts["Interests and skills"] = model.pages.with_help(viewer,
+                                                                     user_interests_section(who, django_request),
+                                                                     "interests")
     if 'dietary_avoidances' in all_conf:
-        result.append([T.h2["Dietary avoidances"],
-                       model.pages.with_help(viewer,
-                                             avoidances_section(who, django_request),
-                                             "dietary_avoidances")])
+        result_parts["Dietary avoidances"] = model.pages.with_help(viewer,
+                                                                   avoidances_section(who, django_request),
+                                                                   "dietary_avoidances")
+    result_sequence = all_conf.get('profile_sections')
+
+    result = [[T.h2[title], result_parts[title]]
+              for title in result_sequence.items()
+              if title in result_parts]
 
     return T.div(class_="personal_profile")[result]
 

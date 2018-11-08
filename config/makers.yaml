@@ -66,6 +66,18 @@ page:
   # postamble:  <p>Bottom navigation bar etc will go here.</p>
   motd_file:    config/motd.html
 
+# Top-level parts of the user profile
+
+profile_sections:
+  - Mugshot
+  - General
+  - Configurable
+  - Site controls
+  - Availability
+  - Misc
+  - Interests and skills
+  - Dietary avoidances
+
 # These are presented in the order given by "profile_group_order"; any
 # groups not mentioned in that will not be presented:
 
