@@ -6,6 +6,8 @@
 
 {% block content %}
 <h2>Sign up</h2>
+<p>If you're signing up using this method, you must use the 'link-id' that you have been given,
+  which will connect the django part of your account to the underlying 'makers' account.</p>
 <form method="post">
   {% csrf_token %}
   {{ form.as_p }}
