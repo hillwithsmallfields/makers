@@ -131,6 +131,7 @@ def get_profile_subfield_value(who, group_name, name):
     return group.get(name, "")
 
 def mugshot_section(who, viewer, django_request):
+    mugshot = who.get_profile_field('mugshot')
     return [T.form(action=django.urls.reverse("dashboard:update_mugshot"), method='POST')
             [T.img(src=mugshot) if mugshot else "",
              "Upload new photo: ", T.input(type="file",
@@ -142,6 +143,7 @@ def mugshot_section(who, viewer, django_request):
              T.input(type="submit", value="Update photo")]]
 
 def general_profile_section(who, viewer, django_request):
+    membership_number = str(who.membership_number)
     return [model.pages.with_help(
         viewer,
         T.form(action=django.urls.reverse("dashboard:update_profile"), method='POST')[
@@ -186,6 +188,27 @@ def general_profile_section(who, viewer, django_request):
         "general_user_profile")]
 
 def configurable_profile_section(who, viewer, django_request):
+
+    profile_fields = all_conf.get('profile_fields')
+    variable_sections = T.table[
+        [[T.tr[T.th(colspan="2",
+                    class_='profile_group',
+                    rowspan=str(len(group_fields)))[group_name],
+               T.th[group_fields[0]],
+               T.td[T.input(type='text',
+                            name=group_name+':'+group_fields[0],
+                            value=get_profile_subfield_value(who, group_name, group_fields[0]))],
+               T.td(rowspan=str(len(group_fields)))[
+                   T.div(class_="help")[untemplate.safe_unicode(model.pages.help_for_topic(group_name))]
+                   if who.show_help else ""]],
+          [[T.tr[T.th[field],
+                 T.td[T.input(type='text',
+                              name=group_name+':'+field,
+                              value=get_profile_subfield_value(who, group_name, field))]]]
+           for field in group_fields[1:]]]
+         for group_name, group_fields in [(name, profile_fields[name])
+                                          for name in all_conf.get('profile_group_order')]]]
+
     return [model.pages.with_help(viewer,
                                   T.form(action=django.urls.reverse("dashboard:update_configured_profile"),
                                          method='POST')[
@@ -223,50 +246,28 @@ def misc_section(who, viewer, django_request):
 
 def profile_section(who, viewer, django_request):
 
-    profile_fields = all_conf.get('profile_fields')
-
-    variable_sections = T.table[
-        [[T.tr[T.th(colspan="2",
-                    class_='profile_group',
-                    rowspan=str(len(group_fields)))[group_name],
-               T.th[group_fields[0]],
-               T.td[T.input(type='text',
-                            name=group_name+':'+group_fields[0],
-                            value=get_profile_subfield_value(who, group_name, group_fields[0]))],
-               T.td(rowspan=str(len(group_fields)))[
-                   T.div(class_="help")[untemplate.safe_unicode(model.pages.help_for_topic(group_name))]
-                   if who.show_help else ""]],
-          [[T.tr[T.th[field],
-                 T.td[T.input(type='text',
-                              name=group_name+':'+field,
-                              value=get_profile_subfield_value(who, group_name, field))]]]
-           for field in group_fields[1:]]]
-         for group_name, group_fields in [(name, profile_fields[name])
-                                          for name in all_conf.get('profile_group_order')]]]
-
-    mugshot = who.get_profile_field('mugshot')
-    membership_number = str(who.membership_number)
     result_parts = {'Mugshot': mugshot_section(who, viewer, django_request),
                     'General': general_profile_section(who, viewer, django_request),
-                    'Configurable': configurable_profile_section(who, viewer, django_request),
-                    "Site controls": site_controls_sub_section(who, viewer, django_request),
-                    "Availability": availability_sub_section(who, viewer, django_request),
-                    "Misc": misc_section(who, viewer, django_request)}
+                    'Further information': configurable_profile_section(who, viewer, django_request),
+                    'Site controls': site_controls_sub_section(who, viewer, django_request),
+                    'Availability': availability_sub_section(who, viewer, django_request),
+                    'Misc': misc_section(who, viewer, django_request)}
     if 'interest_areas' in all_conf:
-        result_parts["Interests and skills"] = model.pages.with_help(viewer,
+        result_parts['Interests and skills'] = model.pages.with_help(viewer,
                                                                      user_interests_section(who, django_request),
                                                                      "interests")
     if 'dietary_avoidances' in all_conf:
-        result_parts["Dietary avoidances"] = model.pages.with_help(viewer,
+        result_parts['Dietary avoidances'] = model.pages.with_help(viewer,
                                                                    avoidances_section(who, django_request),
                                                                    "dietary_avoidances")
     result_sequence = all_conf.get('profile_sections')
 
-    result = [[T.div(class_="profile_subsection",
-                    id=title.replace(' ', '_')[T.h2(class_="profile_sub_title")[title],
-                       T.div(class_="profile_sub_body")[result_parts[title]]]]
-              for title in result_sequence.items()
-              if title in result_parts]
+    result = T.div(class_="user_profile")[[
+        [T.div(class_="profile_subsection",
+               id=title.replace(' ', '_'))[T.h2(class_="profile_sub_title")[title],
+                                           T.div(class_="profile_sub_body")[result_parts[title]]]]
+              for title in result_sequence
+              if title in result_parts]]
 
     return T.div(class_="personal_profile")[result]
 
