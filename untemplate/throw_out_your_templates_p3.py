@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable-msg=R0922
 
+# Based on https://github.com/tavisrudd/throw_out_your_templates/blob/master/throw_out_your_templates.py with incomplete adaptations for Python 3
 # Copyright (c) 2007-present, Damn Simple Solutions Ltd.
 # All rights reserved.
 # Modified for Python 3 by John Sturdy 2018
