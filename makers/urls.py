@@ -14,11 +14,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls import include
 from django.views.generic.base import RedirectView, TemplateView
+from django.contrib.auth import views as auth_views
 
 import makers_admin.views
 import dashboard.views
@@ -37,6 +38,11 @@ urlpatterns = [
     path('training/', include('training.urls'), name='training'),
     path('users/', include('users.urls'), name='users'),
     path('users/', include('django.contrib.auth.urls'), name='users'),
+    re_path(r'^password_reset/$', auth_views.password_reset, name='password_reset'),
+    re_path(r'^password_reset/done/$', auth_views.password_reset_done, name='password_reset_done'),
+    re_path(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+        auth_views.password_reset_confirm, name='password_reset_confirm'),
+    re_path(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
     path('', RedirectView.as_view(url='/dashboard/'))
     # path('', TemplateView.as_view(template_name='home.html'), name='home')
 ]
