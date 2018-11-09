@@ -262,7 +262,9 @@ def profile_section(who, viewer, django_request):
                                                                    "dietary_avoidances")
     result_sequence = all_conf.get('profile_sections')
 
-    result = [[T.h2[title], result_parts[title]]
+    result = [[T.div(class_="profile_subsection",
+                    id=title.replace(' ', '_')[T.h2(class_="profile_sub_title")[title],
+                       T.div(class_="profile_sub_body")[result_parts[title]]]]
               for title in result_sequence.items()
               if title in result_parts]
 
