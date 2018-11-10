@@ -32,8 +32,8 @@ pip install bson
 pip install pymongo
 pip install python-resize-image
 
-# I think this will be the way to save mugshot files etc
-pip install boto
+pip install boto3
+pip install django-storages
 
 echo Using sudo to create log directory
 echo "mkdir -p /var/log/gunicorn; chown nginx:nginx /var/log/gunicorn" | sudo su

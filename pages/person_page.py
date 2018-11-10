@@ -1,3 +1,4 @@
+from django.conf import settings
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import bson
 import datetime
@@ -131,12 +132,21 @@ def get_profile_subfield_value(who, group_name, name):
     return group.get(name, "")
 
 def mugshot_section(who, viewer, django_request):
-    mugshot = who.get_profile_field('mugshot')
-    return [T.form(action=django.urls.reverse("dashboard:update_mugshot"), method='POST')
-            [T.img(src=mugshot) if mugshot else "",
+    mugshot = (django_request.scheme + "://"
+               + (settings.AWS_STORAGE_BUCKET_NAME
+                  if hasattr(settings, 'AWS_STORAGE_BUCKET_NAME')
+                             else configuration.get_config()['server']['domain']) + "/"
+               + who.get_profile_field('mugshot'))
+    return [T.form(action=django.urls.reverse("dashboard:update_mugshot"),
+                   enctype="multipart/form-data",
+                   method='POST')
+            [T.img(src=mugshot, alt="Photo of "+who.name()) if mugshot else "",
              "Upload new photo: ", T.input(type="file",
                                            name="mugshot",
                                            accept='image/jpeg'),
+             T.input(type="hidden",
+                     name="csrfmiddlewaretoken",
+                     value=django.middleware.csrf.get_token(django_request)),
              T.input(type="hidden",
                      name="subject_user_uuid",
                      value=model.pages.bare_string_id(who.link_id)),
@@ -158,8 +168,8 @@ def general_profile_section(who, viewer, django_request):
                      T.td[T.input(type="text",
                                   name="name",
                                   value=who.name())]],
-                T.tr[T.th(class_="ralabel")["login id"],
-                     T.td[django_request.user.username]],
+                # T.tr[T.th(class_="ralabel")["Logged in as"],
+                #      T.td[django_request.user.username]],
                 # T.tr[T.th(class_="ralabel")["session data"], T.td[str(django_request.session)]], # debug only
                           T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
                                                                              name="email",
@@ -264,7 +274,7 @@ def profile_section(who, viewer, django_request):
 
     result = T.div(class_="user_profile")[[
         [T.div(class_="profile_subsection",
-               id=title.replace(' ', '_'))[T.h2(class_="profile_sub_title")[title],
+               id=title.replace(' ', '_'))[T.h3(class_="profile_sub_title")[title],
                                            T.div(class_="profile_sub_body")[result_parts[title]]]]
               for title in result_sequence
               if title in result_parts]]

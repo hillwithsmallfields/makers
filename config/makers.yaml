@@ -69,7 +69,7 @@ page:
 # Top-level parts of the user profile
 
 profile_sections:
-  - Mugshot
+#  - Mugshot
   - General
   - Further information
   - Site controls

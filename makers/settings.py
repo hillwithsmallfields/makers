@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'dashboard.apps.DashboardConfig',
     'equiptypes.apps.EquiptypesConfig',
     'events.apps.EventsConfig',
-    'users' # from https://wsvincent.com/django-custom-user-model-tutorial/ but why is it not a long one like the others?
+    'users', # from https://wsvincent.com/django-custom-user-model-tutorial/ but why is it not a long one like the others?
+    'storages'
 ]
 
 MIDDLEWARE = [

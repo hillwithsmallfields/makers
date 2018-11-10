@@ -1,4 +1,4 @@
-# from pillow import Image
+from PIL import Image
 from datetime import datetime
 from django.core.files.storage import default_storage
 from django.http import HttpResponse
@@ -12,11 +12,13 @@ import model.django_calls
 import model.pages
 import model.person
 import model.person as person
-import os.path
+import os
 import pages.person_page
 import pages.user_list_page
 import re
 import sys
+import tempfile
+import uuid
 
 def logged_in_only():
     return HttpResponse("""<html><head><title>Error</title></head>
@@ -254,18 +256,27 @@ def update_mugshot(django_request):
     who = model.person.Person.find(params['subject_user_uuid'])
 
     mugshot = django_request.FILES['mugshot']
-    mugshot_filename = os.path.join(mugshot_config['directory'],
+
+    # todo: put these on S3
+    directory = mugshot_config['directory']
+    if not os.path.isdir(directory):
+        os.makedirs(directory)
+    mugshot_filename = os.path.join(directory,
                                     ('uploaded_' # todo: also have 'verified_' photos
-                                     + who.link_id + ".jpg"))
-    # with tempfile.TemporaryFile() as incoming_image_file:
-    #     for chunk in mugshot.chunks():
-    #         incoming_image_file.write(chunk)
-    #         incoming_image_file.seek(0)
-    #         with Image.open(incoming_image_file) as image:
-    #             resized_image = resizeimage.resize_contain(image,
-    #                                                        [int(mugshot_config['width']),
-    #                                                         int(mugshot_config['height'])])
-    #             resized_image.save(mugshot_filename)
+                                     + str(uuid.uuid4()) + ".jpg"))
+
+    with tempfile.TemporaryFile() as incoming_image_file:
+        for chunk in mugshot.chunks():
+            incoming_image_file.write(chunk)
+            incoming_image_file.seek(0)
+            with Image.open(incoming_image_file) as image:
+                # resized_image = resizeimage.resize_contain(image,
+                #                                            [int(mugshot_config['width']),
+                #                                             int(mugshot_config['height'])])
+                # resized_image.save(mugshot_filename)
+                image.save(mugshot_filename)
+
+    who.set_profile_field('mugshot', mugshot_filename)
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(django_request),
