@@ -132,15 +132,18 @@ def get_profile_subfield_value(who, group_name, name):
     return group.get(name, "")
 
 def mugshot_section(who, viewer, django_request):
-    mugshot = (django_request.scheme + "://"
+    mugshot_filename = who.get_profile_field('mugshot')
+    mugshot_url = (django_request.scheme + "://"
                + (settings.AWS_STORAGE_BUCKET_NAME
                   if hasattr(settings, 'AWS_STORAGE_BUCKET_NAME')
                              else configuration.get_config()['server']['domain']) + "/"
-               + who.get_profile_field('mugshot'))
+               + mugshot_filename) if mugshot_filename else None
     return [T.form(action=django.urls.reverse("dashboard:update_mugshot"),
                    enctype="multipart/form-data",
                    method='POST')
-            [T.img(src=mugshot, alt="Photo of "+who.name()) if mugshot else "",
+            [T.img(src=mugshot_url,
+                   align="right",
+                   alt="Photo of "+who.name()) if mugshot_url else "Picture would go here",
              "Upload new photo: ", T.input(type="file",
                                            name="mugshot",
                                            accept='image/jpeg'),
