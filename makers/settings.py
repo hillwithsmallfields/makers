@@ -139,6 +139,7 @@ EMAIL_PORT = int(decouple.config('SMTP_PORT'))
 EMAIL_HOST_USER = decouple.config('SMTP_USERNAME')
 EMAIL_HOST_PASSWORD = decouple.config('SMTP_PASSWORD')
 EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = decouple.config('DEFAULT_FROM_EMAIL')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
