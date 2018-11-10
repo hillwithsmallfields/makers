@@ -36,14 +36,17 @@ urlpatterns = [
     path('makers_admin/', include('makers_admin.urls', namespace='makers_admin'), name='makers_admin'),
     path('events/', include('events.urls'), name='events'),
     path('training/', include('training.urls'), name='training'),
-    path('users/', include('users.urls'), name='users'),
+    # path('users/', include('users.urls'), name='users'),
     path('users/', include('django.contrib.auth.urls'), name='users'),
-    re_path(r'^password_reset/$', auth_views.password_reset, name='password_reset'),
-    re_path(r'^password_reset/done/$', auth_views.password_reset_done, name='password_reset_done'),
-    re_path(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-        auth_views.password_reset_confirm, name='password_reset_confirm'),
-    re_path(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
+
+    # re_path(r'^password_reset/$', auth_views.password_reset, name='password_reset'),
+    # re_path(r'^password_reset/done/$', auth_views.password_reset_done, name='password_reset_done'),
+    # re_path(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+    #     auth_views.password_reset_confirm, name='password_reset_confirm'),
+    # re_path(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
+
     path('', RedirectView.as_view(url='/dashboard/'))
+
     # path('', TemplateView.as_view(template_name='home.html'), name='home')
 ]
 
