@@ -148,7 +148,7 @@ class Person(object):
 
     def set_name(self, new_name):
         model.database.person_set_name(self.link_id, new_name)
-        
+
     def nickname(self,
                  access_permissions_event=None,
                  access_permissions_role=None,
@@ -338,18 +338,25 @@ class Person(object):
         all_conf = model.configuration.get_config()
         server_config = all_conf['server']
         invitation_url = django.urls.reverse("events:rsvp_form", args=[invitation_uuid])
+        start_time = model.times.timestring(m_event.start)
+        eqty_name = model.equipment_type.Equipment_type.find_by_id(m_event.equipment_type).pretty_name()
         self.invitations[invitation_uuid] = m_event._id
         self.save()
         substitutions = {'rsvp': invitation_url,
                          'queue_position': len(m_event.invited)+1,
-                         'equipment_type': model.equipment_type.Equipment_type.find_by_id(m_event.equipment_type).pretty_name(),
-                         'datetime': model.times.timestring(m_event.start)}
+                         'equipment_type': eqty_name,
+                         'datetime': start_time}
         with open(os.path.join(all_conf['messages']['templates_directory'],
                                message_template_name)) as msg_file:
             message_body = msg_file.read() % substitutions
             print("sending message to", self.name(), "text is", message_body)
             if self.notify_by_email:
-                model.makers_server.mailer(self.get_email(), message_body)
+                model.makers_server.mailer(self.get_email(),
+                                           ("Invitation to " + m_event.event_type.replace('_', ' ')
+                                            + " on " + eqty_name
+                                            + " at " + start_time
+                                            + " at " + all_conf['organization']['title']),
+                                           message_body)
             if self.notify_in_site:
                 model.database.add_notification(self._id, model.times.now(), message_body)
 

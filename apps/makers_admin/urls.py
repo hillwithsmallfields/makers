@@ -12,6 +12,7 @@ urlpatterns = [
     path('save_template_edits', views.save_template_edits, name='save_template_edits'),
     path('announce', views.announce, name='announce'),
     path('notify', views.notify, name='notify'),
+    path('send_email', views.send_email, name='send_email'),
     path('add_user', views.add_user, name='add_user'),
     path('backup_database', views.backup_database, name='backup_database'),
     path('GDPR_delete_user', views.gdpr_delete_user, name='gdpr_delete_user'),
