@@ -8,6 +8,7 @@ import model.database           # for announcements and notifications; I should 
 import model.django_calls
 import model.equipment_type
 import model.event
+import model.makers_server
 import model.pages
 import model.person
 import pages.event_page
@@ -166,7 +167,7 @@ def announce(django_request):
 
 def notify(django_request):
 
-    """Send an announcement to everyone."""
+    """Send a notification to someone."""
 
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
@@ -182,6 +183,25 @@ def notify(django_request):
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
     page_data.add_content("Confirmation of notification to " + model.person.Person.find(to).name(), text)
+    return HttpResponse(str(page_data.to_string()))
+
+def send_email(django_request):
+
+    """Send an email to someone."""
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    text = django_request.POST['message']
+    subject = django_request.POST['subject']
+    to = django_request.POST['to']
+
+    model.makers_server.mailer(to, subject, text)
+
+    page_data = model.pages.HtmlPage("send_email",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("Confirmation of email to " + to + " about " + subject, text)
     return HttpResponse(str(page_data.to_string()))
 
 def make_login(given_name, surname):

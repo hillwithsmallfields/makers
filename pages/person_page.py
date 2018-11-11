@@ -136,7 +136,7 @@ def mugshot_section(who, viewer, django_request):
     mugshot_url = (django_request.scheme + "://"
                + (settings.AWS_STORAGE_BUCKET_NAME
                   if hasattr(settings, 'AWS_STORAGE_BUCKET_NAME')
-                             else configuration.get_config()['server']['domain']) + "/"
+                             else model.configuration.get_config()['server']['domain']) + "/"
                + mugshot_filename) if mugshot_filename else None
     return [T.form(action=django.urls.reverse("dashboard:update_mugshot"),
                    enctype="multipart/form-data",
@@ -615,6 +615,22 @@ def notification_form(viewer, django_request):
                                          value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value="Send notification")]
 
+def email_form(viewer, django_request):
+    return T.form(action=django.urls.reverse("makers_admin:send_email"),
+                  method='POST')["Recipient: ", T.input(type='text', name='to'),
+                                 T.br,
+                                 "Subject: ", T.input(type='text', name='subject'),
+                                 T.br,
+                                 "Notification text: ",
+                                 T.br,
+                                 T.textarea(name='message',
+                                            cols=80, rows=12),
+                                 T.br,
+                                 T.input(type="hidden",
+                                         name="csrfmiddlewaretoken",
+                                         value=django.middleware.csrf.get_token(django_request)),
+                                 T.input(type='submit', value="Send email")]
+
 def search_users_form(django_request):
     return T.form(action="/dashboard/match",
                   method='GET')[T.form[T.input(type='text', name='pattern'),
@@ -689,6 +705,11 @@ def admin_section(who, viewer, django_request):
                              viewer,
                              notification_form(viewer, django_request),
                              "send_notification")),
+        admin_subsection("Send email as " + model.configuration.get_config()['server']['password_reset_from_address'],
+                         model.pages.with_help(
+                             viewer,
+                             email_form(viewer, django_request),
+                             "send_email")),
         admin_subsection("Backup_database",
                          model.pages.with_help(
                              viewer,
