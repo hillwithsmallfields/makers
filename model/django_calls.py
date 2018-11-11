@@ -17,7 +17,7 @@ from django.conf import settings
 def send_password_reset_email(who, django_request):
     # based on https://stackoverflow.com/questions/5594197/trigger-password-reset-email-in-django-without-browser
 
-    config = model.configuration.get_config()['server']
+    config = model.configuration.get_config('server')
     from_email = config['password_reset_from_address']
     to_email = who.get_email()
     print("Sending password reset to", to_email)

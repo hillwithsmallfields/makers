@@ -47,7 +47,7 @@ def get_slots_conf():
     start and end times, and a list of the named periods in order
     of their starting times."""
     global day_order, periods, period_order
-    slotconf = configuration.get_config()['timeslots']
+    slotconf = configuration.get_config('timeslots')
     if day_order is None:
         day_order = slotconf['days']
     if periods is None:

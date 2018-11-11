@@ -8,9 +8,9 @@ def equipment_type_list_section(training_category):
     global serverconf
     global org_conf
     if serverconf == None:
-        serverconf = configuration.get_config()['server']
+        serverconf = configuration.get_config('server')
     if orgconf == None:
-        orgconf = configuration.get_config()['organization']
+        orgconf = configuration.get_config('organization')
     eqtys = equipment_type.Equipment_type.list_equipment_types(training_category)
     print("training_category is", training_category, "and its types are", eqtys)
     return [T.h2[(T.a(href=orgconf['categories']+training_category.upper())[training_category.capitalize()]

@@ -336,7 +336,7 @@ def save_event_template(template):
 def is_administrator(person, writer=False):
     """Return whether a person is an administrator who can access other people's data in the database.
     With the optional third argument non-False, check whether they have write access too."""
-    return (model.configuration.get_config()['organization']['database']
+    return (model.configuration.get_config('organization', 'database')
             in get_person_machines(person,
                                    'owner' if writer else 'trained'))
 

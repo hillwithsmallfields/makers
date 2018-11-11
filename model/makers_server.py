@@ -1,7 +1,7 @@
 # Stuff for talking to the rest of the server --- very prone to change when we get real
 
- import django.core.mail
- import configuration
+import django.core.mail
+import model.configuration
 
 def mailer(address, subject, text):
     """Send a message to an address."""
@@ -11,7 +11,7 @@ def mailer(address, subject, text):
                       + "\n\n" + text)
     return django.core.mail.send_mail(subject,
                                       text,
-                                      model.configuration.get_config()['server']['password_reset_from_address'],
+                                      model.configuration.get_config('server', 'password_reset_from_address'),
                                       [address] if isinstance(address, str) else address,
                                       fail_silently=False)
 

@@ -15,10 +15,10 @@ server_conf = None
 
 def set_server_conf():
     global server_conf
-    server_conf = model.configuration.get_config()['server']
+    server_conf = model.configuration.get_config('server')
 
 def top_navigation(django_request):
-    org_conf = model.configuration.get_config()['organization']
+    org_conf = model.configuration.get_config('organization')
     # todo: make this a bar of buttons, or a dropdown
     return [T.nav(class_='top_nav')
             [T.ul[T.li[T.a(href=org_conf['home_page'])[org_conf['title'] + " home"]],
@@ -136,7 +136,7 @@ def interests_button(area_name, level, which_level):
                           value=str(which_level))]]
 
 def interests_section(interest_levels, mail_levels, django_request, for_person=None):
-    interest_areas = model.configuration.get_config().get('interest_areas', None)
+    interest_areas = model.configuration.get_config('interest_areas')
     if interest_areas is None:
         return []
     existing_interests = {area_name: interest_levels.get(area_name, 0) for area_name in interest_areas}

@@ -45,7 +45,7 @@ class Access_Permissions(object):
         """Cache some access_permissions information.
 
         Call this after you've finished adding roles with add_role()."""
-        org = model.configuration.get_config()['organization']['database']
+        org = model.configuration.get_config('organization', 'database')
         self.auditor = org in self.roles['user']
         self.admin = (self.auditor
                       or org in self.roles['owner']
@@ -65,7 +65,6 @@ class Access_Permissions(object):
                 callback(Access_Permissions.my_access_permissions)
                 Access_Permissions.my_access_permissions.cache_access_permissions()
 
-
         ########################################
         # Start of horrible hack for debugging #
         ########################################
@@ -76,8 +75,6 @@ class Access_Permissions(object):
         ######################################
         # End of horrible hack for debugging #
         ######################################
-
-
 
         return Access_Permissions.my_access_permissions
 

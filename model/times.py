@@ -22,7 +22,7 @@ import re
 #                         if isinstance(clue, str)
 #                         else None)))
 
-organizational_timezone = pytz.timezone(model.configuration.get_config()['organization']['timezone'])
+organizational_timezone = pytz.timezone(model.configuration.get_config('organization', 'timezone'))
 
 fulltime = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}")
 

@@ -12,7 +12,7 @@ import untemplate.throw_out_your_templates_p3 as untemplate
 def help_for_topic(help_name,
                    default_text="<p>Help text not available for topic %(topic)s</p>",
                    substitutions={}):
-    help_file = os.path.join(configuration.get_config()['page']['help_texts'],
+    help_file = os.path.join(configuration.get_config('page','help_texts'),
                              help_name + ".html")
     if os.path.isfile(help_file):
         with open(help_file) as helpstream:
@@ -266,4 +266,3 @@ def bare_string_id(id):
     if matched:
         id = matched.group(1)
     return id
-

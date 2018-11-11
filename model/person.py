@@ -88,7 +88,7 @@ class Person(object):
 
     @staticmethod
     def list_all_members():
-        return model.equipment_type.Equipment_type.find(model.configuration.get_config()['organization']['name']).get_trained_users()
+        return model.equipment_type.Equipment_type.find(model.configuration.get_config('organization', 'name')).get_trained_users()
 
     @staticmethod
     def find(identification):
@@ -175,7 +175,7 @@ class Person(object):
             return email
         else:
             return ("member_"+str(self.membership_number)
-                    +"@"+model.configuration.get_config()['server']['mailhost'])
+                    +"@"+model.configuration.get_config('server', 'mailhost'))
 
     def set_email(self, new_email):
         model.database.person_set_email(self.link_id, new_email)
@@ -219,7 +219,7 @@ class Person(object):
         """Get this person's open training request limit.
         If set to None, the system-wide defalt, from the config file, will be used."""
         return (self.training_requests_limit
-                or int(model.configuration.get_config()['training']['default_max_requests']))
+                or int(model.configuration.get_config('training', 'default_max_requests')))
 
     def set_training_requests_limit(self, limit):
         """Set this person's open training request limit.
@@ -251,7 +251,7 @@ class Person(object):
             return False, "Too many open training requests"
         role_training = model.database.role_training(role)
         if ((len(self.get_noshows()) - self.noshow_absolutions)
-            >= int(model.configuration.get_config()['training']['no_shows_limit'])):
+            >= int(model.configuration.get_config('training', 'no_shows_limit'))):
             return False, "Too many no-shows"
         for existing in self.training_requests:
             if equipment_type == existing['equipment_type']:
@@ -467,21 +467,21 @@ class Person(object):
 
     def is_member(self):
         """Return whether the person is a member, and whether they have a suspension on their membership."""
-        return self.qualification(model.configuration.get_config()['organization']['name'], 'user',
+        return self.qualification(model.configuration.get_config('organization', 'name'), 'user',
                                   skip_membership_check=True)
 
     def is_administrator(self):
         """Return whether the person is an admin."""
-        return self.is_owner(model.configuration.get_config()['organization']['database'])
+        return self.is_owner(model.configuration.get_config('organization', 'database'))
 
     def is_auditor(self):
         """Return whether the person is an auditor.
         Similar to admin but read-only."""
-        return self.is_trained(model.configuration.get_config()['organization']['database'])
+        return self.is_trained(model.configuration.get_config('organization', 'database'))
 
     def is_inductor(self):
         """Return whether the person is a general inductor."""
-        return self.is_trainer(model.configuration.get_config()['organization']['name'])
+        return self.is_trainer(model.configuration.get_config('organization', 'name'))
 
     def is_trained(self, equipment_type):
         """Return whether a person is trained to use a particular equipment_type."""
@@ -597,14 +597,14 @@ class Person(object):
             self.stylesheet = stylesheet
         else:
             # use the default if the specified one doesn't exist
-            self.stylesheet = configuration.get_config()['page']['stylesheet']
+            self.stylesheet = configuration.get_config('page', 'stylesheet')
         self.show_help = to_bool_or_other(params.get('display_help', False))
         self.notify_by_email = to_bool_or_other(params.get('notify_by_email', False))
         self.notify_in_site = to_bool_or_other(params.get('notify_in_site', False))
         self.save()
 
     def update_avoidances(self, incoming_avoidances):
-        avoidance_list = model.configuration.get_config()['dietary_avoidances']
+        avoidance_list = model.configuration.get_config('dietary_avoidances')
         my_avoidances = self.get_profile_field('avoidances') or []
         for avoidance in avoidance_list:
             if avoidance in incoming_avoidances:

@@ -11,7 +11,7 @@ server_conf = None
 def invitation_response_form_page(rsvp_uuid):
     """From an invitation UUID that was mailed to someone, produce a response form."""
     global server_conf
-    server_conf = configuration.get_config()['server']
+    server_conf = configuration.get_config('server')
     page_pieces.set_server_conf()
     person_responding = person.Person.find(database.find_rsvp(rsvp_uuid))
     # set up viewing as though the user has actually logged in
@@ -50,7 +50,7 @@ def invitation_response_form_page(rsvp_uuid):
 def handle_invitation_response(rsvp_uuid, response):
     """Process an incoming reply from the form generated from a mailed invitation UUID."""
     global server_conf
-    server_conf = configuration.get_config()['server']
+    server_conf = configuration.get_config('server')
     page_pieces.set_server_conf()
     person_responding = person.Person.find(database.find_rsvp(rsvp_uuid))
     # set up viewing as though the user has actually logged in

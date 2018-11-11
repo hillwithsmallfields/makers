@@ -134,10 +134,10 @@ def get_profile_subfield_value(who, group_name, name):
 def mugshot_section(who, viewer, django_request):
     mugshot_filename = who.get_profile_field('mugshot')
     mugshot_url = (django_request.scheme + "://"
-               + (settings.AWS_STORAGE_BUCKET_NAME
+                   + (settings.AWS_STORAGE_BUCKET_NAME
                   if hasattr(settings, 'AWS_STORAGE_BUCKET_NAME')
-                             else model.configuration.get_config()['server']['domain']) + "/"
-               + mugshot_filename) if mugshot_filename else None
+                             else model.configuration.get_config('server', 'domain')) + "/"
+                   + mugshot_filename) if mugshot_filename else None
     return [T.form(action=django.urls.reverse("dashboard:update_mugshot"),
                    enctype="multipart/form-data",
                    method='POST')
@@ -705,7 +705,7 @@ def admin_section(who, viewer, django_request):
                              viewer,
                              notification_form(viewer, django_request),
                              "send_notification")),
-        admin_subsection("Send email as " + model.configuration.get_config()['server']['password_reset_from_address'],
+        admin_subsection("Send email as " + model.configuration.get_config('server', 'password_reset_from_address'),
                          model.pages.with_help(
                              viewer,
                              email_form(viewer, django_request),

@@ -202,13 +202,13 @@ class Event(object):
         result = []
         for cond in raw_conds:
             if cond == "member":
-                result.append(model.configuration.get_config()['organization']['name'] + " user")
+                result.append(model.configuration.get_config('organization', 'name') + " user")
             elif cond == "admin":
-                result.append(model.configuration.get_config()['database']['database_name'] + " owner")
+                result.append(model.configuration.get_config('database', 'database_name') + " owner")
             elif cond == "auditor":
-                result.append(model.configuration.get_config()['database']['database_name'] + " user")
+                result.append(model.configuration.get_config('database', 'database_name') + " user")
             elif cond == "director":
-                result.append(model.configuration.get_config()['organization']['name'] + " owner")
+                result.append(model.configuration.get_config('organization', 'name') + " owner")
             elif ' ' not in cond:
                 # really all the others should be two words, but just pass the
                 # buck for now, someone might define a use for such a thing later

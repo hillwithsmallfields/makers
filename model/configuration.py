@@ -8,7 +8,7 @@ cached_config_timestamp = 0
 
 config_file_name = "/usr/local/share/makers/makers.yaml"
 
-def get_config():
+def get_config(*keys):
     """Read the config partly from file and perhaps some from the DB."""
     global cached_config, cached_config_timestamp
     file_timestamp = os.path.getmtime(config_file_name)
@@ -16,7 +16,12 @@ def get_config():
         cached_config_timestamp = file_timestamp
         with open(config_file_name, 'r') as confstream:
             cached_config = yaml.load(confstream)
-    return cached_config
+    result = cached_config
+    for key in keys:
+        if key not in result:
+            return None
+        result = result[key]
+    return result
 
 def get_stylesheets():
     """Return a list of the available stylesheet names."""

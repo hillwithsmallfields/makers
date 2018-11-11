@@ -254,7 +254,7 @@ def add_user(django_request):
         induction_event = model.event.Event.find_by_id(model.pages.unstring_id(induction_id)) if induction_id else None
         # print("Marking new user as inducted, induction_id is", induction_id, "and induction_event is", induction_event)
         if induction_event is None:
-            facility_name = model.configuration.get_config()['organization']['name']
+            facility_name = model.configuration.get_config('organization', 'name')
             eqty = model.equipment_type.Equipment_type.find(facility_name)
             induction_event = model.event.Event("user_training",
                                                 model.times.now(),
