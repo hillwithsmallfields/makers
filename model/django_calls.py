@@ -7,6 +7,7 @@
 import model.configuration
 import model.person
 import django.contrib.auth.forms
+from users.models import CustomUser
 
 # for debug
 
@@ -30,3 +31,27 @@ def send_password_reset_email(who, django_request):
     form.save(from_email=from_email,
               domain_override=domain,
               request=django_request)
+
+def create_django_user(login_name, email,
+                       given_name, surname,
+                       link_id,
+                       django_request=None):
+    # based on https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Authentication
+    # Create user and save to the database
+    print("create_django_user creating django_user")
+    django_user = CustomUser.objects.create_user(login_name, email, '')
+
+    # Update fields and then save again
+    django_user.first_name = given_name
+    django_user.last_name = surname
+    django_user.link_id = link_id
+    print("create_django_user setting unusable password")
+    django_user.set_unusable_password()
+    print("create_django_user saving data")
+    django_user.save()
+    if django_request:
+        print("create_django_user sending email")
+        model.django_calls.send_password_reset_email(
+            model.person.Person.find(link_id),
+            django_request)
+    print("create_django_user complete")

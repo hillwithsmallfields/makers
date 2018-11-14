@@ -54,7 +54,6 @@ class Person(object):
     def __init__(self):
         self._id = None
         self.link_id = None
-        self.login_name = None
         self.api_authorization = None
         self.membership_number = None
         self.fob = None
@@ -179,6 +178,22 @@ class Person(object):
 
     def set_email(self, new_email):
         model.database.person_set_email(self.link_id, new_email)
+
+    def get_login_name(self):
+        return model.database.person_get_login_name(self)
+
+    def set_login_name(self, new_login_name,
+                       django_request=None):
+        if self.get_login_name() is None:
+            name_parts = self.name().split(' ', 1)
+            model.django_calls.create_django_user(
+                new_login_name,
+                self.get_email(),
+                name_parts[0],
+                name_parts[1],
+                self.link_id,
+                django_request)
+        model.database.person_set_login_name(self, new_login_name)
 
     def get_visibility(self, access_permissions):
         return self.visibility[access_permissions]
@@ -545,16 +560,20 @@ class Person(object):
 
     # Update from form
 
-    def update_profile(self, params):
+    def update_profile(self, params, django_request):
         old_mugshot = self.get_profile_field('mugshot')
         old_email = self.get_email()
         old_name = self.name()
+        old_login_name = self.get_login_name()
         email = params['email']
         name = params['name']
+        login_name = params.get('login_name', None)
         if email != old_email:
             self.set_email(email)
         if name != old_name:
             self.set_name(name)
+        if login_name != old_login_name:
+            self.set_login_name(login_name, django_request)
         if 'membership_number' in params:
             membership_number = int(params['membership_number'])
             if membership_number > 0:

@@ -210,24 +210,6 @@ def make_login(given_name, surname):
     # todo: look for the lowest number that is unused so far for this login_base
     return login_base + "1"
 
-def create_django_user(login_name, email, given_name, surname, link_id):
-    # based on https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Authentication
-    # Create user and save to the database
-    print("create_django_user creating django_user")
-    django_user = User.objects.create_user(login_name, email, '')
-
-    # Update fields and then save again
-    django_user.first_name = given_name
-    django_user.last_name = surname
-    django_user.link_id = link_id
-    print("create_django_user setting unusable password")
-    django_user.set_unusable_password()
-    print("create_django_user saving data")
-    django_user.save()
-    print("create_django_user sending email")
-    model.django_calls.send_password_reset_email(model.person.Person.find(link_id))
-    print("create_django_user complete")
-
 @ensure_csrf_cookie
 def add_user(django_request):
 
@@ -247,7 +229,7 @@ def add_user(django_request):
                                          'surname': surname,
                                          'known_as': given_name},
                                         {'login_name': login})
-    create_django_user(login, email, given_name, surname, link_id)
+    model.django_calls.create_django_user(login, email, given_name, surname, link_id)
 
     if params['inducted']:
         induction_id = params.get('induction_event', None)
@@ -433,10 +415,10 @@ def update_django(django_request):
             name = whoever.name()
             name_parts = name.split(' ')
             login = make_login(name_parts[0], name_parts[1])
-            create_django_user(login,
-                               whoever.get_email(),
-                               name_parts[0], name_parts[1],
-                               whoever.link_id)
+            model.django_calls.create_django_user(login,
+                                                  whoever.get_email(),
+                                                  name_parts[0], name_parts[1],
+                                                  whoever.link_id)
             whoever.login_name = login
             whoever.save()
             created.append(who)

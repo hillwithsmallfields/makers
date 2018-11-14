@@ -292,7 +292,7 @@ def update_profile(django_request):
     params = django_request.POST
     who = model.person.Person.find(params['subject_user_uuid'])
 
-    who.update_profile(params)
+    who.update_profile(params, django_request)
 
     page_data = model.pages.HtmlPage("Confirmation",
                                      pages.page_pieces.top_navigation(django_request),

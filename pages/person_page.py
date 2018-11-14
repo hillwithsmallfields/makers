@@ -157,6 +157,8 @@ def mugshot_section(who, viewer, django_request):
 
 def general_profile_section(who, viewer, django_request):
     membership_number = str(who.membership_number)
+    subject_login_name = model.database.person_get_login_name(who) or ""
+    logged_in_as = django_request.user.username
     return [model.pages.with_help(
         viewer,
         T.form(action=django.urls.reverse("dashboard:update_profile"), method='POST')[
@@ -171,8 +173,14 @@ def general_profile_section(who, viewer, django_request):
                      T.td[T.input(type="text",
                                   name="name",
                                   value=who.name())]],
-                # T.tr[T.th(class_="ralabel")["Logged in as"],
-                #      T.td[django_request.user.username]],
+                T.tr[T.th(class_="ralabel")["User login name"],
+                     T.td[T.input(type='text',
+                                  name='login_name',
+                                  value=subject_login_name)]],
+                T.tr[T.th(class_="ralabel")["Logged in as"],
+                     T.td[T.span(class_=('own_view'
+                                         if logged_in_as == subject_login_name
+                                         else 'admin_view'))[logged_in_as]]],
                 # T.tr[T.th(class_="ralabel")["session data"], T.td[str(django_request.session)]], # debug only
                           T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
                                                                              name="email",

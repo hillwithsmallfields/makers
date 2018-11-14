@@ -138,7 +138,39 @@ def person_set_name(whoever, new_name):
         name_record['given_name'] = given_name
         name_record['surname'] = surname
     database[collection_names['profiles']].save(name_record)
-    # todo: tell django that the name has changed
+
+def person_get_login_name(whoever):
+    """Get the person's login name.
+This is only used by django, and is not important to the rest of the system."""
+    person_link = (whoever['link_id']
+                   if isinstance(whoever, dict)
+                   else (whoever.link_id
+                         if isinstance(whoever, model.person.Person)
+                         else whoever))
+    result = None
+    try:
+        result = CustomUser.objects.get(link_id=person_link).username
+    except:
+        pass
+    return result
+
+def person_set_login_name(whoever, new_login_name):
+    """Set the person's login name.
+This is only used by django, and is not important to the rest of the system.
+Assumes the django user has already been created.
+Returns False if the name was already in use."""
+    if len(CustomUser.objects.filter(username=new_login_name)) > 0:
+        return False
+    person_link = (whoever['link_id']
+                   if isinstance(whoever, dict)
+                   else (whoever.link_id
+                         if isinstance(whoever, model.person.Person)
+                         else whoever))
+    try:
+        CustomUser.objects.filter(link_id=person_link).update(username=new_login_name)
+    except:
+        return False
+    return True
 
 def person_email(whoever, viewing_person):
     """Return the person's email address.
@@ -206,6 +238,7 @@ def add_person(name_record, main_record):
     database[collection_names['people']].insert(main_record)
     print("Adding", name_record, "to profiles database")
     database[collection_names['profiles']].insert(name_record)
+    # todo: also add them to the django database; there is a create_django_user function in django_calls.py; but, we are running outside of django, so maybe we can't do it here
     return link_id
 
 def get_all_person_dicts():

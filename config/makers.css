@@ -291,3 +291,16 @@ form.permit_form {
 p.the_small_print {
     font-size: small;
 }
+
+span.own_view {
+}
+
+span.admin_view {
+    color:       red;
+    font-style:  italic;
+    font-weight: bold;
+}
+
+span.admin_view::after {
+    content: " (administrative view of another user)";
+}
