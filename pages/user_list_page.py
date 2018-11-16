@@ -32,8 +32,7 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
     if filter_fn:
         people = [someone for someone in people if filter_fn(someone, filter_opaque)]
     people_dict = {whoever.name(): whoever for whoever in people}
-    # todo: remove this dirty hack which I put in for early testing
-    if True: # permissions.auditor or permissions.admin:
+    if permissions.auditor or permissions.admin:
         return T.table[[T.tr[T.th(class_='username')["Name"],
                              T.th(class_='user')["User"],
                              T.th(class_='owner')["Owner"],
