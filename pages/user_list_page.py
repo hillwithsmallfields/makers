@@ -26,13 +26,12 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
     global serverconf
     if serverconf == None:
         serverconf = configuration.get_config()['server']
-    # todo: must have done access_permissions.setup_access_permissions(logged_in_user) by now
-    # permissions = access_permissions.get_access_permissions()
+    viewing_user = model.person.Person.find(django_request.user.link_id)
     people = person.Person.list_all_people() if include_non_members else person.Person.list_all_members()
     if filter_fn:
         people = [someone for someone in people if filter_fn(someone, filter_opaque)]
     people_dict = {whoever.name(): whoever for whoever in people}
-    if permissions.auditor or permissions.admin:
+    if viewing_user.is_auditor() or viewing_user.is_admin():
         return T.table[[T.tr[T.th(class_='username')["Name"],
                              T.th(class_='user')["User"],
                              T.th(class_='owner')["Owner"],
@@ -51,9 +50,12 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
 def name_match(user, pattern):
     return re.search(pattern, user.name())
 
-def user_list_matching_section(django_request, pattern, include_non_members=False):
-    """Return the list of users whose names match the given pattern."""
-    return user_list_section(django_request, include_non_members, name_match, pattern)
+def user_list_matching_section(django_request, filter_name, filter_string, include_non_members=False):
+    """Return the list of users match the given characteristic."""
+    filter = user_list_filters.get(filter_name, None)
+    if filter is None:
+        return T.p["Filter ", filter_name, " not recognized"]
+    return user_list_section(django_request, include_non_members, filter, filter_string)
 
 def joined_before(user, datestring):
     joined, left = user.is_member()
@@ -61,20 +63,28 @@ def joined_before(user, datestring):
         return False
     return model.event.timestring(joined.start) < datestring
 
-def user_list_before_section(django_request, datestring, include_non_members=False):
-    return user_list_section(django_request, include_non_members, joined_before, datestring)
-
 def joined_after(user, datestring):
     joined, left = user.is_member()
     if not joined:
         return False
     return model.event.timestring(joined.start) > datestring
 
-def user_list_after_section(django_request, datestring, include_non_members=False):
-    return user_list_section(django_request, include_non_members, joined_after, datestring)
+def no_email(user, dummy):
+    email = user.get_email()
+    return email is None or email == ""
+
+def no_link_id(user, dummy):
+    return user.link_id == None
+
+def no_login_name(user, dummy):
+    login_name = model.database.person_get_login_name(user)
+    return login_name is None or login_name == ""
 
 user_list_filters = {
     'name': name_match,
     'before': joined_before,
-    'after': joined_after
+    'after': joined_after,
+    'no_email': no_email,
+    'no_link_id': no_link_id,
+    'no_login_name': no_login_name
 }

@@ -13,6 +13,7 @@ import model.timeline
 import model.timeslots
 import pages.event_page
 import pages.page_pieces
+import pages.user_list_page
 import untemplate.throw_out_your_templates_p3 as untemplate
 
 all_conf = None
@@ -639,12 +640,21 @@ def email_form(viewer, django_request):
                                          value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value="Send email")]
 
-def search_users_form(django_request):
-    return T.form(action="/dashboard/match",
-                  method='GET')[T.form[T.input(type='text', name='pattern'),
-                                       T.input(type="hidden", name="csrfmiddlewaretoken",
-                                               value=django.middleware.csrf.get_token(django_request)),
-                                       T.input(type='submit', value="Search for users")]]
+def search_users_form(viewer, django_request):
+    return model.pages.with_help(
+        viewer,
+        T.form(action=django.urls.reverse("dashboard:matching_users"),
+               method='GET')[T.form[T.input(type='text', name='filter_string'),
+                                    T.ul[[[T.li[T.input(type='radio',
+                                                        name='filter_name',
+                                                        value=filter_name),
+                                                filter_name]
+                                         for filter_name in sorted(pages.user_list_page.user_list_filters.keys())]]],
+                                    T.input(type="checkbox", name="include_non_members"), "Include non-members",
+                                    T.input(type="hidden", name="csrfmiddlewaretoken",
+                                            value=django.middleware.csrf.get_token(django_request)),
+                                    T.input(type='submit', value="Search for users")]],
+        "search_users_form")
 
 def add_user_form(django_request, induction_event_id=None):
     return T.form(action=django.urls.reverse("makers_admin:add_user"),
@@ -681,8 +691,8 @@ def admin_section(who, viewer, django_request):
                                                "list_all_users")),
         admin_subsection("Member stats",
                          [T.p["Highest membership number is ", str(model.database.get_highest_membership_number())]]),
-        admin_subsection("Search for users by name",
-                         search_users_form(django_request)),
+        admin_subsection("Search for users by characteristic",
+                         search_users_form(viewer, django_request)),
         admin_subsection("Create event",
                          model.pages.with_help(
                              viewer,

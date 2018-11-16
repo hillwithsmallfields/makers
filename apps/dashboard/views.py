@@ -217,14 +217,16 @@ def admin_only(django_request, who=""):
                        who)
 
 @ensure_csrf_cookie
-def user_match_page(django_request, pattern):
+def user_match_page(django_request):
 
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
     params = django_request.GET
-    if 'pattern' in params:
-        pattern = params['pattern']
+
+    filter_name = params.get('filter_name', None)
+    filter_string = params.get('filter_string', None)
+    include_non_members = params.get('include_non_members', "No") == "Yes"
 
     pages.person_page.person_page_setup()
 
@@ -238,8 +240,12 @@ def user_match_page(django_request, pattern):
                                      django_request=django_request)
 
     if viewing_user.is_administrator() or viewing_user.is_auditor():
-        page_data.add_content("User list",
-                              pages.user_list_page.user_list_matching_section(django_request, pattern, False))
+        page_data.add_content(
+            "Users matching " + filter_name + " " + filter_string,
+            pages.user_list_page.user_list_matching_section(
+                django_request,
+                filter_name, filter_string,
+                include_non_members))
     else:
         page_data.add_content("Error", [T.p["You do not have permission to view the list of users."]])
 

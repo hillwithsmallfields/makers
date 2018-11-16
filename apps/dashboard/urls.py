@@ -31,9 +31,8 @@ urlpatterns = [
     path('available', views.events_available_only, name='events_available_only'),
     path('send_pw_reset', views.send_password_reset, name='send_pw_reset'),
     path('admin', views.admin_only, name='admin_only'),
+    path('match', views.user_match_page, name='matching_users'),
     # general default paths etc
     path('<who>', views.dashboard_page, name='user_dashboard'),
-    path('match/<pattern>', views.user_match_page, name='matching_users'),
-    re_path('match?pattern=.+', views.user_match_page, name='matching_users'), # todo: fix this
     path('', views.dashboard_page, name='own_dashboard')
 ]
