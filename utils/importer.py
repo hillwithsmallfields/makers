@@ -128,7 +128,7 @@ def import0(args):
                                      'given_name': name_parts[0],
                                      'surname': name_parts[1],
                                      'known_as': name_parts[0],
-                                     'admin_note': row.get('note', None)},
+                                     'admin_note': row.get('Note', None)},
                                     {'membership_number': member_no})
                 added = Person.find(row['Name'])
                 added.set_fob(row.get('Fob', None))
