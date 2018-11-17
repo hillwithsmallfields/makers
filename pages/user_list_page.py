@@ -33,13 +33,17 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
     people_dict = {whoever.name(): whoever for whoever in people}
     if viewing_user.is_auditor() or viewing_user.is_admin():
         return T.table[[T.tr[T.th(class_='username')["Name"],
+                             T.th(class_='login')["Login"],
                              T.th(class_='user')["User"],
                              T.th(class_='owner')["Owner"],
-                             T.th(class_='trainer')["Trainer"]]],
+                             T.th(class_='trainer')["Trainer"],
+                             T.th(class_='note')["Notes"]]],
                        [T.tr[T.th(class_='username')[T.a(href=django.urls.reverse('dashboard:user_dashboard', args=([who.link_id])))[whoname]],
+                             T.td(class_='login')[who.get_login_name() or ""],
                              T.td(class_='user')[equipment_type_role_name_list(who, 'user')],
                              T.td(class_='owner')[equipment_type_role_name_list(who, 'owner')],
-                             T.td(class_='trainer')[equipment_type_role_name_list(who, 'trainer')]]
+                             T.td(class_='trainer')[equipment_type_role_name_list(who, 'trainer')],
+                             T.td(class_='note')[T.form()[who.get_admin_note() or ""]]]
                         for (whoname, who) in [(key, people_dict[key]) for key in sorted(people_dict.keys())]
                     ]]
     else:

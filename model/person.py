@@ -195,6 +195,14 @@ class Person(object):
                 django_request)
         model.database.person_set_login_name(self, new_login_name)
 
+    def get_admin_note(note_type='admin_note'):
+        """Return a note on the account."""
+        return model.database.person_get_admin_note(note_type)
+
+    def set_admin_note(note, note_type='admin_note'):
+        """Set a note on the account."""
+        model.database.person_set_admin_note(note, note_type)
+
     def get_visibility(self, access_permissions):
         return self.visibility[access_permissions]
 
@@ -565,9 +573,11 @@ class Person(object):
         old_email = self.get_email()
         old_name = self.name()
         old_login_name = self.get_login_name()
+        old_admin_note = self.get_admin_note()
         email = params['email']
         name = params['name']
         login_name = params.get('login_name', None)
+        admin_note = params.get('note', None)
         if email != old_email:
             self.set_email(email)
         if name != old_name:
@@ -578,6 +588,8 @@ class Person(object):
             membership_number = int(params['membership_number'])
             if membership_number > 0:
                 self.membership_number = membership_number
+        if admin_note != old_admin_note:
+            self.set_admin_note(admin_note)
         self.save()
 
     def update_configured_profile(self, params):

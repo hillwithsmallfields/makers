@@ -204,6 +204,30 @@ def person_set_email(whoever, new_email):
     # there could be several:
     CustomUser.objects.filter(link_id=person_link).update(email=new_email)
 
+def person_get_admin_note(whoever, note_type='admin_note'):
+    person_link = (whoever['link_id']
+                   if isinstance(whoever, dict)
+                   else (whoever.link_id
+                         if isinstance(whoever, model.person.Person)
+                         else whoever))
+    name_record = database[collection_names['profiles']].find_one({'link_id': person_link})
+    if name_record is None:
+        return None
+    else:
+        return name_record.get(note_type, None)
+
+def person_set_admin_note(whoever, note, note_type='admin_note'):
+    person_link = (whoever['link_id']
+                   if isinstance(whoever, dict)
+                   else (whoever.link_id
+                         if isinstance(whoever, model.person.Person)
+                         else whoever))
+    name_record = database[collection_names['profiles']].find_one({'link_id': person_link})
+    if name_record is None:
+        return
+    name_record[note_type] = note
+    database[collection_names['profiles']].save(name_record)
+
 def name_to_id(name):
     name_parts = name.rsplit(" ", 1)
     collection = database[collection_names['profiles']]

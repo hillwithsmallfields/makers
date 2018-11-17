@@ -124,10 +124,11 @@ def import0(args):
                 if member_no == "":
                     member_no = "0"
                 database.add_person({'membership_number': int(member_no),
-                                     'email': row['Email'],
+                                     'email': row.get('Email', None),
                                      'given_name': name_parts[0],
                                      'surname': name_parts[1],
-                                     'known_as': name_parts[0]},
+                                     'known_as': name_parts[0],
+                                     'admin_note': row.get('note', None)},
                                     {'membership_number': member_no})
                 added = Person.find(row['Name'])
                 added.set_fob(row.get('Fob', None))
@@ -140,7 +141,7 @@ def import0(args):
                 inductor = Person.find(row['Inductor']) or added
                 if verbose:
                     print("inductor is", inductor)
-                # todo: record that the inductor is trained as an inducotr
+                # todo: record that the inductor is trained as an inductor
                 induction_event = Event.find('user_training',
                                               row['Date inducted'],
                                               [inductor._id],

@@ -202,11 +202,18 @@ def general_profile_section(who, viewer, django_request):
                 T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
                 T.tr[T.th(class_="ralabel")["No-shows"], T.td[str(len(who.get_noshows()))]],
                 T.tr[T.th(class_="ralabel")["No-show absolutions"],
-                     T.td[(T.input(type="text",
-                                   name="absolutions",
+                     T.td[(T.input(type='text',
+                                   name='absolutions',
                                    value=str(who.noshow_absolutions))
-                                     if viewer.is_administrator() else str(who.noshow_absolutions))]],
-                T.tr[T.th[""], T.td[T.input(type="submit", value="Update details")]]]],
+                           if viewer.is_administrator()
+                           else str(who.noshow_absolutions))]],
+                T.tr[T.th(class_="ralabel")['Admin note'],
+                     T.td[T.input(type='text',
+                                  name='note',
+                                   value=str(who.get_admin_note()))
+                          if viewer.is_administrator()
+                          else str(who.get_admin_note())]],
+                T.tr[T.th[""], T.td[T.input(type='submit', value="Update details")]]]],
         "general_user_profile")]
 
 def configurable_profile_section(who, viewer, django_request):

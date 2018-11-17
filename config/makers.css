@@ -99,12 +99,22 @@ th.profile_group {
     padding:          0.5em;
 }
 
+.login {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
 .owner {
     background-color: #fff8d0;
     padding:          0.5em;
 }
 
 .trainer {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.note {
     background-color: #fff8d0;
     padding:          0.5em;
 }
