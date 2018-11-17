@@ -105,9 +105,15 @@ th.profile_group {
     padding:          0.5em;
 }
 
+.loginh {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
 .login {
     background-color: #fff8d0;
     padding:          0.5em;
+    font-family:      monospace;
 }
 
 .email {

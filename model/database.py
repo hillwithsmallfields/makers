@@ -5,7 +5,10 @@
 
 from __future__ import print_function
 
-from users.models import CustomUser
+try:
+    from users.models import CustomUser
+except:
+    print("Could not import user models --- presumably running outside django, maybe in the importer")
 import bson
 import datetime
 import decouple

@@ -12,7 +12,7 @@ serverconf=None
 def equipment_type_role_name_list(who, role):
     """Return a list of equipment types for which a person has a given role."""
     # todo: make this into a list of names with individual anchors
-    return ", ".join(who.get_equipment_type_names(role))
+    return ", ".join(sorted(who.get_equipment_type_names(role)))
 
 def user_list_section(django_request, include_non_members=False, filter_fn=None, filter_opaque=None):
     """Return the users list, if the viewing person is allowed to see it.
@@ -34,7 +34,7 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
     if viewing_user.is_auditor() or viewing_user.is_admin():
         return T.table[[T.tr[T.th(class_='mem_num')["Mem #"],
                              T.th(class_='username')["Name"],
-                             T.th(class_='login')["Login"],
+                             T.th(class_='loginh')["Login"],
                              T.th(class_='email')["Email"],
                              T.th(class_='user')["User"],
                              T.th(class_='owner')["Owner"],
