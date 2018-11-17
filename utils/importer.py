@@ -17,7 +17,7 @@ import model.database as database
 import yaml
 
 def import_template_file(file):
-    if file != "None":
+    if file is not None and file != "None":
         if os.path.isdir(file):
             for f in os.listdir(file):
                 import_template_file(os.path.join(file, f))
@@ -82,7 +82,7 @@ def import0(args):
         print("collection names are", collection_names)
     database.database_init(config)
 
-    if args.equipment_types != "None":
+    if args.equipment_types is not None and args.equipment_types != "None":
         if verbose:
             print("loading equipment types")
         with open(args.equipment_types) as types_file:
@@ -93,7 +93,7 @@ def import0(args):
                                             row['training_category'],
                                             row['manufacturer'])
 
-    if args.equipment != "None":
+    if args.equipment is not None and args.equipment != "None":
         if verbose:
             print("loading equipment")
         with open(args.equipment) as machines_file:
@@ -109,7 +109,7 @@ def import0(args):
                                      row.get('location', "?"),
                                      row.get('acquired', "?"))
 
-    if args.members != "None":
+    if args.members is not None and args.members != "None":
         induction_event = None
         with open(args.members) as members_file:
             for row in csv.DictReader(members_file):
