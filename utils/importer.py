@@ -30,7 +30,7 @@ def import_template_file(file):
                 database.save_event_template(incoming_template)
 
 def import_role_file(role, csv_file, verbose):
-    if csv_file != "None":
+    if csv_file is not None and csv_file != "None" :
         with open(csv_file) as users_file:
             for row in csv.DictReader(users_file):
                 tr_person = Person.find(row['Name'])
@@ -62,14 +62,13 @@ def import_role_file(role, csv_file, verbose):
 def import_main(verbose=True):
     # todo: convert all dates to datetime.datetime as mentioned in http://api.mongodb.com/python/current/examples/datetimes.html
     parser = argparse.ArgumentParser()
-    parser.add_argument("-y", "--equipment-types", default="equipment-types.csv")
-    parser.add_argument("-e", "--equipment", default="equipment.csv")
-    parser.add_argument("-m", "--members", default="members.csv")
-    parser.add_argument("-u", "--users", default="users.csv")
-    parser.add_argument("-o", "--owners", default="owners.csv")
-    parser.add_argument("-t", "--trainers", default="trainers.csv")
-    parser.add_argument("-b", "--templates", default="event_templates")
-    parser.add_argument("--delete-existing", action='store_true')
+    parser.add_argument("-y", "--equipment-types", default=None)
+    parser.add_argument("-e", "--equipment", default=None)
+    parser.add_argument("-m", "--members", default=None)
+    parser.add_argument("-u", "--users", default=None)
+    parser.add_argument("-o", "--owners", default=None)
+    parser.add_argument("-t", "--trainers", default=None)
+    parser.add_argument("-b", "--templates", default=None)
     parser.add_argument("-v", "--verbose", action='store_true')
     args = parser.parse_args()
     import0(args)
@@ -82,11 +81,6 @@ def import0(args):
     if verbose:
         print("collection names are", collection_names)
     database.database_init(config)
-
-    # todo: fix these
-    # database[collection_names['people']].create_index('link_id')
-    # database[collection_names['profiles']].create_index('link_id')
-    # and so on for the other collections?
 
     if args.equipment_types != "None":
         if verbose:
