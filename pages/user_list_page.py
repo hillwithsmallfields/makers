@@ -32,14 +32,18 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
         people = [someone for someone in people if filter_fn(someone, filter_opaque)]
     people_dict = {whoever.name(): whoever for whoever in people}
     if viewing_user.is_auditor() or viewing_user.is_admin():
-        return T.table[[T.tr[T.th(class_='username')["Name"],
+        return T.table[[T.tr[T.th(class_='mem_num')["Mem #"],
+                             T.th(class_='username')["Name"],
                              T.th(class_='login')["Login"],
+                             T.th(class_='email')["Email"],
                              T.th(class_='user')["User"],
                              T.th(class_='owner')["Owner"],
                              T.th(class_='trainer')["Trainer"],
                              T.th(class_='note')["Notes"]]],
-                       [T.tr[T.th(class_='username')[T.a(href=django.urls.reverse('dashboard:user_dashboard', args=([who.link_id])))[whoname]],
+                       [T.tr[T.td(class_='mem_num')[str(who.membership_number)],
+                             T.th(class_='username')[T.a(href=django.urls.reverse('dashboard:user_dashboard', args=([who.link_id])))[whoname]],
                              T.td(class_='login')[who.get_login_name() or ""],
+                             T.td(class_='email')[who.get_email() or ""],
                              T.td(class_='user')[equipment_type_role_name_list(who, 'user')],
                              T.td(class_='owner')[equipment_type_role_name_list(who, 'owner')],
                              T.td(class_='trainer')[equipment_type_role_name_list(who, 'trainer')],
@@ -86,8 +90,8 @@ def no_login_name(user, dummy):
 
 user_list_filters = {
     'name': name_match,
-    'before': joined_before,
-    'after': joined_after,
+    'date_joined_before': joined_before,
+    'date_joined_after': joined_after,
     'no_email': no_email,
     'no_link_id': no_link_id,
     'no_login_name': no_login_name

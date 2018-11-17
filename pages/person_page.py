@@ -651,11 +651,12 @@ def search_users_form(viewer, django_request):
     return model.pages.with_help(
         viewer,
         T.form(action=django.urls.reverse("dashboard:matching_users"),
-               method='GET')[T.form[T.input(type='text', name='filter_string'),
+               method='GET')[T.form["Search for ",
+                                    T.input(type='text', name='filter_string'), " as:",
                                     T.ul[[[T.li[T.input(type='radio',
                                                         name='filter_name',
                                                         value=filter_name),
-                                                filter_name]
+                                                filter_name.capitalize().replace('_', ' ')]
                                          for filter_name in sorted(pages.user_list_page.user_list_filters.keys())]]],
                                     T.input(type="checkbox", name="include_non_members"), "Include non-members",
                                     T.input(type="hidden", name="csrfmiddlewaretoken",

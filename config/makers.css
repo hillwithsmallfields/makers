@@ -87,7 +87,13 @@ th.profile_group {
     padding:        1em;
 }
 
-/* lists of equipment for which a person has a given role */
+/* User list columns, including lists of equipment for which a person has a given role */
+
+.mem_num {
+    background-color: #fff8d0;
+    padding:          0.5em;
+    text-align:       right;
+}
 
 .username {
     background-color: #fff8d0;
@@ -100,6 +106,11 @@ th.profile_group {
 }
 
 .login {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.email {
     background-color: #fff8d0;
     padding:          0.5em;
 }
