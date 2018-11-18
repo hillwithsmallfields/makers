@@ -48,6 +48,9 @@ def all_user_list_page(django_request):
                                      django_request=django_request)
 
     if viewing_user.is_administrator() or viewing_user.is_auditor():
+        # Todo: this search form doesn't appear
+        page_data.add_content("Search form",
+                              pages.person_page.search_users_form(viewing_user, django_request))
         page_data.add_content("User list",
                               pages.user_list_page.user_list_section(django_request))
     else:
