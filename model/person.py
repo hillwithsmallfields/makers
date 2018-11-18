@@ -578,11 +578,11 @@ class Person(object):
         name = params['name']
         login_name = params.get('login_name', None)
         admin_note = params.get('note', None)
-        if email != old_email:
+        if email != old_email and email is not None and email != "":
             self.set_email(email)
-        if name != old_name:
+        if name != old_name and name is not None and name != "":
             self.set_name(name)
-        if login_name != old_login_name:
+        if login_name != old_login_name and login_name is not None and login_name != "":
             self.set_login_name(login_name, django_request)
         if 'membership_number' in params:
             membership_number = int(params['membership_number'])
