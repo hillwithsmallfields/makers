@@ -14,6 +14,7 @@ import model.timeslots
 import pages.event_page
 import pages.page_pieces
 import pages.user_list_page
+import pprint
 import untemplate.throw_out_your_templates_p3 as untemplate
 
 all_conf = None
@@ -77,6 +78,10 @@ def site_controls_sub_section(who, viewer, django_request):
                        T.td[T.input(type='checkbox', name='notify_in_site', checked='checked')
                             if who.notify_in_site
                             else T.input(type='checkbox', name='notify_in_site')]],
+                  T.tr[T.th(class_="ralabel")["Developer mode"],
+                       T.td[T.input(type='checkbox', name='developer_mode', checked='checked')
+                            if who.developer_mode
+                            else T.input(type='checkbox', name='developer_mode')]],
                   T.tr[T.th[""], T.td[T.input(type="submit", value="Update controls")]]],
               "site_controls")]]]
 
@@ -160,16 +165,7 @@ def general_profile_section(who, viewer, django_request):
     membership_number = str(who.membership_number)
     subject_login_name = model.database.person_get_login_name(who) or ""
     logged_in_as = django_request.user.username
-    return [model.pages.with_help(
-        viewer,
-        T.form(action=django.urls.reverse("dashboard:update_profile"), method='POST')[
-            T.input(type="hidden",
-                    name="csrfmiddlewaretoken",
-                    value=django.middleware.csrf.get_token(django_request)),
-            T.input(type="hidden",
-                    name="subject_user_uuid",
-                    value=model.pages.bare_string_id(who._id)),
-            T.table(class_="personaldetails")[
+    table_contents = [
                 T.tr[T.th(class_="ralabel")["Name"],
                      T.td[T.input(type="text",
                                   name="name",
@@ -182,7 +178,6 @@ def general_profile_section(who, viewer, django_request):
                      T.td[T.span(class_=('own_view'
                                          if logged_in_as == subject_login_name
                                          else 'admin_view'))[logged_in_as]]],
-                # T.tr[T.th(class_="ralabel")["session data"], T.td[str(django_request.session)]], # debug only
                           T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
                                                                              name="email",
                                                                              value=who.get_email())]],
@@ -213,7 +208,27 @@ def general_profile_section(who, viewer, django_request):
                                    value=str(who.get_admin_note()))
                           if viewer.is_administrator()
                           else str(who.get_admin_note())]],
-                T.tr[T.th[""], T.td[T.input(type='submit', value="Update details")]]]],
+                T.tr[T.th[""], T.td[T.input(type='submit', value="Update details")]]]
+    if who.developer_mode:
+        pp = pprint.PrettyPrinter(indent=4, width=72)
+        table_contents += [T.tr[T.th(class_="ratoplabel")["Debug information"],
+                                T.td(class_="developer_data")[T.pre[pp.pformat(who.__dict__)]]],
+                           T.tr[T.th(class_="ratoplabel")["Django session data"],
+                                T.td(class_="developer_data")[T.pre[pp.pformat(django_request.session.__dict__)]]],
+                           T.tr[T.th(class_="ratoplabel")["Django logged-in user data"],
+                                T.td(class_="developer_data")[T.pre[pp.pformat(django_request.user.__dict__)]]],
+                           T.tr[T.th(class_="ratoplabel")["Django request data"],
+                                T.td(class_="developer_data")[T.pre[pp.pformat(django_request.__dict__)]]]]
+    return [model.pages.with_help(
+        viewer,
+        T.form(action=django.urls.reverse("dashboard:update_profile"), method='POST')[
+            T.input(type="hidden",
+                    name="csrfmiddlewaretoken",
+                    value=django.middleware.csrf.get_token(django_request)),
+            T.input(type="hidden",
+                    name="subject_user_uuid",
+                    value=model.pages.bare_string_id(who._id)),
+            T.table(class_="personaldetails")[table_contents]],
         "general_user_profile")]
 
 def configurable_profile_section(who, viewer, django_request):

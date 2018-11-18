@@ -54,6 +54,11 @@ th.ralabel {
     text-align: right;
 }
 
+th.ratoplabel {
+    text-align:     right;
+    vertical-align: top;
+}
+
 td.radata {
     text-align: right;
 }
@@ -85,6 +90,11 @@ td.level_3, th.level_3 {
 th.profile_group {
     vertical-align: top;
     padding:        1em;
+}
+
+td.developer_data {
+    background: black;
+    color:      green;
 }
 
 /* User list columns, including lists of equipment for which a person has a given role */
