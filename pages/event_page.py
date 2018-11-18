@@ -172,7 +172,7 @@ def one_event_section(ev, who, django_request,
                                             completion_table])
                      if completion_as_form
                      else completion_table)]
-    return [T.h3[ev.title.replace('_', ' ').capitalize()],
+    return [T.h3[ev.title.replace('_', ' ').capitalize() if ev.title else "Event"],
             results]
 
 def equip_name(eqid):
