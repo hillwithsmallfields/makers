@@ -1,4 +1,5 @@
 import django.urls
+import logging
 import model.access_permissions
 import model.configuration
 import model.database
@@ -14,6 +15,9 @@ import os
 import uuid
 
 # todo: induction input from jotform.com
+
+person_logger = logging.getLogger(__name__)
+person_logger.setLevel(logging.INFO)
 
 def to_bool_or_other(vis_string):
     if vis_string in [True, 'True', 1, 'true', 'Yes', 'yes', 'Y', 'y', 'On', 'on', 'Checked', 'checked']:
@@ -580,8 +584,10 @@ class Person(object):
         login_name = params.get('login_name', None)
         admin_note = params.get('note', None)
         if email != old_email and email is not None and email != "":
+            person_logger.info("%s changed their email from %s to %s", old_name, old_email, email)
             self.set_email(email)
         if name != old_name and name is not None and name != "":
+            person_logger.info("%s changed their name to %s", old_name, name)
             self.set_name(name)
         if login_name != old_login_name and login_name is not None and login_name != "":
             self.set_login_name(login_name, django_request)
