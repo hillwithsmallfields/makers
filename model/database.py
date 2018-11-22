@@ -69,6 +69,11 @@ def get_person_dict(identification):
 # people, rather than looking directly in the relevant fields of the
 # record, so that privacy protection can be applied.
 
+def get_person_profile_dict(id):
+    """Ideally you shouldn't use this one at all outside of this module.
+    Outside of here, it's really just for debugging."""
+    return database[collection_names['profiles']].find_one({'link_id': id})
+
 def get_person_profile_field(whoever,
                              profile_field,
                              role_viewed=None,
@@ -82,7 +87,7 @@ def get_person_profile_field(whoever,
                    else (whoever.link_id
                          if isinstance(whoever, model.person.Person)
                          else whoever))
-    profile_record = database[collection_names['profiles']].find_one({'link_id': person_link})
+    profile_record = get_person_profile_dict(person_link)
     if profile_record is None:
         return default_value
     else:
@@ -101,7 +106,7 @@ def set_person_profile_field(whoever,
                    else (whoever.link_id
                          if isinstance(whoever, model.person.Person)
                          else whoever))
-    profile_record = database[collection_names['profiles']].find_one({'link_id': person_link})
+    profile_record = get_person_profile_dict(person_link)
     # print("set_person_profile_field", person_link, "got record", profile_record, "to write field", profile_field, "with", new_value)
     if profile_record is not None:
         profile_record[profile_field] = new_value
@@ -119,7 +124,7 @@ def person_name(whoever,
                    else (whoever.link_id
                          if isinstance(whoever, model.person.Person)
                          else whoever))
-    name_record = database[collection_names['profiles']].find_one({'link_id': person_link})
+    name_record = get_person_profile_dict(person_link)
     if name_record is None:
         return "unknown", "unknown"
     else:
@@ -133,7 +138,7 @@ def person_set_name(whoever, new_name):
                    else (whoever.link_id
                          if isinstance(whoever, model.person.Person)
                          else whoever))
-    name_record = database[collection_names['profiles']].find_one({'link_id': person_link})
+    name_record = get_person_profile_dict(person_link)
     if name_record is None:
         print("Could not find", person_link, "to set their name")
     else:
@@ -183,7 +188,7 @@ def person_email(whoever, viewing_person):
                    else (whoever.link_id
                          if isinstance(whoever, model.person.Person)
                          else whoever))
-    name_record = database[collection_names['profiles']].find_one({'link_id': person_link})
+    name_record = get_person_profile_dict(person_link)
     if name_record is None:
         return "unknown@example.com"
     else:
@@ -196,7 +201,7 @@ def person_set_email(whoever, new_email):
                    else (whoever.link_id
                          if isinstance(whoever, model.person.Person)
                          else whoever))
-    name_record = database[collection_names['profiles']].find_one({'link_id': person_link})
+    name_record = get_person_profile_dict(person_link)
     if name_record is None:
         print("Could not find", person_link, "to set their email address")
     else:
@@ -213,7 +218,7 @@ def person_get_admin_note(whoever, note_type='admin_note'):
                    else (whoever.link_id
                          if isinstance(whoever, model.person.Person)
                          else whoever))
-    name_record = database[collection_names['profiles']].find_one({'link_id': person_link})
+    name_record = get_person_profile_dict(person_link)
     if name_record is None:
         return None
     else:
@@ -225,7 +230,7 @@ def person_set_admin_note(whoever, note, note_type='admin_note'):
                    else (whoever.link_id
                          if isinstance(whoever, model.person.Person)
                          else whoever))
-    name_record = database[collection_names['profiles']].find_one({'link_id': person_link})
+    name_record = get_person_profile_dict(person_link)
     if name_record is None:
         return
     name_record[note_type] = note
