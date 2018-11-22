@@ -56,7 +56,7 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
                    +" in the database."]
 
 def name_match(user, pattern):
-    return re.search(pattern, user.name())
+    return re.search(pattern, user.name(), re.IGNORECASE)
 
 def user_list_matching_section(django_request, filter_name, filter_string, include_non_members=False):
     """Return the list of users match the given characteristic."""
