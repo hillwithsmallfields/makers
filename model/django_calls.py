@@ -5,7 +5,9 @@
 # which runs from the command line).
 
 import model.configuration
+import model.database
 import model.person
+import model.times
 import django.contrib.auth.forms
 from users.models import CustomUser
 
@@ -21,6 +23,10 @@ def send_password_reset_email(who, django_request):
     config = model.configuration.get_config('server')
     from_email = config['password_reset_from_address']
     to_email = who.get_email()
+    django_user = model.database.person_get_django_user_data(who)
+    if django_user:
+        django_user.last_login = model.times.now()
+        django_user.save()
     print("Sending password reset to", to_email)
     domain = config['domain']
     form = django.contrib.auth.forms.PasswordResetForm(
