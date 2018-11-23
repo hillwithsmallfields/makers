@@ -131,6 +131,11 @@ def person_set_name(whoever, new_name):
         given_name, surname = new_name.split(' ', 1) # todo: -1?
         name_record['given_name'] = given_name
         name_record['surname'] = surname
+        django_user = person_get_django_user_data(whoever)
+        if django_user:
+            django_user.first_name = given_name
+            django_user.last_name = surname
+            django_user.save()
     database[collection_names['profiles']].save(name_record)
 
 def person_get_django_user_data(whoever):
@@ -176,10 +181,6 @@ def person_set_email(whoever, new_email):
     else:
         name_record['email'] = new_email
     database[collection_names['profiles']].save(name_record)
-    # # tell django that the email address has changed; there should
-    # # only be one entry to change, but django treats it as though
-    # # there could be several:
-    # CustomUser.objects.filter(link_id=get_person_link(whoever)).update(email=new_email)
     django_user = person_get_django_user_data(whoever)
     django_user.email = new_email
     django_user.save()
