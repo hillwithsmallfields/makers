@@ -104,7 +104,6 @@ def set_person_profile_field(whoever,
     You should use model.person.set_profile_field() instead of this in your programs,
     as that handles the privacy controls."""
     profile_record = get_person_profile_dict(whoever)
-    # print("set_person_profile_field", person_link, "got record", profile_record, "to write field", profile_field, "with", new_value)
     if profile_record is not None:
         profile_record[profile_field] = new_value
         # print("saving", profile_record)
@@ -127,7 +126,7 @@ def person_set_name(whoever, new_name):
     """Set the person's name."""
     name_record = get_person_profile_dict(whoever)
     if name_record is None:
-        print("Could not find", person_link, "to set their name")
+        print("Could not find", get_person_link(whoever), "to set their name")
     else:
         given_name, surname = new_name.split(' ', 1) # todo: -1?
         name_record['given_name'] = given_name
@@ -173,14 +172,14 @@ def person_set_email(whoever, new_email):
     """Set the person's email address."""
     name_record = get_person_profile_dict(whoever)
     if name_record is None:
-        print("Could not find", person_link, "to set their email address")
+        print("Could not find", get_person_link(whoever), "to set their email address")
     else:
         name_record['email'] = new_email
     database[collection_names['profiles']].save(name_record)
     # tell django that the email address has changed; there should
     # only be one entry to change, but django treats it as though
     # there could be several:
-    CustomUser.objects.filter(link_id=person_link).update(email=new_email)
+    CustomUser.objects.filter(link_id=get_person_link(whoever)).update(email=new_email)
 
 def person_get_admin_note(whoever, note_type='admin_note'):
     name_record = get_person_profile_dict(whoever)
