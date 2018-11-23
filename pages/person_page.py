@@ -78,10 +78,6 @@ def site_controls_sub_section(who, viewer, django_request):
                        T.td[T.input(type='checkbox', name='notify_in_site', checked='checked')
                             if who.notify_in_site
                             else T.input(type='checkbox', name='notify_in_site')]],
-                  T.tr[T.th(class_="ralabel")["Developer mode"],
-                       T.td[T.input(type='checkbox', name='developer_mode', checked='checked')
-                            if who.developer_mode
-                            else T.input(type='checkbox', name='developer_mode')]],
                   T.tr[T.th[""], T.td[T.input(type="submit", value="Update controls")]]],
               "site_controls")]]]
 
@@ -209,20 +205,24 @@ def general_profile_section(who, viewer, django_request):
                           if viewer.is_administrator()
                           else str(who.get_admin_note())]],
                 T.tr[T.th[""], T.td[T.input(type='submit', value="Update details")]]]
-    if who.developer_mode:
+    if django_request.session.get('developer_mode', False):
         pp = pprint.PrettyPrinter(indent=4, width=72)
-        table_contents += [T.tr[T.th(class_="ratoplabel")["Debug information"],
-                                T.td(class_="developer_data")[T.pre[pp.pformat(who.__dict__)]]],
+        django_logged_in_user_dict = django_request.user.__dict__
+        django_wrapped_user = django_logged_in_user_dict.get('_wrapped', None)
+        django_wrapped_user_dict = django_wrapped_user.__dict__ if django_wrapped_user else {}
+        table_contents += [T.tr[T.th(class_="ratoplabel")["Django request data"],
+                                T.td(class_="developer_data")[T.pre[pp.pformat(django_request.__dict__)]]],
                            T.tr[T.th(class_="ratoplabel")["Django session data"],
                                 T.td(class_="developer_data")[T.pre[pp.pformat(django_request.session.__dict__)]]],
-                           T.tr[T.th(class_="ratoplabel")["Django subject user data"],
+                           T.tr[T.th(class_="ratoplabel")["Logged-in user Django data"],
+                                T.td(class_="developer_data")[T.pre[pp.pformat([django_logged_in_user_dict,
+                                                                                django_wrapped_user_dict])]]],
+                           T.tr[T.th(class_="ratoplabel")["Subject user Django data"],
+                                T.td(class_="developer_data")[T.pre[pp.pformat(model.database.person_get_django_user_data(who).__dict__)]]],
+                           T.tr[T.th(class_="ratoplabel")["Subject user operational data"],
                                 T.td(class_="developer_data")[T.pre[pp.pformat(who.__dict__)]]],
-                           T.tr[T.th(class_="ratoplabel")["Django subject user profile data"],
-                                T.td(class_="developer_data")[T.pre[pp.pformat(database.profile_dict(who._id))]]],
-                           T.tr[T.th(class_="ratoplabel")["Django logged-in user data"],
-                                T.td(class_="developer_data")[T.pre[pp.pformat(django_request.user.__dict__)]]],
-                           T.tr[T.th(class_="ratoplabel")["Django request data"],
-                                T.td(class_="developer_data")[T.pre[pp.pformat(django_request.__dict__)]]]]
+                           T.tr[T.th(class_="ratoplabel")["Subject user profile data"],
+                                T.td(class_="developer_data")[T.pre[pp.pformat(model.database.get_person_profile_dict(who))]]]]
     return [model.pages.with_help(
         viewer,
         T.form(action=django.urls.reverse("dashboard:update_profile"), method='POST')[

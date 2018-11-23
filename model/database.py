@@ -65,6 +65,13 @@ def get_person_dict(identification):
             # names and email addresses are kept in a separate database
             or collection.find_one({'link_id': name_to_id(identification)}))
 
+def get_person_link(whoever):
+    return (whoever['link_id']
+                   if isinstance(whoever, dict)
+                   else (whoever.link_id
+                         if isinstance(whoever, model.person.Person)
+                         else whoever))
+
 # You should generally use these functions to get these details of
 # people, rather than looking directly in the relevant fields of the
 # record, so that privacy protection can be applied.
@@ -72,7 +79,7 @@ def get_person_dict(identification):
 def get_person_profile_dict(id):
     """Ideally you shouldn't use this one at all outside of this module.
     Outside of here, it's really just for debugging."""
-    return database[collection_names['profiles']].find_one({'link_id': id})
+    return database[collection_names['profiles']].find_one({'link_id': get_person_link(id)})
 
 def get_person_profile_field(whoever,
                              profile_field,
@@ -82,12 +89,7 @@ def get_person_profile_field(whoever,
     """Return a profile field of a person.
     You should use model.person.get_profile_field() instead of this in your programs,
     as that handles the privacy controls."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    profile_record = get_person_profile_dict(person_link)
+    profile_record = get_person_profile_dict(whoever)
     if profile_record is None:
         return default_value
     else:
@@ -101,12 +103,7 @@ def set_person_profile_field(whoever,
     """Return a profile field of a person.
     You should use model.person.set_profile_field() instead of this in your programs,
     as that handles the privacy controls."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    profile_record = get_person_profile_dict(person_link)
+    profile_record = get_person_profile_dict(whoever)
     # print("set_person_profile_field", person_link, "got record", profile_record, "to write field", profile_field, "with", new_value)
     if profile_record is not None:
         profile_record[profile_field] = new_value
@@ -119,12 +116,7 @@ def person_name(whoever,
     """Return the formal and informal names of a person.
     You should use model.person.name() instead of this in your programs,
     as that handles the privacy controls."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    name_record = get_person_profile_dict(person_link)
+    name_record = get_person_profile_dict(whoever)
     if name_record is None:
         return "unknown", "unknown"
     else:
@@ -133,12 +125,7 @@ def person_name(whoever,
 
 def person_set_name(whoever, new_name):
     """Set the person's name."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    name_record = get_person_profile_dict(person_link)
+    name_record = get_person_profile_dict(whoever)
     if name_record is None:
         print("Could not find", person_link, "to set their name")
     else:
@@ -147,35 +134,28 @@ def person_set_name(whoever, new_name):
         name_record['surname'] = surname
     database[collection_names['profiles']].save(name_record)
 
+def person_get_django_user_data(whoever):
+    try:
+        return CustomUser.objects.get(link_id=get_person_link(whoever))
+    except:
+        return None
+
 def person_get_login_name(whoever):
     """Get the person's login name.
 This is only used by django, and is not important to the rest of the system."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    result = None
-    try:
-        result = CustomUser.objects.get(link_id=person_link).username
-    except:
-        pass
-    return result
+    django_user_data = person_get_django_user_data(whoever)
+    return django_user_data.username if django_user_data else None
 
 def person_set_login_name(whoever, new_login_name):
     """Set the person's login name.
 This is only used by django, and is not important to the rest of the system.
 Assumes the django user has already been created.
 Returns False if the name was already in use."""
+    django_user_data = person_get_django_user_data(whoever)
     if len(CustomUser.objects.filter(username=new_login_name)) > 0:
         return False
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
     try:
-        CustomUser.objects.filter(link_id=person_link).update(username=new_login_name)
+        CustomUser.objects.filter(link_id=get_person_link(whoever)).update(username=new_login_name)
     except:
         return False
     return True
@@ -183,12 +163,7 @@ Returns False if the name was already in use."""
 def person_email(whoever, viewing_person):
     """Return the person's email address.
     If they have requested anonymity, only they and the admins can see this."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    name_record = get_person_profile_dict(person_link)
+    name_record = get_person_profile_dict(whoever)
     if name_record is None:
         return "unknown@example.com"
     else:
@@ -196,12 +171,7 @@ def person_email(whoever, viewing_person):
 
 def person_set_email(whoever, new_email):
     """Set the person's email address."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    name_record = get_person_profile_dict(person_link)
+    name_record = get_person_profile_dict(whoever)
     if name_record is None:
         print("Could not find", person_link, "to set their email address")
     else:
@@ -213,24 +183,14 @@ def person_set_email(whoever, new_email):
     CustomUser.objects.filter(link_id=person_link).update(email=new_email)
 
 def person_get_admin_note(whoever, note_type='admin_note'):
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    name_record = get_person_profile_dict(person_link)
+    name_record = get_person_profile_dict(whoever)
     if name_record is None:
         return None
     else:
         return name_record.get(note_type, None)
 
 def person_set_admin_note(whoever, note, note_type='admin_note'):
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    name_record = get_person_profile_dict(person_link)
+    name_record = get_person_profile_dict(whoever)
     if name_record is None:
         return
     name_record[note_type] = note

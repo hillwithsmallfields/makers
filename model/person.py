@@ -76,7 +76,6 @@ class Person(object):
         self.notifications_read_to = datetime(1970, 1, 1)
         self.announcements_shown_to = datetime(1970, 1, 1)
         self.announcements_read_to = datetime(1970, 1, 1)
-        self.developer_mode = False # makes your sessions display debug info where relevants
 
     def __str__(self):
         return ("<member " + str(self.membership_number)
@@ -639,7 +638,6 @@ class Person(object):
         self.show_help = to_bool_or_other(params.get('display_help', False))
         self.notify_by_email = to_bool_or_other(params.get('notify_by_email', False))
         self.notify_in_site = to_bool_or_other(params.get('notify_in_site', False))
-        self.developer_mode = params.get('developer_mode', False)
         self.save()
 
     def update_avoidances(self, incoming_avoidances):
