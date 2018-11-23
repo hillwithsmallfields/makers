@@ -176,10 +176,13 @@ def person_set_email(whoever, new_email):
     else:
         name_record['email'] = new_email
     database[collection_names['profiles']].save(name_record)
-    # tell django that the email address has changed; there should
-    # only be one entry to change, but django treats it as though
-    # there could be several:
-    CustomUser.objects.filter(link_id=get_person_link(whoever)).update(email=new_email)
+    # # tell django that the email address has changed; there should
+    # # only be one entry to change, but django treats it as though
+    # # there could be several:
+    # CustomUser.objects.filter(link_id=get_person_link(whoever)).update(email=new_email)
+    django_user = person_get_django_user_data(whoever)
+    django_user.email = new_email
+    django_user.save()
 
 def person_get_admin_note(whoever, note_type='admin_note'):
     name_record = get_person_profile_dict(whoever)
