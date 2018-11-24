@@ -278,7 +278,7 @@ def ban_form(eqtype, who_id, who_name, role, django_request):
                               django_request)
 
 def announcements_section():
-    return T.div[T.p["Placeholder."]]
+    return T.div[T.p["Placeholder for an announcements / message of the day section."]]
 
 def dropdown(name, choices, current=None):
     """Make an HTML form dropdown box."""
