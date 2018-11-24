@@ -14,6 +14,7 @@ import model.person
 import model.person as person
 import os
 import pages.person_page
+import pages.public_page
 import pages.user_list_page
 import re
 import sys
@@ -42,7 +43,8 @@ def logged_in_only(django_request):
                           [T.p["Please ",
                                T.a(href="../users/login")["login"],
                                " for your own dashboard page."],
-                           T.p["Eventually this will be for publicity and machine status."]])
+                           T.p["Eventually this will be for publicity and machine status."],
+                           pages.public_page.public_page()])
 
     return HttpResponse(str(page_data.to_string()))
 
