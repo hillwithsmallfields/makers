@@ -44,7 +44,7 @@ def logged_in_only(django_request):
                                T.a(href="../users/login")["login"],
                                " for your own dashboard page."],
                            T.p["Eventually this will be for publicity and machine status."],
-                           pages.public_page.public_page()])
+                           pages.public_page.public_page(django_request)])
 
     return HttpResponse(str(page_data.to_string()))
 

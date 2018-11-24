@@ -7,13 +7,18 @@ import model.timeline
 
 conf=None
 
-def public_page():
+def public_page(django_request):
     """Produce the home page people get when not logged in."""
     global conf
     if conf == None:
         conf = model.configuration.get_config()
-    current_events = pages.event_page.event_table_section(timeline.present_events().events, True)
-    upcoming_events = pages.event_page.event_table_section(timeline.future_events().events, True)
+    current_events = pages.event_page.event_table_section(model.timeline.Timeline.present_events().events,
+                                                          None,
+                                                          django_request)
+    upcoming_events = pages.event_page.event_table_section(model.timeline.Timeline.future_events().events,
+                                                           None,
+                                                           django_request,
+                                                           wtih_signup=True)
     content = [T.div[
         T.form(action=django.urls.reverse("users:login"))[T.input(type='email address', name='identifier'),
                                                T.input(type='password', name='password')],
