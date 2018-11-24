@@ -72,7 +72,11 @@ class HtmlPage(object):
         self.content.append([T.h2[name], content])
 
     def to_string(self):
-        user = self.viewer or (model.person.Person.find(self.django_request.user.link_id)
+        try:
+            link_id = self.django_request.user.link_id
+        except:
+            link_id = None
+        user = self.viewer or (model.person.Person.find(link_id)
                                if self.django_request
                                else None)
         if user:

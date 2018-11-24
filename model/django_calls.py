@@ -27,7 +27,8 @@ def send_password_reset_email(who, django_request):
     django_user = model.database.person_get_django_user_data(who)
     if django_user:
         django_user.last_login = model.times.now()
-        django_user.set_password(uuid.uuid4())
+        if not django_user.has_usable_password():
+            django_user.set_password(uuid.uuid4())
         django_user.save()
     print("Sending password reset to", to_email)
     domain = config['domain']
