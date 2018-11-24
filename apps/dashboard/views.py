@@ -20,14 +20,31 @@ import sys
 import tempfile
 import uuid
 
-def logged_in_only():
+def admin_only_notice(django_request):
     return HttpResponse("""<html><head><title>Error</title></head>
     <body><h1>Information not publicly available</h1>
     <p>Other users' information, including the user list,
     is not publicly visible.
     To see this, you must <a href="../users/login">login</a>
-    as a user with admin rights.</p>
+    as a user with admin permission.</p>
     </body></html>""")
+
+def logged_in_only(django_request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    django_request.session['developer_mode'] = True
+
+    page_data = model.pages.HtmlPage("Public information",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("Public information",
+                          [T.p["Please ",
+                               T.a(href="../users/login")["login"],
+                               " for your own dashboard page."],
+                           T.p["Eventually this will be for publicity and machine status."]])
+
+    return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
 def all_user_list_page(django_request):
@@ -39,7 +56,7 @@ def all_user_list_page(django_request):
     pages.person_page.person_page_setup()
 
     if django_request.user.is_anonymous:
-        return logged_in_only()
+        return admin_only_notice(django_request)
 
     viewing_user = model.person.Person.find(django_request.user.link_id)
 
@@ -72,7 +89,7 @@ def dashboard_page(django_request, who=""):
     pages.person_page.person_page_setup()
 
     if django_request.user.is_anonymous:
-        return logged_in_only()
+        return logged_in_only(django_request)
 
     viewing_user = model.person.Person.find(django_request.user.link_id)
 
@@ -234,7 +251,7 @@ def user_match_page(django_request):
     pages.person_page.person_page_setup()
 
     if django_request.user.is_anonymous:
-        return logged_in_only()
+        return admin_only_notice(django_request)
 
     viewing_user = model.person.Person.find(django_request.user.link_id)
 
