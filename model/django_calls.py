@@ -8,6 +8,7 @@ import model.configuration
 import model.database
 import model.person
 import model.times
+import uuid
 import django.contrib.auth.forms
 from users.models import CustomUser
 
@@ -26,6 +27,7 @@ def send_password_reset_email(who, django_request):
     django_user = model.database.person_get_django_user_data(who)
     if django_user:
         django_user.last_login = model.times.now()
+        django_user.set_password(uuid.uuid4())
         django_user.save()
     print("Sending password reset to", to_email)
     domain = config['domain']
@@ -51,8 +53,8 @@ def create_django_user(login_name, email,
     django_user.first_name = given_name
     django_user.last_name = surname
     django_user.link_id = link_id
-    print("create_django_user setting unusable password")
-    django_user.set_unusable_password()
+    print("create_django_user setting unknown password")
+    django_user.set_password(uuid.uuid4())
     print("create_django_user saving data")
     django_user.save()
     if django_request:
