@@ -52,8 +52,8 @@ def get_collection_rows(collection_name):
 def delete_by_link_id(identification):
     """Not for normal use.
     Probably should only be used from command line programs."""
-    return (database[collection_names['people']].delete_one({'link_id': identification}),
-            database[collection_names['profiles']].delete_one({'link_id': identification}))
+    return (database[collection_names['people']].delete_one({'link_id': identification}).__dict__,
+            database[collection_names['profiles']].delete_one({'link_id': identification}).__dict__)
 
 def get_person_dict(identification):
     """Read the data for a person from the database, as a dictionary."""

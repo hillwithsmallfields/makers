@@ -33,7 +33,6 @@ def main():
                 print("Result:", database.delete_by_link_id(del_link_id))
             else:
                 print("Would delete", del_link_id)
-    print("Processed", count, "deletion records.")
 
 if __name__ == "__main__":
     main()
