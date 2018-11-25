@@ -365,7 +365,9 @@ def update_database(django_request):
 
     params = django_request.POST
 
-    people = person.Person.list_all_people() if params.get('include_non_members', False) else person.Person.list_all_members()
+    people = (model.person.Person.list_all_people()
+              if params.get('include_non_members', False)
+              else model.person.Person.list_all_members())
 
     for whoever in people:
         # This code is likely to change, according to recent changes

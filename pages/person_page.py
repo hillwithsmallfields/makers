@@ -779,10 +779,12 @@ def admin_section(who, viewer, django_request):
                              viewer,
                              [T.form(action=django.urls.reverse('makers_admin:update_database'),
                                      method='GET')[
+                                         "Include non-members: ",
+                                         T.input(type='checkbox', name='include_non_members'),
                                          T.input(type="hidden", name="csrfmiddlewaretoken",
                                                  value=django.middleware.csrf.get_token(django_request)),
-                                         T.input(type='submit', value="Backup database")]],
-                             "update_database"))
+                                         T.input(type='submit', value="Update / normalize database")]],
+                             "update_database")),
         admin_subsection("Send test message",
                          [T.form(action=django.urls.reverse("makers_admin:test_message"),
                                  method='POST')[
