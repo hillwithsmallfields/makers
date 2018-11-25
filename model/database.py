@@ -234,11 +234,16 @@ def add_person(name_record, main_record):
     name_record['link_id'] = link_id # todo: make it index by this
     main_record['membership_number'] = membership_number
     name_record['membership_number'] = membership_number
-    print("Adding", main_record, "to operational database")
+    print("Adding", main_record, "to operational database", collection_names['people'])
     database[collection_names['people']].insert(main_record)
-    print("Adding", name_record, "to profiles database")
+    print("Adding", name_record, "to profiles database", collection_names['profiles'])
     database[collection_names['profiles']].insert(name_record)
     # todo: also add them to the django database; there is a create_django_user function in django_calls.py; but, we are running outside of django, so maybe we can't do it here
+    # now check that they have been added
+    check_main = database[collection_names['people']].find_one({'link_id': link_id})
+    check_name = database[collection_names['profiles']].find_one({'link_id': link_id})
+    print("Checking main db entry:", check_main)
+    print("Checking name db entry", check_name)
     return link_id
 
 def get_all_person_dicts():

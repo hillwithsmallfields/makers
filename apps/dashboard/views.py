@@ -263,7 +263,7 @@ def user_match_page(django_request):
 
     if viewing_user.is_administrator() or viewing_user.is_auditor():
         page_data.add_content(
-            "Users matching " + filter_name + " " + filter_string,
+            "Users matching " + (filter_name or 'name') + " " + filter_string,
             pages.user_list_page.user_list_matching_section(
                 django_request,
                 filter_name, filter_string,
