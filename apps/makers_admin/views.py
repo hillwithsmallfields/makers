@@ -378,7 +378,8 @@ def update_database(django_request):
         # field from the separate given name and surname, which wasn't
         # really working for people with more than two parts to their
         # name.
-        model.database.person_set_name(whoever, model.database.person_name(whoever))
+        name, _ = model.database.person_name(whoever)
+        model.database.person_set_name(whoever, name)
 
     page_data = model.pages.HtmlPage("Database update",
                                      pages.page_pieces.top_navigation(django_request),
