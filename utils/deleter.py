@@ -26,13 +26,11 @@ def main():
     db_config = config['database']
     collection_names = db_config['collections']
     database.database_init(config)
-    count = 0
     with open(args.deletions) as deletions_file:
-        count += 1
         for del_link_id in deletions_file.readlines():
             if for_real:
                 print("Deleting", del_link_id)
-                database.delete_by_link_id(del_link_id)
+                print("Result:", database.delete_by_link_id(del_link_id))
             else:
                 print("Would delete", del_link_id)
     print("Processed", count, "deletion records.")
