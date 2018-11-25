@@ -225,6 +225,7 @@ def add_user(django_request):
     induction_event = None
 
     link_id = model.database.add_person({'email': email,
+                                         'name': given_name + " " + surname,
                                          'given_name': given_name,
                                          'surname': surname,
                                          'known_as': given_name},
@@ -350,6 +351,34 @@ def backup_database(django_request):
     # todo: fill in
 
     page_data = model.pages.HtmlPage("Database backup",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("Unimplemented",
+                          [T.p["This feature has not been written yet."]])
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
+def update_database(django_request):
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    params = django_request.POST
+
+    people = person.Person.list_all_people() if params.get('include_non_members', False) else person.Person.list_all_members()
+
+    for whoever in people:
+        # This code is likely to change, according to recent changes
+        # in other parts of the code.  Probably leave old ones in here
+        # commented out, as examples?
+
+        # This is here to push through the creation of a whole-name
+        # field from the separate given name and surname, which wasn't
+        # really working for people with more than two parts to their
+        # name.
+        model.database.person_set_name(whoever, model.database.person_name(whoever))
+
+    page_data = model.pages.HtmlPage("Database update",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
     page_data.add_content("Unimplemented",

@@ -119,7 +119,10 @@ def person_name(whoever,
     if name_record is None:
         return "unknown", "unknown"
     else:
-        return (name_record.get('given_name', "?") + " " + name_record.get('surname', "?"),
+        return (name_record.get('name',
+                                (name_record.get('given_name', "?")
+                                 + " "
+                                 + name_record.get('surname', "?"))),
                 name_record.get('known_as', name_record.get('given_name', "?")))
 
 def person_set_name(whoever, new_name):
@@ -128,6 +131,7 @@ def person_set_name(whoever, new_name):
     if name_record is None:
         print("Could not find", get_person_link(whoever), "to set their name")
     else:
+        name_record['name'] = new_name
         given_name, surname = new_name.split(' ', 1) # todo: -1?
         name_record['given_name'] = given_name
         name_record['surname'] = surname
@@ -202,10 +206,11 @@ def person_set_admin_note(whoever, note, note_type='admin_note'):
 def name_to_id(name):
     name_parts = name.rsplit(" ", 1)
     collection = database[collection_names['profiles']]
-    record = (collection.find_one({"surname" : name_parts[-1], "given_name" : name_parts[0]})
-              if len(name_parts) >= 2
-              else (collection.find_one({"known_as" : name})
-                    or collection.find_one({"email" : name})))
+    record = (collection.find_one({'name' : name})
+              or (collection.find_one({"surname" : name_parts[-1], "given_name" : name_parts[0]})
+                  if len(name_parts) >= 2
+                  else (collection.find_one({"known_as" : name})
+                        or collection.find_one({"email" : name}))))
     return record and record.get('link_id', None)
 
 def get_highest_membership_number():

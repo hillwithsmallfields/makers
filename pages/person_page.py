@@ -774,6 +774,15 @@ def admin_section(who, viewer, django_request):
                              viewer,
                              [""],
                              "gdpr_delete_user")),
+        admin_subsection("Update database",
+                         model.pages.with_help(
+                             viewer,
+                             [T.form(action=django.urls.reverse('makers_admin:update_database'),
+                                     method='GET')[
+                                         T.input(type="hidden", name="csrfmiddlewaretoken",
+                                                 value=django.middleware.csrf.get_token(django_request)),
+                                         T.input(type='submit', value="Backup database")]],
+                             "update_database"))
         admin_subsection("Send test message",
                          [T.form(action=django.urls.reverse("makers_admin:test_message"),
                                  method='POST')[
