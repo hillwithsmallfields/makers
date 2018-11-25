@@ -22,7 +22,7 @@ def main():
     database.database_init(config)
     collection = args.collection
     output_name = args.output or (collection + ".csv")
-    rows = [row for row in database[collection_names[collection]].find().items()]
+    rows = database.get_collection_rows(collection)
     keys = []
     for row in rows:
         for key in row.keys():

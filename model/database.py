@@ -46,6 +46,9 @@ def database_init(config):
     if database is None:
         raise ConnectionError
 
+def get_collection_rows(collection_name):
+    return [row for row in database[collection_names[collection_name]].find({})]
+
 def get_person_dict(identification):
     """Read the data for a person from the database, as a dictionary."""
     if identification is None:
