@@ -49,7 +49,7 @@ def database_init(config):
 def get_collection_rows(collection_name):
     return [row for row in database[collection_names[collection_name]].find({})]
 
-def delete_by_link_id(del_link_id):
+def delete_by_link_id(identification):
     """Not for normal use.
     Probably should only be used from command line programs."""
     database[collection_names['people']].delete_one({'link_id': identification})
