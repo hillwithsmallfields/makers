@@ -49,6 +49,12 @@ def database_init(config):
 def get_collection_rows(collection_name):
     return [row for row in database[collection_names[collection_name]].find({})]
 
+def delete_by_link_id(del_link_id):
+    """Not for normal use.
+    Probably should only be used from command line programs."""
+    database[collection_names['people']].delete_one({'link_id': identification})
+    database[collection_names['profiles']].delete_one({'link_id': identification})
+
 def get_person_dict(identification):
     """Read the data for a person from the database, as a dictionary."""
     if identification is None:

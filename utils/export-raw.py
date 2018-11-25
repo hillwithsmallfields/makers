@@ -27,7 +27,7 @@ def main():
     for row in rows:
         for key in row.keys():
             if key not in keys:
-                keys.push(key)
+                keys.append(key)
     print ("keys are", keys)
     with open(output_name, 'w') as csvfile:
         writer = csv.DictWriter(csvfile, keys)
