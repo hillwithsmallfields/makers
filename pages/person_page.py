@@ -762,10 +762,10 @@ def admin_section(who, viewer, django_request):
                                      method='GET')[
                                          T.input(type="hidden", name="csrfmiddlewaretoken",
                                                  value=django.middleware.csrf.get_token(django_request)),
-                                         T.select(name='')[
+                                         T.select(name='collection')[
                                              [T.option(value=opt)[opt]
                                               for opt in model.database.collection_headers.keys()
-                                             ]]
+                                             ]],
                                          T.input(type='submit', value="Fetch raw database collection")]],
                              "download_raw_data"))
         admin_subsection("Backup_database",
