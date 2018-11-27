@@ -65,7 +65,7 @@ collection_headers = {
     'equipment_type': ['_id', 'name', 'presentation_name',
                        'training_category',
                        'manufacturer', 'description',
-                       'picture']
+                       'picture'],
     'machine': ['_id', 'name', 'equipment_type', 'description',
                 'status', 'status_detail',
                 'location',
