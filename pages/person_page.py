@@ -755,6 +755,19 @@ def admin_section(who, viewer, django_request):
                              viewer,
                              email_form(viewer, django_request),
                              "send_email")),
+        admin_subsection("Download raw data",
+                         model.pages.with_help(
+                             viewer,
+                             [T.form(action=django.urls.reverse('makers_admin:raw_data'),
+                                     method='GET')[
+                                         T.input(type="hidden", name="csrfmiddlewaretoken",
+                                                 value=django.middleware.csrf.get_token(django_request)),
+                                         T.select(name='')[
+                                             [T.option(value=opt)[opt]
+                                              for opt in model.database.collection_headers.keys()
+                                             ]]
+                                         T.input(type='submit', value="Fetch raw database collection")]],
+                             "download_raw_data"))
         admin_subsection("Backup_database",
                          model.pages.with_help(
                              viewer,

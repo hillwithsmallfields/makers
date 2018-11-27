@@ -49,6 +49,42 @@ def database_init(config):
 def get_collection_rows(collection_name):
     return [row for row in database[collection_names[collection_name]].find({})]
 
+collection_headers = {
+    'profiles': ['_id', 'link_id', 'membership_number',
+                 'name', 'given_name', 'surname', 'email',
+                 'admin_note',
+                 'configured',
+                 'interests', 'interest_emails',
+                 'avoidances'],
+    'people': ['_id', 'link_id', 'fob', 'past_fobs',
+               'training_requests', 'training_request_limit',
+               'available', 'visibility',
+               'show_help', 'notify_by_email', 'notify_in_site',
+               'notifications_shown_to', 'notifications_read_to',
+               'announcements_shown_to', 'announcements_read_to'],
+    'equipment_type': ['_id', 'name', 'presentation_name',
+                       'training_category',
+                       'manufacturer', 'description',
+                       'picture']
+    'machine': ['_id', 'name', 'equipment_type', 'description',
+                'status', 'status_detail',
+                'location',
+                'brand', 'model', 'serial_number',
+                'acquired',
+                'maintenance_due', 'maintenance_history'],
+    'event': ['_id', 'title', 'event_type',
+              'start', 'end', 'status',
+              'hosts',
+              'location', 'catered', 'alchohol_authorized',
+              'attendance_limit',
+              'signed_up',
+              'invited', 'invitation_accepted', 'invitation_declined',
+              'equipment_type', 'equipment',
+              'passed', 'failed', 'noshow',
+              'interest_areas',
+              'host_prerequisites', 'attendee_prerequisites']
+}
+
 def delete_by_link_id(identification):
     """Not for normal use.
     Probably should only be used from command line programs."""

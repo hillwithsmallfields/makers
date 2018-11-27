@@ -2,6 +2,7 @@
 
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import bson
+import io
 import model.configuration as configuration
 import model.database
 import model.person
@@ -36,6 +37,28 @@ def with_help(who, content, help_name, substitutions={}):
 
 def debug_string(whatever):
     return untemplate.Serializer(untemplate.examples_vmap, 'utf-8').serialize(whatever)
+
+class CsvPage(object):
+
+    def __init__(self, name,
+                 columns=[],
+                 rows=[],
+                 input_encoding='utf-8'):
+        self.name = name
+        self.columns = columns
+        self.rows = rows
+        self.input_encoding = input_encoding
+
+    def add_row(self, row):
+        self.rows.append(row)
+
+    def to_string(self):
+        with io.StringIO() as output:
+            writer = csv.DictWriter(output, fieldnames=self.columns)
+            writer.writeheader()
+            for row in self.rows:
+                writer.writerow(row)
+                return output.getvalue()
 
 class RawHtmlPage(object):
 

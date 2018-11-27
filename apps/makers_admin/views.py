@@ -142,7 +142,8 @@ def create_event_2(django_request):
             model.person.Person.find(django_request.user.link_id),
             django_request))
 
-    return HttpResponse(str(page_data.to_string()))
+    return HttpResponse(str(page_data.to_string()),
+                        content_type="text/csv")
 
 def announce(django_request):
 
@@ -386,6 +387,24 @@ def update_database(django_request):
                                      django_request=django_request)
     page_data.add_content("Unimplemented",
                           [T.p["This feature has not been written yet."]])
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
+def raw_database(django_request):
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    params = django_request.GET
+
+    collection = params.get('collection', 'profiles')
+
+    page_data = model.pages.CsvPage("raw_user_data",
+                                    columns=model.database.collection_headers[collection])
+
+    for row in database.get_collection_rows(collection):
+        page_data.add_row(row)
+
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
