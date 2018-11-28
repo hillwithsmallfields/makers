@@ -703,6 +703,24 @@ def add_user_form(django_request, induction_event_id=None):
                           else T.input(type='checkbox', name='inducted')]],
                 T.tr[T.th[""], T.td[T.input(type='submit', value="Add user")]]]]
 
+def raw_data_form(django_request):
+    return [T.form(action=django.urls.reverse('makers_admin:raw_collection'),
+                   method='GET')[
+                       T.input(type="hidden", name="csrfmiddlewaretoken",
+                               value=django.middleware.csrf.get_token(django_request)),
+                       T.table[T.tr[T.th(class_='ralabel')["Collection:"],
+                                    T.td[T.select(name='collection')[
+                                        [T.option(value=opt)[opt]
+                                              for opt in model.database.collection_headers.keys()]]]],
+                               T.tr[T.th(class_='ralabel')["Format"],
+                                    T.td[T.select(name='format')[
+                                        [T.option(value=opt)[opt]
+                                              for opt in ['csv', 'json']]]]],
+                               T.tr[T.th(class_='ralabel')["Pprint if applicable"],
+                                    T.td[T.input(type='checkbox', name='pprint')]],
+                               T.tr[T.th(class_='ralabel')[""],
+                                    T.td[T.input(type='submit', value="Fetch raw database collection")]]]]]
+
 def admin_subsection(title, body):
     return T.div(class_='admin_action')[
         T.h3(class_='admin_action_heading')[title],
@@ -758,16 +776,8 @@ def admin_section(who, viewer, django_request):
         admin_subsection("Download raw data",
                          model.pages.with_help(
                              viewer,
-                             [T.form(action=django.urls.reverse('makers_admin:raw_data'),
-                                     method='GET')[
-                                         T.input(type="hidden", name="csrfmiddlewaretoken",
-                                                 value=django.middleware.csrf.get_token(django_request)),
-                                         T.select(name='collection')[
-                                             [T.option(value=opt)[opt]
-                                              for opt in model.database.collection_headers.keys()
-                                             ]],
-                                         T.input(type='submit', value="Fetch raw database collection")]],
-                             "download_raw_data"))
+                             raw_data_form(django_request),
+                             "download_raw_data")),
         admin_subsection("Backup_database",
                          model.pages.with_help(
                              viewer,

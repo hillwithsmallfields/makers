@@ -2,7 +2,9 @@
 
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import bson
+import csv
 import io
+import json
 import model.configuration as configuration
 import model.database
 import model.person
@@ -53,12 +55,46 @@ class CsvPage(object):
         self.rows.append(row)
 
     def to_string(self):
-        with io.StringIO() as output:
-            writer = csv.DictWriter(output, fieldnames=self.columns)
+        with io.StringIO(initial_value="",
+                         newline=None) as output:
+            writer = csv.DictWriter(output,
+                                    fieldnames=self.columns,
+                                    extrasaction='ignore')
             writer.writeheader()
-            for row in self.rows:
-                writer.writerow(row)
-                return output.getvalue()
+            writer.writerows(self.rows)
+            return output.getvalue()
+
+def jsonify(x):
+    """Make data more suitable for outputting as JSON."""
+    return (x if (isinstance(x, int)
+                  or isinstance(x, float)
+                  or isinstance(x, str)
+                  or isinstance(x, bool))
+            else ([jsonify(e) for e in x]
+                  if isinstance(x, list) or isinstance(x, tuple)
+                  else ({jsonify(k): jsonify(v) for k, v in x.items()}
+                        if isinstance(x, dict)
+                        else str(x))))
+
+class JsonPage(object):
+
+    def __init__(self, name,
+                 data = {},
+                 pprint = False,
+                 input_encoding='utf-8'):
+        self.name = name
+        self.data = data
+        self.pprint = pprint
+        self.input_encoding = input_encoding
+
+    def set_data(self, data):
+        self.data = data
+
+    def to_string(self):
+        json_data = jsonify(self.data)
+        return (json.dumps(json_data, indent=4)
+                if self.pprint
+                else json.dumps(json_data))
 
 class RawHtmlPage(object):
 

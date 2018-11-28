@@ -390,7 +390,7 @@ def update_database(django_request):
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def raw_database(django_request):
+def raw_collection(django_request):
 
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
@@ -398,14 +398,27 @@ def raw_database(django_request):
     params = django_request.GET
 
     collection = params.get('collection', 'profiles')
+    output_format = params.get('format', 'csv')
 
-    page_data = model.pages.CsvPage("raw_user_data",
-                                    columns=model.database.collection_headers[collection])
+    if output_format == 'csv':
+        page_data = model.pages.CsvPage("raw_user_data",
+                                        columns=model.database.collection_headers[collection])
 
-    for row in database.get_collection_rows(collection):
-        page_data.add_row(row)
+        for row in model.database.get_collection_rows(collection):
+            page_data.add_row(row)
 
-    return HttpResponse(str(page_data.to_string()))
+        response = HttpResponse(str(page_data.to_string()), content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="' + collection + '.csv"'
+        return response
+    else:
+        page_data = model.pages.JsonPage(
+            "raw_user_data",
+            pprint = params.get('pprint', False),
+            data = [ row for row in model.database.get_collection_rows(collection) ])
+
+    response = HttpResponse(str(page_data.to_string()), content_type='text/' + output_format)
+    response['Content-Disposition'] = 'attachment; filename="' + collection + '.' + output_format + '"'
+    return response
 
 @ensure_csrf_cookie
 def gdpr_delete_user(django_request):
