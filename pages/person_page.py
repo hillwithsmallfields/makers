@@ -721,6 +721,13 @@ def raw_data_form(django_request):
                                T.tr[T.th(class_='ralabel')[""],
                                     T.td[T.input(type='submit', value="Fetch raw database collection")]]]]]
 
+def data_check_form(django_request):
+    return [T.form(action=django.urls.reverse('makers_admin:data_check'),
+                   method='GET')[
+                       T.input(type="hidden", name="csrfmiddlewaretoken",
+                               value=django.middleware.csrf.get_token(django_request)),
+                       T.input(type='submit', value="Check data")]]
+
 def admin_subsection(title, body):
     return T.div(class_='admin_action')[
         T.h3(class_='admin_action_heading')[title],
@@ -778,6 +785,11 @@ def admin_section(who, viewer, django_request):
                              viewer,
                              raw_data_form(django_request),
                              "download_raw_data")),
+        admin_subsection("Check data",
+                         model.pages.with_help(
+                             viewer,
+                             data_check_form(django_request),
+                             "check_data")),
         admin_subsection("Backup_database",
                          model.pages.with_help(
                              viewer,

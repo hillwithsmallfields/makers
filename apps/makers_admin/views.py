@@ -421,6 +421,36 @@ def raw_collection(django_request):
     return response
 
 @ensure_csrf_cookie
+def data_check(django_request):
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    viewer = model.person.Person.find(django_request.user.link_id)
+
+    params = django_request.GET
+
+    duplicate_profiles = model.database.check_for_duplicates('profiles', 'people')
+
+    page_data = model.pages.HtmlPage("Data check",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content(str(len(duplicate_profiles)) + " people with multiple profiles (by name)",
+                          model.pages.with_help(
+                              viewer,
+                              [T.dl
+                               [[[T.dt[k, " (", str(len(duplicate_profiles[k])), " profiles)"],
+                                  T.dd[T.ul[[T.li[T.div(class_='identifying')["Profile: ",
+                                                                              T.pre[p[0]]],
+                                                  T.br,
+                                                  T.div(class_='operational')["Operational: ",
+                                                                              T.pre[p[1] or "None"]]]
+                                             for p in duplicate_profiles[k]]]]]
+                                 for k in sorted(duplicate_profiles.keys())]]],
+                              "duplicate_profiles_list"))
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
 def gdpr_delete_user(django_request):
 
     config_data = model.configuration.get_config()
@@ -433,8 +463,8 @@ def gdpr_delete_user(django_request):
     page_data = model.pages.HtmlPage("",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
-    page_data.add_content("",
-                          [""])
+    page_data.add_content("User deletion",
+                          [T.p["Not implemented"]])
     return HttpResponse(str(page_data.to_string()))
 
 import django.core.mail

@@ -267,6 +267,7 @@ def add_person(name_record, main_record):
     # todo: convert dates to datetime.datetime
     print("Given", main_record, "to add to operational database")
     print("Given", name_record, "to add to profiles database")
+    # todo: check they are not already in there
     # default_membership_number = get_highest_membership_number()+1
     default_membership_number = 0
     membership_number = main_record.get('membership_number',
@@ -521,6 +522,23 @@ def find_interested_people(interests):
                  # '$elemMatch':
                  '$in':
                  interests}}) ]
+
+# consistency checks etc
+
+def check_for_duplicates(collection_name, other_collection_name):
+    by_name = {}
+    other_collection = database[collection_names[other_collection_name]]
+    rows = [r for r in database[collection_names[collection_name]].find({})]
+    for row in rows:
+        name = row.get('name', row.get('given_name', "") + " " + row.get('surname', ""))
+        cluster = by_name.get(name, [])
+        cluster.append(row)
+        by_name[name] = cluster
+    return {k: [(ve,
+                 other_collection.find_one({'link_id': ve.get('link_id', "")}))
+                         for ve in v] for k, v
+            in by_name.items()
+            if v and len(v) > 1}
 
 # misc
 

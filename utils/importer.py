@@ -113,6 +113,7 @@ def import0(args):
         induction_event = None
         with open(args.members) as members_file:
             for row in csv.DictReader(members_file):
+                # todo: check that they are not already in the collection
                 name_parts = row['Name'].rsplit(" ", 1)
                 member_no = row.get('Member no', "0")
                 if member_no == "":

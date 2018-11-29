@@ -97,6 +97,14 @@ td.developer_data {
     color:      green;
 }
 
+.identifying {
+    color: red;
+}
+
+.operational {
+    color: green;
+}
+
 /* User list columns, including lists of equipment for which a person has a given role */
 
 .mem_num {
