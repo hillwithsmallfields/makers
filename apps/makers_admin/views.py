@@ -2,6 +2,7 @@ from datetime import datetime
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from untemplate.throw_out_your_templates_p3 import htmltags as T
+from users.models import CustomUser
 import django.urls
 import model.configuration
 import model.database           # for announcements and notifications; I should probably wrap them so apps don't need to see model.database
@@ -13,6 +14,7 @@ import model.pages
 import model.person
 import pages.event_page
 import pages.person_page
+import re
 
 # from https://stackoverflow.com/questions/17873855/manager-isnt-available-user-has-been-swapped-for-pet-person,
 # replacing: from django.contrib.auth.models import User
@@ -208,8 +210,17 @@ def send_email(django_request):
 def make_login(given_name, surname):
     login_base = ((given_name[:3] if len(given_name) > 3 else given_name)
                   + (surname[:3] if len(surname) > 3 else surname))
-    # todo: look for the lowest number that is unused so far for this login_base
-    return login_base + "1"
+
+    highest = 0
+
+    for existing in CustomUser.objects.filter(username__startswith=login_base):
+        m = re.search('.+([0-9]+)$', existing.username)
+        if m:
+            suffix = int(m.group(1))
+            if suffix > highest:
+                highest = suffix
+
+    return login_base.lower() + str(highest+1)
 
 @ensure_csrf_cookie
 def add_user(django_request):
@@ -497,15 +508,15 @@ def update_django(django_request):
     model.database.database_init(config_data)
 
     params = django_request.POST
-    include_non_members = params['include_non_members']
+    include_non_members = params.get('include_non_members', False)
 
-    people = person.Person.list_all_people() if include_non_members else person.Person.list_all_members()
+    people = model.person.Person.list_all_people() if include_non_members else model.person.Person.list_all_members()
 
-    countdown = 12
+    countdown = 48
 
     created = []
     for whoever in people:
-        if whoever.login_name is None:
+        if model.database.person_get_login_name(whoever) is None:
             name = whoever.name()
             name_parts = name.split(' ')
             login = make_login(name_parts[0], name_parts[1])
@@ -513,9 +524,9 @@ def update_django(django_request):
                                                   whoever.get_email(),
                                                   name_parts[0], name_parts[1],
                                                   whoever.link_id)
-            whoever.login_name = login
+            model.database.person_set_login_name(whoever, login)
             whoever.save()
-            created.append(who)
+            created.append(whoever)
             countdown -= 1
             if countdown == 0:
                 break
@@ -528,7 +539,7 @@ def update_django(django_request):
                                                T.th["login name"],
                                                T.th["email"]]],
                                   T.tbody[[[T.tr[T.th[newbie.name()],
-                                                 T.td[newbie.login_name],
+                                                 T.td[model.database.person_get_login_name(newbie)],
                                                  T.td[newbie.get_email()]]]
                                            for newbie in created]]])
     return HttpResponse(str(page_data.to_string()))

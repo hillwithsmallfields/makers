@@ -48,7 +48,10 @@ def create_django_user(login_name, email,
     # based on https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Authentication
     # Create user and save to the database
     print("create_django_user creating django_user")
-    django_user = CustomUser.objects.create_user(login_name, email, '')
+    try:
+        django_user = CustomUser.objects.create_user(login_name, email, '')
+    except:
+        return
 
     # Update fields and then save again
     django_user.first_name = given_name
