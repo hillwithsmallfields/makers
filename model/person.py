@@ -201,7 +201,8 @@ class Person(object):
 
     def get_admin_note(note_type='admin_note'):
         """Return a note on the account."""
-        return model.database.person_get_admin_note(note_type)
+        note = model.database.person_get_admin_note(note_type)
+        return None if note == "None" else note
 
     def set_admin_note(note, note_type='admin_note'):
         """Set a note on the account."""
