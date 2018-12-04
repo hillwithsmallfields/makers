@@ -280,6 +280,11 @@ def add_person(name_record, main_record):
     name_record['link_id'] = link_id # todo: make it index by this
     main_record['membership_number'] = membership_number
     name_record['membership_number'] = membership_number
+    if (database[collection_names['profiles']].find({'given_name': name_record.get('given_name', "NoSuchGivenName"),
+                                                     'surname': name_record.get('surname', "NoSuchSurname")})
+        or database[collection_names['profiles']].find({'name': name_record.get('name', "NoSuchName")})):
+        print("Skipping", name_record, "as there is already someone with that name")
+        return None
     print("Adding", main_record, "to operational database", collection_names['people'])
     database[collection_names['people']].insert(main_record)
     print("Adding", name_record, "to profiles database", collection_names['profiles'])

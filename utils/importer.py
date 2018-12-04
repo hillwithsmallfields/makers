@@ -114,17 +114,21 @@ def import0(args):
         with open(args.members) as members_file:
             for row in csv.DictReader(members_file):
                 # todo: check that they are not already in the collection
-                name_parts = row['Name'].rsplit(" ", 1)
+                name = row['Name']
+                name_parts = name.rsplit(" ", 1)
                 member_no = row.get('Member no', "0")
                 if member_no == "":
                     member_no = "0"
-                database.add_person({'membership_number': int(member_no),
-                                     'email': row.get('Email', None),
-                                     'given_name': name_parts[0],
-                                     'surname': name_parts[1],
-                                     'known_as': name_parts[0],
-                                     'admin_note': row.get('Note', None)},
-                                    {'membership_number': member_no})
+                added_link_id = database.add_person({'membership_number': int(member_no),
+                                                     'email': row.get('Email', None),
+                                                     'given_name': name_parts[0],
+                                                     'surname': name_parts[1],
+                                                     'name': name,
+                                                     'known_as': name_parts[0],
+                                                     'admin_note': row.get('Note', None)},
+                                                    {'membership_number': member_no})
+                if added_link_id is None:
+                    continue
                 added = Person.find(row['Name'])
                 added.set_fob(row.get('Fob', None))
                 # todo: find or create a training event to match row['Date inducted']
