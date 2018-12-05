@@ -416,9 +416,9 @@ def update_database(django_request):
                 had_unusable_pw.append(whoever.name())
                 django_user.set_password(uuid.uuid4())
                 django_user.save()
-            django_user.is_staff = False
-            django_user.save()
-            if False and whoever.is_administrator():
+            # django_user.is_staff = False
+            # django_user.save()
+            if True and whoever.is_administrator():
                 django_user.is_staff = True
                 django_user.save()
 
