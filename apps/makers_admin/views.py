@@ -15,6 +15,7 @@ import model.person
 import pages.event_page
 import pages.person_page
 import re
+import uuid
 
 # from https://stackoverflow.com/questions/17873855/manager-isnt-available-user-has-been-swapped-for-pet-person,
 # replacing: from django.contrib.auth.models import User
@@ -213,8 +214,9 @@ def make_login(given_name, surname):
 
     highest = 0
 
-    for existing in CustomUser.objects.filter(username__startswith=login_base):
-        m = re.search('.+([0-9]+)$', existing.username)
+    # for existing in CustomUser.objects.filter(username__startswith=login_base):
+    for existing in CustomUser.objects.all():
+        m = re.match(login_base+'([0-9]+)$', existing.get_username())
         if m:
             suffix = int(m.group(1))
             if suffix > highest:
@@ -381,6 +383,9 @@ def update_database(django_request):
               if params.get('include_non_members', False)
               else model.person.Person.list_all_members())
 
+    without_django_account = []
+    had_unusable_pw = []
+
     for whoever in people:
         # This code is likely to change, according to recent changes
         # in other parts of the code.  Probably leave old ones in here
@@ -390,14 +395,53 @@ def update_database(django_request):
         # field from the separate given name and surname, which wasn't
         # really working for people with more than two parts to their
         # name.
-        name, _ = model.database.person_name(whoever)
-        model.database.person_set_name(whoever, name)
+        # name, _ = model.database.person_name(whoever)
+        # model.database.person_set_name(whoever, name)
+
+        # Get rid of unusable passwords
+        django_user = model.database.person_get_django_user_data(whoever)
+        if not django_user:
+            name = whoever.name()
+            without_django_account.append(name)
+            name_parts = name.split(' ', 1)
+            given_name = name_parts[0]
+            surname = name_parts[1]
+            model.django_calls.create_django_user(make_login(given_name, surname),
+                                                  whoever.get_email(),
+                                                  given_name, surname,
+                                                  whoever.link_id,
+                                                  django_request)
+        else:
+            if not django_user.has_usable_password():
+                had_unusable_pw.append(whoever.name())
+                django_user.set_password(uuid.uuid4())
+                django_user.save()
+            django_user.is_staff = False
+            django_user.save()
+            if False and whoever.is_administrator():
+                django_user.is_staff = True
+                django_user.save()
+
+    django_orphans = []
+
+    for existing in CustomUser.objects.filter():
+        link = existing.link_id
+        whoever = model.person.Person.find(link)
+        if whoever is None:
+            django_orphans.append((link,
+                                   existing.login,
+                                   existing.first_name + " " + existing.last_name))
 
     page_data = model.pages.HtmlPage("Database update",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
-    page_data.add_content("Unimplemented",
-                          [T.p["This feature has not been written yet."]])
+    page_data.add_content("Update results",
+                          [T.h3["Missing django account"],
+                           T.ul[[T.li[w] for w in sorted(without_django_account)]],
+                           T.h3["Password was unusable"],
+                           T.ul[[T.li[u] for u in sorted(had_unusable_pw)]],
+                           T.h3["Django orphans"],
+                           T.table[[T.tr[T.td[o[0]], T.td[o[1]], T.td[o[2]]] for o in django_orphans]]])
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
@@ -520,13 +564,13 @@ def update_django(django_request):
             name = whoever.name()
             name_parts = name.split(' ')
             login = make_login(name_parts[0], name_parts[1])
-            model.django_calls.create_django_user(login,
-                                                  whoever.get_email(),
-                                                  name_parts[0], name_parts[1],
-                                                  whoever.link_id)
-            model.database.person_set_login_name(whoever, login)
+            creation_result = model.django_calls.create_django_user(login,
+                                                                    whoever.get_email(),
+                                                                    name_parts[0], name_parts[1],
+                                                                    whoever.link_id)
+            set_name_result = model.database.person_set_login_name(whoever, login)
             whoever.save()
-            created.append(whoever)
+            created.append((login, creation_result, set_name_result, whoever))
             countdown -= 1
             if countdown == 0:
                 break
@@ -536,10 +580,16 @@ def update_django(django_request):
                                      django_request=django_request)
     page_data.add_content("Django user creation",
                           T.table[T.thead[T.tr[T.th["Name"],
-                                               T.th["login name"],
+                                               T.th["generated login name"],
+                                               T.th["created"],
+                                               T.th["set name result"],
+                                               T.th["retrieved login name"],
                                                T.th["email"]]],
                                   T.tbody[[[T.tr[T.th[newbie.name()],
+                                                 T.td[gen_name],
+                                                 T.td[str(cr)],
+                                                 T.td[str(snr)],
                                                  T.td[model.database.person_get_login_name(newbie)],
                                                  T.td[newbie.get_email()]]]
-                                           for newbie in created]]])
+                                           for gen_name, cr, snr, newbie in created]]])
     return HttpResponse(str(page_data.to_string()))

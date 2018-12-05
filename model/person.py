@@ -3,6 +3,7 @@ import logging
 import model.access_permissions
 import model.configuration
 import model.database
+import model.django_calls
 import model.equipment_type
 import model.event
 import model.machine
@@ -198,6 +199,15 @@ class Person(object):
                 self.link_id,
                 django_request)
         model.database.person_set_login_name(self, new_login_name)
+
+    def password_is_usable(self):
+        return model.django_calls.django_password_is_usable(self)
+
+    def is_active(self):
+        return model.django_calls.django_user_is_active(self)
+
+    def is_django_staff(self):
+        return model.django_calls.django_user_is_staff(self)
 
     def get_admin_note(note_type='admin_note'):
         """Return a note on the account."""
@@ -469,7 +479,10 @@ class Person(object):
         A second result gives their latest ban or suspension on this equipment type."""
         trained = None
         detrained = None
-        equipment_id = model.equipment_type.Equipment_type.find(equipment_type_name)._id
+        eqty = model.equipment_type.Equipment_type.find(equipment_type_name)
+        if eqty is None:
+            return None, None
+        equipment_id = eqty._id
         for ev in self.get_training_events(event_type = model.database.role_training(role),
                                            when=when or model.times.now()):
             if equipment_id == ev.equipment_type:
@@ -495,8 +508,9 @@ class Person(object):
 
     def is_member(self):
         """Return whether the person is a member, and whether they have a suspension on their membership."""
-        return self.qualification(model.configuration.get_config('organization', 'name'), 'user',
-                                  skip_membership_check=True)
+        trained, detrained = self.qualification(model.configuration.get_config('organization', 'name'), 'user',
+                                                skip_membership_check=True)
+        return trained
 
     def is_administrator(self):
         """Return whether the person is an admin."""
@@ -513,21 +527,25 @@ class Person(object):
 
     def is_trained(self, equipment_type):
         """Return whether a person is trained to use a particular equipment_type."""
-        return self.qualification(equipment_type, 'user')
+        trained, detrained = self.qualification(equipment_type, 'user')
+        return trained
 
     def is_owner(self, equipment_type):
         """Return whether the person is an owner of that equipment_type."""
-        return self.qualification(equipment_type, 'owner')
+        trained, detrained = self.qualification(equipment_type, 'owner')
+        return trained
 
     def is_trainer(self, equipment_type):
         """Return whether the person is a trainer for that equipment_type."""
-        return self.qualification(equipment_type, 'trainer')
+        trained, detrained = self.qualification(equipment_type, 'trainer')
+        return trained
 
     def satisfies_condition(self, condition):
         """Takes a string describing one condition, and check the person meets that requirement.
         Sample strings are "hpc_laser user" and "mill trainer"."""
         equiptype, role = condition.split(' ')
-        return self.qualification(equiptype, role)
+        trained, detrained = self.qualification(equiptype, role)
+        return trained
 
     def satisfies_conditions(self, conditions):
         """Takes a list of strings describing one or more conditions, and check the person meets those requirements.

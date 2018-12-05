@@ -197,7 +197,7 @@ def person_get_login_name(whoever):
     """Get the person's login name.
 This is only used by django, and is not important to the rest of the system."""
     django_user_data = person_get_django_user_data(whoever)
-    return django_user_data.username if django_user_data else None
+    return django_user_data.get_username() if django_user_data else None
 
 def person_set_login_name(whoever, new_login_name):
     """Set the person's login name.

@@ -134,6 +134,17 @@ td.developer_data {
     font-family:      monospace;
 }
 
+.flagsh {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.flags {
+    background-color: #fff8d0;
+    padding:          0.5em;
+    font-family:      monospace;
+}
+
 .email {
     background-color: #fff8d0;
     padding:          0.5em;

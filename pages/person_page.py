@@ -210,6 +210,8 @@ def general_profile_section(who, viewer, django_request):
         django_logged_in_user_dict = django_request.user.__dict__
         django_wrapped_user = django_logged_in_user_dict.get('_wrapped', None)
         django_wrapped_user_dict = django_wrapped_user.__dict__ if django_wrapped_user else {}
+        django_subject_data = model.database.person_get_django_user_data(who)
+        django_subject_user_dict = django_subject_data and django_subject_data.__dict__
         table_contents += [T.tr[T.th(class_="ratoplabel")["Django request data"],
                                 T.td(class_="developer_data")[T.pre[pp.pformat(django_request.__dict__)]]],
                            T.tr[T.th(class_="ratoplabel")["Django session data"],
@@ -218,7 +220,7 @@ def general_profile_section(who, viewer, django_request):
                                 T.td(class_="developer_data")[T.pre[pp.pformat([django_logged_in_user_dict,
                                                                                 django_wrapped_user_dict])]]],
                            T.tr[T.th(class_="ratoplabel")["Subject user Django data"],
-                                T.td(class_="developer_data")[T.pre[pp.pformat(model.database.person_get_django_user_data(who).__dict__)]]],
+                                T.td(class_="developer_data")[T.pre[pp.pformat(django_subject_user_dict)]]],
                            T.tr[T.th(class_="ratoplabel")["Subject user operational data"],
                                 T.td(class_="developer_data")[T.pre[pp.pformat(who.__dict__)]]],
                            T.tr[T.th(class_="ratoplabel")["Subject user profile data"],
@@ -391,7 +393,7 @@ def responsibilities(who, viewer, eqtype, django_request):
                            pages.page_pieces.toggle_request(who, eqtype._id, 'owner',
                                                             has_requested_owner_training,
                                                             django_request)]]
-    is_trainer, _ = who.is_trainer(eqtype)
+    is_trainer = who.is_trainer(eqtype)
     has_requested_trainer_training = who.has_requested_training([eqtype._id], 'trainer')
     trainer_section = [T.h4[type_name, " trainer information and actions"],
                        (T.div(class_='as_trainer')[
@@ -491,28 +493,28 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                          [T.th(class_="ban_form")["Admin: Ban"],
                           T.th(class_="permit_form")["Admin: Make owner"],
                           T.th(class_="permit_form")["Admin: Make trainer"]] if (viewer.is_administrator()
-                                                    or viewer.is_owner(name)
-                                                    or viewer.is_trainer(name)) else []]],
+                                                    or viewer.is_owner(who_name)
+                                                    or viewer.is_trainer(who_name)) else []]],
             T.tbody[[T.tr[T.th[T.a(href=django_request.scheme
                                    + "://" + django_request.META['HTTP_HOST']
-                                   + django.urls.reverse("equiptypes:eqty", args=(keyed_types[name][0].name,)))[name]],
+                                   + django.urls.reverse("equiptypes:eqty", args=(keyed_types[eqty_name][0].name,)))[eqty_name]],
                           T.td[", ".join([name_of_host(host)
                                      # todo: linkify these if admin? but that would mean not using the easy "join"
-                                                                 for host in keyed_types[name][1][0].hosts])],
-                          T.td[model.times.timestring(keyed_types[name][1][0].start)],
-                          T.td[pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'trainer',
-                                                                who.has_requested_training([keyed_types[name][0]._id], 'trainer'),
+                                                                 for host in keyed_types[eqty_name][1][0].hosts])],
+                          T.td[model.times.timestring(keyed_types[eqty_name][1][0].start)],
+                          T.td[pages.page_pieces.toggle_request(who, keyed_types[eqty_name][0]._id, 'trainer',
+                                                                who.has_requested_training([keyed_types[eqty_name][0]._id], 'trainer'),
                                                                 django_request)],
-                          T.td[pages.page_pieces.toggle_request(who, keyed_types[name][0]._id, 'owner',
-                                                                who.has_requested_training([keyed_types[name][0]._id], 'owner'),
+                          T.td[pages.page_pieces.toggle_request(who, keyed_types[eqty_name][0]._id, 'owner',
+                                                                who.has_requested_training([keyed_types[eqty_name][0]._id], 'owner'),
                                                                 django_request)],
-                          ([T.td[pages.page_pieces.ban_form(keyed_types[name][0], who._id, who_name, 'user', django_request)],
-                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who._id, who_name, 'owner', django_request)],
-                            T.td[pages.page_pieces.permit_form(keyed_types[name][0], who._id, who_name, 'trainer', django_request)]]
+                          ([T.td[pages.page_pieces.ban_form(keyed_types[eqty_name][0], who._id, who_name, 'user', django_request)],
+                            T.td[pages.page_pieces.permit_form(keyed_types[eqty_name][0], who._id, who_name, 'owner', django_request)],
+                            T.td[pages.page_pieces.permit_form(keyed_types[eqty_name][0], who._id, who_name, 'trainer', django_request)]]
                                                        if (viewer.is_administrator()
-                                                           or viewer.is_owner(name)
-                                                           or viewer.is_trainer(name)) else [])]
-                     for name in sorted(keyed_types.keys())]]]]
+                                                           or viewer.is_owner(eqty_name)
+                                                           or viewer.is_trainer(eqty_name)) else [])]
+                     for eqty_name in sorted(keyed_types.keys())]]]]
 
 def training_requests_section(who, viewer, django_request):
     len_training = len("_training")
