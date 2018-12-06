@@ -14,7 +14,15 @@ def equipment_type_role_name_list(who, role):
     # todo: make this into a list of names with individual anchors
     return ", ".join(sorted(who.get_equipment_type_names(role)))
 
-def user_list_section(django_request, include_non_members=False, filter_fn=None, filter_opaque=None):
+def flagstring(who):
+    return (("A" if who.is_active() else "a")
+            + ("P" if who.password_is_usable() else "p")
+            + ("S" if who.is_django_staff() else "s")
+            )
+
+def user_list_section(django_request,
+                      include_non_members=False,
+                      filter_fn=None, filter_opaque=None):
     """Return the users list, if the viewing person is allowed to see it.
     Otherwise, just how many people there are.
     The optional first argument is a flag for whether to include non-members.
@@ -35,6 +43,7 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
         return T.table[[T.tr[T.th(class_='mem_num')["Mem #"],
                              T.th(class_='username')["Name"],
                              T.th(class_='loginh')["Login"],
+                             T.th(class_='flagsh')["Flags"],
                              T.th(class_='email')["Email"],
                              T.th(class_='user')["User"],
                              T.th(class_='owner')["Owner"],
@@ -43,6 +52,7 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
                        [T.tr[T.td(class_='mem_num')[str(who.membership_number)],
                              T.th(class_='username')[T.a(href=django.urls.reverse('dashboard:user_dashboard', args=([who.link_id])))[whoname]],
                              T.td(class_='login')[who.get_login_name() or ""],
+                             T.td(class_='flags')[flagstring(who)],
                              T.td(class_='email')[T.a(href="mailto:"+who.get_email() or "")[who.get_email() or ""]],
                              T.td(class_='user')[equipment_type_role_name_list(who, 'user')],
                              T.td(class_='owner')[equipment_type_role_name_list(who, 'owner')],

@@ -41,6 +41,8 @@ def send_password_reset_email(who, django_request):
               domain_override=domain,
               request=django_request)
 
+send_creation_email = False
+
 def create_django_user(login_name, email,
                        given_name, surname,
                        link_id,
@@ -48,7 +50,10 @@ def create_django_user(login_name, email,
     # based on https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Authentication
     # Create user and save to the database
     print("create_django_user creating django_user")
-    django_user = CustomUser.objects.create_user(login_name, email, '')
+    try:
+        django_user = CustomUser.objects.create_user(login_name, email, '')
+    except:
+        return False
 
     # Update fields and then save again
     django_user.first_name = given_name
@@ -58,9 +63,22 @@ def create_django_user(login_name, email,
     django_user.set_password(uuid.uuid4())
     print("create_django_user saving data")
     django_user.save()
-    if django_request:
+    if send_creation_email and django_request:
         print("create_django_user sending email")
         model.django_calls.send_password_reset_email(
             model.person.Person.find(link_id),
             django_request)
     print("create_django_user complete")
+    return True
+
+def django_password_is_usable(who):
+    django_user = model.database.person_get_django_user_data(who)
+    return django_user and django_user.has_usable_password()
+
+def django_user_is_active(who):
+    django_user = model.database.person_get_django_user_data(who)
+    return django_user and django_user.is_active
+
+def django_user_is_staff(who):
+    django_user = model.database.person_get_django_user_data(who)
+    return django_user and django_user.is_staff

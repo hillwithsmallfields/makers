@@ -62,27 +62,27 @@ collection_headers = {
                'show_help', 'notify_by_email', 'notify_in_site',
                'notifications_shown_to', 'notifications_read_to',
                'announcements_shown_to', 'announcements_read_to'],
-    'equipment_type': ['_id', 'name', 'presentation_name',
-                       'training_category',
-                       'manufacturer', 'description',
-                       'picture'],
-    'machine': ['_id', 'name', 'equipment_type', 'description',
-                'status', 'status_detail',
-                'location',
-                'brand', 'model', 'serial_number',
-                'acquired',
-                'maintenance_due', 'maintenance_history'],
-    'event': ['_id', 'title', 'event_type',
-              'start', 'end', 'status',
-              'hosts',
-              'location', 'catered', 'alchohol_authorized',
-              'attendance_limit',
-              'signed_up',
-              'invited', 'invitation_accepted', 'invitation_declined',
-              'equipment_type', 'equipment',
-              'passed', 'failed', 'noshow',
-              'interest_areas',
-              'host_prerequisites', 'attendee_prerequisites']
+    'equipment_types': ['_id', 'name', 'presentation_name',
+                        'training_category',
+                        'manufacturer', 'description',
+                        'picture'],
+    'machines': ['_id', 'name', 'equipment_type', 'description',
+                 'status', 'status_detail',
+                 'location',
+                 'brand', 'model', 'serial_number',
+                 'acquired',
+                 'maintenance_due', 'maintenance_history'],
+    'events': ['_id', 'title', 'event_type',
+               'start', 'end', 'status',
+               'hosts',
+               'location', 'catered', 'alchohol_authorized',
+               'attendance_limit',
+               'signed_up',
+               'invited', 'invitation_accepted', 'invitation_declined',
+               'equipment_type', 'equipment',
+               'passed', 'failed', 'noshow',
+               'interest_areas',
+               'host_prerequisites', 'attendee_prerequisites']
 }
 
 def delete_by_link_id(identification):
@@ -197,7 +197,7 @@ def person_get_login_name(whoever):
     """Get the person's login name.
 This is only used by django, and is not important to the rest of the system."""
     django_user_data = person_get_django_user_data(whoever)
-    return django_user_data.username if django_user_data else None
+    return django_user_data.get_username() if django_user_data else None
 
 def person_set_login_name(whoever, new_login_name):
     """Set the person's login name.
@@ -267,6 +267,7 @@ def add_person(name_record, main_record):
     # todo: convert dates to datetime.datetime
     print("Given", main_record, "to add to operational database")
     print("Given", name_record, "to add to profiles database")
+    # todo: check they are not already in there
     # default_membership_number = get_highest_membership_number()+1
     default_membership_number = 0
     membership_number = main_record.get('membership_number',
@@ -279,6 +280,11 @@ def add_person(name_record, main_record):
     name_record['link_id'] = link_id # todo: make it index by this
     main_record['membership_number'] = membership_number
     name_record['membership_number'] = membership_number
+    if (database[collection_names['profiles']].find({'given_name': name_record.get('given_name', "NoSuchGivenName"),
+                                                     'surname': name_record.get('surname', "NoSuchSurname")})
+        or database[collection_names['profiles']].find({'name': name_record.get('name', "NoSuchName")})):
+        print("Skipping", name_record, "as there is already someone with that name")
+        return None
     print("Adding", main_record, "to operational database", collection_names['people'])
     database[collection_names['people']].insert(main_record)
     print("Adding", name_record, "to profiles database", collection_names['profiles'])
@@ -383,10 +389,15 @@ def add_notification(who_id, sent_date, text):
 
 # Announcements (to all)
 
-def get_announcements(since_date):
-    # print("get_announcements query will be", {'when': {'$gt': since_date}})
+def get_announcements(since, nlimit=0):
+    if since:
+        query = {'when': {'$gt': since}}
+    else:
+        query = {}
     return [message
-            for message in database[collection_names['announcements']].find({'when': {'$gt': since_date}})]
+            for message in (database[collection_names['announcements']].find(query)
+                            .sort([('when', -1)])
+                            .limit(nlimit))]
 
 def add_announcement(sent_date, from_id, text):
     database[collection_names['announcements']].insert({'when': sent_date,
@@ -521,6 +532,23 @@ def find_interested_people(interests):
                  # '$elemMatch':
                  '$in':
                  interests}}) ]
+
+# consistency checks etc
+
+def check_for_duplicates(collection_name, other_collection_name):
+    by_name = {}
+    other_collection = database[collection_names[other_collection_name]]
+    rows = [r for r in database[collection_names[collection_name]].find({})]
+    for row in rows:
+        name = row.get('name', row.get('given_name', "") + " " + row.get('surname', ""))
+        cluster = by_name.get(name, [])
+        cluster.append(row)
+        by_name[name] = cluster
+    return {k: [(ve,
+                 other_collection.find_one({'link_id': ve.get('link_id', "")}))
+                         for ve in v] for k, v
+            in by_name.items()
+            if v and len(v) > 1}
 
 # misc
 

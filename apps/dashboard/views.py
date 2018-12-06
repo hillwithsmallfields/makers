@@ -34,16 +34,21 @@ def logged_in_only(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    django_request.session['developer_mode'] = True
-
     page_data = model.pages.HtmlPage("Public information",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
-    page_data.add_content("Public information",
-                          [T.p["Please ",
+    page_data.add_content("Public page",
+                          [T.p["You are not currently logged in, which is why you are seeing the public page."],
+                           T.h2["Existing users"],
+                           T.p["Please ",
                                T.a(href="../users/login")["login"],
                                " for your own dashboard page."],
-                           T.p["Eventually this will be for publicity and machine status."],
+                           T.h2["New users"],
+                           T.p["If an account has been created for you, and you haven't yet used it, please use the ",
+                               T.a(href="../users/password_reset")["password reset page"],
+                               " to set your initial password, then use the login page, ",
+                               T.strong["noting that you must enter the user-id that you are given on the password reset result page, and not your email"],
+                               "."],
                            pages.public_page.public_page(django_request)])
 
     return HttpResponse(str(page_data.to_string()))

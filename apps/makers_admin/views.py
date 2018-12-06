@@ -2,6 +2,7 @@ from datetime import datetime
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from untemplate.throw_out_your_templates_p3 import htmltags as T
+from users.models import CustomUser
 import django.urls
 import model.configuration
 import model.database           # for announcements and notifications; I should probably wrap them so apps don't need to see model.database
@@ -13,6 +14,8 @@ import model.pages
 import model.person
 import pages.event_page
 import pages.person_page
+import re
+import uuid
 
 # from https://stackoverflow.com/questions/17873855/manager-isnt-available-user-has-been-swapped-for-pet-person,
 # replacing: from django.contrib.auth.models import User
@@ -208,8 +211,18 @@ def send_email(django_request):
 def make_login(given_name, surname):
     login_base = ((given_name[:3] if len(given_name) > 3 else given_name)
                   + (surname[:3] if len(surname) > 3 else surname))
-    # todo: look for the lowest number that is unused so far for this login_base
-    return login_base + "1"
+
+    highest = 0
+
+    # for existing in CustomUser.objects.filter(username__startswith=login_base):
+    for existing in CustomUser.objects.all():
+        m = re.match(login_base+'([0-9]+)$', existing.get_username())
+        if m:
+            suffix = int(m.group(1))
+            if suffix > highest:
+                highest = suffix
+
+    return login_base.lower() + str(highest+1)
 
 @ensure_csrf_cookie
 def add_user(django_request):
@@ -370,6 +383,9 @@ def update_database(django_request):
               if params.get('include_non_members', False)
               else model.person.Person.list_all_members())
 
+    without_django_account = []
+    had_unusable_pw = []
+
     for whoever in people:
         # This code is likely to change, according to recent changes
         # in other parts of the code.  Probably leave old ones in here
@@ -379,18 +395,57 @@ def update_database(django_request):
         # field from the separate given name and surname, which wasn't
         # really working for people with more than two parts to their
         # name.
-        name, _ = model.database.person_name(whoever)
-        model.database.person_set_name(whoever, name)
+        # name, _ = model.database.person_name(whoever)
+        # model.database.person_set_name(whoever, name)
+
+        # Get rid of unusable passwords
+        django_user = model.database.person_get_django_user_data(whoever)
+        if not django_user:
+            name = whoever.name()
+            without_django_account.append(name)
+            name_parts = name.split(' ', 1)
+            given_name = name_parts[0]
+            surname = name_parts[1]
+            model.django_calls.create_django_user(make_login(given_name, surname),
+                                                  whoever.get_email(),
+                                                  given_name, surname,
+                                                  whoever.link_id,
+                                                  django_request)
+        else:
+            if not django_user.has_usable_password():
+                had_unusable_pw.append(whoever.name())
+                django_user.set_password(uuid.uuid4())
+                django_user.save()
+            # django_user.is_staff = False
+            # django_user.save()
+            if True and whoever.is_administrator():
+                django_user.is_staff = True
+                django_user.save()
+
+    django_orphans = []
+
+    for existing in CustomUser.objects.filter():
+        link = existing.link_id
+        whoever = model.person.Person.find(link)
+        if whoever is None:
+            django_orphans.append((link,
+                                   existing.login,
+                                   existing.first_name + " " + existing.last_name))
 
     page_data = model.pages.HtmlPage("Database update",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
-    page_data.add_content("Unimplemented",
-                          [T.p["This feature has not been written yet."]])
+    page_data.add_content("Update results",
+                          [T.h3["Missing django account"],
+                           T.ul[[T.li[w] for w in sorted(without_django_account)]],
+                           T.h3["Password was unusable"],
+                           T.ul[[T.li[u] for u in sorted(had_unusable_pw)]],
+                           T.h3["Django orphans"],
+                           T.table[[T.tr[T.td[o[0]], T.td[o[1]], T.td[o[2]]] for o in django_orphans]]])
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def raw_database(django_request):
+def raw_collection(django_request):
 
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
@@ -398,13 +453,56 @@ def raw_database(django_request):
     params = django_request.GET
 
     collection = params.get('collection', 'profiles')
+    output_format = params.get('format', 'csv')
 
-    page_data = model.pages.CsvPage("raw_user_data",
-                                    columns=model.database.collection_headers[collection])
+    if output_format == 'csv':
+        page_data = model.pages.CsvPage("raw_user_data",
+                                        columns=model.database.collection_headers[collection])
 
-    for row in database.get_collection_rows(collection):
-        page_data.add_row(row)
+        for row in model.database.get_collection_rows(collection):
+            page_data.add_row(row)
 
+        response = HttpResponse(str(page_data.to_string()), content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="' + collection + '.csv"'
+        return response
+    else:
+        page_data = model.pages.JsonPage(
+            "raw_user_data",
+            pprint = params.get('pprint', False),
+            data = [ row for row in model.database.get_collection_rows(collection) ])
+
+    response = HttpResponse(str(page_data.to_string()), content_type='text/' + output_format)
+    response['Content-Disposition'] = 'attachment; filename="' + collection + '.' + output_format + '"'
+    return response
+
+@ensure_csrf_cookie
+def data_check(django_request):
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    viewer = model.person.Person.find(django_request.user.link_id)
+
+    params = django_request.GET
+
+    duplicate_profiles = model.database.check_for_duplicates('profiles', 'people')
+
+    page_data = model.pages.HtmlPage("Data check",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content(str(len(duplicate_profiles)) + " people with multiple profiles (by name)",
+                          model.pages.with_help(
+                              viewer,
+                              [T.dl
+                               [[[T.dt[k, " (", str(len(duplicate_profiles[k])), " profiles)"],
+                                  T.dd[T.ul[[T.li[T.div(class_='identifying')["Profile: ",
+                                                                              T.pre[p[0]]],
+                                                  T.br,
+                                                  T.div(class_='operational')["Operational: ",
+                                                                              T.pre[p[1] or "None"]]]
+                                             for p in duplicate_profiles[k]]]]]
+                                 for k in sorted(duplicate_profiles.keys())]]],
+                              "duplicate_profiles_list"))
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
@@ -420,8 +518,8 @@ def gdpr_delete_user(django_request):
     page_data = model.pages.HtmlPage("",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
-    page_data.add_content("",
-                          [""])
+    page_data.add_content("User deletion",
+                          [T.p["Not implemented"]])
     return HttpResponse(str(page_data.to_string()))
 
 import django.core.mail
@@ -454,25 +552,25 @@ def update_django(django_request):
     model.database.database_init(config_data)
 
     params = django_request.POST
-    include_non_members = params['include_non_members']
+    include_non_members = params.get('include_non_members', False)
 
-    people = person.Person.list_all_people() if include_non_members else person.Person.list_all_members()
+    people = model.person.Person.list_all_people() if include_non_members else model.person.Person.list_all_members()
 
-    countdown = 12
+    countdown = 48
 
     created = []
     for whoever in people:
-        if whoever.login_name is None:
+        if model.database.person_get_login_name(whoever) is None:
             name = whoever.name()
             name_parts = name.split(' ')
             login = make_login(name_parts[0], name_parts[1])
-            model.django_calls.create_django_user(login,
-                                                  whoever.get_email(),
-                                                  name_parts[0], name_parts[1],
-                                                  whoever.link_id)
-            whoever.login_name = login
+            creation_result = model.django_calls.create_django_user(login,
+                                                                    whoever.get_email(),
+                                                                    name_parts[0], name_parts[1],
+                                                                    whoever.link_id)
+            set_name_result = model.database.person_set_login_name(whoever, login)
             whoever.save()
-            created.append(who)
+            created.append((login, creation_result, set_name_result, whoever))
             countdown -= 1
             if countdown == 0:
                 break
@@ -482,10 +580,16 @@ def update_django(django_request):
                                      django_request=django_request)
     page_data.add_content("Django user creation",
                           T.table[T.thead[T.tr[T.th["Name"],
-                                               T.th["login name"],
+                                               T.th["generated login name"],
+                                               T.th["created"],
+                                               T.th["set name result"],
+                                               T.th["retrieved login name"],
                                                T.th["email"]]],
                                   T.tbody[[[T.tr[T.th[newbie.name()],
-                                                 T.td[newbie.login_name],
+                                                 T.td[gen_name],
+                                                 T.td[str(cr)],
+                                                 T.td[str(snr)],
+                                                 T.td[model.database.person_get_login_name(newbie)],
                                                  T.td[newbie.get_email()]]]
-                                           for newbie in created]]])
+                                           for gen_name, cr, snr, newbie in created]]])
     return HttpResponse(str(page_data.to_string()))

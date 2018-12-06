@@ -46,6 +46,11 @@ form {
   background:     #fff8f0;
 }
 
+strong {
+    font-weight: bold;
+    color: red;
+}
+
 th.daylabel {
     text-align: right;
 }
@@ -97,6 +102,14 @@ td.developer_data {
     color:      green;
 }
 
+.identifying {
+    color: red;
+}
+
+.operational {
+    color: green;
+}
+
 /* User list columns, including lists of equipment for which a person has a given role */
 
 .mem_num {
@@ -121,6 +134,17 @@ td.developer_data {
 }
 
 .login {
+    background-color: #fff8d0;
+    padding:          0.5em;
+    font-family:      monospace;
+}
+
+.flagsh {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.flags {
     background-color: #fff8d0;
     padding:          0.5em;
     font-family:      monospace;
