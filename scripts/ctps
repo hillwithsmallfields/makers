@@ -1,0 +1,5 @@
+#!/bin/bash
+# Copy To Production Server
+export SERVER=makers.makespace.org
+export REMOTE_USER=ubuntu
+exec $(dirname ${BASH_SOURCE[0]})/cts

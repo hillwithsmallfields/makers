@@ -1,8 +1,5 @@
 #!/bin/bash
 # Copy To Test Server
-SERVER=makers.makespace.org
-REMOTE_USER=ubuntu
-rsync -av --exclude .git $HOME/open-projects/makers/ $REMOTE_USER@$SERVER:open-projects/makers
-ssh $REMOTE_USER@$SERVER open-projects/makers/scripts/setperm.sh
-ssh $REMOTE_USER@$SERVER sudo -u nginx /home/nginx/bin/install
-ssh $REMOTE_USER@$SERVER sudo systemctl restart gunicorn
+export SERVER=fragaria
+export REMOTE_USER=jcgs
+exec $(dirname ${BASH_SOURCE[0]})/cts
