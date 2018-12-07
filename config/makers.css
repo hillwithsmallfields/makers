@@ -46,6 +46,11 @@ form {
   background:     #fff8f0;
 }
 
+strong {
+    font-weight: bold;
+    color: red;
+}
+
 th.daylabel {
     text-align: right;
 }

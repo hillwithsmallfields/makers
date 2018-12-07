@@ -1,11 +1,13 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import django.urls
 import model.configuration
+import model.database
 import model.equipment_type
 import model.event
 import model.machine
 import model.person
 import model.timeline
+import model.times
 import model.timeslots
 import datetime
 
@@ -278,7 +280,9 @@ def ban_form(eqtype, who_id, who_name, role, django_request):
                               django_request)
 
 def announcements_section():
-    return T.div[T.p["Placeholder for an announcements / message of the day section."]]
+    announcements = model.database.get_announcements(None, 3)
+    return T.div[T.dl[[[T.dt[model.times.timestring(a['when'])],
+                        T.dd[a['text']]] for a in announcements]]]
 
 def dropdown(name, choices, current=None):
     """Make an HTML form dropdown box."""

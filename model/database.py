@@ -389,10 +389,15 @@ def add_notification(who_id, sent_date, text):
 
 # Announcements (to all)
 
-def get_announcements(since_date):
-    # print("get_announcements query will be", {'when': {'$gt': since_date}})
+def get_announcements(since, nlimit=0):
+    if since:
+        query = {'when': {'$gt': since}}
+    else:
+        query = {}
     return [message
-            for message in database[collection_names['announcements']].find({'when': {'$gt': since_date}})]
+            for message in (database[collection_names['announcements']].find(query)
+                            .sort([('when', -1)])
+                            .limit(nlimit))]
 
 def add_announcement(sent_date, from_id, text):
     database[collection_names['announcements']].insert({'when': sent_date,
