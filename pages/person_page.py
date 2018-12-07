@@ -64,8 +64,8 @@ def site_controls_sub_section(who, viewer, django_request):
                        T.td[visibility_radio("visibility_as_attendee", who.visibility.get('attendee', True))]],
                   T.tr[T.th(class_="ralabel")["Visible generally"],
                        T.td[visibility_radio("visibility_in_general", who.visibility.get('general', False))]],
-                  T.tr[T.th(class_="ralabel")["Stylesheet"],
-                       T.td[pages.page_pieces.dropdown('stylesheet', model.configuration.get_stylesheets(), who.stylesheet)]],
+                  # T.tr[T.th(class_="ralabel")["Stylesheet"],
+                  #      T.td[pages.page_pieces.dropdown('stylesheet', model.configuration.get_stylesheets(), who.stylesheet)]],
                   T.tr[T.th(class_="ralabel")["Display help beside forms"],
                        T.td[T.input(type='checkbox', name='display_help', checked='checked')
                             if who.show_help
