@@ -528,7 +528,10 @@ class Person(object):
     def is_trained(self, equipment_type):
         """Return whether a person is trained to use a particular equipment_type."""
         trained, detrained = self.qualification(equipment_type, 'user')
-        return trained
+        # In case of inconsistency, such as bad imports, make sure
+        # that if you are an owner or trainer, you also count as a
+        # user:
+        return trained or self.is_owner(equipment_type) or self.is_trainer(equipment_type)
 
     def is_owner(self, equipment_type):
         """Return whether the person is an owner of that equipment_type."""

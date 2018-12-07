@@ -362,13 +362,17 @@ def backup_database(django_request):
 
     params = django_request.GET
 
-    # todo: fill in
+    for role in ('user', 'owner', 'trainer'):
+        eqtys = model.equipment_type.Equipment_type.list_equipment_types()
+        rows = []
+        for eqty in eqtys:
+            rows += eqty.backup_API_people(role)
 
     page_data = model.pages.HtmlPage("Database backup",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
     page_data.add_content("Unimplemented",
-                          [T.p["This feature has not been written yet."]])
+                          [T.pre[str(rows)]])
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
