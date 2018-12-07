@@ -40,23 +40,24 @@ def equipment_type_section(eqty, viewing_user, django_request):
     if not viewing_user.is_trained(eqty):
         result += [T.h3["User training"],
                    pages.event_page.event_table_section(eqty.get_training_events('user',
-                                                                                 earliest=times.event.now()),
+                                                                                 earliest=model.times.now()),
                                                         viewing_user._id, django_request)]
     else:
         if not viewing_user.is_owner(eqty):
             result += [T.h3["Owner training"],
                        pages.event_page.event_table_section(eqty.get_training_events('owner',
-                                                                                     earliest=times.event.now()),
+                                                                                     earliest=model.times.now()),
                                                             viewing_user._id, django_request)]
         if not viewing_user.is_trainer(eqty):
             result += [T.h3["Trainer training"],
                        pages.event_page.event_table_section(eqty.get_training_events('trainer',
-                                                                                     earliest=times.event.now()),
+                                                                                     earliest=model.times.now()),
                                                             viewing_user._id, django_request)]
+    roles = []
     if viewing_user.is_trainer(eqty):
         result += [T.h3["Training requests"],
                    pages.page_pieces.eqty_training_requests(eqty, django_request)]
-        roles = [("Owners", 'owner'),
+        roles += [("Owners", 'owner'),
                  ("Trainers", 'trainer')]
     if (viewing_user.is_administrator()
         or viewing_user.is_auditor()
