@@ -528,13 +528,18 @@ def debug_on(django_request):
     config_data = model.configuration.get_config()
     model.database.database_init(config_data)
 
-    django_request.session['developer_mode'] = True
+    allowed = person_from_request(django_request).is_administrator()
 
-    page_data = model.pages.HtmlPage("Debug mode enabled confirmation",
+    if allowed:
+        django_request.session['developer_mode'] = True
+
+    page_data = model.pages.HtmlPage("Debug mode enabled result",
                                      pages.page_pieces.top_navigation(django_request),
                                      django_request=django_request)
     page_data.add_content("Confirmation",
-                          [T.p["Debug enabled for this session"]])
+                          [T.p["Debug enabled for this session."
+                               if allowed
+                               else "Debug not enabled for this session, as you are not an administrator."]])
 
     return HttpResponse(str(page_data.to_string()))
 
