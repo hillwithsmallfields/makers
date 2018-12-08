@@ -73,6 +73,7 @@ TEMPLATES = [
 ]
 
 LOGIN_URL = '/users/login/'
+LOGOUT_REDIRECT_URL = '/users/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
