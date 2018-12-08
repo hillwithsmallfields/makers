@@ -23,7 +23,6 @@ def export_role(role, csv_file):
         for eqty in eqtys:
             print("getting eqty", eqty)
             rows += eqty.backup_API_people(role)
-        print("rows is now", rows)
         writer = csv.DictWriter(role_stream,
                                 ['Equipment', 'Name', 'Date', 'Trainer'],
                                 extrasaction='ignore')
@@ -54,7 +53,7 @@ def export0(args):
         print("collection names are", collection_names)
     database.database_init(config)
     if args.users:
-        export_role('users', args.users)
+        export_role('user', args.users)
 
 if __name__ == "__main__":
     export_main()

@@ -12,9 +12,12 @@ import model.event
 import model.makers_server
 import model.pages
 import model.person
+import os
 import pages.event_page
 import pages.person_page
 import re
+import subprocess
+import tempfile
 import uuid
 
 # from https://stackoverflow.com/questions/17873855/manager-isnt-available-user-has-been-swapped-for-pet-person,
@@ -362,18 +365,34 @@ def backup_database(django_request):
 
     params = django_request.GET
 
-    for role in ('user', 'owner', 'trainer'):
-        eqtys = model.equipment_type.Equipment_type.list_equipment_types()
-        rows = []
-        for eqty in eqtys:
-            rows += eqty.backup_API_people(role)
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        backupname = "backup-"+model.times.timestring(model.times.now())
+        innerdirname = os.path.join(tmpdirname, backupname)
+        tarballname = backupname+".tgz"
+        tarballfilename = os.path.join(tmpdirname, tarballname)
+        for role in ['user', 'owner', 'trainer']:
+            eqtys = model.equipment_type.Equipment_type.list_equipment_types()
+            rows = []
+            for eqty in eqtys:
+                rows += eqty.backup_API_people(role)
+            with open(os.path.join(innerdirname, role+"s.csv"), 'w') as csv_stream:
+                writer = csv.DictWriter(role_stream,
+                                        ['Equipment', 'Name', 'Date', 'Trainer'],
+                                        extrasaction='ignore')
+                writer.writeheader()
+                for row in rows:
+                    writer.writerow(row)
 
-    page_data = model.pages.HtmlPage("Database backup",
-                                     pages.page_pieces.top_navigation(django_request),
-                                     django_request=django_request)
-    page_data.add_content("Unimplemented",
-                          [T.pre[str(rows)]])
-    return HttpResponse(str(page_data.to_string()))
+        subprocess.run(["tar",
+                        "cfz", tarballfilename,
+                        "--directory", tmpdirname,
+                        backupname])
+
+        with open(tarballfilename) as tarballfile:
+            page_data = model.pages.tarballpage(tarballname,
+                                            tarballfile.read(),
+                                            django_request=django_request)
+            return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
 def update_database(django_request):

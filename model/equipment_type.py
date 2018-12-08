@@ -7,12 +7,12 @@ import model.person
 def id_to_name(as_id):
     # return model.person.Person.find(as_id).name()
     try:
-        return person.Person.find(as_id).name()
+        return model.person.Person.find(as_id).name()
     except:
         try:
-            return person.Person.find(as_id)
+            return str(model.person.Person.find(as_id))
         except:
-            return "id" + str(as_id)
+            return "id_" + str(type(as_id)) + "_" + str(as_id)
 
 class Equipment_type(object):
 
