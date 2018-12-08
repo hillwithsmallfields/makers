@@ -3,7 +3,10 @@ import logging
 import model.access_permissions
 import model.configuration
 import model.database
-import model.django_calls
+try:
+    import model.django_calls
+except:
+    print("Could not django calls --- presumably running outside django, maybe in the exporter")
 import model.equipment_type
 import model.event
 import model.machine
