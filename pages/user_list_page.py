@@ -98,8 +98,13 @@ def no_login_name(user, dummy):
     login_name = model.database.person_get_login_name(user)
     return login_name is None or login_name == ""
 
+def admin_note_match(user, pattern):
+    note = user.get_admin_note()
+    return note and re.search(pattern, note)
+
 user_list_filters = {
-    'name': name_match,
+    'name_matching': name_match,
+    'admin_note_matching': admin_note_match,
     'date_joined_before': joined_before,
     'date_joined_after': joined_after,
     'no_email': no_email,
