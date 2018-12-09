@@ -7,6 +7,7 @@ import sys
 sys.path.append('model')
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
+import model.backup_to_csv
 from model.event import Event
 from model.person import Person
 from model.equipment_type import Equipment_type
@@ -33,6 +34,7 @@ def export_role(role, csv_file):
 def export_main(verbose=True):
     # todo: convert all dates to datetime.datetime as mentioned in http://api.mongodb.com/python/current/examples/datetimes.html
     parser = argparse.ArgumentParser()
+    parser.add_argument("-a", "--all", default=None)
     # parser.add_argument("-y", "--equipment-types", default=None)
     # parser.add_argument("-e", "--equipment", default=None)
     # parser.add_argument("-m", "--members", default=None)
@@ -52,6 +54,8 @@ def export0(args):
     if verbose:
         print("collection names are", collection_names)
     database.database_init(config)
+    if args.all:
+        model.backup_to_csv.make_database_backup(args.all)
     if args.users:
         export_role('user', args.users)
 
