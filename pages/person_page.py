@@ -792,15 +792,6 @@ def admin_section(who, viewer, django_request):
                              viewer,
                              data_check_form(django_request),
                              "check_data")),
-        admin_subsection("Backup_database",
-                         model.pages.with_help(
-                             viewer,
-                             [T.form(action=django.urls.reverse('makers_admin:backup_database'),
-                                     method='GET')[
-                                         T.input(type="hidden", name="csrfmiddlewaretoken",
-                                                 value=django.middleware.csrf.get_token(django_request)),
-                                         T.input(type='submit', value="Backup database")]],
-                             "backup_database")),
         admin_subsection("Add user",
                          model.pages.with_help(
                              viewer,

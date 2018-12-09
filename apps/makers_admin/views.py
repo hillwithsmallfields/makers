@@ -357,22 +357,6 @@ def save_template_edits(django_request):
     return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
-def backup_database(django_request):
-
-    config_data = model.configuration.get_config()
-    model.database.database_init(config_data)
-
-    params = django_request.GET
-
-    tarballfilename = model.backup_to_csv.make_database_backup()
-    with open(tarballfilename) as tarballfile:
-        page_data = model.pages.tarballpage(tarballname,
-                                            tarballfile.read(),
-                                            django_request=django_request)
-        os.remove(tarballfilename)
-        return HttpResponse(str(page_data.to_string()))
-
-@ensure_csrf_cookie
 def update_database(django_request):
 
     config_data = model.configuration.get_config()

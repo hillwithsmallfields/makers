@@ -39,8 +39,8 @@ def export_main(verbose=True):
     # parser.add_argument("-e", "--equipment", default=None)
     # parser.add_argument("-m", "--members", default=None)
     parser.add_argument("-u", "--users", default=None)
-    # parser.add_argument("-o", "--owners", default=None)
-    # parser.add_argument("-t", "--trainers", default=None)
+    parser.add_argument("-o", "--owners", default=None)
+    parser.add_argument("-t", "--trainers", default=None)
     # parser.add_argument("-b", "--templates", default=None)
     parser.add_argument("-v", "--verbose", action='store_true')
     args = parser.parse_args()
@@ -55,9 +55,14 @@ def export0(args):
         print("collection names are", collection_names)
     database.database_init(config)
     if args.all:
-        model.backup_to_csv.make_database_backup(args.all)
-    if args.users:
-        export_role('user', args.users)
+        model.backup_to_csv.make_database_backup(tarballfilename=args.all)
+    else:
+        if args.users:
+            export_role('user', args.users)
+        if args.owners:
+            export_role('owner', args.owners)
+        if args.trainers:
+            export_role('trainer', args.trainers)
 
 if __name__ == "__main__":
     export_main()

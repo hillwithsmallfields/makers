@@ -68,6 +68,10 @@ def timestring(when):
 def now():
     return datetime.utcnow().replace(tzinfo=timezone.utc)
 
+def format_now(fmt):
+    """Apply datetime.strftime to the current time."""
+    return now().strftime(fmt)
+
 def as_utc(when):
     return (when
             if when.tzinfo

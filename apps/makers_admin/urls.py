@@ -14,7 +14,6 @@ urlpatterns = [
     path('notify', views.notify, name='notify'),
     path('send_email', views.send_email, name='send_email'),
     path('add_user', views.add_user, name='add_user'),
-    path('backup_database', views.backup_database, name='backup_database'),
     path('update_database', views.update_database, name='update_database'),
     path('raw_collection', views.raw_collection, name='raw_collection'),
     path('data_check', views.data_check, name='data_check'),
