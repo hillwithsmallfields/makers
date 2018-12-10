@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import bson
 import csv
@@ -160,7 +161,7 @@ class PageSection(object):
         self.content.append([T.h2[name], content])
 
     def to_string(self):
-        return page_string(self.name, self.content)
+        return page_section_string(self.name, self.content)
 
 class SectionalPage(object):
 
@@ -217,7 +218,7 @@ class SectionalPage(object):
                                            details=self.name)
         index = [T.div(class_="tabset")[
             [T.button(class_="tablinks",
-                      onclick=(("openLazyTab(event, '" + section_id + "', '" + self.sections[section_id] + "')")
+                      onclick=(("openLazyTab(event, '#" + section_id + "', '" + self.sections[section_id] + "')")
                                if isinstance(self.sections[section_id], str)
                                else ("openTab(event, '" + section_id + "')")),
                       id=section_id+"_button")[self.presentation_names[section_id]]
@@ -232,20 +233,84 @@ class SectionalPage(object):
                            initial_tab=(self.initial_tab+"_button") if self.initial_tab else None,
                            needs_jquery=self.lazy)
 
+class SectionalLevel(object):
+
+    """A tree level for a hierarchical multi-part page."""
+
+    # an experimental fork of SectionalPage, for separating out the sectional part from the page part
+
+    def __init__(self, name, class_, top_content, viewer=None, django_request=None):
+        self.name = name
+        self.class_ = class_
+        self.top_content = top_content
+        self.sections = {}
+        self.initial_child = None
+        self.initial_child_priority = -1
+        self.presentation_names = {}
+        self.index = []
+        self.lazy = False
+        self.viewer = viewer
+        self.django_request = django_request
+
+    def add_section(self, name, content, priority=1):
+        # http://api.jquery.com/load/ gives an example:
+        # $( "#feeds" ).load( "feeds.html" );
+        # I could use something like that to load big pages such as the dashboard piecemeal
+        # Each tab body could start off with a load call in it, which would be replaced by the loaded content and so not get the loading repeated
+        section_id = name.replace(' ', '_')
+        self.sections[section_id] = [T.h2[name], content]
+        self.presentation_names[section_id] = name
+        if priority > self.initial_child_priority:
+            self.initial_child_priority = priority
+            self.initial_child = section_id
+        self.index.append(section_id)
+
+    def add_lazy_section(self, name, content_loader_url, priority=1):
+        """Add a lazily-loaded section to the page data.
+        This section will be loaded when its tab is first looked at."""
+        # http://api.jquery.com/load/ gives an example:
+        # $( "#feeds" ).load( "feeds.html" );
+        # I could use something like that to load big pages such as the dashboard piecemeal
+        # Each tab body could start off with a load call in it, which would be replaced by the loaded content and so not get the loading repeated
+        section_id = name.replace(' ', '_')
+        self.sections[section_id] = content_loader_url
+        self.presentation_names[section_id] = name
+        if priority > self.initial_child_priority:
+            self.initial_child_priority = priority
+            self.initial_child = section_id
+        self.index.append(section_id)
+        self.lazy = True
+
+    def to_structure(self):
+        return T.div(class_=self.class_,
+                     id=self.name)[
+                         T.div(class_=self.class_+"_toc",
+                               id=self.name+"_toc")[
+                                   # todo: I want this to be something that can be a list of # links, or a tab set, or nothing
+                                   "section table to go here"
+                                   ],
+                         [[[self.sections[section_id]] for section_id in self.index]]
+                         ]
+
+def page_section_string(page_title, content, user=None, initial_tab=None, needs_jquery = False):
+    return RawHtmlPage(page_title, content).to_string()
+
 def page_string(page_title, content, user=None, initial_tab=None, needs_jquery = False):
     """Make up a complete page as a string."""
+    print("page_string", str((page_title, content, user, initial_tab, needs_jquery)))
     conf = configuration.get_config()
     page_conf = conf['page']
     org_conf = conf['organization']
     preamble = page_conf.get('preamble', '')
     script_file = page_conf['script_file']
     script_body = ""
+    script_text = ""
+    if needs_jquery:
+        script_text += """<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>\n"""
     if os.path.exists(script_file):
         with open(script_file) as mfile:
             script_body = mfile.read()
-    script_text = """<script type="text/javascript">""" + script_body + """</script>\n"""
-    if needs_jquery:
-        script_text += """<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>\n"""
+    script_text += """<script type="text/javascript">""" + script_body + """</script>\n"""
     motd = ""
     motd_file = page_conf['motd_file']
     if os.path.exists(motd_file):

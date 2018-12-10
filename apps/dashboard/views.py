@@ -138,12 +138,7 @@ def one_section(django_request, data_function, title, who=""):
     pages.person_page.person_page_setup()
 
     if django_request.user.is_anonymous:
-        return HttpResponse("""<html><head><title>This will be the public page</title></head>
-        <body><h1>This will be the public page</h1>
-
-        <p>It should display general status, and <a
-        href="../users/login">login</a> and <a
-        href="../users/signup">signup</a> boxes.</p> </body></html>""")
+        return HttpResponse("""<p>You have tried to fetch a page section while not logged in.  This probably means something has gone wrong.</p>""")
 
     viewing_user = model.person.Person.find(django_request.user.link_id)
 
