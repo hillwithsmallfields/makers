@@ -365,3 +365,20 @@ span.admin_view {
 span.admin_view::after {
     content: " (administrative view of another user)";
 }
+
+/* logs */
+
+.logdate {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.logmachine {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.logdetails {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}

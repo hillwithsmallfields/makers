@@ -579,6 +579,16 @@ def events_available_section(who, viewer, django_request):
             available_events, # todo: filter this to only those for which the user has the prerequisites
             who._id, django_request, True, True)]]
 
+def usage_log_section(who):
+    log_data = model.database.get_user_log(who._id)
+    return [T.div(class_='userlog')[
+        T.table[[T.tr[T.th(class_='logdate')["Date"],
+                      T.td(class_='logmachine')["Machine"],
+                      T.td(class_='logdetails')["Details"]]],
+                [T.tr[T.th(class_='logdate')[model.times.timestring(record['start'])],
+                      T.td(class_='logmachine')[record['machine']],
+                      T.td(class_='logdetails')[record.get('details', "")]] for record in log_data]]]]
+
 def create_event_form(viewer, django_request):
     return T.form(action="/makers_admin/create_event",
                   method='GET')[T.table[T.tr[T.th(class_='ralabel')["Event type "],
@@ -895,6 +905,10 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
     available_events = events_available_section(who, viewer, django_request)
     if available_events:
         page_data.add_section("Events I can sign up for", available_events)
+
+    machine_use_log_section = usage_log_section(who)
+    if machine_use_log_section:
+        page_data.add_section("My machine usage", machine_use_log_section)
 
     if viewer.is_administrator() or viewer.is_auditor():
         page_data.add_section("Admin actions",
