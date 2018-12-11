@@ -41,9 +41,9 @@ function openLazyTab(evt, tabName, tabContentsUrl) {
     }
 
     // Load and show the current tab, and add an "active" class to the button that opened the tab
-    $(tabName).load(tabContentsUrl);
+    $('#'+tabName).load(tabContentsUrl);
     // document.getElementById(tabName).style.display = "block";
-    $(tabName).style.display = "block";
+    document.getElementById(tabName).style.display = "block";
     evt.currentTarget.className += " active";
 } 
 

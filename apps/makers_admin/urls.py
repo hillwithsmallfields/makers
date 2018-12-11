@@ -19,5 +19,7 @@ urlpatterns = [
     path('data_check', views.data_check, name='data_check'),
     path('GDPR_delete_user', views.gdpr_delete_user, name='gdpr_delete_user'),
     path('test_message', views.test_message, name='test_message'),
-    path('update_django', views.update_django, name='update_django')
+    path('update_django', views.update_django, name='update_django'),
+    path('test_0', views.test_0, name='test_0'),
+    path('test_d', views.test_d, name='test_d')
 ]

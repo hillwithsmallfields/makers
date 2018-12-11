@@ -578,3 +578,45 @@ def update_django(django_request):
                                                  T.td[newbie.get_email()]]]
                                            for gen_name, cr, snr, newbie in created]]])
     return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
+def test_0(django_request):
+
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    page_data = model.pages.SectionalPage("Test page",
+                                          pages.page_pieces.top_navigation(django_request),
+                                          django_request=django_request)
+
+    page_data.add_section("Part A", T.div[T.p["This is the text of part A."]])
+    page_data.add_section("Part B", T.div[T.p["This is the text of part B."]])
+    page_data.add_section("Part C", T.div[T.p["This is the text of part C."]])
+    page_data.add_lazy_section("Part D", django.urls.reverse('makers_admin:test_d'))
+
+    return HttpResponse(str(page_data.to_string()))
+
+@ensure_csrf_cookie
+def one_section(django_request, content, title):
+    """
+    View function for a single part of the user dashboard page.
+    Intended for loading tabs on demand, Ajax-style.
+    """
+
+    config_data = model.configuration.get_config()
+
+    model.database.database_init(config_data)
+
+    pages.person_page.person_page_setup()
+
+    page_data = model.pages.PageSection(title,
+                                        content,
+                                        django_request=django_request)
+
+    return HttpResponse(str(page_data.to_string()))
+
+def test_d(django_request, who=""):
+    print("Getting test d")
+    return one_section(django_request,
+                       T.div[T.p["This is the text of part D."]],
+                       "Part D")

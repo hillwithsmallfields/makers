@@ -218,7 +218,7 @@ class SectionalPage(object):
                                            details=self.name)
         index = [T.div(class_="tabset")[
             [T.button(class_="tablinks",
-                      onclick=(("openLazyTab(event, '#" + section_id + "', '" + self.sections[section_id] + "')")
+                      onclick=(("openLazyTab(event, '" + section_id + "', '" + self.sections[section_id] + "')")
                                if isinstance(self.sections[section_id], str)
                                else ("openTab(event, '" + section_id + "')")),
                       id=section_id+"_button")[self.presentation_names[section_id]]
