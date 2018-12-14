@@ -253,12 +253,14 @@ td.developer_data {
 /*     width:  20em; */
 /* } */
 
-.tab button:hover {
-    background-color: #ffb510;
+button:hover {
+    background-color: #cfb508;
 }
 
-.tab button.active {
+button:active {                 /* this doesn't seem to be working but maybe I misunderstand it */
     background-color: #ffa500;
+    border:           2px solid #008000;
+    font-weight:      bold;
 }
 
 .tabs-panel {

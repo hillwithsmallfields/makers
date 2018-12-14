@@ -131,8 +131,6 @@ def one_section(django_request, data_function, title, who=""):
     Intended for loading tabs on demand, Ajax-style.
     """
 
-    print("Producing", title, "section")
-
     config_data = model.configuration.get_config()
 
     model.database.database_init(config_data)
@@ -186,7 +184,6 @@ def responsibilities_only(django_request, who=""):
                        who)
 
 def trained_on_only(django_request, who=""):
-    print("Getting equipment I can use") # to see when it's done when loading lazily; todo: remove this print
     return one_section(django_request,
                        pages.person_page.equipment_trained_on_section,
                        "Equipment trained on",
