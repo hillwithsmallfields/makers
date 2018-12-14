@@ -40,26 +40,29 @@ def user_list_section(django_request,
         people = [someone for someone in people if filter_fn(someone, filter_opaque)]
     people_dict = {whoever.name(): whoever for whoever in people}
     if viewing_user.is_auditor() or viewing_user.is_admin():
-        return T.table[[T.tr[T.th(class_='mem_num')["Mem #"],
-                             T.th(class_='username')["Name"],
-                             T.th(class_='loginh')["Login"],
-                             T.th(class_='flagsh')["Flags"],
-                             T.th(class_='email')["Email"],
-                             T.th(class_='user')["User"],
-                             T.th(class_='owner')["Owner"],
-                             T.th(class_='trainer')["Trainer"],
-                             T.th(class_='note')["Notes"]]],
-                       [T.tr[T.td(class_='mem_num')[str(who.membership_number)],
-                             T.th(class_='username')[T.a(href=django.urls.reverse('dashboard:user_dashboard', args=([who.link_id])))[whoname]],
-                             T.td(class_='login')[who.get_login_name() or ""],
-                             T.td(class_='flags')[flagstring(who)],
-                             T.td(class_='email')[T.a(href="mailto:"+who.get_email() or "")[who.get_email() or ""]],
-                             T.td(class_='user')[equipment_type_role_name_list(who, 'user')],
-                             T.td(class_='owner')[equipment_type_role_name_list(who, 'owner')],
-                             T.td(class_='trainer')[equipment_type_role_name_list(who, 'trainer')],
-                             T.td(class_='note')[T.form()[who.get_admin_note() or ""]]]
-                        for (whoname, who) in [(key, people_dict[key]) for key in sorted(people_dict.keys())]
-                    ]]
+        return T.table(class_='userlist')[
+            [T.tr(class_='row_header')[
+                T.th(class_='humanid')["Mem #"],
+                T.th(class_='humanid emph')["Name"],
+                T.th(class_='humanid login')["Login"],
+                T.th(class_='data')["Flags"],
+                T.th(class_='humanid email emph')["Email"],
+                T.th(class_='eqtys')["User"],
+                T.th(class_='eqtys emph')["Owner"],
+                T.th(class_='eqtys emph')["Trainer"],
+                T.th(class_='note')["Notes"]]],
+            [T.tr(class_='row_data')[
+                T.td(class_='humanid')[str(who.membership_number)],
+                T.th(class_='humanid emph')[T.a(href=django.urls.reverse('dashboard:user_dashboard', args=([who.link_id])))[whoname]],
+                T.td(class_='humanid login')[who.get_login_name() or ""],
+                T.td(class_='data')[flagstring(who)],
+                T.td(class_='humanid email emph')[T.a(href="mailto:"+who.get_email() or "")[who.get_email() or ""]],
+                T.td(class_='eqtys')[equipment_type_role_name_list(who, 'user')],
+                T.td(class_='eqtys emph')[equipment_type_role_name_list(who, 'owner')],
+                T.td(class_='eqtys emph')[equipment_type_role_name_list(who, 'trainer')],
+                T.td(class_='note')[T.form()[who.get_admin_note() or ""]]]
+             for (whoname, who) in [(key, people_dict[key]) for key in sorted(people_dict.keys())]
+            ]]
     else:
         return T.p["There are "+str(len(people))
                    +(" people" if include_non_members else " members")

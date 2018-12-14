@@ -14,28 +14,7 @@ BODY {
   /* line-height:   125% */
 }
 
-H1 {
-  padding:        6px;
-  background:     #ffa500;
-  color:          #004000;
-  border:         2px solid #008000;
-}
-
-H2 {
-  padding:        6px;
-  background:     #ffa500;
-  color:          #004000;
-  border:         2px solid #008000;
-}
-
-H3 {
-  padding:        6px;
-  background:     #ffa500;
-  color:          #004000;
-  border:         2px solid #008000;
-}
-
-H4 {
+H1, H2, H3, H4 {
   padding:        6px;
   background:     #ffa500;
   color:          #004000;
@@ -49,6 +28,18 @@ form {
 strong {
     font-weight: bold;
     color: red;
+}
+
+.top_nav {
+    align: right;
+}
+
+.top_nav ul li {
+    display: inline;
+}
+
+/* For any tables of weekly timeslots */
+.weekly_slots {
 }
 
 th.daylabel {
@@ -112,89 +103,72 @@ td.developer_data {
 
 /* User list columns, including lists of equipment for which a person has a given role */
 
-.mem_num {
-    background-color: #fff8d0;
-    padding:          0.5em;
-    text-align:       right;
-}
-
-.username {
-    background-color: #fff8d0;
+.userlist th {
     padding:          0.5em;
 }
 
-.user {
-    background-color: #fff8d0;
+.userlist td {
     padding:          0.5em;
 }
 
-.loginh {
+.humanid {
     background-color: #fff8d0;
-    padding:          0.5em;
 }
 
-.login {
+.eqtys {
     background-color: #fff8d0;
-    padding:          0.5em;
-    font-family:      monospace;
-}
-
-.flagsh {
-    background-color: #fff8d0;
-    padding:          0.5em;
-}
-
-.flags {
-    background-color: #fff8d0;
-    padding:          0.5em;
-    font-family:      monospace;
 }
 
 .email {
-    background-color: #fff8d0;
-    padding:          0.5em;
+    font-family:      monospace;
 }
 
-.owner {
-    background-color: #fff8d0;
-    padding:          0.5em;
+.login {
+    font-family:      monospace;
 }
 
-.trainer {
+.data {
     background-color: #fff8d0;
-    padding:          0.5em;
+    font-family:      monospace;
 }
 
 .note {
     background-color: #fff8d0;
-    padding:          0.5em;
+    font-style:       italic;
+}
+
+.emph {
+    font-weight: bold;
 }
 
 /* lists of events */
 
-.event_title {
+.timeline_table th {
     background-color: #fff8d0;
     padding:          0.5em;
 }
 
-.event_type {
+.timeline_table td {
     background-color: #fff8d0;
     padding:          0.5em;
 }
 
-.event_start {
+.event {
     background-color: #fff8d0;
-    padding:          0.5em;
 }
 
-.event_duration {
+.timeline_table .name {
     background-color: #fff8d0;
-    padding:          0.5em;
 }
 
-.event_end {
+.datetime {
     background-color: #fff8d0;
-    padding:          0.5em;
+    font-family:      monospace;
+}
+
+.duration {
+    background-color: #fff8d0;
+    font-family:      monospace;
 }
 
 .location {
@@ -203,18 +177,6 @@ td.developer_data {
 }
 
 .hosts {
-    background-color: #fff8d0;
-    padding:          0.5em;
-}
-
-.event_equipment_type {
-    background-color: #fff8d0;
-    padding:          0.5em;
-}
-
-.event_id {
-    background-color: #fff8d0;
-    padding:          0.5em;
 }
 
 /* lists of event completion results */
@@ -261,11 +223,11 @@ td.developer_data {
     background:    #ffa500;
 }
 
-.tabbedarea {
+.tabs-content {
     flex-flow:        column wrap;
 }
 
-.tabset {
+.tabs {
     overflow:         hidden;
     border:           1px solid #ccc;
     background-color: #f1f1f1;
@@ -274,7 +236,7 @@ td.developer_data {
     align-items:      stretch;
 }
 
-.tabset button {
+.tabs-title {
     background-color: #ffb510;
     color:            #004000;
     float:            left;
@@ -299,7 +261,7 @@ td.developer_data {
     background-color: #ffa500;
 }
 
-.tabcontent {
+.tabs-panel {
     display: none;
     padding: 6px 12px;
     border: 1px solid #ccc;

@@ -194,19 +194,18 @@ def event_table_section(tl_or_events, who_id, django_request,
                           T.th["Equipment"] if show_equiptype else "",
                           T.th["Sign up"] if with_signup else "",
                           T.th["Record results"] if with_completion_link else ""]],
-             T.tbody[[[T.tr[T.th(class_="event_title")[T.a(href=event_link(ev, django_request))[ev.display_title()]],
-                            T.td(class_="event_type")[ev.event_type],
-                            T.td(class_="event_start")[model.times.timestring(ev.start)],
-                            T.td(class_="location")[ev.location],
-                            T.td(class_="hosts")[people_list(ev.hosts)],
-                            (T.td(class_="event_equipment_type")[equip_name(ev.equipment_type)]
+             T.tbody[[[T.tr[T.th(class_="event name")[T.a(href=event_link(ev, django_request))[ev.display_title()]],
+                            T.td(class_="event")[ev.event_type],
+                            T.td(class_="event datetime")[model.times.timestring(ev.start)],
+                            T.td(class_="event location")[ev.location],
+                            T.td(class_="event humanid emph hosts")[people_list(ev.hosts)],
+                            (T.td(class_="event eqtys")[equip_name(ev.equipment_type)]
                              if show_equiptype
                              else ""),
-                            (T.td[pages.page_pieces.signup_button(ev._id, who_id, "Sign up", django_request)
-                                  if with_signup and model.times.as_utc(ev.start) > now
-                                  else ""]),
-                            (T.td[T.a(href=django.urls.reverse("events:done_event", args=(ev._id,)))["Record results"]
-                                  if with_completion_link and model.times.as_utc(ev.start) < now
-                                  else ""])
-                        ]]
+                            (T.td[pages.page_pieces.signup_button(ev._id, who_id, "Sign up", django_request)]
+                             if with_signup and model.times.as_utc(ev.start) > now
+                             else ""),
+                            (T.td[T.a(href=django.urls.reverse("events:done_event", args=(ev._id,)))["Record results"]]
+                             if with_completion_link and model.times.as_utc(ev.start) < now
+                             else "")]]
                       for ev in events]]])

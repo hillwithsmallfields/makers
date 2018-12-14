@@ -23,11 +23,11 @@ def top_navigation(django_request):
     org_conf = model.configuration.get_config('organization')
     # todo: make this a bar of buttons, or a dropdown
     return [T.nav(class_='top_nav')
-            [T.ul[T.li[T.a(href=org_conf['home_page'])[org_conf['title'] + " home"]],
-                  T.li[T.a(href=org_conf['wiki'])["Wiki"]],
-                  T.li[T.a(href=org_conf['forum'])["Forum"]],
-                  T.li[T.a(href=django.urls.reverse("dashboard:own_dashboard"))["Your dashboard"]],
-                  T.li[T.a(href='/users/logout')["Logout"]]]]]     # todo: use reverse when I can find its name
+            [T.ul[T.li[T.a(href=org_conf['home_page'])["[" + org_conf['title'] + " home]"]],
+                  T.li[T.a(href=org_conf['wiki'])["[Wiki]"]],
+                  T.li[T.a(href=org_conf['forum'])["[Forum]"]],
+                  T.li[T.a(href=django.urls.reverse("dashboard:own_dashboard"))["[Your dashboard]"]],
+                  T.li[T.a(href='/users/logout')["[Logout]"]]]]]     # todo: use reverse when I can find its name
 
 # https://stackoverflow.com/questions/2345708/how-can-i-get-the-full-absolute-url-with-domain-in-django
 # request.build_absolute_url()
@@ -79,7 +79,7 @@ def schedule_event_form(who, extras, button_text, django_request):
 
 def availform(who, available, django_request):
     days, _, times = model.timeslots.get_slots_conf()
-    return (T.div(class_="availability")
+    return (T.div(class_="weekly_slots availability")
             [T.form(action=django.urls.reverse("dashboard:update_availability"),
                     method="POST")
              [T.table(class_="availability")
@@ -100,7 +100,7 @@ def availform(who, available, django_request):
 
 def avail_table(who, slot_sums):
     days, _, times = model.timeslots.get_slots_conf()
-    return [T.div(class_="avail_table")[
+    return [T.div(class_="weekly_slots avail_table")[
         [T.h4["Availability of people who have requested training"],
          T.table(class_="availability")
          [T.thead[T.tr[T.th(class_="daylabel")["Day"],

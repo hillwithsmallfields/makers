@@ -216,19 +216,19 @@ class SectionalPage(object):
             model.database.log_machine_use("makers",
                                            user._id if user else None,
                                            details=self.name)
-        index = [T.div(class_="tabset")[
-            [T.button(class_="tablinks",
+        index = [T.div(class_="tabs")[
+            [T.button(class_="tabs-title",
                       onclick=(("openLazyTab(event, '" + section_id + "', '" + self.sections[section_id] + "')")
                                if isinstance(self.sections[section_id], str)
                                else ("openTab(event, '" + section_id + "')")),
                       id=section_id+"_button")[self.presentation_names[section_id]]
                                       for section_id in self.index]],
                  T.br(clear='all')]
-        tabs = [[T.div(class_="tabcontent", id_=section_id)[self.sections[section_id]]]
+        tabs = [[T.div(class_="tabs-panel", id_=section_id)[self.sections[section_id]]]
                    for section_id in self.index]
         return page_string(self.name,
                            self.top_content + [T.div(class_="tabbedarea")[index,
-                                                                          [T.div(class_="tabcontents")[tabs]]]],
+                                                                          [T.div(class_="tabs-content")[tabs]]]],
                            user=user,
                            initial_tab=(self.initial_tab+"_button") if self.initial_tab else None,
                            needs_jquery=self.lazy)
