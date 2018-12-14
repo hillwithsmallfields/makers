@@ -518,6 +518,8 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
 
 def training_requests_section(who, viewer, django_request):
     len_training = len("_training")
+    if len(who.training_requests) == 0:
+        return [T.div(class_="requested")[T.p["You have no open training requests."]]]
     keyed_requests = {req['request_date']: req for req in who.training_requests}
     sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
     return [T.div(class_="requested")[
@@ -525,8 +527,10 @@ def training_requests_section(who, viewer, django_request):
             T.thead[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]]],
             T.tbody[
                 [T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
-                      T.td[T.a(href=django.urls.reverse("equiptypes:eqty",
-                                                        args=(model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).name,)))[model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).pretty_name()]],
+                      T.td[T.a(href=django.urls.reverse(
+                          "equiptypes:eqty",
+                          args=(model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).name,)))[
+                              model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).pretty_name()]],
                       T.td[str(req['event_type'])[:-len_training]],
                       T.td[pages.page_pieces.cancel_button(who,
                                                            req['equipment_type'],
@@ -536,33 +540,37 @@ def training_requests_section(who, viewer, django_request):
 
 def events_hosting_section(who, viewer, django_request):
     hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events()
-    if len(hosting) == 0:
-        return None
-    return [T.div(class_="hostingevents")[
-        pages.event_page.event_table_section(hosting,
-                                             who._id,
-                                             django_request,
-                                             with_completion_link=True)]]
+    return [T.div(class_="hostingevents")
+            [pages.event_page.event_table_section(
+                hosting,
+                who._id,
+                django_request,
+                with_completion_link=True)]
+            if len(hosting) > 0
+            else T.p(class_="hostingevents")["""We have no record of you being the host for any future events.
+            Please feel welcome to start hosting some!"""]]
 
 def events_attending_section(who, viewer, django_request):
     attending = model.timeline.Timeline.future_events(person_field='signed_up', person_id=who._id).events()
-    if len(attending) == 0:
-        return None
-    return [model.pages.with_help(viewer,
-                                  T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)],
-                                  "attending")]
+    return [model.pages.with_help(
+        viewer,
+        (T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)]
+         if len(attending) > 0
+         else T.p(class_="attendingingevents")["""We have no record of you having signed up for any future events."""]),
+        "attending")]
 
 def events_hosted_section(who, viewer, django_request):
     hosted = model.timeline.Timeline.past_events(person_field='hosts', person_id=who._id).events()
-    if len(hosted) == 0:
-        return None
-    return [T.div(class_="hostedevents")[pages.event_page.event_table_section(hosted, who._id, django_request)]]
+    return ([T.div(class_="hostedevents")[pages.event_page.event_table_section(hosted, who._id, django_request)]]
+        if len(hosted) > 0
+            else T.p(class_="hostedevents")["""We have no record of you having hosted any events.
+        Please feel welcome to start hosting some!"""])
 
 def events_attended_section(who, viewer, django_request):
     attended = model.timeline.Timeline.past_events(person_field='signed_up', person_id=who._id).events()
-    if len(attended) == 0:
-        return None
-    return [T.div(class_="attendedingevents")[pages.event_page.event_table_section(attended, who._id, django_request)]]
+    return ([T.div(class_="attendedingevents")[pages.event_page.event_table_section(attended, who._id, django_request)]]
+            if len(attended) > 0
+            else T.p(class_="attendedingevents")["We have no record of you having attended any events."])
 
 def events_available_section(who, viewer, django_request):
     hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events()
@@ -573,7 +581,7 @@ def events_available_section(who, viewer, django_request):
                         if (ev not in known_events
                             and who.satisfies_conditions(ev.attendee_prerequisites))]
     if len(available_events) == 0:
-        return None
+        return T.p(class_="availableevents")["""There are no future events listed.  Please create some!"""]
     return [T.div(class_="availableevents")[
         pages.event_page.event_table_section(
             available_events, # todo: filter this to only those for which the user has the prerequisites
