@@ -131,6 +131,8 @@ def one_section(django_request, data_function, title, who=""):
     Intended for loading tabs on demand, Ajax-style.
     """
 
+    print("Producing", title, "section")
+
     config_data = model.configuration.get_config()
 
     model.database.database_init(config_data)
@@ -230,6 +232,12 @@ def events_available_only(django_request, who=""):
     return one_section(django_request,
                        pages.person_page.events_available_section,
                        "Events I can sign up for",
+                       who)
+
+def usage_log_only(django_request, who=""):
+    return one_section(django_request,
+                       pages.person_page.usage_log_section,
+                       "My machine usage",
                        who)
 
 def admin_only(django_request, who=""):

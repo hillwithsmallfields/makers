@@ -580,7 +580,9 @@ def events_available_section(who, viewer, django_request):
             who._id, django_request, True, True)]]
 
 def usage_log_section(who):
+    print("getting log data")
     log_data = model.database.get_user_log(who._id)
+    print("got log data of length", len(log_data))
     return [T.div(class_='userlog')[
         T.table[[T.tr[T.th(class_='logdate')["Date"],
                       T.td(class_='logmachine')["Machine"],
@@ -848,8 +850,22 @@ def admin_section(who, viewer, django_request):
                                          T.input(type='submit', value="Update django logins")]],
                              "admin_update_logins"))]
 
+dashboard_sections = [
+    ("Equipment responsibilities", 'dashboard:responsibilities_only'),
+    ("Equipment I can use", 'dashboard:trained_on_only'),
+    ("Other equipment", 'dashboard:other_equipment_only'),
+    ("Training requests", 'dashboard:training_requests_only'),
+    ("Events I will be hosting", 'dashboard:events_hosting_only'),
+    ("Events I have signed up for", 'dashboard:events_attending_only'),
+    ("Events I have hosted", 'dashboard:events_hosted_only'),
+    ("Events I have attended", 'dashboard:events_attended_only'),
+    ("Events I can sign up for", 'dashboard:events_available_only'),
+    ("My machine usage", 'dashboard:usage_log_only')]
+
 def add_person_page_contents(page_data, who, viewer, django_request, extra_top_header=None, extra_top_body=None):
     """Add the sections of a user dashboard to a sectional page."""
+
+    use_lazy_loading = True
 
     if extra_top_body:
         page_data.add_section(extra_top_header or "Confirmation", extra_top_body)
@@ -863,59 +879,11 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
                               T.div(class_="notifications")[messages],
                               priority=9)
 
-    responsibilities = responsibilities_section(who, viewer, django_request)
-    if responsibilities:
-        page_data.add_section("Equipment responsibilities", responsibilities)
-
-    trained_on = equipment_trained_on_section(who, viewer, django_request)
-    if trained_on:
-        if False:
-            page_data.add_lazy_section("Equipment I can use", django.urls.reverse('dashboard:trained_on_only'))
-        else:
-            page_data.add_section("Equipment I can use", trained_on)
-
-    other_equipment = other_equipment_section(who, viewer, django_request)
-    if other_equipment:
-        page_data.add_section("Other equipment",
-                              other_equipment)
-
-    if len(who.training_requests) > 0:
-        page_data.add_section("Training requests", training_requests_section(who, viewer, django_request))
-
-    hosting_section = events_hosting_section(who, viewer, django_request)
-
-    if hosting_section:
-        page_data.add_section("Events I will be hosting", hosting_section)
-
-    attending_section = events_attending_section(who, viewer, django_request)
-
-    if attending_section:
-        page_data.add_section("Events I have signed up for", attending_section)
-
-    hosted_section = events_hosted_section(who, viewer, django_request)
-
-    if hosted_section:
-        page_data.add_section("Events I have hosted", hosted_section)
-
-    attended_section = events_attended_section(who, viewer, django_request)
-
-    if attended_section:
-        page_data.add_section("Events I have attended", attended_section)
-
-    available_events = events_available_section(who, viewer, django_request)
-    if available_events:
-        page_data.add_section("Events I can sign up for", available_events)
-
-    machine_use_log_section = usage_log_section(who)
-    if machine_use_log_section:
-        page_data.add_section("My machine usage", machine_use_log_section)
+    for (section_title, url_name) in dashboard_sections:
+         page_data.add_lazy_section(section_title, django.urls.reverse(url_name))
 
     if viewer.is_administrator() or viewer.is_auditor():
-        page_data.add_section("Admin actions",
-                              model.pages.with_help(
-                                  viewer,
-                                  admin_section(who, viewer, django_request),
-                                  "admin"))
+        page_data.add_lazy_section("Admin actions", django.urls.reverse('dashboard:admin_only'))
 
     # todo: reinstate when I've created a userapi section in the django setup
     # userapilink = pages.page_pieces.section_link("userapi", who.link_id, who.link_id)
