@@ -179,6 +179,20 @@ td.developer_data {
 .hosts {
 }
 
+/* lists of equipment types */
+
+.category_green {
+    background-color: green;
+}
+
+.category_amber {
+    background-color: orange;
+}
+
+.category_red {
+    background-color: red;
+}
+
 /* lists of event completion results */
 
 .unknown {

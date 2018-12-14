@@ -197,13 +197,16 @@ def general_equipment_list(who, viewer, these_types, django_request, detailed=Fa
     return T.table[T.thead[T.tr[T.th["Equipment type"],
                                 T.th["Request"],
                                 T.th["Admin action"] if viewer.is_administrator() else ""]],
-                   T.tbody[[[T.tr[T.th[T.a(href=django.urls.reverse("equiptypes:eqty",
-                                                                    args=(name,)))[keyed_types[name].pretty_name()]],
+                   T.tbody[[[T.tr[T.th(class_="category_"+keyed_types[name].training_category)[
+                       T.a(href=django.urls.reverse("equiptypes:eqty",
+                                                    args=(name,)))[keyed_types[name].pretty_name()]],
                                   T.td[machinelist(keyed_types[name],
                                                    who, django_request, False) if detailed else "",
-                                       toggle_request(who, keyed_types[name]._id, 'user',
+                                       (toggle_request(who, keyed_types[name]._id, 'user',
                                                       who.has_requested_training(keyed_types[name]._id, 'user'),
-                                                      django_request)],
+                                                       django_request)
+                                        if keyed_types[name].training_category != "green"
+                                        else "Training not required")],
                                   T.td[permit_form(keyed_types[name],
                                                    who._id, who.name(),
                                                    'user',
