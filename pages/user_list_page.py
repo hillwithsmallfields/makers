@@ -40,7 +40,7 @@ def user_list_section(django_request,
         people = [someone for someone in people if filter_fn(someone, filter_opaque)]
     people_dict = {whoever.name(): whoever for whoever in people}
     if viewing_user.is_auditor() or viewing_user.is_admin():
-        return T.table(class_='userlist')[
+        return T.table(class_='userlist unstriped')[
             [T.tr(class_='row_header')[
                 T.th(class_='humanid')["Mem #"],
                 T.th(class_='humanid emph')["Name"],

@@ -295,7 +295,22 @@ class SectionalLevel(object):
 def page_section_string(page_title, content, user=None, initial_tab=None, needs_jquery = False):
     return RawHtmlPage(page_title, content).to_string()
 
-def page_string(page_title, content, user=None, initial_tab=None, needs_jquery = False):
+using_foundation = False
+
+foundation_stylesheet = """<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.1/dist/css/foundation.min.css"
+      integrity="sha256-1mcRjtAxlSjp6XJBgrBeeCORfBp/ppyX4tsvpQVCcpA= sha384-b5S5X654rX3Wo6z5/hnQ4GBmKuIJKMPwrJXn52ypjztlnDK2w9+9hSMBz/asy9Gw sha512-M1VveR2JGzpgWHb0elGqPTltHK3xbvu3Brgjfg4cg5ZNtyyApxw/45yHYsZ/rCVbfoO5MSZxB241wWq642jLtA=="
+      crossorigin="anonymous">\n"""
+
+foundation_script = """<script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.1/dist/js/foundation.min.js"
+        integrity="sha256-WUKHnLrIrx8dew//IpSEmPN/NT3DGAEmIePQYIEJLLs= sha384-53StQWuVbn6figscdDC3xV00aYCPEz3srBdV/QGSXw3f19og3Tq2wTRe0vJqRTEO sha512-X9O+2f1ty1rzBJOC8AXBnuNUdyJg0m8xMKmbt9I3Vu/UOWmSg5zG+dtnje4wAZrKtkopz/PEDClHZ1LXx5IeOw=="
+        crossorigin="anonymous">
+        </script>\n"""
+
+def page_string(page_title, content,
+                user=None,
+                initial_tab=None,
+                needs_jquery=False):
     """Make up a complete page as a string."""
     print("page_string", str((page_title, content, user, initial_tab, needs_jquery)))
     conf = configuration.get_config()
@@ -307,6 +322,8 @@ def page_string(page_title, content, user=None, initial_tab=None, needs_jquery =
     script_text = ""
     if needs_jquery:
         script_text += """<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>\n"""
+    if using_foundation:
+        script_text += foundation_script
     if os.path.exists(script_file):
         with open(script_file) as mfile:
             script_body = mfile.read()
@@ -317,17 +334,26 @@ def page_string(page_title, content, user=None, initial_tab=None, needs_jquery =
         with open(motd_file) as mfile:
             motd = mfile.read()
     stylesheet_name = page_conf['stylesheet']
+    stylesheet_directory = os.path.dirname(stylesheet_name)
     if user and user.stylesheet:
-        user_stylesheet_name = os.path.join(os.path.dirname(stylesheet_name), user.stylesheet + ".css")
+        user_stylesheet_name = os.path.join(stylesheet_directory, user.stylesheet + ".css")
         if os.path.exists(user_stylesheet_name):
             stylesheet_name = user_stylesheet_name
+    inline = page_conf['style_inline']
     if os.path.exists(stylesheet_name):
-        inline = page_conf['style_inline']
         if inline:
             with open(stylesheet_name) as sf:
-                style_text = '<style type="text/css">' + sf.read() + '</style>'
+                style_text = '<style type="text/css">' + sf.read() + '</style>\n'
         else:
-            style_text = '<link rel="stylesheet" type="text/css" href="' + stylesheet_name + '">'
+            style_text = '<link rel="stylesheet" type="text/css" href="' + stylesheet_name + '">\n'
+    if using_foundation:
+        style_text += foundation_stylesheet
+    else:
+        if inline:
+            with open(os.path.join(stylesheet_directory, "without-foundation.css")) as sf:
+                style_text += '<style type="text/css">' + sf.read() + '</style>\n'
+        else:
+            style_text += '<link rel="stylesheet" type="text/css" href="' + os.path.join(stylesheet_directory, "without-foundation.css") + '">\n'
     # todo: put the motd into the preamble
     postamble = page_conf.get('postamble', '')
     final_setup = """<script type="text/javascript">selectTab('""" + initial_tab + """')</script>""" if initial_tab else ""
@@ -335,10 +361,12 @@ def page_string(page_title, content, user=None, initial_tab=None, needs_jquery =
     logo = page_conf.get('heading_logo', None)
     if logo:
         logo_height = int(page_conf.get('logo_height', "32"))
+        logo_width = int(page_conf.get('logo_width', "32"))
         page_heading = T.span[page_heading,
                               T.a(href=org_conf['home_page'])[T.img(align="right",
                                                                     alt=org_conf['title'],
                                                                     height=logo_height,
+                                                                    width=logo_width,
                                                                     src=logo)]]
     footer = T.footer[T.hr,
                       T.p(class_="the_small_print")

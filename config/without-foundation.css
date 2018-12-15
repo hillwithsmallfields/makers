@@ -1,0 +1,30 @@
+/* Stylesheet for when we're not using Foundation.
+   Implements some things with names used in Foundation.
+*/
+
+.tabs-content {
+    flex-flow:        column wrap;
+}
+
+.tabs {
+    overflow:         hidden;
+    border:           1px solid #ccc;
+    background-color: #f1f1f1;
+    display:          flex;
+    flex-flow:        row wrap;
+    align-items:      stretch;
+}
+
+.tabs-title {
+    float:            left;
+    outline:          none;
+    cursor:           pointer;
+    flex-grow:        1;
+}
+
+.tabs-panel {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}

@@ -32,7 +32,7 @@ def person_name(who):
     return descr.name() if descr is not None else "<nobody?>"
 
 def avoidances_subsection(ev):
-    return T.table(class_="dietary_summary")[
+    return T.table(class_="dietary_summary unstriped")[
         [[T.tr[T.td(class_="radata")[str(count)], T.th[what]]]
          for (what, count) in ev.dietary_avoidances_summary()]]
 
@@ -54,7 +54,7 @@ def one_event_section(ev, who, django_request,
     eqty = model.equipment_type.Equipment_type.find_by_id(ev.equipment_type)
     eqty_name = eqty.name if eqty else "---"
 
-    results = [(T.table(class_='event_details')
+    results = [(T.table(class_='event_details unstriped')
                 [T.tr[T.th(class_="ralabel")["Title"],
                       T.td(class_="event_title")[
                           T.input(type='text', name='title', value=ev.display_title())
@@ -129,7 +129,7 @@ def one_event_section(ev, who, django_request,
     # if who._id in ev.signed_up:
     #     pass                    # todo: form to back out of attending event (must rescan to mail waiting list)
     if with_completion:
-        completion_table = (T.table(class_='event_completion')
+        completion_table = (T.table(class_='event_completion unstriped')
                             [T.thead[T.tr[T.th["Name"],
                                           T.th(class_='unknown')["Unknown"],
                                           T.th(class_='no_show')["No-show"],
@@ -189,7 +189,7 @@ def event_table_section(tl_or_events, who_id, django_request,
                         allow_editing=False):
     events = tl_or_events.events() if isinstance(tl_or_events, model.timeline.Timeline) else tl_or_events
     now = model.times.now()
-    return (T.table(class_="timeline_table")
+    return (T.table(class_="timeline_table unstriped")
             [T.thead[T.tr[T.th["Title"], T.th["Event type"], T.th["Start"], T.th["Location"], T.th["Hosts"],
                           T.th["Equipment"] if show_equiptype else "",
                           T.th["Sign up"] if with_signup else "",

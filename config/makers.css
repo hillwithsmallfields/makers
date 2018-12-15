@@ -237,30 +237,20 @@ td.developer_data {
     background:    #ffa500;
 }
 
-.tabs-content {
-    flex-flow:        column wrap;
+.button_schedule_event {
+    border:        1px;
+    border-style:  outset;
+    border-radius: 8%;
+    padding:       0.25em;
+    background:    #80c080;
 }
 
-.tabs {
-    overflow:         hidden;
-    border:           1px solid #ccc;
-    background-color: #f1f1f1;
-    display:          flex;
-    flex-flow:        row wrap;
-    align-items:      stretch;
-}
-
-.tabs-title {
-    background-color: #ffb510;
-    color:            #004000;
-    float:            left;
-    border:           1px solid #008000;
-    outline:          none;
-    cursor:           pointer;
-    padding:          14px 16px;
-    transition:       0.3s;
-    width:            20em;
-    flex-grow:        1;
+.button_update {
+    border:        1px;
+    border-style:  outset;
+    border-radius: 8%;
+    padding:       0.25em;
+    background:    #ffa500;
 }
 
 /* .tablinks { */
@@ -277,12 +267,18 @@ button:active {                 /* this doesn't seem to be working but maybe I m
     font-weight:      bold;
 }
 
-.tabs-panel {
-    display: none;
-    padding: 6px 12px;
-    border: 1px solid #ccc;
-    border-top: none;
+/* Some characteristics to combine either with Foundation or with our without-foundation stylesheet */
+
+.tabs-title {
+    background-color: #ffb510;
+    color:            #004000;
+    border:           1px solid #008000;
+    padding:          14px 16px;
+    transition:       0.3s;
+    width:            20em;
 }
+
+/* Adding help texts */
 
 .with_help {
     display:      flex;

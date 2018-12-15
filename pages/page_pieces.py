@@ -75,14 +75,14 @@ def schedule_event_form(who, extras, button_text, django_request):
              extras,
              T.input(type="hidden", name="submitter", value=str(who._id)),
              T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-             T.button(type="submit", value="schedule")[button_text]])
+             T.button(type="submit", class_='button_schedule_event', value="schedule")[button_text]])
 
 def availform(who, available, django_request):
     days, _, times = model.timeslots.get_slots_conf()
     return (T.div(class_="weekly_slots availability")
             [T.form(action=django.urls.reverse("dashboard:update_availability"),
                     method="POST")
-             [T.table(class_="availability")
+             [T.table(class_="availability unstriped")
               [[T.thead[T.tr[T.th(class_="daylabel")["Day"],
                              [[T.th[slotname]] for slotname in times]]]],
                T.tbody[[[T.tr[T.th(class_="daylabel")[day],
@@ -102,7 +102,7 @@ def avail_table(who, slot_sums):
     days, _, times = model.timeslots.get_slots_conf()
     return [T.div(class_="weekly_slots avail_table")[
         [T.h4["Availability of people who have requested training"],
-         T.table(class_="availability")
+         T.table(class_="availability unstriped")
          [T.thead[T.tr[T.th(class_="daylabel")["Day"],
                        [[T.th[slotname]] for slotname in times]]],
           T.tbody[[[T.tr[T.th(class_="daylabel")[day],
@@ -143,7 +143,7 @@ def interests_section(interest_levels, mail_levels, django_request, for_person=N
         return []
     existing_interests = {area_name: interest_levels.get(area_name, 0) for area_name in interest_areas}
     return [T.form(action=django.urls.reverse("dashboard:update_levels"), method="POST")
-            [T.table(class_="interests_check_table")
+            [T.table(class_="interests_check_table unstriped")
              [T.thead[T.tr[[T.th["Area"],
                             [[[T.th(class_='level_'+str(lev))[str(lev)]] for lev in range(4)]]]]],
               T.tbody[[[T.tr[T.th[area],
@@ -170,7 +170,7 @@ def display_or_form(class_name, action_as_form,
                     headers, row_order,
                     labels_dict, data_dict):
     """Display some data either with or without form inputs to update it."""
-    table = T.table(class_=class_name)[
+    table = T.table(class_=class_name+ ' unstriped')[
         T.thead[T.tr[[[T.th[header] for header in (headers or ["Key", "Value"])]]]],
         T.tbody[[[T.tr[T.th(class_='ralabel')[(labels_dict.get(item, item.capitalize())
                                                if labels_dict
@@ -194,23 +194,24 @@ def display_or_form(class_name, action_as_form,
 
 def general_equipment_list(who, viewer, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
-    return T.table[T.thead[T.tr[T.th["Equipment type"],
-                                T.th["Request"],
-                                T.th["Admin action"] if viewer.is_administrator() else ""]],
-                   T.tbody[[[T.tr[T.th(class_="category_"+keyed_types[name].training_category)[
-                       T.a(href=django.urls.reverse("equiptypes:eqty",
-                                                    args=(name,)))[keyed_types[name].pretty_name()]],
-                                  T.td[machinelist(keyed_types[name],
-                                                   who, django_request, False) if detailed else "",
-                                       (toggle_request(who, keyed_types[name]._id, 'user',
-                                                      who.has_requested_training(keyed_types[name]._id, 'user'),
-                                                       django_request)
+    return T.table(class_='equipment_type_list unstriped')[
+        T.thead[T.tr[T.th["Equipment type"],
+                     T.th["Request"],
+                     T.th["Admin action"] if viewer.is_administrator() else ""]],
+        T.tbody[[[T.tr[T.th(class_="category_"+keyed_types[name].training_category)[
+            T.a(href=django.urls.reverse("equiptypes:eqty",
+                                         args=(name,)))[keyed_types[name].pretty_name()]],
+                       T.td[machinelist(keyed_types[name],
+                                        who, django_request, False) if detailed else "",
+                            (toggle_request(who, keyed_types[name]._id, 'user',
+                                            who.has_requested_training(keyed_types[name]._id, 'user'),
+                                            django_request)
                                         if keyed_types[name].training_category != "green"
                                         else "Training not required")],
-                                  T.td[permit_form(keyed_types[name],
-                                                   who._id, who.name(),
-                                                   'user',
-                                                   django_request)] if viewer.is_administrator() else ""]]
+                       T.td[permit_form(keyed_types[name],
+                                        who._id, who.name(),
+                                        'user',
+                                        django_request)] if viewer.is_administrator() else ""]]
                             for name in sorted(keyed_types.keys())]]]
 
 def machinelist(eqty, who, django_request, as_owner=False):
@@ -218,15 +219,16 @@ def machinelist(eqty, who, django_request, as_owner=False):
     if eqty is None:
         return []
     mclist = eqty.get_machines()
-    return ([T.table[T.thead[T.tr[T.th["Machine"], T.th["Status"], T.th["Owner actions" if as_owner else ""]]],
-                     T.tbody[[[T.tr[T.th[machine_link(device.name)],
-                                    T.td[device.status],
-                                    T.td[schedule_event_form(who,
-                                                             [T.input(type="hidden", name="machine", value=device.name),
-                                                              T.input(type="hidden", name="equiptype", value=eqty._id),
-                                                              T.input(type="hidden", name="event_type", value="maintenance")],
-                                                             "Schedule maintenance",
-                                                             django_request)
+    return ([T.table(class_='machine_list unstriped')[
+        T.thead[T.tr[T.th["Machine"], T.th["Status"], T.th["Owner actions" if as_owner else ""]]],
+        T.tbody[[[T.tr[T.th[machine_link(device.name)],
+                       T.td[device.status],
+                       T.td[schedule_event_form(who,
+                                                [T.input(type="hidden", name="machine", value=device.name),
+                                                 T.input(type="hidden", name="equiptype", value=eqty._id),
+                                                 T.input(type="hidden", name="event_type", value="maintenance")],
+                                                "Schedule maintenance",
+                                                django_request)
                                  if as_owner else ""]]]
                               for device in mclist]]]]
             if mclist
@@ -246,10 +248,11 @@ def eqty_training_requests(eqtype, django_request):
             if r['request_date'] == d:
                 reqs.append(r)
     # print("reqs are", reqs)
-    return [T.table[T.thead[T.tr[T.th["Date requested"],
-                                T.th["Requester"]]],
-                   T.tbody[[[T.tr[T.td[event.timestring(req['request_date'])],
-                                 T.td[person.Person.find(req['requester']).name()]]]
+    return [T.table(class_='unstriped')[
+        T.thead[T.tr[T.th["Date requested"],
+                     T.th["Requester"]]],
+        T.tbody[[[T.tr[T.td[event.timestring(req['request_date'])],
+                       T.td[person.Person.find(req['requester']).name()]]]
                             for req in reqs]]],
             avail_table(model.person.Person.find(django_request.user.link_id),
                         model.timeslots.sum_availabilities([person.Person.find(req['requester']).available

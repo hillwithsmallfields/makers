@@ -57,7 +57,7 @@ def site_controls_sub_section(who, viewer, django_request):
                   value=model.pages.bare_string_id(who._id)),
           model.pages.with_help(
               viewer,
-              T.table(class_="siteoptions")[
+              T.table(class_="siteoptions unstriped")[
                   T.tr[T.th(class_="ralabel")["Visible as host / owner / trainer to attendees / users"],
                        T.td[visibility_radio("visibility_as_host", who.visibility.get('host', True))]],
                   T.tr[T.th(class_="ralabel")["Visible as attendee / user to hosts / owners / trainers"],
@@ -78,7 +78,9 @@ def site_controls_sub_section(who, viewer, django_request):
                        T.td[T.input(type='checkbox', name='notify_in_site', checked='checked')
                             if who.notify_in_site
                             else T.input(type='checkbox', name='notify_in_site')]],
-                  T.tr[T.th[""], T.td[T.input(type="submit", value="Update controls")]]],
+                  T.tr[T.th[""], T.td[T.input(type="submit",
+                                              class_='button_update',
+                                              value="Update controls")]]],
               "site_controls")]]]
 
 def availability_sub_section(who, viewer, django_request):
@@ -105,7 +107,7 @@ def avoidances_section(who, django_request):
     avoidances = who.get_profile_field('avoidances') or []
     return [T.form(action=django.urls.reverse("dashboard:update_avoidances"),
                    method='POST')[
-                       T.table[
+                       T.table(class_='unstriped')[
                            T.thead[T.tr[T.th(class_='ralabel')["Food"],
                                         T.th["Status"]]],
                            T.tbody[[T.tr[T.th(class_='ralabel')[thing],
@@ -122,7 +124,7 @@ def avoidances_section(who, django_request):
                        T.input(type='hidden',
                                name='subject_user_uuid',
                                value=model.pages.bare_string_id(who._id)),
-                       T.div(align="right")[T.input(type='submit', value="Update avoidances")]]]
+                       T.div(align="right")[T.input(type='submit', class_='button_update', value="Update avoidances")]]]
 
 def get_profile_subfield_value(who, group_name, name):
     all_groups = who.get_profile_field('configured')
@@ -155,7 +157,7 @@ def mugshot_section(who, viewer, django_request):
              T.input(type="hidden",
                      name="subject_user_uuid",
                      value=model.pages.bare_string_id(who.link_id)),
-             T.input(type="submit", value="Update photo")]]
+             T.input(type="submit", class_='button_update', value="Update photo")]]
 
 def general_profile_section(who, viewer, django_request):
     membership_number = str(who.membership_number)
@@ -234,13 +236,13 @@ def general_profile_section(who, viewer, django_request):
             T.input(type="hidden",
                     name="subject_user_uuid",
                     value=model.pages.bare_string_id(who._id)),
-            T.table(class_="personaldetails")[table_contents]],
+            T.table(class_="personaldetails unstriped")[table_contents]],
         "general_user_profile")]
 
 def configurable_profile_section(who, viewer, django_request):
 
     profile_fields = all_conf.get('profile_fields')
-    variable_sections = T.table[
+    variable_sections = T.table(class_='unstriped')[
         [[T.tr[T.th(colspan="2",
                     class_='profile_group',
                     rowspan=str(len(group_fields)))[group_name],
@@ -270,6 +272,7 @@ def configurable_profile_section(who, viewer, django_request):
                                                      name="subject_user_uuid",
                                                      value=model.pages.bare_string_id(who._id)),
                                              T.input(type='submit',
+                                                     class_='button_update',
                                                      value='Update')],
                                   "configurable_profile")]
 
@@ -483,7 +486,7 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
     # keyed_types[name][1][1] is the disqualification
     who_name = who.name()
     return T.div(class_="trainedon")[
-        T.table(class_='trainedon')[
+        T.table(class_='trainedon unstriped')[
             T.thead[T.tr[T.th["Equipment type"],
                          T.th["Trained by"],
                          T.th["Date trained"],
@@ -523,7 +526,7 @@ def training_requests_section(who, viewer, django_request):
     keyed_requests = {req['request_date']: req for req in who.training_requests}
     sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
     return [T.div(class_="requested")[
-        T.table()[
+        T.table(class_='unstriped')[
             T.thead[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]]],
             T.tbody[
                 [T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
@@ -592,29 +595,31 @@ def usage_log_section(who):
     log_data = model.database.get_user_log(who._id)
     print("got log data of length", len(log_data))
     return [T.div(class_='userlog')[
-        T.table[[T.tr[T.th(class_='logdate')["Date"],
-                      T.td(class_='logmachine')["Machine"],
-                      T.td(class_='logdetails')["Details"]]],
-                [T.tr[T.th(class_='logdate')[model.times.timestring(record['start'])],
-                      T.td(class_='logmachine')[record['machine']],
-                      T.td(class_='logdetails')[record.get('details', "")]] for record in log_data]]]]
+        T.table(class_='unstriped')[
+            [T.tr[T.th(class_='logdate')["Date"],
+                  T.td(class_='logmachine')["Machine"],
+                  T.td(class_='logdetails')["Details"]]],
+            [T.tr[T.th(class_='logdate')[model.times.timestring(record['start'])],
+                  T.td(class_='logmachine')[record['machine']],
+                  T.td(class_='logdetails')[record.get('details', "")]] for record in log_data]]]]
 
 def create_event_form(viewer, django_request):
     return T.form(action="/makers_admin/create_event",
-                  method='GET')[T.table[T.tr[T.th(class_='ralabel')["Event type "],
-                                             T.td[pages.page_pieces.event_template_dropdown('event_type')]],
-                                        T.tr[T.th(class_='ralabel')["Equipment type "],
-                                             T.td[pages.page_pieces.equipment_type_dropdown("equipment_type")]],
-                                        # todo: add machine
+                  method='GET')[T.table(class_='unstriped')[
+                      T.tr[T.th(class_='ralabel')["Event type "],
+                           T.td[pages.page_pieces.event_template_dropdown('event_type')]],
+                      T.tr[T.th(class_='ralabel')["Equipment type "],
+                           T.td[pages.page_pieces.equipment_type_dropdown("equipment_type")]],
+                      # todo: add machine
                                         T.tr[T.th(class_='ralabel')["Start date and time:"],
                                              T.td[T.input(name='start', type='datetime')]],
-                                        # todo: add duration
+                      # todo: add duration
                                         T.tr[T.th(class_='ralabel')["Location"],
                                              T.td[pages.page_pieces.location_dropdown('location')]],
-                                        T.tr[T.th(class_='ralabel')["Hosts:"],
-                                             T.td[T.input(name='hosts', type='text')]],
-                                        T.tr[T.th[""],
-                                             T.td[T.input(type='submit', value="Create event")]]],
+                      T.tr[T.th(class_='ralabel')["Hosts:"],
+                           T.td[T.input(name='hosts', type='text')]],
+                      T.tr[T.th[""],
+                           T.td[T.input(type='submit', value="Create event")]]],
                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request))]
 
 def search_events_form(viewer, django_request):
@@ -626,25 +631,26 @@ def search_events_form(viewer, django_request):
                   method='GET')[T.form[T.input(type="hidden", name="csrfmiddlewaretoken",
                                                value=django.middleware.csrf.get_token(django_request)),
                                        T.input(type='hidden', name="viewer", value=viewer._id),
-                                       T.table[T.tr[T.th(class_='ralabel')["Event type:"],
-                                                    T.td[T.input(name='event_type', type='text')]],
-                                               T.tr[T.th(class_='ralabel')["Equipment type:"],
-                                                    T.td[pages.page_pieces.equipment_type_dropdown("equipment_type")]],
-                                               T.tr[T.th(class_='ralabel')["Begins after:"],
-                                                    T.td[T.input(name='earliest', type='datetime')]],
-                                               T.tr[T.th(class_='ralabel')["Ends before:"],
-                                                    T.td[T.input(name='latest', type='datetime')]],
-                                               T.tr[T.th(class_='ralabel')[
-                                                   T.select(name='person_field')[
-                                                       [T.option(value=opt)[opt]
+                                       T.table(class_='unstriped')[
+                                           T.tr[T.th(class_='ralabel')["Event type:"],
+                                                T.td[T.input(name='event_type', type='text')]],
+                                           T.tr[T.th(class_='ralabel')["Equipment type:"],
+                                                T.td[pages.page_pieces.equipment_type_dropdown("equipment_type")]],
+                                           T.tr[T.th(class_='ralabel')["Begins after:"],
+                                                T.td[T.input(name='earliest', type='datetime')]],
+                                           T.tr[T.th(class_='ralabel')["Ends before:"],
+                                                T.td[T.input(name='latest', type='datetime')]],
+                                           T.tr[T.th(class_='ralabel')[
+                                               T.select(name='person_field')[
+                                                   [T.option(value=opt)[opt]
                                                         for opt in ['hosts', 'failed', 'passed', 'noshow', 'signed_up']]]],
-                                                    T.td[T.input(name='person_id', type='text')]],
-                                               T.tr[T.th(class_='ralabel')["Location"],
-                                                    T.td[pages.page_pieces.location_dropdown('location')]],
-                                               T.tr[T.th(class_='ralabel')["Include unpublished"],
-                                                    T.td[T.input(type='checkbox', name='include_hidden')]],
-                                               T.tr[T.td[""],
-                                                    T.td[T.input(type='submit', value="Search for events")]]]]]
+                                                T.td[T.input(name='person_id', type='text')]],
+                                           T.tr[T.th(class_='ralabel')["Location"],
+                                                T.td[pages.page_pieces.location_dropdown('location')]],
+                                           T.tr[T.th(class_='ralabel')["Include unpublished"],
+                                                T.td[T.input(type='checkbox', name='include_hidden')]],
+                                           T.tr[T.td[""],
+                                                T.td[T.input(type='submit', value="Search for events")]]]]]
 
 def announcement_form(viewer, django_request):
     return T.form(action=django.urls.reverse("makers_admin:announce"),
@@ -713,35 +719,37 @@ def add_user_form(django_request, induction_event_id=None):
         (T.input(type='hidden', name='induction_event', value=induction_event_id)
          if induction_event_id
          else ""),
-        T.table[T.tr[T.th(class_='ralabel')["Given name:"],
-                     T.td[T.input(type='text', name='given_name')]],
-                T.tr[T.th(class_='ralabel')["Surname:"],
-                     T.td[T.input(type='text', name='surname')]],
-                T.tr[T.th(class_='ralabel')["Email:"],
-                     T.td[T.input(type='text', name='email')]],
-                T.tr[T.th(class_='ralabel')["Inducted:"],
-                     T.td[T.input(type='checkbox', checked='checked', name='inducted')
+        T.table(class_='unstriped')[
+            T.tr[T.th(class_='ralabel')["Given name:"],
+                 T.td[T.input(type='text', name='given_name')]],
+            T.tr[T.th(class_='ralabel')["Surname:"],
+                 T.td[T.input(type='text', name='surname')]],
+            T.tr[T.th(class_='ralabel')["Email:"],
+                 T.td[T.input(type='text', name='email')]],
+            T.tr[T.th(class_='ralabel')["Inducted:"],
+                 T.td[T.input(type='checkbox', checked='checked', name='inducted')
                           if induction_event_id
                           else T.input(type='checkbox', name='inducted')]],
-                T.tr[T.th[""], T.td[T.input(type='submit', value="Add user")]]]]
+            T.tr[T.th[""], T.td[T.input(type='submit', value="Add user")]]]]
 
 def raw_data_form(django_request):
     return [T.form(action=django.urls.reverse('makers_admin:raw_collection'),
                    method='GET')[
                        T.input(type="hidden", name="csrfmiddlewaretoken",
                                value=django.middleware.csrf.get_token(django_request)),
-                       T.table[T.tr[T.th(class_='ralabel')["Collection:"],
-                                    T.td[T.select(name='collection')[
-                                        [T.option(value=opt)[opt]
+                       T.table(class_='unstriped')[
+                           T.tr[T.th(class_='ralabel')["Collection:"],
+                                T.td[T.select(name='collection')[
+                                    [T.option(value=opt)[opt]
                                               for opt in model.database.collection_headers.keys()]]]],
-                               T.tr[T.th(class_='ralabel')["Format"],
-                                    T.td[T.select(name='format')[
-                                        [T.option(value=opt)[opt]
+                           T.tr[T.th(class_='ralabel')["Format"],
+                                T.td[T.select(name='format')[
+                                    [T.option(value=opt)[opt]
                                               for opt in ['csv', 'json']]]]],
-                               T.tr[T.th(class_='ralabel')["Pprint if applicable"],
-                                    T.td[T.input(type='checkbox', name='pprint')]],
-                               T.tr[T.th(class_='ralabel')[""],
-                                    T.td[T.input(type='submit', value="Fetch raw database collection")]]]]]
+                           T.tr[T.th(class_='ralabel')["Pprint if applicable"],
+                                T.td[T.input(type='checkbox', name='pprint')]],
+                           T.tr[T.th(class_='ralabel')[""],
+                                T.td[T.input(type='submit', value="Fetch raw database collection")]]]]]
 
 def data_check_form(django_request):
     return [T.form(action=django.urls.reverse('makers_admin:data_check'),
@@ -831,7 +839,9 @@ def admin_section(who, viewer, django_request):
                                          T.input(type='checkbox', name='include_non_members'),
                                          T.input(type="hidden", name="csrfmiddlewaretoken",
                                                  value=django.middleware.csrf.get_token(django_request)),
-                                         T.input(type='submit', value="Update / normalize database")]],
+                                         T.input(type='submit',
+                                                 class_='button_update',
+                                                 value="Update / normalize database")]],
                              "update_database")),
         admin_subsection("Send test message",
                          [T.form(action=django.urls.reverse("makers_admin:test_message"),
@@ -855,7 +865,9 @@ def admin_section(who, viewer, django_request):
                                      method='POST')[
                                          T.input(type="hidden", name="csrfmiddlewaretoken",
                                                  value=django.middleware.csrf.get_token(django_request)),
-                                         T.input(type='submit', value="Update django logins")]],
+                                         T.input(type='submit',
+                                                 class_='button_update',
+                                                 value="Update django logins")]],
                              "admin_update_logins"))]
 
 dashboard_sections = [
