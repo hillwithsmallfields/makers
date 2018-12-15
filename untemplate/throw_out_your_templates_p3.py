@@ -445,7 +445,6 @@ for typeset, visitor in (
     for type_ in typeset:
         default_visitors_map[type_] = visitor
 
-
 ################################################################################
 # 5: Declarative classes for creating a dom-like tree of xml/html elements:
 
@@ -470,10 +469,12 @@ class XmlElement(object):
     def __init__(self, name):
         self.name = name
 
-    def __call__(self, class_=None, **attrs):
+    def __call__(self, class_=None, data_responsive_accordion_tabs=None, **attrs):
         assert not self.attrs
         if class_ is not None:
             attrs['class'] = class_
+        if data_responsive_accordion_tabs is not None:
+            attrs['data-responsive-accordion-tabs'] = data_responsive_accordion_tabs
         self.attrs = self._normalize_attrs(attrs)
         return self
 
@@ -509,9 +510,11 @@ class XmlElementProto(object):
         self.can_be_empty = can_be_empty
         self.element_class = element_class
 
-    def __call__(self, class_=None, **attrs):
+    def __call__(self, class_=None, data_responsive_accordion_tabs=None, **attrs):
         if class_ is not None:
             attrs['class'] = class_
+        if data_responsive_accordion_tabs is not None:
+            attrs['data-responsive-accordion-tabs'] = data_responsive_accordion_tabs
         return self.element_class(self.name)(**attrs)
 
     def __getitem__(self, children):
@@ -752,7 +755,6 @@ Example(
     'a snippet using a list comprehension',
     div[[span(id=('id', i))[i, ' is > ', i-1]
          for i in range(5)]])
-
 
 ################################################################################
 # 9: Extended example using some fictional model data

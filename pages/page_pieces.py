@@ -96,7 +96,7 @@ def availform(who, available, django_request):
                                                     model.timeslots.timeslots_from_int(available))]]],
               T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
               T.input(type='hidden', name='person', value=str(who._id)),
-              T.input(type='submit', value="Update availability")]])
+              T.input(type='submit', class_='button_update', value="Update availability")]])
 
 def avail_table(who, slot_sums):
     days, _, times = model.timeslots.get_slots_conf()
@@ -157,7 +157,7 @@ def interests_section(interest_levels, mail_levels, django_request, for_person=N
              T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
              # This form can be used either for a person, or for an event
              T.input(type='hidden', name='subject_user_uuid', value=for_person._id) if for_person else "",
-             T.div(align='right')[T.input(type='submit', value="Update interests")]],
+             T.div(align='right')[T.input(type='submit', class_='button_update', value="Update interests")]],
             T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request))]
 
 def plain_value(item):

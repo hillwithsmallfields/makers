@@ -206,7 +206,9 @@ def general_profile_section(who, viewer, django_request):
                                    value=str(who.get_admin_note()))
                           if viewer.is_administrator()
                           else str(who.get_admin_note())]],
-                T.tr[T.th[""], T.td[T.input(type='submit', value="Update details")]]]
+                T.tr[T.th[""], T.td[T.input(type='submit',
+                                            class_='button_update',
+                                            value="Update details")]]]
     if django_request.session.get('developer_mode', False):
         pp = pprint.PrettyPrinter(indent=4, width=72)
         django_logged_in_user_dict = django_request.user.__dict__
@@ -240,7 +242,7 @@ def general_profile_section(who, viewer, django_request):
         "general_user_profile")]
 
 def configurable_profile_section(who, viewer, django_request):
-
+    """Return a profile section driven from the configuration file."""
     profile_fields = all_conf.get('profile_fields')
     variable_sections = T.table(class_='unstriped')[
         [[T.tr[T.th(colspan="2",
@@ -272,6 +274,7 @@ def configurable_profile_section(who, viewer, django_request):
                                                      name='subject_user_uuid',
                                                      value=model.pages.bare_string_id(who._id)),
                                              T.input(type='submit',
+                                                     align='right',
                                                      class_='button_update',
                                                      value='Update')],
                                   "configurable_profile")]

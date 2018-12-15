@@ -216,12 +216,13 @@ class SectionalPage(object):
             model.database.log_machine_use("makers",
                                            user._id if user else None,
                                            details=self.name)
-        index = [T.div(class_='tabs')[
-            [T.button(class_='tabs-title',
-                      onclick=(("openLazyTab(event, '" + section_id + "', '" + self.sections[section_id] + "')")
+        index = [T.div(class_='tabs',
+                       data_responsive_accordion_tabs='tabs small-accordion')[
+                           [T.button(class_='tabs-title',
+                                     onclick=(("openLazyTab(event, '" + section_id + "', '" + self.sections[section_id] + "')")
                                if isinstance(self.sections[section_id], str)
                                else ("openTab(event, '" + section_id + "')")),
-                      id=section_id+"_button")[self.presentation_names[section_id]]
+                                     id=section_id+"_button")[self.presentation_names[section_id]]
                                       for section_id in self.index]],
                  T.br(clear='all')]
         tabs = [[T.div(class_='tabs-panel', id_=section_id)[self.sections[section_id]]]
