@@ -49,36 +49,36 @@ def visibility_radio(label, visibility):
                                 value='yes'))]
 
 def site_controls_sub_section(who, viewer, django_request):
-    return T.div(class_="site_options")[
+    return T.div(class_='site_options')[
         [T.form(action=django.urls.reverse("dashboard:update_site_controls"), method='POST')
-         [T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-          T.input(type="hidden",
-                  name="subject_user_uuid",
+         [T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
+          T.input(type='hidden',
+                  name='subject_user_uuid',
                   value=model.pages.bare_string_id(who._id)),
           model.pages.with_help(
               viewer,
-              T.table(class_="siteoptions unstriped")[
-                  T.tr[T.th(class_="ralabel")["Visible as host / owner / trainer to attendees / users"],
+              T.table(class_='siteoptions unstriped')[
+                  T.tr[T.th(class_='ralabel')["Visible as host / owner / trainer to attendees / users"],
                        T.td[visibility_radio("visibility_as_host", who.visibility.get('host', True))]],
-                  T.tr[T.th(class_="ralabel")["Visible as attendee / user to hosts / owners / trainers"],
+                  T.tr[T.th(class_='ralabel')["Visible as attendee / user to hosts / owners / trainers"],
                        T.td[visibility_radio("visibility_as_attendee", who.visibility.get('attendee', True))]],
-                  T.tr[T.th(class_="ralabel")["Visible generally"],
+                  T.tr[T.th(class_='ralabel')["Visible generally"],
                        T.td[visibility_radio("visibility_in_general", who.visibility.get('general', False))]],
-                  # T.tr[T.th(class_="ralabel")["Stylesheet"],
+                  # T.tr[T.th(class_='ralabel')["Stylesheet"],
                   #      T.td[pages.page_pieces.dropdown('stylesheet', model.configuration.get_stylesheets(), who.stylesheet)]],
-                  T.tr[T.th(class_="ralabel")["Display help beside forms"],
+                  T.tr[T.th(class_='ralabel')["Display help beside forms"],
                        T.td[T.input(type='checkbox', name='display_help', checked='checked')
                             if who.show_help
                             else T.input(type='checkbox', name='display_help')]],
-                  T.tr[T.th(class_="ralabel")["Notify training etc by email"],
+                  T.tr[T.th(class_='ralabel')["Notify training etc by email"],
                        T.td[T.input(type='checkbox', name='notify_by_email', checked='checked')
                             if who.notify_by_email
                             else T.input(type='checkbox', name='notify_by_email')]],
-                  T.tr[T.th(class_="ralabel")["Notify training etc in site"],
+                  T.tr[T.th(class_='ralabel')["Notify training etc in site"],
                        T.td[T.input(type='checkbox', name='notify_in_site', checked='checked')
                             if who.notify_in_site
                             else T.input(type='checkbox', name='notify_in_site')]],
-                  T.tr[T.th[""], T.td[T.input(type="submit",
+                  T.tr[T.th[""], T.td[T.input(type='submit',
                                               class_='button_update',
                                               value="Update controls")]]],
               "site_controls")]]]
@@ -111,20 +111,20 @@ def avoidances_section(who, django_request):
                            T.thead[T.tr[T.th(class_='ralabel')["Food"],
                                         T.th["Status"]]],
                            T.tbody[[T.tr[T.th(class_='ralabel')[thing],
-                                         T.td[(T.input(type="checkbox",
+                                         T.td[(T.input(type='checkbox',
                                                        name=thing,
                                                        checked="checked")
                                                if thing in avoidances
-                                               else T.input(type="checkbox",
+                                               else T.input(type='checkbox',
                                                             name=thing))]]
                                     for thing in sorted(all_conf['dietary_avoidances'])]]],
-                       T.input(type="hidden",
-                               name="csrfmiddlewaretoken",
+                       T.input(type='hidden',
+                               name='csrfmiddlewaretoken',
                                value=django.middleware.csrf.get_token(django_request)),
                        T.input(type='hidden',
                                name='subject_user_uuid',
                                value=model.pages.bare_string_id(who._id)),
-                       T.div(align="right")[T.input(type='submit', class_='button_update', value="Update avoidances")]]]
+                       T.div(align='right')[T.input(type='submit', class_='button_update', value="Update avoidances")]]]
 
 def get_profile_subfield_value(who, group_name, name):
     all_groups = who.get_profile_field('configured')
@@ -143,64 +143,64 @@ def mugshot_section(who, viewer, django_request):
                              else model.configuration.get_config('server', 'domain')) + "/"
                    + mugshot_filename) if mugshot_filename else None
     return [T.form(action=django.urls.reverse("dashboard:update_mugshot"),
-                   enctype="multipart/form-data",
+                   enctype='multipart/form-data',
                    method='POST')
             [T.img(src=mugshot_url,
-                   align="right",
+                   align='right',
                    alt="Photo of "+who.name()) if mugshot_url else "Picture would go here",
-             "Upload new photo: ", T.input(type="file",
-                                           name="mugshot",
+             "Upload new photo: ", T.input(type='file',
+                                           name='mugshot',
                                            accept='image/jpeg'),
-             T.input(type="hidden",
-                     name="csrfmiddlewaretoken",
+             T.input(type='hidden',
+                     name='csrfmiddlewaretoken',
                      value=django.middleware.csrf.get_token(django_request)),
-             T.input(type="hidden",
-                     name="subject_user_uuid",
+             T.input(type='hidden',
+                     name='subject_user_uuid',
                      value=model.pages.bare_string_id(who.link_id)),
-             T.input(type="submit", class_='button_update', value="Update photo")]]
+             T.input(type='submit', class_='button_update', value="Update photo")]]
 
 def general_profile_section(who, viewer, django_request):
     membership_number = str(who.membership_number)
     subject_login_name = model.database.person_get_login_name(who) or ""
     logged_in_as = django_request.user.username
     table_contents = [
-                T.tr[T.th(class_="ralabel")["Name"],
-                     T.td[T.input(type="text",
-                                  name="name",
+                T.tr[T.th(class_='ralabel')["Name"],
+                     T.td[T.input(type='text',
+                                  name='name',
                                   value=who.name())]],
-                T.tr[T.th(class_="ralabel")["User login name"],
+                T.tr[T.th(class_='ralabel')["User login name"],
                      T.td[T.input(type='text',
                                   name='login_name',
                                   value=subject_login_name)]],
-                T.tr[T.th(class_="ralabel")["Logged in as"],
+                T.tr[T.th(class_='ralabel')["Logged in as"],
                      T.td[T.span(class_=('own_view'
                                          if logged_in_as == subject_login_name
                                          else 'admin_view'))[logged_in_as]]],
-                          T.tr[T.th(class_="ralabel")["email"], T.td[T.input(type="email",
-                                                                             name="email",
+                          T.tr[T.th(class_='ralabel')["email"], T.td[T.input(type='email',
+                                                                             name='email',
                                                                              value=who.get_email())]],
-                T.tr[T.th(class_="ralabel")["Membership number"],
-                     T.td[(T.input(type="text",
+                T.tr[T.th(class_='ralabel')["Membership number"],
+                     T.td[(T.input(type='text',
                                    name='membership_number',
                                    value=membership_number)
                                      if (viewer.is_administrator()
                                          and (membership_number == "" or membership_number == "0"))
                                      else [membership_number])]],
-                T.tr[T.th(class_="ralabel")['Fob number'],
-                     T.td[(T.input(type="text",
-                                   name="fob",
+                T.tr[T.th(class_='ralabel')['Fob number'],
+                     T.td[(T.input(type='text',
+                                   name='fob',
                                    value=str(who.fob))
                                      if viewer.is_administrator()
                                      else [str(who.fob)])]],
-                T.tr[T.th(class_="ralabel")["link-id"], T.td[str(who.link_id)]],
-                T.tr[T.th(class_="ralabel")["No-shows"], T.td[str(len(who.get_noshows()))]],
-                T.tr[T.th(class_="ralabel")["No-show absolutions"],
+                T.tr[T.th(class_='ralabel')["link-id"], T.td[str(who.link_id)]],
+                T.tr[T.th(class_='ralabel')["No-shows"], T.td[str(len(who.get_noshows()))]],
+                T.tr[T.th(class_='ralabel')["No-show absolutions"],
                      T.td[(T.input(type='text',
                                    name='absolutions',
                                    value=str(who.noshow_absolutions))
                            if viewer.is_administrator()
                            else str(who.noshow_absolutions))]],
-                T.tr[T.th(class_="ralabel")['Admin note'],
+                T.tr[T.th(class_='ralabel')['Admin note'],
                      T.td[T.input(type='text',
                                   name='note',
                                    value=str(who.get_admin_note()))
@@ -214,29 +214,29 @@ def general_profile_section(who, viewer, django_request):
         django_wrapped_user_dict = django_wrapped_user.__dict__ if django_wrapped_user else {}
         django_subject_data = model.database.person_get_django_user_data(who)
         django_subject_user_dict = django_subject_data and django_subject_data.__dict__
-        table_contents += [T.tr[T.th(class_="ratoplabel")["Django request data"],
-                                T.td(class_="developer_data")[T.pre[pp.pformat(django_request.__dict__)]]],
-                           T.tr[T.th(class_="ratoplabel")["Django session data"],
-                                T.td(class_="developer_data")[T.pre[pp.pformat(django_request.session.__dict__)]]],
-                           T.tr[T.th(class_="ratoplabel")["Logged-in user Django data"],
-                                T.td(class_="developer_data")[T.pre[pp.pformat([django_logged_in_user_dict,
+        table_contents += [T.tr[T.th(class_='ratoplabel')["Django request data"],
+                                T.td(class_='developer_data')[T.pre[pp.pformat(django_request.__dict__)]]],
+                           T.tr[T.th(class_='ratoplabel')["Django session data"],
+                                T.td(class_='developer_data')[T.pre[pp.pformat(django_request.session.__dict__)]]],
+                           T.tr[T.th(class_='ratoplabel')["Logged-in user Django data"],
+                                T.td(class_='developer_data')[T.pre[pp.pformat([django_logged_in_user_dict,
                                                                                 django_wrapped_user_dict])]]],
-                           T.tr[T.th(class_="ratoplabel")["Subject user Django data"],
-                                T.td(class_="developer_data")[T.pre[pp.pformat(django_subject_user_dict)]]],
-                           T.tr[T.th(class_="ratoplabel")["Subject user operational data"],
-                                T.td(class_="developer_data")[T.pre[pp.pformat(who.__dict__)]]],
-                           T.tr[T.th(class_="ratoplabel")["Subject user profile data"],
-                                T.td(class_="developer_data")[T.pre[pp.pformat(model.database.get_person_profile_dict(who))]]]]
+                           T.tr[T.th(class_='ratoplabel')["Subject user Django data"],
+                                T.td(class_='developer_data')[T.pre[pp.pformat(django_subject_user_dict)]]],
+                           T.tr[T.th(class_='ratoplabel')["Subject user operational data"],
+                                T.td(class_='developer_data')[T.pre[pp.pformat(who.__dict__)]]],
+                           T.tr[T.th(class_='ratoplabel')["Subject user profile data"],
+                                T.td(class_='developer_data')[T.pre[pp.pformat(model.database.get_person_profile_dict(who))]]]]
     return [model.pages.with_help(
         viewer,
         T.form(action=django.urls.reverse("dashboard:update_profile"), method='POST')[
-            T.input(type="hidden",
-                    name="csrfmiddlewaretoken",
+            T.input(type='hidden',
+                    name='csrfmiddlewaretoken',
                     value=django.middleware.csrf.get_token(django_request)),
-            T.input(type="hidden",
-                    name="subject_user_uuid",
+            T.input(type='hidden',
+                    name='subject_user_uuid',
                     value=model.pages.bare_string_id(who._id)),
-            T.table(class_="personaldetails unstriped")[table_contents]],
+            T.table(class_='personaldetails unstriped')[table_contents]],
         "general_user_profile")]
 
 def configurable_profile_section(who, viewer, django_request):
@@ -251,7 +251,7 @@ def configurable_profile_section(who, viewer, django_request):
                             name=group_name+':'+group_fields[0],
                             value=get_profile_subfield_value(who, group_name, group_fields[0]))],
                T.td(rowspan=str(len(group_fields)))[
-                   T.div(class_="help")[untemplate.safe_unicode(model.pages.help_for_topic(group_name))]
+                   T.div(class_='help')[untemplate.safe_unicode(model.pages.help_for_topic(group_name))]
                    if who.show_help else ""]],
           [[T.tr[T.th[field],
                  T.td[T.input(type='text',
@@ -265,11 +265,11 @@ def configurable_profile_section(who, viewer, django_request):
                                   T.form(action=django.urls.reverse("dashboard:update_configured_profile"),
                                          method='POST')[
                                              variable_sections,
-                                             T.input(type="hidden",
-                                                     name="csrfmiddlewaretoken",
+                                             T.input(type='hidden',
+                                                     name='csrfmiddlewaretoken',
                                                      value=django.middleware.csrf.get_token(django_request)),
-                                             T.input(type="hidden",
-                                                     name="subject_user_uuid",
+                                             T.input(type='hidden',
+                                                     name='subject_user_uuid',
                                                      value=model.pages.bare_string_id(who._id)),
                                              T.input(type='submit',
                                                      class_='button_update',
@@ -279,8 +279,8 @@ def configurable_profile_section(who, viewer, django_request):
 def misc_section(who, viewer, django_request):
     return [T.ul[T.li["Reset notifications and announcements: ",
                       (T.form(action="/dashboard/reset_messages", method='POST')
-                       [T.input(type="hidden",
-                                name="csrfmiddlewaretoken",
+                       [T.input(type='hidden',
+                                name='csrfmiddlewaretoken',
                                 value=django.middleware.csrf.get_token(django_request)),
                         T.input(type='hidden',
                                 name='subject_user_uuid',
@@ -293,7 +293,7 @@ def misc_section(who, viewer, django_request):
                       [T.input(type='hidden',
                                name='subject_user_uuid',
                                value=model.pages.bare_string_id(who._id)),
-                       T.input(type="hidden", name="csrfmiddlewaretoken",
+                       T.input(type='hidden', name='csrfmiddlewaretoken',
                                value=django.middleware.csrf.get_token(django_request)),
                        T.input(type='submit', value="Send password reset")]]]]
 
@@ -315,14 +315,14 @@ def profile_section(who, viewer, django_request):
                                                                    "dietary_avoidances")
     result_sequence = all_conf.get('profile_sections')
 
-    result = T.div(class_="user_profile")[[
-        [T.div(class_="profile_subsection",
-               id=title.replace(' ', '_'))[T.h3(class_="profile_sub_title")[title],
-                                           T.div(class_="profile_sub_body")[result_parts[title]]]]
+    result = T.div(class_='user_profile')[[
+        [T.div(class_='profile_subsection',
+               id=title.replace(' ', '_'))[T.h3(class_='profile_sub_title')[title],
+                                           T.div(class_='profile_sub_body')[result_parts[title]]]]
               for title in result_sequence
               if title in result_parts]]
 
-    return T.div(class_="personal_profile")[result]
+    return T.div(class_='personal_profile')[result]
 
 def notifications_section(who, viewer, django_request):
 
@@ -346,8 +346,8 @@ def notifications_section(who, viewer, django_request):
              [T.input(type='hidden',
                       name='subject_user_uuid',
                       value=model.pages.bare_string_id(who._id)),
-              T.input(type="hidden",
-                      name="csrfmiddlewaretoken",
+              T.input(type='hidden',
+                      name='csrfmiddlewaretoken',
                       value=django.middleware.csrf.get_token(django_request)),
               T.input(type='submit', value="Mark as read")]])
     if len(notifications) > 0:
@@ -363,7 +363,7 @@ def notifications_section(who, viewer, django_request):
              [T.input(type='hidden',
                       name='subject_user_uuid',
                       value=model.pages.bare_string_id(who._id)),
-              T.input(type="hidden", name="csrfmiddlewaretoken",
+              T.input(type='hidden', name='csrfmiddlewaretoken',
                       value=django.middleware.csrf.get_token(django_request)),
               T.input(type='submit', value="Mark as read")]])
 
@@ -436,7 +436,7 @@ def responsibilities_section(who, viewer, django_request):
     if len(their_responsible_types) == 0:
         return None
     keyed_types = { ty.pretty_name(): ty for ty in their_responsible_types }
-    return [T.div(class_="resps")[
+    return [T.div(class_='resps')[
         model.pages.with_help(
             viewer,
             [[T.h3[T.a(href=django.urls.reverse('equiptypes:eqty',
@@ -485,7 +485,7 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
     # keyed_types[name][1][0] is the qualification
     # keyed_types[name][1][1] is the disqualification
     who_name = who.name()
-    return T.div(class_="trainedon")[
+    return T.div(class_='trainedon')[
         T.table(class_='trainedon unstriped')[
             T.thead[T.tr[T.th["Equipment type"],
                          T.th["Trained by"],
@@ -493,9 +493,9 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                          T.th["Request trainer training"],
                          T.th["Request owner training"],
                          # todo: put machine statuses in
-                         [T.th(class_="ban_form")["Admin: Ban"],
-                          T.th(class_="permit_form")["Admin: Make owner"],
-                          T.th(class_="permit_form")["Admin: Make trainer"]] if (viewer.is_administrator()
+                         [T.th(class_='ban_form')["Admin: Ban"],
+                          T.th(class_='permit_form')["Admin: Make owner"],
+                          T.th(class_='permit_form')["Admin: Make trainer"]] if (viewer.is_administrator()
                                                     or viewer.is_owner(who_name)
                                                     or viewer.is_trainer(who_name)) else []]],
             T.tbody[[T.tr[T.th[T.a(href=django_request.scheme
@@ -522,10 +522,10 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
 def training_requests_section(who, viewer, django_request):
     len_training = len("_training")
     if len(who.training_requests) == 0:
-        return [T.div(class_="requested")[T.p["You have no open training requests."]]]
+        return [T.div(class_='requested')[T.p["You have no open training requests."]]]
     keyed_requests = {req['request_date']: req for req in who.training_requests}
     sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
-    return [T.div(class_="requested")[
+    return [T.div(class_='requested')[
         T.table(class_='unstriped')[
             T.thead[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]]],
             T.tbody[
@@ -543,37 +543,37 @@ def training_requests_section(who, viewer, django_request):
 
 def events_hosting_section(who, viewer, django_request):
     hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events()
-    return [T.div(class_="hostingevents")
+    return [T.div(class_='hostingevents')
             [pages.event_page.event_table_section(
                 hosting,
                 who._id,
                 django_request,
                 with_completion_link=True)]
             if len(hosting) > 0
-            else T.p(class_="hostingevents")["""We have no record of you being the host for any future events.
+            else T.p(class_='hostingevents')["""We have no record of you being the host for any future events.
             Please feel welcome to start hosting some!"""]]
 
 def events_attending_section(who, viewer, django_request):
     attending = model.timeline.Timeline.future_events(person_field='signed_up', person_id=who._id).events()
     return [model.pages.with_help(
         viewer,
-        (T.div(class_="attendingingevents")[pages.event_page.event_table_section(attending, who._id, django_request)]
+        (T.div(class_='attendingingevents')[pages.event_page.event_table_section(attending, who._id, django_request)]
          if len(attending) > 0
-         else T.p(class_="attendingingevents")["""We have no record of you having signed up for any future events."""]),
+         else T.p(class_='attendingingevents')["""We have no record of you having signed up for any future events."""]),
         "attending")]
 
 def events_hosted_section(who, viewer, django_request):
     hosted = model.timeline.Timeline.past_events(person_field='hosts', person_id=who._id).events()
-    return ([T.div(class_="hostedevents")[pages.event_page.event_table_section(hosted, who._id, django_request)]]
+    return ([T.div(class_='hostedevents')[pages.event_page.event_table_section(hosted, who._id, django_request)]]
         if len(hosted) > 0
-            else T.p(class_="hostedevents")["""We have no record of you having hosted any events.
+            else T.p(class_='hostedevents')["""We have no record of you having hosted any events.
         Please feel welcome to start hosting some!"""])
 
 def events_attended_section(who, viewer, django_request):
     attended = model.timeline.Timeline.past_events(person_field='signed_up', person_id=who._id).events()
-    return ([T.div(class_="attendedingevents")[pages.event_page.event_table_section(attended, who._id, django_request)]]
+    return ([T.div(class_='attendedingevents')[pages.event_page.event_table_section(attended, who._id, django_request)]]
             if len(attended) > 0
-            else T.p(class_="attendedingevents")["We have no record of you having attended any events."])
+            else T.p(class_='attendedingevents')["We have no record of you having attended any events."])
 
 def events_available_section(who, viewer, django_request):
     hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events()
@@ -584,8 +584,8 @@ def events_available_section(who, viewer, django_request):
                         if (ev not in known_events
                             and who.satisfies_conditions(ev.attendee_prerequisites))]
     if len(available_events) == 0:
-        return T.p(class_="availableevents")["""There are no future events listed.  Please create some!"""]
-    return [T.div(class_="availableevents")[
+        return T.p(class_='availableevents')["""There are no future events listed.  Please create some!"""]
+    return [T.div(class_='availableevents')[
         pages.event_page.event_table_section(
             available_events, # todo: filter this to only those for which the user has the prerequisites
             who._id, django_request, True, True)]]
@@ -620,7 +620,7 @@ def create_event_form(viewer, django_request):
                            T.td[T.input(name='hosts', type='text')]],
                       T.tr[T.th[""],
                            T.td[T.input(type='submit', value="Create event")]]],
-                                T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request))]
+                                T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request))]
 
 def search_events_form(viewer, django_request):
     # todo: pass the subject user in, and pick that up in the events list, so it can be used for signup
@@ -628,9 +628,9 @@ def search_events_form(viewer, django_request):
                        for etype in model.equipment_type.Equipment_type.list_equipment_types()}
     return T.form(action=django.urls.reverse("events:search_events"),
                   # todo: write the receiving function
-                  method='GET')[T.form[T.input(type="hidden", name="csrfmiddlewaretoken",
+                  method='GET')[T.form[T.input(type='hidden', name='csrfmiddlewaretoken',
                                                value=django.middleware.csrf.get_token(django_request)),
-                                       T.input(type='hidden', name="viewer", value=viewer._id),
+                                       T.input(type='hidden', name='viewer', value=viewer._id),
                                        T.table(class_='unstriped')[
                                            T.tr[T.th(class_='ralabel')["Event type:"],
                                                 T.td[T.input(name='event_type', type='text')]],
@@ -659,8 +659,8 @@ def announcement_form(viewer, django_request):
                                  T.textarea(name='announcement',
                                             cols=80, rows=12),
                                  T.br,
-                                 T.input(type="hidden",
-                                         name="csrfmiddlewaretoken",
+                                 T.input(type='hidden',
+                                         name='csrfmiddlewaretoken',
                                          value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value="Send announcement")]
 
@@ -673,8 +673,8 @@ def notification_form(viewer, django_request):
                                  T.textarea(name='message',
                                             cols=80, rows=12),
                                  T.br,
-                                 T.input(type="hidden",
-                                         name="csrfmiddlewaretoken",
+                                 T.input(type='hidden',
+                                         name='csrfmiddlewaretoken',
                                          value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value="Send notification")]
 
@@ -689,8 +689,8 @@ def email_form(viewer, django_request):
                                  T.textarea(name='message',
                                             cols=80, rows=12),
                                  T.br,
-                                 T.input(type="hidden",
-                                         name="csrfmiddlewaretoken",
+                                 T.input(type='hidden',
+                                         name='csrfmiddlewaretoken',
                                          value=django.middleware.csrf.get_token(django_request)),
                                  T.input(type='submit', value="Send email")]
 
@@ -705,8 +705,8 @@ def search_users_form(viewer, django_request):
                                                         value=filter_name),
                                                 filter_name.capitalize().replace('_', ' ')]
                                          for filter_name in sorted(pages.user_list_page.user_list_filters.keys())]]],
-                                    T.input(type="checkbox", name="include_non_members"), "Include non-members",
-                                    T.input(type="hidden", name="csrfmiddlewaretoken",
+                                    T.input(type='checkbox', name='include_non_members'), "Include non-members",
+                                    T.input(type='hidden', name='csrfmiddlewaretoken',
                                             value=django.middleware.csrf.get_token(django_request)),
                                     T.input(type='submit', value="Search for users")]],
         "search_users_form")
@@ -714,7 +714,7 @@ def search_users_form(viewer, django_request):
 def add_user_form(django_request, induction_event_id=None):
     return T.form(action=django.urls.reverse("makers_admin:add_user"),
                   method='POST')[
-        T.input(type="hidden", name="csrfmiddlewaretoken",
+        T.input(type='hidden', name='csrfmiddlewaretoken',
                 value=django.middleware.csrf.get_token(django_request)),
         (T.input(type='hidden', name='induction_event', value=induction_event_id)
          if induction_event_id
@@ -735,7 +735,7 @@ def add_user_form(django_request, induction_event_id=None):
 def raw_data_form(django_request):
     return [T.form(action=django.urls.reverse('makers_admin:raw_collection'),
                    method='GET')[
-                       T.input(type="hidden", name="csrfmiddlewaretoken",
+                       T.input(type='hidden', name='csrfmiddlewaretoken',
                                value=django.middleware.csrf.get_token(django_request)),
                        T.table(class_='unstriped')[
                            T.tr[T.th(class_='ralabel')["Collection:"],
@@ -754,7 +754,7 @@ def raw_data_form(django_request):
 def data_check_form(django_request):
     return [T.form(action=django.urls.reverse('makers_admin:data_check'),
                    method='GET')[
-                       T.input(type="hidden", name="csrfmiddlewaretoken",
+                       T.input(type='hidden', name='csrfmiddlewaretoken',
                                value=django.middleware.csrf.get_token(django_request)),
                        T.input(type='submit', value="Check data")]]
 
@@ -790,7 +790,7 @@ def admin_section(who, viewer, django_request):
                              viewer,
                              [T.form(action=django.urls.reverse('makers_admin:edit_event_template'),
                                      method='GET')[
-                                         T.input(type="hidden", name="csrfmiddlewaretoken",
+                                         T.input(type='hidden', name='csrfmiddlewaretoken',
                                                  value=django.middleware.csrf.get_token(django_request)),
                                          pages.page_pieces.event_template_dropdown('event_template_name'),
                                          T.input(type='submit', value="Edit event template")]],
@@ -837,7 +837,7 @@ def admin_section(who, viewer, django_request):
                                      method='GET')[
                                          "Include non-members: ",
                                          T.input(type='checkbox', name='include_non_members'),
-                                         T.input(type="hidden", name="csrfmiddlewaretoken",
+                                         T.input(type='hidden', name='csrfmiddlewaretoken',
                                                  value=django.middleware.csrf.get_token(django_request)),
                                          T.input(type='submit',
                                                  class_='button_update',
@@ -846,7 +846,7 @@ def admin_section(who, viewer, django_request):
         admin_subsection("Send test message",
                          [T.form(action=django.urls.reverse("makers_admin:test_message"),
                                  method='POST')[
-                                     T.input(type="hidden", name="csrfmiddlewaretoken",
+                                     T.input(type='hidden', name='csrfmiddlewaretoken',
                                              value=django.middleware.csrf.get_token(django_request)),
                                      T.label(for_='to')["To: "],
                                      T.input(type='text', name='to', id='to', value="makers.test.1@makespace.org"),
@@ -863,7 +863,7 @@ def admin_section(who, viewer, django_request):
                              viewer,
                              [T.form(action=django.urls.reverse("makers_admin:update_django"),
                                      method='POST')[
-                                         T.input(type="hidden", name="csrfmiddlewaretoken",
+                                         T.input(type='hidden', name='csrfmiddlewaretoken',
                                                  value=django.middleware.csrf.get_token(django_request)),
                                          T.input(type='submit',
                                                  class_='button_update',
@@ -896,7 +896,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
 
     if messages:
         page_data.add_section("Notifications",
-                              T.div(class_="notifications")[messages],
+                              T.div(class_='notifications')[messages],
                               priority=9)
 
     for (section_title, url_name) in dashboard_sections:
@@ -912,9 +912,9 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
     #     api_link += [T.br,
     #                  "You will need to register to get API access authorization.",
     #                  T.form(action=server_conf['userapi']+"authorize",
-    #                         method='POST')[T.button(type="submit", value="authorize")["Get API authorization code"]]]
+    #                         method='POST')[T.button(type='submit', value="authorize")["Get API authorization code"]]]
     # page_data.add_section("API links",
-    #                       T.div(class_="apilinks")[api_link])
+    #                       T.div(class_='apilinks')[api_link])
 
     return page_data
 

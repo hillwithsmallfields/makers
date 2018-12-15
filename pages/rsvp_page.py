@@ -19,7 +19,7 @@ def invitation_response_form_page(rsvp_uuid):
     # todo: also tell django that they are effectively logged in?
     event_responding = event.Event.find_by_id(person_responding.invitations[rsvp_uuid])
     form_act = django.urls.reverse("events:rsvp_form", args=[rsvp_uuid])
-    return T.div(class_="invitresp")[
+    return T.div(class_='invitresp')[
         T.h1["RSVP for " + person_responding.name(access_permissions_event=event_responding)],
         T.p["This is a " + event_responding.event_type
             + " event starting at " + str(event_responding.start)
@@ -30,8 +30,8 @@ def invitation_response_form_page(rsvp_uuid):
             + "."],
         T.form(action=form_act,
                method='POST')[
-            T.input(type="hidden",
-                    name="rsvp_uuid",
+            T.input(type='hidden',
+                    name='rsvp_uuid',
                     value=rsvp_uuid),
             T.table(class_='unstriped')[
                 T.tr[T.td[T.input(type='radio',
@@ -46,7 +46,7 @@ def invitation_response_form_page(rsvp_uuid):
                                   name='rsvp',
                                   value='drop')],
                      T.td["Decline invitation and cancel training request"]]],
-            T.input(type="submit", value="Send response")]]
+            T.input(type='submit', value="Send response")]]
 
 def handle_invitation_response(rsvp_uuid, response):
     """Process an incoming reply from the form generated from a mailed invitation UUID."""

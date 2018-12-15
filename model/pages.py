@@ -32,9 +32,9 @@ def with_help(who, content, help_name, substitutions={}):
                                default_text="",
                                substitutions=substitutions)
     if help_text:
-        return T.div(class_="with_help")[
-            T.div(class_="helped")[content],
-            T.div(class_="help")[untemplate.safe_unicode(help_text)]]
+        return T.div(class_='with_help')[
+            T.div(class_='helped')[content],
+            T.div(class_='help')[untemplate.safe_unicode(help_text)]]
     else:
         return content
 
@@ -216,19 +216,19 @@ class SectionalPage(object):
             model.database.log_machine_use("makers",
                                            user._id if user else None,
                                            details=self.name)
-        index = [T.div(class_="tabs")[
-            [T.button(class_="tabs-title",
+        index = [T.div(class_='tabs')[
+            [T.button(class_='tabs-title',
                       onclick=(("openLazyTab(event, '" + section_id + "', '" + self.sections[section_id] + "')")
                                if isinstance(self.sections[section_id], str)
                                else ("openTab(event, '" + section_id + "')")),
                       id=section_id+"_button")[self.presentation_names[section_id]]
                                       for section_id in self.index]],
                  T.br(clear='all')]
-        tabs = [[T.div(class_="tabs-panel", id_=section_id)[self.sections[section_id]]]
+        tabs = [[T.div(class_='tabs-panel', id_=section_id)[self.sections[section_id]]]
                    for section_id in self.index]
         return page_string(self.name,
-                           self.top_content + [T.div(class_="tabbedarea")[index,
-                                                                          [T.div(class_="tabs-content")[tabs]]]],
+                           self.top_content + [T.div(class_='tabbedarea')[index,
+                                                                          [T.div(class_='tabs-content')[tabs]]]],
                            user=user,
                            initial_tab=(self.initial_tab+"_button") if self.initial_tab else None,
                            needs_jquery=self.lazy)
@@ -312,7 +312,7 @@ def page_string(page_title, content,
                 initial_tab=None,
                 needs_jquery=False):
     """Make up a complete page as a string."""
-    print("page_string", str((page_title, content, user, initial_tab, needs_jquery)))
+    # print("page_string", str((page_title, content, user, initial_tab, needs_jquery)))
     conf = configuration.get_config()
     page_conf = conf['page']
     org_conf = conf['organization']
@@ -327,7 +327,7 @@ def page_string(page_title, content,
     if os.path.exists(script_file):
         with open(script_file) as mfile:
             script_body = mfile.read()
-    script_text += """<script type="text/javascript">""" + script_body + """</script>\n"""
+    script_text += """<script type='text/javascript'>""" + script_body + """</script>\n"""
     motd = ""
     motd_file = page_conf['motd_file']
     if os.path.exists(motd_file):
@@ -356,20 +356,20 @@ def page_string(page_title, content,
             style_text += '<link rel="stylesheet" type="text/css" href="' + os.path.join(stylesheet_directory, "without-foundation.css") + '">\n'
     # todo: put the motd into the preamble
     postamble = page_conf.get('postamble', '')
-    final_setup = """<script type="text/javascript">selectTab('""" + initial_tab + """')</script>""" if initial_tab else ""
+    final_setup = """<script type='text/javascript'>selectTab('""" + initial_tab + """')</script>""" if initial_tab else ""
     page_heading = page_title
     logo = page_conf.get('heading_logo', None)
     if logo:
         logo_height = int(page_conf.get('logo_height', "32"))
         logo_width = int(page_conf.get('logo_width', "32"))
         page_heading = T.span[page_heading,
-                              T.a(href=org_conf['home_page'])[T.img(align="right",
+                              T.a(href=org_conf['home_page'])[T.img(align='right',
                                                                     alt=org_conf['title'],
                                                                     height=logo_height,
                                                                     width=logo_width,
                                                                     src=logo)]]
     footer = T.footer[T.hr,
-                      T.p(class_="the_small_print")
+                      T.p(class_='the_small_print')
                       ["Produced by the ",
                        T.a(href="https://github.com/hillwithsmallfields/makers/")["makers"],
                        " system.  ",

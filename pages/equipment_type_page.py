@@ -22,7 +22,7 @@ def equipment_type_section(eqty, viewing_user, django_request):
     result = []
 
     if eqty.picture:
-        result += [T.img(src=eqty.picture, align="right")]
+        result += [T.img(src=eqty.picture, align='right')]
 
     result += [pages.page_pieces.display_or_form(
         'equipment_type_details',

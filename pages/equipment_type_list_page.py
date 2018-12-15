@@ -17,11 +17,11 @@ def equipment_type_list_section(training_category):
                   or "All") + " equipment types"],
             [T.dl[[[T.dt[T.a(href=serverconf['types']+eqty.name)[eqty.pretty_name()]],
                     T.dd[T.dl[T.dt["Machines"],
-                              [T.ul(class_="compactlist")[[T.li[T.a(href=serverconf['machines']+m.name)[m.name]]
+                              [T.ul(class_='compactlist')[[T.li[T.a(href=serverconf['machines']+m.name)[m.name]]
                                                                   for m in eqty.get_machines()]]],
                               T.dt["Training requests"],
                               T.dd[
                                   # todo: no training requests are visible (check whether they are even created)
-                                  T.ul(class_="compactlist")[[T.li[r.name()] for r in eqty.get_training_requests('user')]]
+                                  T.ul(class_='compactlist')[[T.li[r.name()] for r in eqty.get_training_requests('user')]]
                               ]]]]
                     for eqty in eqtys]]]]
