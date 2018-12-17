@@ -296,7 +296,7 @@ class SectionalLevel(object):
 def page_section_string(page_title, content, user=None, initial_tab=None, needs_jquery = False):
     return RawHtmlPage(page_title, content).to_string()
 
-using_foundation = False
+using_foundation = True
 
 foundation_stylesheet = """<link rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.1/dist/css/foundation.min.css"
@@ -358,6 +358,14 @@ def page_string(page_title, content,
     # todo: put the motd into the preamble
     postamble = page_conf.get('postamble', '')
     final_setup = """<script type='text/javascript'>selectTab('""" + initial_tab + """')</script>""" if initial_tab else ""
+    if using_foundation:
+        final_setup += """<script>$(document).foundation();</script>"""
+        # content = T.div(data_offcanvas='',
+        #                 class_='off-canvas-wrap')[
+        #                     T.div(class_='inner-wrap')[
+        #                         T.a(class_='left-off-canvas-toggle', href="#")["Menu"],
+        #                         T.aside(class_='left-off-canvas-menu')[pages.page_pieces.top_navigation(None)],
+        #                         content]]
     page_heading = page_title
     logo = page_conf.get('heading_logo', None)
     if logo:

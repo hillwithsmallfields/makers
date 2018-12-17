@@ -495,7 +495,7 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                          T.th["Date trained"],
                          T.th["Request trainer training"],
                          T.th["Request owner training"],
-                         # todo: put machine statuses in
+                         # todo: put machine statuses in, as accordion
                          [T.th(class_='ban_form')["Admin: Ban"],
                           T.th(class_='permit_form')["Admin: Make owner"],
                           T.th(class_='permit_form')["Admin: Make trainer"]] if (viewer.is_administrator()

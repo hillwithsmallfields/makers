@@ -219,6 +219,7 @@ def machinelist(eqty, who, django_request, as_owner=False):
     if eqty is None:
         return []
     mclist = eqty.get_machines()
+    # todo: make this into an accordion
     return ([T.table(class_='machine_list unstriped')[
         T.thead[T.tr[T.th["Machine"], T.th["Status"], T.th["Owner actions" if as_owner else ""]]],
         T.tbody[[[T.tr[T.th[machine_link(device.name)],

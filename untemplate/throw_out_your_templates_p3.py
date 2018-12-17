@@ -469,12 +469,18 @@ class XmlElement(object):
     def __init__(self, name):
         self.name = name
 
-    def __call__(self, class_=None, data_responsive_accordion_tabs=None, **attrs):
+    def __call__(self,
+                 class_=None,
+                 data_responsive_accordion_tabs=None,
+                 data_offcanvas=None,
+                 **attrs):
         assert not self.attrs
         if class_ is not None:
             attrs['class'] = class_
         if data_responsive_accordion_tabs is not None:
             attrs['data-responsive-accordion-tabs'] = data_responsive_accordion_tabs
+        if data_offcanvas is not None:
+            attrs['data-offcanvas'] = ''
         self.attrs = self._normalize_attrs(attrs)
         return self
 
@@ -510,11 +516,17 @@ class XmlElementProto(object):
         self.can_be_empty = can_be_empty
         self.element_class = element_class
 
-    def __call__(self, class_=None, data_responsive_accordion_tabs=None, **attrs):
+    def __call__(self,
+                 class_=None,
+                 data_responsive_accordion_tabs=None,
+                 data_offcanvas=None,
+                 **attrs):
         if class_ is not None:
             attrs['class'] = class_
         if data_responsive_accordion_tabs is not None:
             attrs['data-responsive-accordion-tabs'] = data_responsive_accordion_tabs
+        if data_offcanvas is not None:
+            attrs['data-offcanvas'] = ''
         return self.element_class(self.name)(**attrs)
 
     def __getitem__(self, children):
@@ -540,7 +552,7 @@ class Script(XmlElement):
 # version specific.  If you care about that, you could create a
 # separate list for each html version.
 _non_empty_html_tags = '''
-  a abbr acronym address applet b bdo big blockquote body button
+  a abbr acronym address applet aside b bdo big blockquote body button
   caption center cite code colgroup dd dfn div dl dt em fieldset font footer
   form frameset h1 h2 h3 h4 h5 h6 head html i iframe ins kbd label
   legend li menu nav noframes noscript ol optgroup option pre q s samp
