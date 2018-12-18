@@ -229,8 +229,8 @@ td.developer_data {
     background:    #ffa500;
 }
 
-.adminbutton {
-    border:        px red;
+.button_admin {
+    border:        2px red;
     border-style:  outset;
     border-radius: 8%;
     padding:       0.25em;
@@ -251,6 +251,20 @@ td.developer_data {
     border-radius: 8%;
     padding:       0.25em;
     background:    #ffa500;
+}
+
+.button_training {
+    border-style:  outset;
+    border-radius: 8%;
+    padding:       0.25em;
+}
+
+.button_request {
+    border:        2px green;
+}
+
+.button_cancel {
+    border:        2px red;
 }
 
 /* .tablinks { */

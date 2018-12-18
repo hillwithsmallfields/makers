@@ -46,7 +46,7 @@ def request_button(who, eqty_id, role, button_text, django_request):
                                  T.input(type='hidden', name='role', value=role),
                                  T.input(type='hidden', name='person', value=who._id),
                                  T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
-                                 T.button(type='submit', value="request")[button_text]]
+                                 T.button(type='submit', class_='button_request button_training', value="request")[button_text]]
 
 def cancel_button(who, eqty_id, role, button_text, django_request):
     return T.form(action=django.urls.reverse("training:cancel"),
@@ -54,7 +54,7 @@ def cancel_button(who, eqty_id, role, button_text, django_request):
                                  T.input(type='hidden', name='role', value=role),
                                  T.input(type='hidden', name='person', value=who._id),
                                  T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
-                                 T.button(type='submit', value="cancel_request")[button_text]]
+                                 T.button(type='submit', class_='button_cancel button_training', value="cancel_request")[button_text]]
 
 def toggle_request(who, eqty, role, already_requested, django_request):
     return (request_button(who, eqty, role, "Request %s training"%role, django_request)
@@ -71,11 +71,14 @@ def signup_button(event_id, who_id, button_text, django_request):
 def schedule_event_form(who, extras, button_text, django_request):
     return (T.form(action=django.urls.reverse("events:new_event"),
                    method='POST')
-            ["Date and time: ", T.input(type='datetime', name='when'), T.br,
-             extras,
-             T.input(type='hidden', name='submitter', value=str(who._id)),
-             T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
-             T.button(type='submit', class_='button_schedule_event', value="schedule")[button_text]])
+            [T.div(class_='row')[
+                T.div(class_='large-4 columns')[
+                    T.label["Date and time: ",
+                            T.input(type='datetime', name='when')],
+                    extras,
+                    T.input(type='hidden', name='submitter', value=str(who._id)),
+                    T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
+                    T.button(type='submit', class_='button_schedule_event', value="schedule")[button_text]]]])
 
 def availform(who, available, django_request):
     days, _, times = model.timeslots.get_slots_conf()
@@ -261,17 +264,26 @@ def eqty_training_requests(eqtype, django_request):
 def special_event_form(eqtype, who_id, role, enable, css_class, button_label, django_request):
     return T.form(action=django.urls.reverse("events:special"),
                   class_=css_class,
-                  method='POST')[T.input(type='hidden', name='eqtype', value=eqtype._id),
-                                 T.input(type='hidden', name='who', value=who_id),
-                                 T.input(type='hidden', name='admin_user', value=model.person.Person.find(django_request.user.link_id)._id),
-                                 T.input(type='hidden', name='role', value=role),
-                                 T.input(type='hidden', name='enable', value=enable),
-                                 "Days", T.input(type='text',
-                                                 name='duration',
-                                                 value="indefinite",
-                                                 size=len("indefinite")),
-                                 T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
-                                 T.input(type='submit', value=button_label)]
+                  method='POST')[
+                      T.div(class_='row')[
+                          T.div(class_='large-2 columns')[
+                              T.input(type='hidden', name='eqtype', value=eqtype._id),
+                              T.input(type='hidden', name='who', value=who_id),
+                              T.input(type='hidden', name='admin_user',
+                                      value=model.person.Person.find(django_request.user.link_id)._id),
+                              T.input(type='hidden', name='role', value=role),
+                              T.input(type='hidden', name='enable', value=enable),
+                              T.label["Days",
+                                      T.input(type='text',
+                                              name='duration',
+                                              value="indefinite",
+                                              size=len("indefinite"))],
+                              T.input(type='hidden',
+                                      name='csrfmiddlewaretoken',
+                                      value=django.middleware.csrf.get_token(django_request)),
+                              T.input(type='submit',
+                                      class_='button_admin',
+                                      value=button_label)]]]
 
 def permit_form(eqtype, who_id, who_name, role, django_request):
     return special_event_form(eqtype, who_id, role,

@@ -341,12 +341,7 @@ def page_string(page_title, content,
         if os.path.exists(user_stylesheet_name):
             stylesheet_name = user_stylesheet_name
     inline = page_conf['style_inline']
-    if os.path.exists(stylesheet_name):
-        if inline:
-            with open(stylesheet_name) as sf:
-                style_text = '<style type="text/css">' + sf.read() + '</style>\n'
-        else:
-            style_text = '<link rel="stylesheet" type="text/css" href="' + stylesheet_name + '">\n'
+    style_text = ""
     if using_foundation:
         style_text += foundation_stylesheet
     else:
@@ -355,6 +350,12 @@ def page_string(page_title, content,
                 style_text += '<style type="text/css">' + sf.read() + '</style>\n'
         else:
             style_text += '<link rel="stylesheet" type="text/css" href="' + os.path.join(stylesheet_directory, "without-foundation.css") + '">\n'
+    if os.path.exists(stylesheet_name):
+        if inline:
+            with open(stylesheet_name) as sf:
+                style_text += '<style type="text/css">' + sf.read() + '</style>\n'
+        else:
+            style_text += '<link rel="stylesheet" type="text/css" href="' + stylesheet_name + '">\n'
     # todo: put the motd into the preamble
     postamble = page_conf.get('postamble', '')
     final_setup = """<script type='text/javascript'>selectTab('""" + initial_tab + """')</script>""" if initial_tab else ""
