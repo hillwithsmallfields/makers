@@ -1,15 +1,17 @@
 * Makespace database help
 ** Introduction
 
-   This is the membership, equipment and training database for
-   Makespace, a hackerspace in Cambridge, UK.
+   This is the membership, equipment and training database originally
+   written for Makespace, a hackerspace in Cambridge, UK.  The source
+   code is available on github, and we hope it will come into use for
+   other organizations too.
 
    It holds the following information:
 
    - the list of members
    - the list of equipment types
    - the list of equipment instances
-   - the list of events held at Makespace
+   - the list of events held at the hackerspace
 
    Through this system, you can:
 
@@ -17,7 +19,8 @@
    - check your training status for equipment
    - request training on equipment
    - schedule events
-   - check equipment status -- not yet
+   - sign up for events
+   - check equipment status
 
    The key to understanding the system is that it is centred around
    ``events'', the most important type of which is training.  The system
@@ -205,18 +208,18 @@
      anonymize the remaining data.)
 
    - having a de-training event applied (by an admin) to your
-     Makespace training, which represents suspension of your
+     hackerspace training, which represents suspension of your
      membership until further notice.  This makes it easier to
      re-join, and (until an expiry time) allows your training status
      to be regained without going through re-training if you re-join.
 
-   When you leave, you will be marked as de-trained on Makespace, and
+   When you leave, you will be marked as de-trained on the hackerspace, and
    a future one-person de-training event will be scheduled for each
    piece of equipment you're trained on, with a delay specified by the
    configuration for that equipment.  If you re-join before then,
    those de-training events will be cancelled, and you will be able to
    resume using that equipment without re-training.
 
-   If Makespace requires you to leave (bans you) for misconduct, we
+   If the hackerspace requires you to leave (bans you) for misconduct, we
    will keep your identifying information as required for operational
    reasons (to stop you re-joining).
