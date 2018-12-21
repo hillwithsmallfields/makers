@@ -8,7 +8,7 @@
 
    - the list of members
    - the list of equipment types
-   - [the list of equipment instances --- not yet]
+   - the list of equipment instances
    - the list of events held at Makespace
 
    Through this system, you can:
@@ -17,10 +17,10 @@
    - check your training status for equipment
    - request training on equipment
    - schedule events
-   - [check equipment status -- not yet]
+   - check equipment status -- not yet
 
    The key to understanding the system is that it is centred around
-   ``events'', the most important of which is training.  The system
+   ``events'', the most important type of which is training.  The system
    manages people's permissions to do things (such as to use
    particular equipment), and those permissions are represented by
    people having successfully attended events which grant those
@@ -34,23 +34,27 @@
    - owner
 
    Users can use the equipment, trainers can create user training and
-   trainer training events and can mark their successful completion,
-   and owners can create maintenance and owner training events and
-   mark their completion.
+   trainer training events and can mark the results for each attendee,
+   and owners can create owner training events and mark their results,
+   and can create maintenance events.
 
    There are some special classes of "equipment" built into the
    system:
 
    - being an inducted member of the hackerspace is represented by
-     having been trained on "makespace" (and being an inductor is
-     represented by having been trained as a hackerspace trainer).
+     having been trained on the equipment type whose name is given
+     under organization:name in the config file (and being an inductor
+     is represented by having been trained as a trainer on that type
+     of equipment).
 
    - being a database admin is represented by having been trained as
-     an owner of the "database" equipment (and being an auditor, which
-     is a read-only admin, by being trained as a user of it).
+     an owner of the equipment named under organization:database in
+     the config file (and being an auditor, which is a read-only
+     admin, by being trained as a user of it).
 
    - being able to post to the announcements page / screen is
-     represented by being a user of it.
+     represented by being a user of the equipment type named as
+     organization:announcements in the config file.
 
    Members can request training on a particular type of equipment, and
    if there is a training event of the appropriate type already open
@@ -59,51 +63,101 @@
 
    When a trainer schedules a training event, the system searches for
    users who have requested that type of training, sorts them into
-   order of how long they've been waiting, and sends them emails
-   containing offers of training, with links to click on to indicate
-   acceptance or passing.
+   order of how long they've been waiting, and sends to those who've
+   been waiting longest (up to the maximum number of attendees for the
+   event) emails containing offers of training, in the form of a link
+   with a UUID identifying the event and the user, that will generate
+   a page on which the user can accept or decline the invitation.
 
    There is a limit on the number of training requests you can have
-   open at once, to encourage people to be specific about requesting
-   training only on equipment they're serious about using.  Your
-   personal limit can be raised by an admin if you can convince them
-   that you have good reason; and we will experiment with the
-   system-wide default number for this as we settle into using the
-   system.
+   open at once (set in the config file as
+   training:default_max_requests), to encourage people to be specific
+   about requesting training only on equipment they're serious about
+   using.  Your personal limit can be raised by an admin if you can
+   convince them that you have good reason; and we will experiment
+   with the system-wide default number for this as we settle into
+   using the system.
 
    If you don't turn up for training that you've signed up for, more
-   than a set number of times, you won't be able to request or accept
-   more training until you've contacted an admin about it.  This may
-   sound a bit draconian, but we have had real problems with people
-   wasting training slots, which, as trainers are volunteering their
-   time, are one of our scarcer resources.
+   than a set number of times (training:no_shows_limit in the config
+   file), you won't be able to request or accept more training until
+   you've contacted an admin about it.  This may sound a bit
+   draconian, but we have had significant problems with people wasting
+   training slots by signing up but not turning up; as trainers are
+   volunteering their time, training slots are one of our scarcer
+   resources.
 
    For the rare occasions when we have to withdraw permission to use
    something, there is also an "untraining" event type, which cancels
-   permission.  You have permission to use something if your most
-   recent training for it is more recent than your most recent
-   untraining for it.
+   permission.  You have permission to use an equipment type if your
+   most recent training for it is more recent than your most recent
+   untraining for it.  Admins and device owners and trainers can
+   create and apply untraining events to users.
 
-** Things database admins can do
+** Privacy and data protection
+
+   The default is that users cannot see other user's data (even their
+   names).  There are some exceptions to this, which are controlled by
+   flags that each user can set in their profile:
+
+   - They can allow their name to be seen by the hosts of an event
+     (typically, equipment trainers) when they are signed up to attend
+     the event.  The same flag also means that, once trained, they can
+     be seen on the list of users of an equipment type, by the owners
+     and trainers of that equipment type.
+   - They can allow their name to be seen by attendees of an event,
+     when they are hosts of the event.
+
+   We hope that most users will permit these (particularly the
+   latter), but understand that there are some circumstances (such as
+   being stalked) in which people may wish to avoid this.
+
+   Users with administrative permissions can see (and alter) all user
+   data, as this is required to perform that role.  In practice, very
+   few people will have these permissions; typically the board of
+   directors (four to six people), the administrative staff (one
+   person) and the system maintainer (one person).
+
+   The databases and the server are kept on a cloud server instance
+   with whole disk encryption, and web access is through https only,
+   and command line access (which currently two people have: one of
+   the directors, and the system maintainer) through ssh only.
+
+** Things database admins can do through the web interface
 
    There are some things admins can set on your profile that (to avoid
    the risk of misuse) you can't do yourself:
 
-   - clear the flag that says you're a persistent non-attender of
-     training
-   - ban you from equipment or from the space itself, and cancel the
-     ban (bans are represented as untraining events)
-   - correct your training status by creating training/untraining
-     events
-   - increase the number of training requests you can have open at
-     once
+   - Clear the flag that says you're a persistent non-attender of
+     training.
+   - Ban you from equipment or from the space itself, and cancel the
+     ban (bans are represented as untraining events); when a ban is
+     created, a future re-training may be created at the same time, to
+     make a ban of fixed duration.
+   - Correct your training status by creating training/untraining
+     events.
+   - Increase the number of training requests you can have open at
+     once.
+   - Backdate a training request, if you have convinced them that you
+     a good reason to jump the queue.
+   - Edit event creation templates.
+
+** Administrative events requiring command-line access
+
+   These may eventually be done through the web interface, but for now
+   there are some actions that require command-line access to the
+   server, mostly through the program utils/import.py:
+
+   - Bulk import of user and training data (from CSV files)
+   - Creation of equipment types and instances (by importing from CSV
+     files)
 
 ** How your data is used
 
    We use your data primarily to keep track of who can use each type
-   of equipment and schedule each type of event, and secondarily for
-   other administrative tasks.  Later, we will also use it to keep
-   track of equipment use.
+   of equipment and and who can schedule each type of event, and
+   secondarily for other administrative tasks.  Later, we will also
+   use it to control and keep track of equipment use.
 
    As our number of members grows, we are outgrowing our old model of
    being a small group who know each other, and also the
@@ -123,22 +177,32 @@
    out, the information going to the equipment controllers will not
    include your name, but only your keyfob number (except for
    equipment that can be left running unattended, such as the 3-D
-   printers, as they display the name associated with the current
+   printers, as they display the user name associated with the current
    job).
 
 ** Leaving (and possibly re-joining)
 
-   Your database entry is held in two separate databases, an
-   identifying one containing your name, email address, etc, and an
-   operational one containing no personal identifying information.
+   Your database entry is held in three databases:
+
+   - the relational database used by django to manage your login account
+   - an identifying database containing your name, email address, etc
+   - an operational database containing no personal identifying information.
+
+   These three entries are linked by having the same link_id field,
+   containing a UUID.
+
    There are two ways that you can leave the system:
 
-   - having your entry in the identifying database deleted (leaving
-     just an anonymous UUID in the operational database's log of
-     events); this is what the GDPR requires us to offer.  We will
-     tell you a UUID identifying your anonymized data, which may be
-     helpful if you do decide to re-join despite having expected not
-     to at the time you left.
+   - having your entries in the login database and the identifying
+     database deleted (leaving just anonymous link_id UUID in the
+     operational database's log of events); this is what the GDPR
+     requires us to offer.  Until then, you can get the the link_id
+     identifying your anonymized data (it is displayed on your profile
+     page), which may be helpful if you do decide to re-join despite
+     having expected not to at the time you left.  (We can't mail it
+     to you on leaving, as we keep a copy of emails sent by the
+     administrators, and by keeping that email we would be failing to
+     anonymize the remaining data.)
 
    - having a de-training event applied (by an admin) to your
      Makespace training, which represents suspension of your
