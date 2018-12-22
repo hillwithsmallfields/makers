@@ -14,28 +14,7 @@ BODY {
   /* line-height:   125% */
 }
 
-H1 {
-  padding:        6px;
-  background:     #ffa500;
-  color:          #004000;
-  border:         2px solid #008000;
-}
-
-H2 {
-  padding:        6px;
-  background:     #ffa500;
-  color:          #004000;
-  border:         2px solid #008000;
-}
-
-H3 {
-  padding:        6px;
-  background:     #ffa500;
-  color:          #004000;
-  border:         2px solid #008000;
-}
-
-H4 {
+H1, H2, H3, H4 {
   padding:        6px;
   background:     #ffa500;
   color:          #004000;
@@ -44,6 +23,23 @@ H4 {
 
 form {
   background:     #fff8f0;
+}
+
+strong {
+    font-weight: bold;
+    color: red;
+}
+
+.top_nav {
+    align: right;
+}
+
+.top_nav ul li {
+    display: inline;
+}
+
+/* For any tables of weekly timeslots */
+.weekly_slots {
 }
 
 th.daylabel {
@@ -97,80 +93,82 @@ td.developer_data {
     color:      green;
 }
 
+.identifying {
+    color: red;
+}
+
+.operational {
+    color: green;
+}
+
 /* User list columns, including lists of equipment for which a person has a given role */
 
-.mem_num {
-    background-color: #fff8d0;
-    padding:          0.5em;
-    text-align:       right;
-}
-
-.username {
-    background-color: #fff8d0;
+.userlist th {
     padding:          0.5em;
 }
 
-.user {
-    background-color: #fff8d0;
+.userlist td {
     padding:          0.5em;
 }
 
-.loginh {
+.humanid {
     background-color: #fff8d0;
-    padding:          0.5em;
 }
 
-.login {
+.eqtys {
     background-color: #fff8d0;
-    padding:          0.5em;
-    font-family:      monospace;
 }
 
 .email {
-    background-color: #fff8d0;
-    padding:          0.5em;
+    font-family:      monospace;
 }
 
-.owner {
-    background-color: #fff8d0;
-    padding:          0.5em;
+.login {
+    font-family:      monospace;
 }
 
-.trainer {
+.data {
     background-color: #fff8d0;
-    padding:          0.5em;
+    font-family:      monospace;
 }
 
 .note {
     background-color: #fff8d0;
-    padding:          0.5em;
+    font-style:       italic;
+}
+
+.emph {
+    font-weight: bold;
 }
 
 /* lists of events */
 
-.event_title {
+.timeline_table th {
     background-color: #fff8d0;
     padding:          0.5em;
 }
 
-.event_type {
+.timeline_table td {
     background-color: #fff8d0;
     padding:          0.5em;
 }
 
-.event_start {
+.event {
     background-color: #fff8d0;
-    padding:          0.5em;
 }
 
-.event_duration {
+.timeline_table .name {
     background-color: #fff8d0;
-    padding:          0.5em;
 }
 
-.event_end {
+.datetime {
     background-color: #fff8d0;
-    padding:          0.5em;
+    font-family:      monospace;
+}
+
+.duration {
+    background-color: #fff8d0;
+    font-family:      monospace;
 }
 
 .location {
@@ -179,18 +177,20 @@ td.developer_data {
 }
 
 .hosts {
-    background-color: #fff8d0;
-    padding:          0.5em;
 }
 
-.event_equipment_type {
-    background-color: #fff8d0;
-    padding:          0.5em;
+/* lists of equipment types */
+
+.category_green {
+    background-color: green;
 }
 
-.event_id {
-    background-color: #fff8d0;
-    padding:          0.5em;
+.category_amber {
+    background-color: orange;
+}
+
+.category_red {
+    background-color: red;
 }
 
 /* lists of event completion results */
@@ -229,58 +229,70 @@ td.developer_data {
     background:    #ffa500;
 }
 
-.adminbutton {
-    border:        px red;
+.button_admin {
+    border:        2px red;
     border-style:  outset;
     border-radius: 8%;
     padding:       0.25em;
     background:    #ffa500;
 }
 
-.tabbedarea {
-    flex-flow:        column wrap;
+.button_schedule_event {
+    border:        1px;
+    border-style:  outset;
+    border-radius: 8%;
+    padding:       0.25em;
+    background:    #80c080;
 }
 
-.tabset {
-    overflow:         hidden;
-    border:           1px solid #ccc;
-    background-color: #f1f1f1;
-    display:          flex;
-    flex-flow:        row wrap;
-    align-items:      stretch;
+.button_update {
+    border:        1px;
+    border-style:  outset;
+    border-radius: 8%;
+    padding:       0.25em;
+    background:    #ffa500;
 }
 
-.tabset button {
-    background-color: #ffb510;
-    color:            #004000;
-    float:            left;
-    border:           1px solid #008000;
-    outline:          none;
-    cursor:           pointer;
-    padding:          14px 16px;
-    transition:       0.3s;
-    width:            20em;
-    flex-grow:        1;
+.button_training {
+    border-style:  outset;
+    border-radius: 8%;
+    padding:       0.25em;
+}
+
+.button_request {
+    border:        2px green;
+}
+
+.button_cancel {
+    border:        2px red;
 }
 
 /* .tablinks { */
 /*     width:  20em; */
 /* } */
 
-.tab button:hover {
-    background-color: #ffb510;
+button:hover {
+    background-color: #cfb508;
 }
 
-.tab button.active {
+button:active {                 /* this doesn't seem to be working but maybe I misunderstand it */
     background-color: #ffa500;
+    border:           2px solid #008000;
+    font-weight:      bold;
 }
 
-.tabcontent {
-    display: none;
-    padding: 6px 12px;
-    border: 1px solid #ccc;
-    border-top: none;
+/* Some characteristics to combine either with Foundation or with our without-foundation stylesheet */
+
+.tabs-title {
+    background-color: #ffb510;
+    color:            #004000;
+    border:           1px solid #008000;
+    padding:          14px 16px;
+    transition:       0.3s;
+    width:            20em;
 }
+
+/* Adding help texts */
 
 .with_help {
     display:      flex;
@@ -340,4 +352,21 @@ span.admin_view {
 
 span.admin_view::after {
     content: " (administrative view of another user)";
+}
+
+/* logs */
+
+.logdate {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.logmachine {
+    background-color: #fff8d0;
+    padding:          0.5em;
+}
+
+.logdetails {
+    background-color: #fff8d0;
+    padding:          0.5em;
 }

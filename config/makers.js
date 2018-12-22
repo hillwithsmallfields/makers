@@ -29,19 +29,20 @@ function openLazyTab(evt, tabName, tabContentsUrl) {
     var i, tabcontent, tablinks;
 
     // Get all elements with class="tabcontent" and hide them
-    tabcontent = document.getElementsByClassName("tabcontent");
+    tabcontent = document.getElementsByClassName("tabs-panel");
     for (i = 0; i < tabcontent.length; i++) {
         tabcontent[i].style.display = "none";
     }
 
     // Get all elements with class="tablinks" and remove the class "active"
-    tablinks = document.getElementsByClassName("tablinks");
+    tablinks = document.getElementsByClassName("tabs-title");
     for (i = 0; i < tablinks.length; i++) {
         tablinks[i].className = tablinks[i].className.replace(" active", "");
     }
 
     // Load and show the current tab, and add an "active" class to the button that opened the tab
-    $(tabName).load(tabContentsUrl);
+    document.getElementById(tabName).innerHTML = "Loading " + tabName + "...";
+    $('#'+tabName).load(tabContentsUrl);
     document.getElementById(tabName).style.display = "block";
     evt.currentTarget.className += " active";
 } 

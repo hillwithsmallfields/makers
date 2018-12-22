@@ -46,6 +46,51 @@ def database_init(config):
     if database is None:
         raise ConnectionError
 
+def get_collection_rows(collection_name):
+    return [row for row in database[collection_names[collection_name]].find({})]
+
+collection_headers = {
+    'profiles': ['_id', 'link_id', 'membership_number',
+                 'name', 'given_name', 'surname', 'email',
+                 'admin_note',
+                 'configured',
+                 'interests', 'interest_emails',
+                 'avoidances'],
+    'people': ['_id', 'link_id', 'fob', 'past_fobs',
+               'training_requests', 'training_request_limit',
+               'available', 'visibility',
+               'show_help', 'notify_by_email', 'notify_in_site',
+               'notifications_shown_to', 'notifications_read_to',
+               'announcements_shown_to', 'announcements_read_to'],
+    'equipment_types': ['_id', 'name', 'presentation_name',
+                        'training_category',
+                        'manufacturer', 'description',
+                        'picture'],
+    'machines': ['_id', 'name', 'equipment_type', 'description',
+                 'status', 'status_detail',
+                 'location',
+                 'brand', 'model', 'serial_number',
+                 'acquired',
+                 'maintenance_due', 'maintenance_history'],
+    'events': ['_id', 'title', 'event_type',
+               'start', 'end', 'status',
+               'hosts',
+               'location', 'catered', 'alchohol_authorized',
+               'attendance_limit',
+               'signed_up',
+               'invited', 'invitation_accepted', 'invitation_declined',
+               'equipment_type', 'equipment',
+               'passed', 'failed', 'noshow',
+               'interest_areas',
+               'host_prerequisites', 'attendee_prerequisites']
+}
+
+def delete_by_link_id(identification):
+    """Not for normal use.
+    Probably should only be used from command line programs."""
+    return (database[collection_names['people']].delete_one({'link_id': identification}).__dict__,
+            database[collection_names['profiles']].delete_one({'link_id': identification}).__dict__)
+
 def get_person_dict(identification):
     """Read the data for a person from the database, as a dictionary."""
     if identification is None:
@@ -65,6 +110,13 @@ def get_person_dict(identification):
             # names and email addresses are kept in a separate database
             or collection.find_one({'link_id': name_to_id(identification)}))
 
+def get_person_link(whoever):
+    return (whoever['link_id']
+                   if isinstance(whoever, dict)
+                   else (whoever.link_id
+                         if isinstance(whoever, model.person.Person)
+                         else whoever))
+
 # You should generally use these functions to get these details of
 # people, rather than looking directly in the relevant fields of the
 # record, so that privacy protection can be applied.
@@ -72,7 +124,7 @@ def get_person_dict(identification):
 def get_person_profile_dict(id):
     """Ideally you shouldn't use this one at all outside of this module.
     Outside of here, it's really just for debugging."""
-    return database[collection_names['profiles']].find_one({'link_id': id})
+    return database[collection_names['profiles']].find_one({'link_id': get_person_link(id)})
 
 def get_person_profile_field(whoever,
                              profile_field,
@@ -82,12 +134,7 @@ def get_person_profile_field(whoever,
     """Return a profile field of a person.
     You should use model.person.get_profile_field() instead of this in your programs,
     as that handles the privacy controls."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    profile_record = get_person_profile_dict(person_link)
+    profile_record = get_person_profile_dict(whoever)
     if profile_record is None:
         return default_value
     else:
@@ -101,13 +148,7 @@ def set_person_profile_field(whoever,
     """Return a profile field of a person.
     You should use model.person.set_profile_field() instead of this in your programs,
     as that handles the privacy controls."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    profile_record = get_person_profile_dict(person_link)
-    # print("set_person_profile_field", person_link, "got record", profile_record, "to write field", profile_field, "with", new_value)
+    profile_record = get_person_profile_dict(whoever)
     if profile_record is not None:
         profile_record[profile_field] = new_value
         # print("saving", profile_record)
@@ -119,63 +160,55 @@ def person_name(whoever,
     """Return the formal and informal names of a person.
     You should use model.person.name() instead of this in your programs,
     as that handles the privacy controls."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    name_record = get_person_profile_dict(person_link)
+    name_record = get_person_profile_dict(whoever)
     if name_record is None:
         return "unknown", "unknown"
     else:
-        return (name_record.get('given_name', "?") + " " + name_record.get('surname', "?"),
+        return (name_record.get('name',
+                                (name_record.get('given_name', "?")
+                                 + " "
+                                 + name_record.get('surname', "?"))),
                 name_record.get('known_as', name_record.get('given_name', "?")))
 
 def person_set_name(whoever, new_name):
     """Set the person's name."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    name_record = get_person_profile_dict(person_link)
+    name_record = get_person_profile_dict(whoever)
     if name_record is None:
-        print("Could not find", person_link, "to set their name")
+        print("Could not find", get_person_link(whoever), "to set their name")
     else:
+        name_record['name'] = new_name
         given_name, surname = new_name.split(' ', 1) # todo: -1?
         name_record['given_name'] = given_name
         name_record['surname'] = surname
+        django_user = person_get_django_user_data(whoever)
+        if django_user:
+            django_user.first_name = given_name
+            django_user.last_name = surname
+            django_user.save()
     database[collection_names['profiles']].save(name_record)
+
+def person_get_django_user_data(whoever):
+    try:
+        return CustomUser.objects.get(link_id=get_person_link(whoever))
+    except:
+        return None
 
 def person_get_login_name(whoever):
     """Get the person's login name.
 This is only used by django, and is not important to the rest of the system."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    result = None
-    try:
-        result = CustomUser.objects.get(link_id=person_link).username
-    except:
-        pass
-    return result
+    django_user_data = person_get_django_user_data(whoever)
+    return django_user_data.get_username() if django_user_data else None
 
 def person_set_login_name(whoever, new_login_name):
     """Set the person's login name.
 This is only used by django, and is not important to the rest of the system.
 Assumes the django user has already been created.
 Returns False if the name was already in use."""
+    django_user_data = person_get_django_user_data(whoever)
     if len(CustomUser.objects.filter(username=new_login_name)) > 0:
         return False
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
     try:
-        CustomUser.objects.filter(link_id=person_link).update(username=new_login_name)
+        CustomUser.objects.filter(link_id=get_person_link(whoever)).update(username=new_login_name)
     except:
         return False
     return True
@@ -183,12 +216,7 @@ Returns False if the name was already in use."""
 def person_email(whoever, viewing_person):
     """Return the person's email address.
     If they have requested anonymity, only they and the admins can see this."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    name_record = get_person_profile_dict(person_link)
+    name_record = get_person_profile_dict(whoever)
     if name_record is None:
         return "unknown@example.com"
     else:
@@ -196,41 +224,25 @@ def person_email(whoever, viewing_person):
 
 def person_set_email(whoever, new_email):
     """Set the person's email address."""
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    name_record = get_person_profile_dict(person_link)
+    name_record = get_person_profile_dict(whoever)
     if name_record is None:
-        print("Could not find", person_link, "to set their email address")
+        print("Could not find", get_person_link(whoever), "to set their email address")
     else:
         name_record['email'] = new_email
     database[collection_names['profiles']].save(name_record)
-    # tell django that the email address has changed; there should
-    # only be one entry to change, but django treats it as though
-    # there could be several:
-    CustomUser.objects.filter(link_id=person_link).update(email=new_email)
+    django_user = person_get_django_user_data(whoever)
+    django_user.email = new_email
+    django_user.save()
 
 def person_get_admin_note(whoever, note_type='admin_note'):
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    name_record = get_person_profile_dict(person_link)
+    name_record = get_person_profile_dict(whoever)
     if name_record is None:
         return None
     else:
         return name_record.get(note_type, None)
 
 def person_set_admin_note(whoever, note, note_type='admin_note'):
-    person_link = (whoever['link_id']
-                   if isinstance(whoever, dict)
-                   else (whoever.link_id
-                         if isinstance(whoever, model.person.Person)
-                         else whoever))
-    name_record = get_person_profile_dict(person_link)
+    name_record = get_person_profile_dict(whoever)
     if name_record is None:
         return
     name_record[note_type] = note
@@ -239,10 +251,11 @@ def person_set_admin_note(whoever, note, note_type='admin_note'):
 def name_to_id(name):
     name_parts = name.rsplit(" ", 1)
     collection = database[collection_names['profiles']]
-    record = (collection.find_one({"surname" : name_parts[-1], "given_name" : name_parts[0]})
-              if len(name_parts) >= 2
-              else (collection.find_one({"known_as" : name})
-                    or collection.find_one({"email" : name})))
+    record = (collection.find_one({'name' : name})
+              or (collection.find_one({"surname" : name_parts[-1], "given_name" : name_parts[0]})
+                  if len(name_parts) >= 2
+                  else (collection.find_one({"known_as" : name})
+                        or collection.find_one({"email" : name}))))
     return record and record.get('link_id', None)
 
 def get_highest_membership_number():
@@ -254,6 +267,7 @@ def add_person(name_record, main_record):
     # todo: convert dates to datetime.datetime
     print("Given", main_record, "to add to operational database")
     print("Given", name_record, "to add to profiles database")
+    # todo: check they are not already in there
     # default_membership_number = get_highest_membership_number()+1
     default_membership_number = 0
     membership_number = main_record.get('membership_number',
@@ -266,11 +280,21 @@ def add_person(name_record, main_record):
     name_record['link_id'] = link_id # todo: make it index by this
     main_record['membership_number'] = membership_number
     name_record['membership_number'] = membership_number
-    print("Adding", main_record, "to operational database")
+    if (database[collection_names['profiles']].find({'given_name': name_record.get('given_name', "NoSuchGivenName"),
+                                                     'surname': name_record.get('surname', "NoSuchSurname")})
+        or database[collection_names['profiles']].find({'name': name_record.get('name', "NoSuchName")})):
+        print("Skipping", name_record, "as there is already someone with that name")
+        return None
+    print("Adding", main_record, "to operational database", collection_names['people'])
     database[collection_names['people']].insert(main_record)
-    print("Adding", name_record, "to profiles database")
+    print("Adding", name_record, "to profiles database", collection_names['profiles'])
     database[collection_names['profiles']].insert(name_record)
     # todo: also add them to the django database; there is a create_django_user function in django_calls.py; but, we are running outside of django, so maybe we can't do it here
+    # now check that they have been added
+    check_main = database[collection_names['people']].find_one({'link_id': link_id})
+    check_name = database[collection_names['profiles']].find_one({'link_id': link_id})
+    print("Checking main db entry:", check_main)
+    print("Checking name db entry", check_name)
     return link_id
 
 def get_all_person_dicts():
@@ -365,10 +389,15 @@ def add_notification(who_id, sent_date, text):
 
 # Announcements (to all)
 
-def get_announcements(since_date):
-    # print("get_announcements query will be", {'when': {'$gt': since_date}})
+def get_announcements(since, nlimit=0):
+    if since:
+        query = {'when': {'$gt': since}}
+    else:
+        query = {}
     return [message
-            for message in database[collection_names['announcements']].find({'when': {'$gt': since_date}})]
+            for message in (database[collection_names['announcements']].find(query)
+                            .sort([('when', -1)])
+                            .limit(nlimit))]
 
 def add_announcement(sent_date, from_id, text):
     database[collection_names['announcements']].insert({'when': sent_date,
@@ -503,6 +532,23 @@ def find_interested_people(interests):
                  # '$elemMatch':
                  '$in':
                  interests}}) ]
+
+# consistency checks etc
+
+def check_for_duplicates(collection_name, other_collection_name):
+    by_name = {}
+    other_collection = database[collection_names[other_collection_name]]
+    rows = [r for r in database[collection_names[collection_name]].find({})]
+    for row in rows:
+        name = row.get('name', row.get('given_name', "") + " " + row.get('surname', ""))
+        cluster = by_name.get(name, [])
+        cluster.append(row)
+        by_name[name] = cluster
+    return {k: [(ve,
+                 other_collection.find_one({'link_id': ve.get('link_id', "")}))
+                         for ve in v] for k, v
+            in by_name.items()
+            if v and len(v) > 1}
 
 # misc
 

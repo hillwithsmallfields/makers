@@ -1,0 +1,7 @@
+#!/bin/bash
+# Copy To Production Server
+export SERVER=makers.makespace.org
+export REMOTE_USER=ubuntu
+exec $(dirname ${BASH_SOURCE[0]})/cts
+ssh $REMOTE_USER@$SERVER sudo -u nginx /home/nginx/bin/install
+ssh $REMOTE_USER@$SERVER sudo systemctl restart gunicorn

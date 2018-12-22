@@ -1,11 +1,13 @@
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import django.urls
 import model.configuration
+import model.database
 import model.equipment_type
 import model.event
 import model.machine
 import model.person
 import model.timeline
+import model.times
 import model.timeslots
 import datetime
 
@@ -21,11 +23,11 @@ def top_navigation(django_request):
     org_conf = model.configuration.get_config('organization')
     # todo: make this a bar of buttons, or a dropdown
     return [T.nav(class_='top_nav')
-            [T.ul[T.li[T.a(href=org_conf['home_page'])[org_conf['title'] + " home"]],
-                  T.li[T.a(href=org_conf['wiki'])["Wiki"]],
-                  T.li[T.a(href=org_conf['forum'])["Forum"]],
-                  T.li[T.a(href=django.urls.reverse("dashboard:own_dashboard"))["Your dashboard"]],
-                  T.li[T.a(href='/users/logout')["Logout"]]]]]     # todo: use reverse when I can find its name
+            [T.ul[T.li[T.a(href=org_conf['home_page'])["[" + org_conf['title'] + " home]"]],
+                  T.li[T.a(href=org_conf['wiki'])["[Wiki]"]],
+                  T.li[T.a(href=org_conf['forum'])["[Forum]"]],
+                  T.li[T.a(href=django.urls.reverse("dashboard:own_dashboard"))["[Your dashboard]"]],
+                  T.li[T.a(href='/users/logout')["[Logout]"]]]]]     # todo: use reverse when I can find its name
 
 # https://stackoverflow.com/questions/2345708/how-can-i-get-the-full-absolute-url-with-domain-in-django
 # request.build_absolute_url()
@@ -40,19 +42,19 @@ def machine_link(name):
 
 def request_button(who, eqty_id, role, button_text, django_request):
     return T.form(action=django.urls.reverse("training:request"),
-                  method='POST')[T.input(type="hidden", name="equiptype", value=eqty_id),
-                                 T.input(type="hidden", name="role", value=role),
-                                 T.input(type="hidden", name="person", value=who._id),
-                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-                                 T.button(type="submit", value="request")[button_text]]
+                  method='POST')[T.input(type='hidden', name='equiptype', value=eqty_id),
+                                 T.input(type='hidden', name='role', value=role),
+                                 T.input(type='hidden', name='person', value=who._id),
+                                 T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
+                                 T.button(type='submit', class_='button_request button_training', value="request")[button_text]]
 
 def cancel_button(who, eqty_id, role, button_text, django_request):
     return T.form(action=django.urls.reverse("training:cancel"),
-                  method='POST')[T.input(type="hidden", name="equiptype", value=eqty_id),
-                                 T.input(type="hidden", name="role", value=role),
-                                 T.input(type="hidden", name="person", value=who._id),
-                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-                                 T.button(type="submit", value="cancel_request")[button_text]]
+                  method='POST')[T.input(type='hidden', name='equiptype', value=eqty_id),
+                                 T.input(type='hidden', name='role', value=role),
+                                 T.input(type='hidden', name='person', value=who._id),
+                                 T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
+                                 T.button(type='submit', class_='button_cancel button_training', value="cancel_request")[button_text]]
 
 def toggle_request(who, eqty, role, already_requested, django_request):
     return (request_button(who, eqty, role, "Request %s training"%role, django_request)
@@ -61,49 +63,52 @@ def toggle_request(who, eqty, role, already_requested, django_request):
 
 def signup_button(event_id, who_id, button_text, django_request):
     return T.form(action=django.urls.reverse("events:signup"),
-                  method='POST')[T.input(type="hidden", name="event_id", value=event_id),
-                                 T.input(type="hidden", name="person_id", value=who_id),
-                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-                                 T.button(type="submit", value="cancel_request")[button_text]]
+                  method='POST')[T.input(type='hidden', name='event_id', value=event_id),
+                                 T.input(type='hidden', name='person_id', value=who_id),
+                                 T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
+                                 T.button(type='submit', value="cancel_request")[button_text]]
 
 def schedule_event_form(who, extras, button_text, django_request):
     return (T.form(action=django.urls.reverse("events:new_event"),
                    method='POST')
-            ["Date and time: ", T.input(type="datetime", name="when"), T.br,
-             extras,
-             T.input(type="hidden", name="submitter", value=str(who._id)),
-             T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-             T.button(type="submit", value="schedule")[button_text]])
+            [T.div(class_='row')[
+                T.div(class_='large-4 columns')[
+                    T.label["Date and time: ",
+                            T.input(type='datetime', name='when')],
+                    extras,
+                    T.input(type='hidden', name='submitter', value=str(who._id)),
+                    T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
+                    T.button(type='submit', class_='button_schedule_event', value="schedule")[button_text]]]])
 
 def availform(who, available, django_request):
     days, _, times = model.timeslots.get_slots_conf()
-    return (T.div(class_="availability")
+    return (T.div(class_='weekly_slots availability')
             [T.form(action=django.urls.reverse("dashboard:update_availability"),
                     method="POST")
-             [T.table(class_="availability")
-              [[T.thead[T.tr[T.th(class_="daylabel")["Day"],
+             [T.table(class_='availability unstriped')
+              [[T.thead[T.tr[T.th(class_='daylabel')["Day"],
                              [[T.th[slotname]] for slotname in times]]]],
-               T.tbody[[[T.tr[T.th(class_="daylabel")[day],
-                              [T.td[T.input(type="checkbox",
+               T.tbody[[[T.tr[T.th(class_='daylabel')[day],
+                              [T.td[T.input(type='checkbox',
                                             name=day+"_"+t, checked="checked")
                                     if b
-                                    else T.input(type="checkbox",
+                                    else T.input(type='checkbox',
                                                  name=day+"_"+t)]
                                for t, b in zip(times, day_slots)]]]
                         for (day, day_slots) in zip(days,
                                                     model.timeslots.timeslots_from_int(available))]]],
-              T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+              T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
               T.input(type='hidden', name='person', value=str(who._id)),
-              T.input(type="submit", value="Update availability")]])
+              T.input(type='submit', class_='button_update', value="Update availability")]])
 
 def avail_table(who, slot_sums):
     days, _, times = model.timeslots.get_slots_conf()
-    return [T.div(class_="avail_table")[
+    return [T.div(class_='weekly_slots avail_table')[
         [T.h4["Availability of people who have requested training"],
-         T.table(class_="availability")
-         [T.thead[T.tr[T.th(class_="daylabel")["Day"],
+         T.table(class_='availability unstriped')
+         [T.thead[T.tr[T.th(class_='daylabel')["Day"],
                        [[T.th[slotname]] for slotname in times]]],
-          T.tbody[[[T.tr[T.th(class_="daylabel")[day],
+          T.tbody[[[T.tr[T.th(class_='daylabel')[day],
                          [T.td[str(b) # todo: make bold, and a different style, if "who" (the viewing user) is available then
                            ]
                           for t, b in zip(times, day_slots)]]]
@@ -119,13 +124,13 @@ def schedule_training_event_form(who, role, eqtype, extras, button_text, django_
             who.available
             for who in people_awaiting_training])) if len(people_awaiting_training) > 0 else "",
         T.br,
-        schedule_event_form(who, [T.input(type="hidden", name="event_type", value=event_type),
-                                  T.input(type="hidden", name="role", value=role),
-                                  T.input(type="hidden", name="equiptype", value=eqtype._id)] + extras,
+        schedule_event_form(who, [T.input(type='hidden', name='event_type', value=event_type),
+                                  T.input(type='hidden', name='role', value=role),
+                                  T.input(type='hidden', name='equiptype', value=eqtype._id)] + extras,
                             button_text, django_request)]
 
 def interests_button(area_name, level, which_level):
-    return [T.td(class_="level_" + str(which_level))
+    return [T.td(class_='level_' + str(which_level))
             [T.input(type='radio',
                      name=area_name,
                      value=str(which_level),
@@ -141,7 +146,7 @@ def interests_section(interest_levels, mail_levels, django_request, for_person=N
         return []
     existing_interests = {area_name: interest_levels.get(area_name, 0) for area_name in interest_areas}
     return [T.form(action=django.urls.reverse("dashboard:update_levels"), method="POST")
-            [T.table(class_="interests_check_table")
+            [T.table(class_='interests_check_table unstriped')
              [T.thead[T.tr[[T.th["Area"],
                             [[[T.th(class_='level_'+str(lev))[str(lev)]] for lev in range(4)]]]]],
               T.tbody[[[T.tr[T.th[area],
@@ -152,11 +157,11 @@ def interests_section(interest_levels, mail_levels, django_request, for_person=N
                             [[[T.td[(T.input(type='checkbox', name='mail_'+str(lev), checked='checked')
                                      if mail_levels[lev]
                                      else T.input(type='checkbox', name='mail_'+str(lev)))]] for lev in range(1,4)]]]] if mail_levels else "")],
-             T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
+             T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
              # This form can be used either for a person, or for an event
              T.input(type='hidden', name='subject_user_uuid', value=for_person._id) if for_person else "",
-             T.div(align="right")[T.input(type="submit", value="Update interests")]],
-            T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request))]
+             T.div(align='right')[T.input(type='submit', class_='button_update', value="Update interests")]],
+            T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request))]
 
 def plain_value(item):
     return item[0] if type(item) == tuple else item
@@ -168,7 +173,7 @@ def display_or_form(class_name, action_as_form,
                     headers, row_order,
                     labels_dict, data_dict):
     """Display some data either with or without form inputs to update it."""
-    table = T.table(class_=class_name)[
+    table = T.table(class_=class_name+ ' unstriped')[
         T.thead[T.tr[[[T.th[header] for header in (headers or ["Key", "Value"])]]]],
         T.tbody[[[T.tr[T.th(class_='ralabel')[(labels_dict.get(item, item.capitalize())
                                                if labels_dict
@@ -192,20 +197,24 @@ def display_or_form(class_name, action_as_form,
 
 def general_equipment_list(who, viewer, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
-    return T.table[T.thead[T.tr[T.th["Equipment type"],
-                                T.th["Request"],
-                                T.th["Admin action"] if viewer.is_administrator() else ""]],
-                   T.tbody[[[T.tr[T.th[T.a(href=django.urls.reverse("equiptypes:eqty",
-                                                                    args=(name,)))[keyed_types[name].pretty_name()]],
-                                  T.td[machinelist(keyed_types[name],
-                                                   who, django_request, False) if detailed else "",
-                                       toggle_request(who, keyed_types[name]._id, 'user',
-                                                      who.has_requested_training(keyed_types[name]._id, 'user'),
-                                                      django_request)],
-                                  T.td[permit_form(keyed_types[name],
-                                                   who._id, who.name(),
-                                                   'user',
-                                                   django_request)] if viewer.is_administrator() else ""]]
+    return T.table(class_='equipment_type_list unstriped')[
+        T.thead[T.tr[T.th["Equipment type"],
+                     T.th["Request"],
+                     T.th["Admin action"] if viewer.is_administrator() else ""]],
+        T.tbody[[[T.tr[T.th(class_='category_'+keyed_types[name].training_category)[
+            T.a(href=django.urls.reverse("equiptypes:eqty",
+                                         args=(name,)))[keyed_types[name].pretty_name()]],
+                       T.td[machinelist(keyed_types[name],
+                                        who, django_request, False) if detailed else "",
+                            (toggle_request(who, keyed_types[name]._id, 'user',
+                                            who.has_requested_training(keyed_types[name]._id, 'user'),
+                                            django_request)
+                                        if keyed_types[name].training_category != "green"
+                                        else "Training not required")],
+                       T.td[permit_form(keyed_types[name],
+                                        who._id, who.name(),
+                                        'user',
+                                        django_request)] if viewer.is_administrator() else ""]]
                             for name in sorted(keyed_types.keys())]]]
 
 def machinelist(eqty, who, django_request, as_owner=False):
@@ -213,15 +222,16 @@ def machinelist(eqty, who, django_request, as_owner=False):
     if eqty is None:
         return []
     mclist = eqty.get_machines()
-    return ([T.table[T.thead[T.tr[T.th["Machine"], T.th["Status"], T.th["Owner actions" if as_owner else ""]]],
-                     T.tbody[[[T.tr[T.th[machine_link(device.name)],
-                                    T.td[device.status],
-                                    T.td[schedule_event_form(who,
-                                                             [T.input(type="hidden", name="machine", value=device.name),
-                                                              T.input(type="hidden", name="equiptype", value=eqty._id),
-                                                              T.input(type="hidden", name="event_type", value="maintenance")],
-                                                             "Schedule maintenance",
-                                                             django_request)
+    return ([T.table(class_='machine_list unstriped')[
+        T.thead[T.tr[T.th["Machine"], T.th["Status"], T.th["Owner actions" if as_owner else ""]]],
+        T.tbody[[[T.tr[T.th[machine_link(device.name)],
+                       T.td[device.status],
+                       T.td[schedule_event_form(who,
+                                                [T.input(type='hidden', name='machine', value=device.name),
+                                                 T.input(type='hidden', name='equiptype', value=eqty._id),
+                                                 T.input(type='hidden', name='event_type', value="maintenance")],
+                                                "Schedule maintenance",
+                                                django_request)
                                  if as_owner else ""]]]
                               for device in mclist]]]]
             if mclist
@@ -241,10 +251,11 @@ def eqty_training_requests(eqtype, django_request):
             if r['request_date'] == d:
                 reqs.append(r)
     # print("reqs are", reqs)
-    return [T.table[T.thead[T.tr[T.th["Date requested"],
-                                T.th["Requester"]]],
-                   T.tbody[[[T.tr[T.td[event.timestring(req['request_date'])],
-                                 T.td[person.Person.find(req['requester']).name()]]]
+    return [T.table(class_='unstriped')[
+        T.thead[T.tr[T.th["Date requested"],
+                     T.th["Requester"]]],
+        T.tbody[[[T.tr[T.td[event.timestring(req['request_date'])],
+                       T.td[person.Person.find(req['requester']).name()]]]
                             for req in reqs]]],
             avail_table(model.person.Person.find(django_request.user.link_id),
                         model.timeslots.sum_availabilities([person.Person.find(req['requester']).available
@@ -253,17 +264,26 @@ def eqty_training_requests(eqtype, django_request):
 def special_event_form(eqtype, who_id, role, enable, css_class, button_label, django_request):
     return T.form(action=django.urls.reverse("events:special"),
                   class_=css_class,
-                  method='POST')[T.input(type='hidden', name='eqtype', value=eqtype._id),
-                                 T.input(type='hidden', name='who', value=who_id),
-                                 T.input(type='hidden', name='admin_user', value=model.person.Person.find(django_request.user.link_id)._id),
-                                 T.input(type='hidden', name='role', value=role),
-                                 T.input(type='hidden', name='enable', value=enable),
-                                 "Days", T.input(type='text',
-                                                 name='duration',
-                                                 value="indefinite",
-                                                 size=len("indefinite")),
-                                 T.input(type="hidden", name="csrfmiddlewaretoken", value=django.middleware.csrf.get_token(django_request)),
-                                 T.input(type='submit', value=button_label)]
+                  method='POST')[
+                      T.div(class_='row')[
+                          T.div(class_='large-2 columns')[
+                              T.input(type='hidden', name='eqtype', value=eqtype._id),
+                              T.input(type='hidden', name='who', value=who_id),
+                              T.input(type='hidden', name='admin_user',
+                                      value=model.person.Person.find(django_request.user.link_id)._id),
+                              T.input(type='hidden', name='role', value=role),
+                              T.input(type='hidden', name='enable', value=enable),
+                              T.label["Days",
+                                      T.input(type='text',
+                                              name='duration',
+                                              value="indefinite",
+                                              size=len("indefinite"))],
+                              T.input(type='hidden',
+                                      name='csrfmiddlewaretoken',
+                                      value=django.middleware.csrf.get_token(django_request)),
+                              T.input(type='submit',
+                                      class_='button_admin',
+                                      value=button_label)]]]
 
 def permit_form(eqtype, who_id, who_name, role, django_request):
     return special_event_form(eqtype, who_id, role,
@@ -278,7 +298,9 @@ def ban_form(eqtype, who_id, who_name, role, django_request):
                               django_request)
 
 def announcements_section():
-    return T.div[T.p["Placeholder."]]
+    announcements = model.database.get_announcements(None, 3)
+    return T.div[T.dl[[[T.dt[model.times.timestring(a['when'])],
+                        T.dd[a['text']]] for a in announcements]]]
 
 def dropdown(name, choices, current=None):
     """Make an HTML form dropdown box."""

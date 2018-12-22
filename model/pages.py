@@ -1,7 +1,11 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 from untemplate.throw_out_your_templates_p3 import htmltags as T
 import bson
+import csv
+import io
+import json
 import model.configuration as configuration
 import model.database
 import model.person
@@ -28,14 +32,70 @@ def with_help(who, content, help_name, substitutions={}):
                                default_text="",
                                substitutions=substitutions)
     if help_text:
-        return T.div(class_="with_help")[
-            T.div(class_="helped")[content],
-            T.div(class_="help")[untemplate.safe_unicode(help_text)]]
+        return T.div(class_='with_help')[
+            T.div(class_='helped')[content],
+            T.aside(class_='help')[untemplate.safe_unicode(help_text)]]
     else:
         return content
 
 def debug_string(whatever):
     return untemplate.Serializer(untemplate.examples_vmap, 'utf-8').serialize(whatever)
+
+class CsvPage(object):
+
+    def __init__(self, name,
+                 columns=[],
+                 rows=[],
+                 input_encoding='utf-8'):
+        self.name = name
+        self.columns = columns
+        self.rows = rows
+        self.input_encoding = input_encoding
+
+    def add_row(self, row):
+        self.rows.append(row)
+
+    def to_string(self):
+        with io.StringIO(initial_value="",
+                         newline=None) as output:
+            writer = csv.DictWriter(output,
+                                    fieldnames=self.columns,
+                                    extrasaction='ignore')
+            writer.writeheader()
+            writer.writerows(self.rows)
+            return output.getvalue()
+
+def jsonify(x):
+    """Make data more suitable for outputting as JSON."""
+    return (x if (isinstance(x, int)
+                  or isinstance(x, float)
+                  or isinstance(x, str)
+                  or isinstance(x, bool))
+            else ([jsonify(e) for e in x]
+                  if isinstance(x, list) or isinstance(x, tuple)
+                  else ({jsonify(k): jsonify(v) for k, v in x.items()}
+                        if isinstance(x, dict)
+                        else str(x))))
+
+class JsonPage(object):
+
+    def __init__(self, name,
+                 data = {},
+                 pprint = False,
+                 input_encoding='utf-8'):
+        self.name = name
+        self.data = data
+        self.pprint = pprint
+        self.input_encoding = input_encoding
+
+    def set_data(self, data):
+        self.data = data
+
+    def to_string(self):
+        json_data = jsonify(self.data)
+        return (json.dumps(json_data, indent=4)
+                if self.pprint
+                else json.dumps(json_data))
 
 class RawHtmlPage(object):
 
@@ -72,11 +132,15 @@ class HtmlPage(object):
         self.content.append([T.h2[name], content])
 
     def to_string(self):
-        user = self.viewer or (model.person.Person.find(self.django_request.user.link_id)
+        try:
+            link_id = self.django_request.user.link_id
+        except:
+            link_id = None
+        user = self.viewer or (model.person.Person.find(link_id)
                                if self.django_request
                                else None)
         if user:
-            model.database.log_machine_use("makers", user.link_id, details=self.name)
+            model.database.log_machine_use("makers", user._id, details=self.name)
         return page_string(self.name, self.content)
 
 class PageSection(object):
@@ -97,7 +161,7 @@ class PageSection(object):
         self.content.append([T.h2[name], content])
 
     def to_string(self):
-        return page_string(self.name, self.content)
+        return page_section_string(self.name, self.content)
 
 class SectionalPage(object):
 
@@ -152,68 +216,163 @@ class SectionalPage(object):
             model.database.log_machine_use("makers",
                                            user._id if user else None,
                                            details=self.name)
-        index = [T.div(class_="tabset")[
-            [T.button(class_="tablinks",
-                      onclick=(("openLazyTab(event, '" + section_id + "', '" + self.sections[section_id] + "')")
+        index = [T.div(class_='tabs',
+                       data_responsive_accordion_tabs='tabs small-accordion')[
+                           [T.button(class_='tabs-title',
+                                     onclick=(("openLazyTab(event, '" + section_id + "', '" + self.sections[section_id] + "')")
                                if isinstance(self.sections[section_id], str)
                                else ("openTab(event, '" + section_id + "')")),
-                      id=section_id+"_button")[self.presentation_names[section_id]]
+                                     id=section_id+"_button")[self.presentation_names[section_id]]
                                       for section_id in self.index]],
                  T.br(clear='all')]
-        tabs = [[T.div(class_="tabcontent", id_=section_id)[self.sections[section_id]]]
+        tabs = [[T.div(class_='tabs-panel', id_=section_id)[self.sections[section_id]]]
                    for section_id in self.index]
         return page_string(self.name,
-                           self.top_content + [T.div(class_="tabbedarea")[index,
-                                                                          [T.div(class_="tabcontents")[tabs]]]],
+                           self.top_content + [T.main
+                                               [T.div(class_='tabbedarea')[index,
+                                                                          [T.div(class_='tabs-content')[tabs]]]]],
                            user=user,
                            initial_tab=(self.initial_tab+"_button") if self.initial_tab else None,
                            needs_jquery=self.lazy)
 
-def page_string(page_title, content, user=None, initial_tab=None, needs_jquery = False):
+class SectionalLevel(object):
+
+    """A tree level for a hierarchical multi-part page."""
+
+    # an experimental fork of SectionalPage, for separating out the sectional part from the page part
+
+    def __init__(self, name, class_, top_content, viewer=None, django_request=None):
+        self.name = name
+        self.class_ = class_
+        self.top_content = top_content
+        self.sections = {}
+        self.initial_child = None
+        self.initial_child_priority = -1
+        self.presentation_names = {}
+        self.index = []
+        self.lazy = False
+        self.viewer = viewer
+        self.django_request = django_request
+
+    def add_section(self, name, content, priority=1):
+        # http://api.jquery.com/load/ gives an example:
+        # $( "#feeds" ).load( "feeds.html" );
+        # I could use something like that to load big pages such as the dashboard piecemeal
+        # Each tab body could start off with a load call in it, which would be replaced by the loaded content and so not get the loading repeated
+        section_id = name.replace(' ', '_')
+        self.sections[section_id] = [T.h2[name], content]
+        self.presentation_names[section_id] = name
+        if priority > self.initial_child_priority:
+            self.initial_child_priority = priority
+            self.initial_child = section_id
+        self.index.append(section_id)
+
+    def add_lazy_section(self, name, content_loader_url, priority=1):
+        """Add a lazily-loaded section to the page data.
+        This section will be loaded when its tab is first looked at."""
+        # http://api.jquery.com/load/ gives an example:
+        # $( "#feeds" ).load( "feeds.html" );
+        # I could use something like that to load big pages such as the dashboard piecemeal
+        # Each tab body could start off with a load call in it, which would be replaced by the loaded content and so not get the loading repeated
+        section_id = name.replace(' ', '_')
+        self.sections[section_id] = content_loader_url
+        self.presentation_names[section_id] = name
+        if priority > self.initial_child_priority:
+            self.initial_child_priority = priority
+            self.initial_child = section_id
+        self.index.append(section_id)
+        self.lazy = True
+
+    def to_structure(self):
+        return T.div(class_=self.class_,
+                     id=self.name)[
+                         T.div(class_=self.class_+"_toc",
+                               id=self.name+"_toc")[
+                                   # todo: I want this to be something that can be a list of # links, or a tab set, or nothing
+                                   "section table to go here"
+                                   ],
+                         [[[self.sections[section_id]] for section_id in self.index]]
+                         ]
+
+def page_section_string(page_title, content, user=None, initial_tab=None, needs_jquery = False):
+    return RawHtmlPage(page_title, content).to_string()
+
+using_foundation = False
+
+foundation_stylesheet = """<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.1/dist/css/foundation.min.css"
+      integrity="sha256-1mcRjtAxlSjp6XJBgrBeeCORfBp/ppyX4tsvpQVCcpA= sha384-b5S5X654rX3Wo6z5/hnQ4GBmKuIJKMPwrJXn52ypjztlnDK2w9+9hSMBz/asy9Gw sha512-M1VveR2JGzpgWHb0elGqPTltHK3xbvu3Brgjfg4cg5ZNtyyApxw/45yHYsZ/rCVbfoO5MSZxB241wWq642jLtA=="
+      crossorigin="anonymous">\n"""
+
+foundation_script = """<script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.1/dist/js/foundation.min.js"
+        integrity="sha256-WUKHnLrIrx8dew//IpSEmPN/NT3DGAEmIePQYIEJLLs= sha384-53StQWuVbn6figscdDC3xV00aYCPEz3srBdV/QGSXw3f19og3Tq2wTRe0vJqRTEO sha512-X9O+2f1ty1rzBJOC8AXBnuNUdyJg0m8xMKmbt9I3Vu/UOWmSg5zG+dtnje4wAZrKtkopz/PEDClHZ1LXx5IeOw=="
+        crossorigin="anonymous">
+        </script>\n"""
+
+def page_string(page_title, content,
+                user=None,
+                initial_tab=None,
+                needs_jquery=False):
     """Make up a complete page as a string."""
+    # print("page_string", str((page_title, content, user, initial_tab, needs_jquery)))
     conf = configuration.get_config()
     page_conf = conf['page']
     org_conf = conf['organization']
     preamble = page_conf.get('preamble', '')
     script_file = page_conf['script_file']
     script_body = ""
+    script_text = ""
+    if needs_jquery:
+        script_text += """<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>\n"""
+    if using_foundation:
+        script_text += foundation_script
     if os.path.exists(script_file):
         with open(script_file) as mfile:
             script_body = mfile.read()
-    script_text = """<script type="text/javascript">""" + script_body + """</script>\n"""
-    if needs_jquery:
-        script_text += """<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>\n"""
+    script_text += """<script type='text/javascript'>""" + script_body + """</script>\n"""
     motd = ""
     motd_file = page_conf['motd_file']
     if os.path.exists(motd_file):
         with open(motd_file) as mfile:
             motd = mfile.read()
     stylesheet_name = page_conf['stylesheet']
+    stylesheet_directory = os.path.dirname(stylesheet_name)
     if user and user.stylesheet:
-        user_stylesheet_name = os.path.join(os.path.dirname(stylesheet_name), user.stylesheet + ".css")
+        user_stylesheet_name = os.path.join(stylesheet_directory, user.stylesheet + ".css")
         if os.path.exists(user_stylesheet_name):
             stylesheet_name = user_stylesheet_name
+    inline = page_conf['style_inline']
+    style_text = ""
+    if using_foundation:
+        style_text += foundation_stylesheet
+    else:
+        if inline:
+            with open(os.path.join(stylesheet_directory, "without-foundation.css")) as sf:
+                style_text += '<style type="text/css">' + sf.read() + '</style>\n'
+        else:
+            style_text += '<link rel="stylesheet" type="text/css" href="' + os.path.join(stylesheet_directory, "without-foundation.css") + '">\n'
     if os.path.exists(stylesheet_name):
-        inline = page_conf['style_inline']
         if inline:
             with open(stylesheet_name) as sf:
-                style_text = '<style type="text/css">' + sf.read() + '</style>'
+                style_text += '<style type="text/css">' + sf.read() + '</style>\n'
         else:
-            style_text = '<link rel="stylesheet" type="text/css" href="' + stylesheet_name + '">'
+            style_text += '<link rel="stylesheet" type="text/css" href="' + stylesheet_name + '">\n'
     # todo: put the motd into the preamble
     postamble = page_conf.get('postamble', '')
-    final_setup = """<script type="text/javascript">selectTab('""" + initial_tab + """')</script>""" if initial_tab else ""
+    final_setup = """<script type='text/javascript'>selectTab('""" + initial_tab + """')</script>""" if initial_tab else ""
     page_heading = page_title
     logo = page_conf.get('heading_logo', None)
     if logo:
         logo_height = int(page_conf.get('logo_height', "32"))
+        logo_width = int(page_conf.get('logo_width', "32"))
         page_heading = T.span[page_heading,
-                              T.a(href=org_conf['home_page'])[T.img(align="right",
+                              T.a(href=org_conf['home_page'])[T.img(align='right',
                                                                     alt=org_conf['title'],
                                                                     height=logo_height,
+                                                                    width=logo_width,
                                                                     src=logo)]]
     footer = T.footer[T.hr,
-                      T.p(class_="the_small_print")
+                      T.p(class_='the_small_print')
                       ["Produced by the ",
                        T.a(href="https://github.com/hillwithsmallfields/makers/")["makers"],
                        " system.  ",

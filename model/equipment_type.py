@@ -4,6 +4,16 @@ import model.machine
 import model.pages
 import model.person
 
+def id_to_name(as_id):
+    # return model.person.Person.find(as_id).name()
+    try:
+        return model.person.Person.find(as_id).name()
+    except:
+        try:
+            return str(model.person.Person.find(as_id))
+        except:
+            return "id_" + str(type(as_id)) + "_" + str(as_id)
+
 class Equipment_type(object):
 
     """An Equipment_type is the unit of what people can be trained on.
@@ -81,9 +91,8 @@ class Equipment_type(object):
         """List the individual machines of an equipment type."""
         return [ model.machine.Machine.find_by_id(mc['_id']) for mc in model.database.get_machine_dicts_for_type(self._id) ]
 
-    def get_people(self, role):
-        """Return the trained users, owners, or trainers of an equipment type."""
-        print("get_people for", self.name, "as", role)
+    def get_people_events(self, role):
+        """Return the events indicating the training users, owners, or trainers of an equipment type."""
         now = datetime.datetime.now()
         training = model.database.get_eqtype_events(self._id,
                                                     model.database.role_training(role),
@@ -104,6 +113,11 @@ class Equipment_type(object):
                     detrained[detrained_person] = ev
         # print("people trained on", self.name, "are", trained)
         # print("people detrained on", self.name, "are", detrained)
+        return trained, detrained
+
+    def get_people(self, role):
+        """Return the trained users, owners, or trainers of an equipment type."""
+        trained, detrained = self.get_people_events(role)
         return [ model.person.Person.find(trained_person) for trained_person in trained.keys()
                  if (trained_person not in detrained
                      or trained[trained_person].start > detrained[trained_person].start) ]
@@ -123,6 +137,23 @@ class Equipment_type(object):
         if trainers is None or len(trainers) == 0:
             trainers = self.get_owners()
         return trainers
+
+    def backup_API_people(self, role):
+        """Return a list of dictionaries describing who has a given role on this equipment type.
+        The result can be given to a csv.DictWriter to produce a file in the same format from
+        which the user data was originally imported.  In case of losing the database, a set of these
+        files can be used to reconstruct the most important data in it.
+        The "role" argument can be 'user', 'owner', or 'trainer'."""
+        trained, detrained = self.get_people_events(role)
+        as_list = [ {'Name': id_to_name(trained_person_id),
+                     'Equipment': self.name,
+                     'Trainer': id_to_name(trained[trained_person_id].hosts[0]),
+                     'Date': model.times.timestring(trained[trained_person_id].start)}
+                    for trained_person_id in trained.keys()
+                    if (trained_person_id not in detrained
+                        or trained[trained_person_id].start > detrained[trained_person_id].start) ]
+        # as_list = sorted(as_list, key=lambda whoever: whoever['name'])
+        return as_list
 
     def API_enabled_fobs(self):
         return [ user.fob for user in self.get_trained_users() ]

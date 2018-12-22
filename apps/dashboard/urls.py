@@ -29,7 +29,10 @@ urlpatterns = [
     path('hosted', views.events_hosted_only, name='events_hosted_only'),
     path('attended', views.events_attended_only, name='events_attended_only'),
     path('available', views.events_available_only, name='events_available_only'),
+    path('usage_log', views.usage_log_only, name='usage_log_only'),
     path('send_pw_reset', views.send_password_reset, name='send_pw_reset'),
+    path('debug_on', views.debug_on, name='debug_on'),
+    path('debug_off', views.debug_off, name='debug_off'),
     path('admin', views.admin_only, name='admin_only'),
     path('match', views.user_match_page, name='matching_users'),
     # general default paths etc

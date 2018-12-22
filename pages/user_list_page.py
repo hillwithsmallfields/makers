@@ -14,7 +14,15 @@ def equipment_type_role_name_list(who, role):
     # todo: make this into a list of names with individual anchors
     return ", ".join(sorted(who.get_equipment_type_names(role)))
 
-def user_list_section(django_request, include_non_members=False, filter_fn=None, filter_opaque=None):
+def flagstring(who):
+    return (("A" if who.is_active() else "a")
+            + ("P" if who.password_is_usable() else "p")
+            + ("S" if who.is_django_staff() else "s")
+            )
+
+def user_list_section(django_request,
+                      include_non_members=False,
+                      filter_fn=None, filter_opaque=None):
     """Return the users list, if the viewing person is allowed to see it.
     Otherwise, just how many people there are.
     The optional first argument is a flag for whether to include non-members.
@@ -32,24 +40,30 @@ def user_list_section(django_request, include_non_members=False, filter_fn=None,
         people = [someone for someone in people if filter_fn(someone, filter_opaque)]
     people_dict = {whoever.name(): whoever for whoever in people}
     if viewing_user.is_auditor() or viewing_user.is_admin():
-        return T.table[[T.tr[T.th(class_='mem_num')["Mem #"],
-                             T.th(class_='username')["Name"],
-                             T.th(class_='loginh')["Login"],
-                             T.th(class_='email')["Email"],
-                             T.th(class_='user')["User"],
-                             T.th(class_='owner')["Owner"],
-                             T.th(class_='trainer')["Trainer"],
-                             T.th(class_='note')["Notes"]]],
-                       [T.tr[T.td(class_='mem_num')[str(who.membership_number)],
-                             T.th(class_='username')[T.a(href=django.urls.reverse('dashboard:user_dashboard', args=([who.link_id])))[whoname]],
-                             T.td(class_='login')[who.get_login_name() or ""],
-                             T.td(class_='email')[T.a(href="mailto:"+who.get_email() or "")[who.get_email() or ""]],
-                             T.td(class_='user')[equipment_type_role_name_list(who, 'user')],
-                             T.td(class_='owner')[equipment_type_role_name_list(who, 'owner')],
-                             T.td(class_='trainer')[equipment_type_role_name_list(who, 'trainer')],
-                             T.td(class_='note')[T.form()[who.get_admin_note() or ""]]]
-                        for (whoname, who) in [(key, people_dict[key]) for key in sorted(people_dict.keys())]
-                    ]]
+        return T.div(class_='table-scroll')[
+            T.table(class_='userlist unstriped')[
+                [T.tr(class_='row_header')[
+                    T.th(class_='humanid')["Mem #"],
+                    T.th(class_='humanid emph')["Name"],
+                    T.th(class_='humanid login')["Login"],
+                    T.th(class_='data')["Flags"],
+                    T.th(class_='humanid email emph')["Email"],
+                    T.th(class_='eqtys')["User"],
+                    T.th(class_='eqtys emph')["Owner"],
+                    T.th(class_='eqtys emph')["Trainer"],
+                    T.th(class_='note')["Notes"]]],
+                [T.tr(class_='row_data')[
+                    T.td(class_='humanid')[str(who.membership_number)],
+                    T.th(class_='humanid emph')[T.a(href=django.urls.reverse('dashboard:user_dashboard', args=([who.link_id])))[whoname]],
+                    T.td(class_='humanid login')[who.get_login_name() or ""],
+                    T.td(class_='data')[flagstring(who)],
+                    T.td(class_='humanid email emph')[T.a(href="mailto:"+who.get_email() or "")[who.get_email() or ""]],
+                    T.td(class_='eqtys')[equipment_type_role_name_list(who, 'user')],
+                    T.td(class_='eqtys emph')[equipment_type_role_name_list(who, 'owner')],
+                    T.td(class_='eqtys emph')[equipment_type_role_name_list(who, 'trainer')],
+                    T.td(class_='note')[T.form()[who.get_admin_note() or ""]]]
+             for (whoname, who) in [(key, people_dict[key]) for key in sorted(people_dict.keys())]
+                ]]]
     else:
         return T.p["There are "+str(len(people))
                    +(" people" if include_non_members else " members")
@@ -88,8 +102,13 @@ def no_login_name(user, dummy):
     login_name = model.database.person_get_login_name(user)
     return login_name is None or login_name == ""
 
+def admin_note_match(user, pattern):
+    note = user.get_admin_note()
+    return note and re.search(pattern, note)
+
 user_list_filters = {
-    'name': name_match,
+    'name_matching': name_match,
+    'admin_note_matching': admin_note_match,
     'date_joined_before': joined_before,
     'date_joined_after': joined_after,
     'no_email': no_email,

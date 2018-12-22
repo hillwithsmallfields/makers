@@ -23,7 +23,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = decouple.config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['fragaria', 'js64.twilightparadox.com', '127.0.0.1', '54.72.185.37', 'makers.makespace.org']
 
@@ -72,6 +73,7 @@ TEMPLATES = [
 ]
 
 LOGIN_URL = '/users/login/'
+LOGOUT_REDIRECT_URL = '/users/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

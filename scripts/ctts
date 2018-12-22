@@ -1,5 +1,5 @@
 #!/bin/bash
 # Copy To Test Server
-SERVER=fragaria
-rsync -av --exclude .git $HOME/open-projects/makers/ $SERVER:$HOME/open-projects/makers
-ssh $SERVER $HOME/open-projects/makers/scripts/setperm.sh
+export SERVER=fragaria
+export REMOTE_USER=jcgs
+exec $(dirname ${BASH_SOURCE[0]})/cts

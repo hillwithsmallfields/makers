@@ -14,20 +14,44 @@ import model.person
 import model.person as person
 import os
 import pages.person_page
+import pages.public_page
 import pages.user_list_page
 import re
 import sys
 import tempfile
 import uuid
 
-def logged_in_only():
+def admin_only_notice(django_request):
     return HttpResponse("""<html><head><title>Error</title></head>
     <body><h1>Information not publicly available</h1>
     <p>Other users' information, including the user list,
     is not publicly visible.
     To see this, you must <a href="../users/login">login</a>
-    as a user with admin rights.</p>
+    as a user with admin permission.</p>
     </body></html>""")
+
+def logged_in_only(django_request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    page_data = model.pages.HtmlPage("Public information",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("Public page",
+                          [T.p["You are not currently logged in, which is why you are seeing the public page."],
+                           T.h2["Existing users"],
+                           T.p["Please ",
+                               T.a(href="../users/login")["login"],
+                               " for your own dashboard page."],
+                           T.h2["New users"],
+                           T.p["If an account has been created for you, and you haven't yet used it, please use the ",
+                               T.a(href="../users/password_reset")["password reset page"],
+                               " to set your initial password, then use the login page, ",
+                               T.strong["noting that you must enter the user-id that you are given on the password reset result page, and not your email"],
+                               "."],
+                           pages.public_page.public_page(django_request)])
+
+    return HttpResponse(str(page_data.to_string()))
 
 @ensure_csrf_cookie
 def all_user_list_page(django_request):
@@ -39,7 +63,7 @@ def all_user_list_page(django_request):
     pages.person_page.person_page_setup()
 
     if django_request.user.is_anonymous:
-        return logged_in_only()
+        return admin_only_notice(django_request)
 
     viewing_user = model.person.Person.find(django_request.user.link_id)
 
@@ -72,7 +96,7 @@ def dashboard_page(django_request, who=""):
     pages.person_page.person_page_setup()
 
     if django_request.user.is_anonymous:
-        return logged_in_only()
+        return logged_in_only(django_request)
 
     viewing_user = model.person.Person.find(django_request.user.link_id)
 
@@ -114,12 +138,7 @@ def one_section(django_request, data_function, title, who=""):
     pages.person_page.person_page_setup()
 
     if django_request.user.is_anonymous:
-        return HttpResponse("""<html><head><title>This will be the public page</title></head>
-        <body><h1>This will be the public page</h1>
-
-        <p>It should display general status, and <a
-        href="../users/login">login</a> and <a
-        href="../users/signup">signup</a> boxes.</p> </body></html>""")
+        return HttpResponse("""<p>You have tried to fetch a page section while not logged in.  This probably means something has gone wrong.</p>""")
 
     viewing_user = model.person.Person.find(django_request.user.link_id)
 
@@ -165,7 +184,6 @@ def responsibilities_only(django_request, who=""):
                        who)
 
 def trained_on_only(django_request, who=""):
-    print("Getting equipment I can use") # to see when it's done when loading lazily; todo: remove this print
     return one_section(django_request,
                        pages.person_page.equipment_trained_on_section,
                        "Equipment trained on",
@@ -213,6 +231,12 @@ def events_available_only(django_request, who=""):
                        "Events I can sign up for",
                        who)
 
+def usage_log_only(django_request, who=""):
+    return one_section(django_request,
+                       pages.person_page.usage_log_section,
+                       "My machine usage",
+                       who)
+
 def admin_only(django_request, who=""):
     return one_section(django_request,
                        pages.person_page.admin_section,
@@ -234,7 +258,7 @@ def user_match_page(django_request):
     pages.person_page.person_page_setup()
 
     if django_request.user.is_anonymous:
-        return logged_in_only()
+        return admin_only_notice(django_request)
 
     viewing_user = model.person.Person.find(django_request.user.link_id)
 
@@ -244,7 +268,7 @@ def user_match_page(django_request):
 
     if viewing_user.is_administrator() or viewing_user.is_auditor():
         page_data.add_content(
-            "Users matching " + filter_name + " " + filter_string,
+            "Users matching " + (filter_name or 'name') + " " + filter_string,
             pages.user_list_page.user_list_matching_section(
                 django_request,
                 filter_name, filter_string,
@@ -497,5 +521,38 @@ def send_password_reset(django_request):
     page_data.add_content("Confirmation",
                           [T.p[("Password reset sent to " + who.name()
                                 + " <", T.a(href="mailto:"+recipient)[recipient], ">.")]])
+
+    return HttpResponse(str(page_data.to_string()))
+
+def debug_on(django_request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    allowed = person_from_request(django_request).is_administrator()
+
+    if allowed:
+        django_request.session['developer_mode'] = True
+
+    page_data = model.pages.HtmlPage("Debug mode enabled result",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("Confirmation",
+                          [T.p["Debug enabled for this session."
+                               if allowed
+                               else "Debug not enabled for this session, as you are not an administrator."]])
+
+    return HttpResponse(str(page_data.to_string()))
+
+def debug_off(django_request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    django_request.session['developer_mode'] = False
+
+    page_data = model.pages.HtmlPage("Debug mode disabled confirmation",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("Confirmation",
+                          [T.p["Debug disabled for this session"]])
 
     return HttpResponse(str(page_data.to_string()))
