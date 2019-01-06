@@ -79,6 +79,11 @@ def django_user_is_active(who):
     django_user = model.database.person_get_django_user_data(who)
     return django_user and django_user.is_active
 
+def django_user_activation(who, active):
+    django_user = model.database.person_get_django_user_data(who)
+    django_user.is_active = active
+    django_user.save()
+
 def django_user_is_staff(who):
     django_user = model.database.person_get_django_user_data(who)
     return django_user and django_user.is_staff
