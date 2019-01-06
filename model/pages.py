@@ -34,7 +34,7 @@ def with_help(who, content, help_name, substitutions={}):
     if help_text:
         return T.div(class_='with_help')[
             T.div(class_='helped')[content],
-            T.div(class_='help')[untemplate.safe_unicode(help_text)]]
+            T.aside(class_='help')[untemplate.safe_unicode(help_text)]]
     else:
         return content
 
@@ -228,8 +228,9 @@ class SectionalPage(object):
         tabs = [[T.div(class_='tabs-panel', id_=section_id)[self.sections[section_id]]]
                    for section_id in self.index]
         return page_string(self.name,
-                           self.top_content + [T.div(class_='tabbedarea')[index,
-                                                                          [T.div(class_='tabs-content')[tabs]]]],
+                           self.top_content + [T.main
+                                               [T.div(class_='tabbedarea')[index,
+                                                                          [T.div(class_='tabs-content')[tabs]]]]],
                            user=user,
                            initial_tab=(self.initial_tab+"_button") if self.initial_tab else None,
                            needs_jquery=self.lazy)
