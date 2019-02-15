@@ -540,12 +540,27 @@ class Script(XmlElement):
 # version specific.  If you care about that, you could create a
 # separate list for each html version.
 _non_empty_html_tags = '''
-  a abbr acronym address applet b bdo big blockquote body button
-  caption center cite code colgroup dd dfn div dl dt em fieldset font footer
-  form frameset h1 h2 h3 h4 h5 h6 head html i iframe ins kbd label
-  legend li menu nav noframes noscript ol optgroup option pre q s samp
-  select small span strike strong style sub sup table thead tbody td
-  textarea tfoot th thead title tr tt u ul var'''.split()
+  a abbr acronym address applet article aside
+  b bdi bdo big blockquote body button
+  caption center cite code colgroup
+  datalist dd details dfn dialog div dl dt
+  em
+  fieldset figcaption figure font footer form frameset
+  h1 h2 h3 h4 h5 h6 head header html
+  i iframe ins
+  kbd keygen
+  label legend li
+  main mark menu meter
+  nav noframes noscript
+  ol optgroup option output
+  pre progress
+  rp rt ruby
+  q
+  s samp section select small span strike strong style sub summary sup
+  table thead tbody td textarea tfoot th thead time title tr tt
+  u ul
+  var
+  wbr'''.split()
 
 _maybe_empty_html_tags = '''
     area base br col frame hr img input link meta p param script'''.split()
