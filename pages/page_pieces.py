@@ -215,7 +215,8 @@ def general_equipment_list(who, viewer, these_types, django_request, detailed=Fa
                                         who._id, who.name(),
                                         'user',
                                         django_request)] if viewer.is_administrator() else ""]]
-                            for name in sorted(keyed_types.keys())]]]
+                            for name in sorted(keyed_types.keys()) # todo: sort first by training category then by name
+        ]]]
 
 def machinelist(eqty, who, django_request, as_owner=False):
     """Make a list of machines, with appropriate detail for each."""

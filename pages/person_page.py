@@ -163,52 +163,59 @@ def general_profile_section(who, viewer, django_request):
     membership_number = str(who.membership_number)
     subject_login_name = model.database.person_get_login_name(who) or ""
     logged_in_as = django_request.user.username
+    all_details_visible_to_user = False
     table_contents = [
-                T.tr[T.th(class_='ralabel')["Name"],
-                     T.td[T.input(type='text',
-                                  name='name',
-                                  value=who.name())]],
-                T.tr[T.th(class_='ralabel')["User login name"],
-                     T.td[T.input(type='text',
-                                  name='login_name',
-                                  value=subject_login_name)]],
-                T.tr[T.th(class_='ralabel')["Logged in as"],
-                     T.td[T.span(class_=('own_view'
+        T.tr[T.th(class_='ralabel')["Name"],
+             T.td[T.input(type='text',
+                          name='name',
+                          value=who.name())]],
+        T.tr[T.th(class_='ralabel')["User login name"],
+             T.td[T.input(type='text',
+                          name='login_name',
+                          value=subject_login_name)]],
+        T.tr[T.th(class_='ralabel')["Logged in as"],
+             T.td[T.span(class_=('own_view'
                                          if logged_in_as == subject_login_name
                                          else 'admin_view'))[logged_in_as]]],
-                          T.tr[T.th(class_='ralabel')["email"], T.td[T.input(type='email',
-                                                                             name='email',
-                                                                             value=who.get_email())]],
-                T.tr[T.th(class_='ralabel')["Membership number"],
-                     T.td[(T.input(type='text',
-                                   name='membership_number',
-                                   value=membership_number)
+        T.tr[T.th(class_='ralabel')["email"], T.td[T.input(type='email',
+                                                           name='email',
+                                                           value=who.get_email())]],
+        T.tr[T.th(class_='ralabel')["Membership number"],
+             T.td[(T.input(type='text',
+                           name='membership_number',
+                           value=membership_number)
                                      if (viewer.is_administrator()
                                          and (membership_number == "" or membership_number == "0"))
                                      else [membership_number])]],
-                T.tr[T.th(class_='ralabel')['Fob number'],
-                     T.td[(T.input(type='text',
-                                   name='fob',
-                                   value=str(who.fob))
+        T.tr[T.th(class_='ralabel')["No-shows"], T.td[str(len(who.get_noshows()))]],
+        T.tr[T.th(class_='ralabel')["No-show absolutions"],
+             T.td[(T.input(type='text',
+                           name='absolutions',
+                           value=str(who.noshow_absolutions))
+                           if viewer.is_administrator()
+                           else str(who.noshow_absolutions))]]]
+
+    if viewer.is_administrator() or all_details_visible_to_user:
+        table_contents += [
+            T.tr[T.th(class_='ralabel')['Fob number'],
+                 T.td[(T.input(type='text',
+                               name='fob',
+                               value=str(who.fob))
                                      if viewer.is_administrator()
                                      else [str(who.fob)])]],
-                T.tr[T.th(class_='ralabel')["link-id"], T.td[str(who.link_id)]],
-                T.tr[T.th(class_='ralabel')["No-shows"], T.td[str(len(who.get_noshows()))]],
-                T.tr[T.th(class_='ralabel')["No-show absolutions"],
-                     T.td[(T.input(type='text',
-                                   name='absolutions',
-                                   value=str(who.noshow_absolutions))
-                           if viewer.is_administrator()
-                           else str(who.noshow_absolutions))]],
-                T.tr[T.th(class_='ralabel')['Admin note'],
-                     T.td[T.input(type='text',
-                                  name='note',
-                                   value=str(who.get_admin_note()))
+            T.tr[T.th(class_='ralabel')["link-id"], T.td[str(who.link_id)]],
+            T.tr[T.th(class_='ralabel')['Admin note'],
+                 T.td[T.input(type='text',
+                              name='note',
+                              value=str(who.get_admin_note()))
                           if viewer.is_administrator()
-                          else str(who.get_admin_note())]],
-                T.tr[T.th[""], T.td[T.input(type='submit',
-                                            class_='button_update',
-                                            value="Update details")]]]
+                          else str(who.get_admin_note())]]]
+
+    table_contents += [
+        T.tr[T.th[""], T.td[T.input(type='submit',
+                                    class_='button_update',
+                                    value="Update details")]]]
+
     if django_request.session.get('developer_mode', False):
         pp = pprint.PrettyPrinter(indent=4, width=72)
         django_logged_in_user_dict = django_request.user.__dict__
@@ -302,12 +309,14 @@ def misc_section(who, viewer, django_request):
 
 def profile_section(who, viewer, django_request):
 
-    result_parts = {'Mugshot': mugshot_section(who, viewer, django_request),
-                    'General': general_profile_section(who, viewer, django_request),
-                    'Further information': configurable_profile_section(who, viewer, django_request),
-                    'Site controls': site_controls_sub_section(who, viewer, django_request),
-                    'Availability': availability_sub_section(who, viewer, django_request),
-                    'Misc': misc_section(who, viewer, django_request)}
+    result_sequence = all_conf.get('profile_sections')
+
+    result_parts = {'Mugshot': mugshot_section(who, viewer, django_request) if 'Mugshot' in result_sequence else None,
+                    'General': general_profile_section(who, viewer, django_request) if 'General' in result_sequence else None,
+                    'Further information': configurable_profile_section(who, viewer, django_request) if 'Further information' in result_sequence else None,
+                    'Site controls': site_controls_sub_section(who, viewer, django_request) if 'Site controls' in result_sequence else None,
+                    'Availability': availability_sub_section(who, viewer, django_request) if 'Availability' in result_sequence else None,
+                    'Misc': misc_section(who, viewer, django_request) if 'Misc' in result_sequence else None}
     if 'interest_areas' in all_conf:
         result_parts['Interests and skills'] = model.pages.with_help(viewer,
                                                                      user_interests_section(who, django_request),
@@ -316,8 +325,6 @@ def profile_section(who, viewer, django_request):
         result_parts['Dietary avoidances'] = model.pages.with_help(viewer,
                                                                    avoidances_section(who, django_request),
                                                                    "dietary_avoidances")
-    result_sequence = all_conf.get('profile_sections')
-
     result = T.div(class_='user_profile')[[
         [T.div(class_='profile_subsection',
                id=title.replace(' ', '_'))[T.h3(class_='profile_sub_title')[title],
@@ -875,8 +882,8 @@ def admin_section(who, viewer, django_request):
 
 dashboard_sections = [
     ("Equipment responsibilities", 'dashboard:responsibilities_only'),
-    ("Equipment I can use", 'dashboard:trained_on_only'),
-    ("Other equipment", 'dashboard:other_equipment_only'),
+    ("My equipment", 'dashboard:trained_on_only'),
+    ("Available equipment", 'dashboard:other_equipment_only'),
     ("Training requests", 'dashboard:training_requests_only'),
     ("Events I will be hosting", 'dashboard:events_hosting_only'),
     ("Events I have signed up for", 'dashboard:events_attending_only'),
