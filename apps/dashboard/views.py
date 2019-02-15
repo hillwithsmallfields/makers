@@ -186,13 +186,13 @@ def responsibilities_only(django_request, who=""):
 def trained_on_only(django_request, who=""):
     return one_section(django_request,
                        pages.person_page.equipment_trained_on_section,
-                       "Equipment trained on",
+                       "My equipment",
                        who)
 
 def other_equipment_only(django_request, who=""):
     return one_section(django_request,
                        pages.person_page.other_equipment_section,
-                       "Other equipment",
+                       "Available equipment",
                        who)
 
 def training_requests_only(django_request, who=""):

@@ -71,14 +71,14 @@ page:
 # Top-level parts of the user profile
 
 profile_sections:
-#  - Mugshot
+# - Mugshot
   - General
-  - Further information
+# - Further information
   - Site controls
-  - Availability
+# - Availability
   - Misc
-  - Interests and skills
-  - Dietary avoidances
+# - Interests and skills
+# - Dietary avoidances
 
 # These are presented in the order given by "profile_group_order"; any
 # groups not mentioned in that will not be presented:

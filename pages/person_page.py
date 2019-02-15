@@ -191,8 +191,10 @@ def general_profile_section(who, viewer, django_request):
                                    name='fob',
                                    value=str(who.fob))
                                      if viewer.is_administrator()
-                                     else [str(who.fob)])]],
-                T.tr[T.th(class_='ralabel')["link-id"], T.td[str(who.link_id)]],
+                                     else [
+                                     "<visible only to admins>" #        str(who.fob)
+                                     ])]],
+                # T.tr[T.th(class_='ralabel')["link-id"], T.td[str(who.link_id)]],
                 T.tr[T.th(class_='ralabel')["No-shows"], T.td[str(len(who.get_noshows()))]],
                 T.tr[T.th(class_='ralabel')["No-show absolutions"],
                      T.td[(T.input(type='text',
@@ -302,12 +304,14 @@ def misc_section(who, viewer, django_request):
 
 def profile_section(who, viewer, django_request):
 
-    result_parts = {'Mugshot': mugshot_section(who, viewer, django_request),
-                    'General': general_profile_section(who, viewer, django_request),
-                    'Further information': configurable_profile_section(who, viewer, django_request),
-                    'Site controls': site_controls_sub_section(who, viewer, django_request),
-                    'Availability': availability_sub_section(who, viewer, django_request),
-                    'Misc': misc_section(who, viewer, django_request)}
+    result_sequence = all_conf.get('profile_sections')
+
+    result_parts = {'Mugshot': mugshot_section(who, viewer, django_request) if 'Mugshot' in result_sequence else None,
+                    'General': general_profile_section(who, viewer, django_request) if 'General' in result_sequence else None,
+                    'Further information': configurable_profile_section(who, viewer, django_request) if 'Further information' in result_sequence else None,
+                    'Site controls': site_controls_sub_section(who, viewer, django_request) if 'Site controls' in result_sequence else None,
+                    'Availability': availability_sub_section(who, viewer, django_request) if 'Availability' in result_sequence else None,
+                    'Misc': misc_section(who, viewer, django_request) if 'Misc' in result_sequence else None}
     if 'interest_areas' in all_conf:
         result_parts['Interests and skills'] = model.pages.with_help(viewer,
                                                                      user_interests_section(who, django_request),
@@ -316,8 +320,6 @@ def profile_section(who, viewer, django_request):
         result_parts['Dietary avoidances'] = model.pages.with_help(viewer,
                                                                    avoidances_section(who, django_request),
                                                                    "dietary_avoidances")
-    result_sequence = all_conf.get('profile_sections')
-
     result = T.div(class_='user_profile')[[
         [T.div(class_='profile_subsection',
                id=title.replace(' ', '_'))[T.h3(class_='profile_sub_title')[title],
@@ -803,11 +805,11 @@ def admin_section(who, viewer, django_request):
                              viewer,
                              announcement_form(viewer, django_request),
                              "send_announcement")),
-        admin_subsection("Send notification",
-                         model.pages.with_help(
-                             viewer,
-                             notification_form(viewer, django_request),
-                             "send_notification")),
+        # admin_subsection("Send notification",
+        #                  model.pages.with_help(
+        #                      viewer,
+        #                      notification_form(viewer, django_request),
+        #                      "send_notification")),
         admin_subsection("Send email as " + model.configuration.get_config('server', 'password_reset_from_address'),
                          model.pages.with_help(
                              viewer,
@@ -875,8 +877,8 @@ def admin_section(who, viewer, django_request):
 
 dashboard_sections = [
     ("Equipment responsibilities", 'dashboard:responsibilities_only'),
-    ("Equipment I can use", 'dashboard:trained_on_only'),
-    ("Other equipment", 'dashboard:other_equipment_only'),
+    ("My Equipment", 'dashboard:trained_on_only'),
+    ("Available equipment", 'dashboard:other_equipment_only'),
     ("Training requests", 'dashboard:training_requests_only'),
     ("Events I will be hosting", 'dashboard:events_hosting_only'),
     ("Events I have signed up for", 'dashboard:events_attending_only'),
