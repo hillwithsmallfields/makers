@@ -194,17 +194,19 @@ def general_profile_section(who, viewer, django_request):
                            value=membership_number)
                                      if (pages.page_pieces.viewing_as_admin(viewer, django_request)
                                          and (membership_number == "" or membership_number == "0"))
-                                     else [membership_number])]],
-        T.tr[T.th(class_='ralabel')["No-shows"], T.td[str(len(who.get_noshows()))]],
-        T.tr[T.th(class_='ralabel')["No-show absolutions"],
-             T.td[(T.input(type='text',
-                           name='absolutions',
-                           value=str(who.noshow_absolutions))
-                           if pages.page_pieces.viewing_as_admin(viewer, django_request)
-                           else str(who.noshow_absolutions))]]]
+                                     else [membership_number])]]]
 
-    if pages.page_pieces.viewing_as_admin(viewer, django_request) or all_details_visible_to_user:
+    if (pages.page_pieces.viewing_as_admin(viewer, django_request)
+        or pages.page_pieces.viewing_as_auditor(viewer, django_request)
+        or all_details_visible_to_user):
         table_contents += [
+            T.tr[T.th(class_='ralabel')["No-shows"], T.td[str(len(who.get_noshows()))]],
+            T.tr[T.th(class_='ralabel')["No-show absolutions"],
+                 T.td[(T.input(type='text',
+                               name='absolutions',
+                               value=str(who.noshow_absolutions))
+                           if pages.page_pieces.viewing_as_admin(viewer, django_request)
+                           else str(who.noshow_absolutions))]],
             T.tr[T.th(class_='ralabel')['Fob number'],
                  T.td[(T.input(type='text',
                                name='fob',
@@ -218,6 +220,10 @@ def general_profile_section(who, viewer, django_request):
                               value=str(who.get_admin_note()))
                           if pages.page_pieces.viewing_as_admin(viewer, django_request)
                           else str(who.get_admin_note())]]]
+    else:
+        table_contents += [
+            T.tr[T.th(class_='ralabel')["No-shows"],
+                 T.td[str(len(who.get_noshows()) - who.noshow_absolutions)]]]
 
     table_contents += [
         T.tr[T.th[""], T.td[T.input(type='submit',
