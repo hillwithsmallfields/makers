@@ -5,6 +5,7 @@ import model.access_permissions as access_permissions
 import model.configuration as configuration
 import model.person as person
 import model.event
+import pages.page_pieces
 import re
 
 serverconf=None
@@ -39,7 +40,8 @@ def user_list_section(django_request,
     if filter_fn:
         people = [someone for someone in people if filter_fn(someone, filter_opaque)]
     people_dict = {whoever.name(): whoever for whoever in people}
-    if viewing_user.is_auditor() or viewing_user.is_admin():
+    if (pages.page_pieces.viewing_as_admin(viewing_user, django_request)
+        or pages.page_pieces.viewing_as_auditor(viewing_user, django_request)):
         return T.div(class_='table-scroll')[
             T.table(class_='userlist unstriped')[
                 [T.tr(class_='row_header')[

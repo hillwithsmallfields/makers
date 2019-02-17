@@ -13,6 +13,14 @@ import datetime
 
 """Assorted useful bits of expressions for constructing our pages."""
 
+def viewing_as_admin(viewer, django_request):
+    return ((viewer.is_administrator()
+             and not django_request.session.get('admin_view_as_user', False)))
+
+def viewing_as_auditor(viewer, django_request):
+    return ((viewer.is_auditor()
+             and not django_request.session.get('admin_view_as_user', False)))
+
 server_conf = None
 
 def set_server_conf():
@@ -197,10 +205,11 @@ def display_or_form(class_name, action_as_form,
 
 def general_equipment_list(who, viewer, these_types, django_request, detailed=False):
     keyed_types = {eqty.name: eqty for eqty in these_types}
+    am_viewing_as_admin = viewing_as_admin(viewer, django_request)
     return T.table(class_='equipment_type_list unstriped')[
         T.thead[T.tr[T.th["Equipment type"],
                      T.th["Request"],
-                     T.th["Admin action"] if viewer.is_administrator() else ""]],
+                     T.th["Admin action"] if am_viewing_as_admin else ""]],
         T.tbody[[[T.tr[T.th(class_='category_'+keyed_types[name].training_category)[
             T.a(href=django.urls.reverse("equiptypes:eqty",
                                          args=(name,)))[keyed_types[name].pretty_name()]],
@@ -214,7 +223,7 @@ def general_equipment_list(who, viewer, these_types, django_request, detailed=Fa
                        T.td[permit_form(keyed_types[name],
                                         who._id, who.name(),
                                         'user',
-                                        django_request)] if viewer.is_administrator() else ""]]
+                                        django_request)] if am_viewing_as_admin else ""]]
                             for name in sorted(keyed_types.keys()) # todo: sort first by training category then by name
         ]]]
 

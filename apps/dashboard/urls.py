@@ -33,6 +33,8 @@ urlpatterns = [
     path('send_pw_reset', views.send_password_reset, name='send_pw_reset'),
     path('debug_on', views.debug_on, name='debug_on'),
     path('debug_off', views.debug_off, name='debug_off'),
+    path('admin_view_as_user_on', views.admin_view_as_user_on, name='admin_view_as_user_on'),
+    path('admin_view_as_user_off', views.admin_view_as_user_off, name='admin_view_as_user_off'),
     path('admin', views.admin_only, name='admin_only'),
     path('match', views.user_match_page, name='matching_users'),
     # general default paths etc

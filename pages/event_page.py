@@ -40,7 +40,7 @@ def one_event_section(ev, who, django_request,
                       with_rsvp=False, rsvp_id=None,
                       with_completion=False, completion_as_form=False,
                       allow_editing=False):
-    allow_editing = who.is_administrator()
+    allow_editing = pages.page_pieces.viewing_as_admin(who, django_request)
     all_people_ids = ev.signed_up
     all_people_id_to_name = {p: model.person.Person.find(p).name() for p in all_people_ids}
     all_people_name_and_id = [(all_people_id_to_name[id], id) for id in all_people_id_to_name.keys()]

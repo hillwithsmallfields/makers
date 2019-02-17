@@ -49,39 +49,47 @@ def visibility_radio(label, visibility):
                                 value='yes'))]
 
 def site_controls_sub_section(who, viewer, django_request):
-    return T.div(class_='site_options')[
-        [T.form(action=django.urls.reverse("dashboard:update_site_controls"), method='POST')
-         [T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
-          T.input(type='hidden',
-                  name='subject_user_uuid',
-                  value=model.pages.bare_string_id(who._id)),
-          model.pages.with_help(
-              viewer,
-              T.table(class_='siteoptions unstriped')[
-                  T.tr[T.th(class_='ralabel')["Visible as host / owner / trainer to attendees / users"],
-                       T.td[visibility_radio("visibility_as_host", who.visibility.get('host', True))]],
-                  T.tr[T.th(class_='ralabel')["Visible as attendee / user to hosts / owners / trainers"],
-                       T.td[visibility_radio("visibility_as_attendee", who.visibility.get('attendee', True))]],
-                  T.tr[T.th(class_='ralabel')["Visible generally"],
-                       T.td[visibility_radio("visibility_in_general", who.visibility.get('general', False))]],
-                  # T.tr[T.th(class_='ralabel')["Stylesheet"],
-                  #      T.td[pages.page_pieces.dropdown('stylesheet', model.configuration.get_stylesheets(), who.stylesheet)]],
+    options_table_rows = [
+        T.tr[T.th(class_='ralabel')["Visible as host / owner / trainer to attendees / users"],
+             T.td[visibility_radio("visibility_as_host", who.visibility.get('host', True))]],
+        T.tr[T.th(class_='ralabel')["Visible as attendee / user to hosts / owners / trainers"],
+             T.td[visibility_radio("visibility_as_attendee", who.visibility.get('attendee', True))]],
+        T.tr[T.th(class_='ralabel')["Visible generally"],
+             T.td[visibility_radio("visibility_in_general", who.visibility.get('general', False))]],
+        # T.tr[T.th(class_='ralabel')["Stylesheet"],
+        #      T.td[pages.page_pieces.dropdown('stylesheet', model.configuration.get_stylesheets(), who.stylesheet)]],
                   T.tr[T.th(class_='ralabel')["Display help beside forms"],
                        T.td[T.input(type='checkbox', name='display_help', checked='checked')
                             if who.show_help
                             else T.input(type='checkbox', name='display_help')]],
-                  T.tr[T.th(class_='ralabel')["Notify training etc by email"],
-                       T.td[T.input(type='checkbox', name='notify_by_email', checked='checked')
+        T.tr[T.th(class_='ralabel')["Notify training etc by email"],
+             T.td[T.input(type='checkbox', name='notify_by_email', checked='checked')
                             if who.notify_by_email
                             else T.input(type='checkbox', name='notify_by_email')]],
-                  T.tr[T.th(class_='ralabel')["Notify training etc in site"],
-                       T.td[T.input(type='checkbox', name='notify_in_site', checked='checked')
+        T.tr[T.th(class_='ralabel')["Notify training etc in site"],
+             T.td[T.input(type='checkbox', name='notify_in_site', checked='checked')
                             if who.notify_in_site
-                            else T.input(type='checkbox', name='notify_in_site')]],
-                  T.tr[T.th[""], T.td[T.input(type='submit',
-                                              class_='button_update',
-                                              value="Update controls")]]],
-              "site_controls")]]]
+                            else T.input(type='checkbox', name='notify_in_site')]]]
+    options_table_rows += [
+        T.tr[T.th[""], T.td[T.input(type='submit',
+                                    class_='button_update',
+                                    value="Update controls")]]]
+    site_options_contents = [
+        T.form(action=django.urls.reverse("dashboard:update_site_controls"), method='POST')
+        [T.input(type='hidden', name='csrfmiddlewaretoken', value=django.middleware.csrf.get_token(django_request)),
+         T.input(type='hidden',
+                 name='subject_user_uuid',
+                 value=model.pages.bare_string_id(who._id)),
+         model.pages.with_help(
+             viewer,
+             T.table(class_='siteoptions unstriped')[options_table_rows],
+             "site_controls")]]
+    if viewer.is_administrator():
+        if django_request.session.get('admin_view_as_user', False):
+            site_options_contents += [T.a(href=django.urls.reverse("dashboard:admin_view_as_user_off"))["View as admin user"]]
+        else:
+            site_options_contents += [T.a(href=django.urls.reverse("dashboard:admin_view_as_user_on"))["View as non-admin user"]]
+    return T.div(class_='site_options')[site_options_contents]
 
 def availability_sub_section(who, viewer, django_request):
     _, timeslot_times, _ = model.timeslots.get_slots_conf()
@@ -163,7 +171,7 @@ def general_profile_section(who, viewer, django_request):
     membership_number = str(who.membership_number)
     subject_login_name = model.database.person_get_login_name(who) or ""
     logged_in_as = django_request.user.username
-    all_details_visible_to_user = False
+    all_details_visible_to_user = False # should come from the config file eventually
     table_contents = [
         T.tr[T.th(class_='ralabel')["Name"],
              T.td[T.input(type='text',
@@ -184,7 +192,7 @@ def general_profile_section(who, viewer, django_request):
              T.td[(T.input(type='text',
                            name='membership_number',
                            value=membership_number)
-                                     if (viewer.is_administrator()
+                                     if (pages.page_pieces.viewing_as_admin(viewer, django_request)
                                          and (membership_number == "" or membership_number == "0"))
                                      else [membership_number])]],
         T.tr[T.th(class_='ralabel')["No-shows"], T.td[str(len(who.get_noshows()))]],
@@ -192,23 +200,23 @@ def general_profile_section(who, viewer, django_request):
              T.td[(T.input(type='text',
                            name='absolutions',
                            value=str(who.noshow_absolutions))
-                           if viewer.is_administrator()
+                           if pages.page_pieces.viewing_as_admin(viewer, django_request)
                            else str(who.noshow_absolutions))]]]
 
-    if viewer.is_administrator() or all_details_visible_to_user:
+    if pages.page_pieces.viewing_as_admin(viewer, django_request) or all_details_visible_to_user:
         table_contents += [
             T.tr[T.th(class_='ralabel')['Fob number'],
                  T.td[(T.input(type='text',
                                name='fob',
                                value=str(who.fob))
-                                     if viewer.is_administrator()
+                                     if pages.page_pieces.viewing_as_admin(viewer, django_request)
                                      else [str(who.fob)])]],
             T.tr[T.th(class_='ralabel')["link-id"], T.td[str(who.link_id)]],
             T.tr[T.th(class_='ralabel')['Admin note'],
                  T.td[T.input(type='text',
                               name='note',
                               value=str(who.get_admin_note()))
-                          if viewer.is_administrator()
+                          if pages.page_pieces.viewing_as_admin(viewer, django_request)
                           else str(who.get_admin_note())]]]
 
     table_contents += [
@@ -396,7 +404,7 @@ def responsibilities(who, viewer, eqtype, django_request):
                                                         who._id, who.name(),
                                                         'owner',
                                                         django_request)]
-                            if viewer.is_administrator()
+                            if pages.page_pieces.viewing_as_admin(viewer, django_request)
                             else [])])])
                      if is_owner
                      else [T.p["Not yet an owner of ", type_name,
@@ -425,7 +433,7 @@ def responsibilities(who, viewer, eqtype, django_request):
                                                           who._id, who.name(),
                                                           'trainer',
                                                           django_request)]
-                              if viewer.is_administrator()
+                              if pages.page_pieces.viewing_as_admin(viewer, django_request)
                               else [])])])
                        if is_trainer
                        else [T.p["Not yet a trainer on ", type_name,
@@ -505,7 +513,7 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                          # todo: put machine statuses in
                          [T.th(class_='ban_form')["Admin: Ban"],
                           T.th(class_='permit_form')["Admin: Make owner"],
-                          T.th(class_='permit_form')["Admin: Make trainer"]] if (viewer.is_administrator()
+                          T.th(class_='permit_form')["Admin: Make trainer"]] if (pages.page_pieces.viewing_as_admin(viewer, django_request)
                                                     or viewer.is_owner(who_name)
                                                     or viewer.is_trainer(who_name)) else []]],
             T.tbody[[T.tr[T.th[T.a(href=django_request.scheme
@@ -524,7 +532,7 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                           ([T.td[pages.page_pieces.ban_form(keyed_types[eqty_name][0], who._id, who_name, 'user', django_request)],
                             T.td[pages.page_pieces.permit_form(keyed_types[eqty_name][0], who._id, who_name, 'owner', django_request)],
                             T.td[pages.page_pieces.permit_form(keyed_types[eqty_name][0], who._id, who_name, 'trainer', django_request)]]
-                                                       if (viewer.is_administrator()
+                                                       if (pages.page_pieces.viewing_as_admin(viewer, django_request)
                                                            or viewer.is_owner(eqty_name)
                                                            or viewer.is_trainer(eqty_name)) else [])]
                      for eqty_name in sorted(keyed_types.keys())]]]]
@@ -912,7 +920,7 @@ def add_person_page_contents(page_data, who, viewer, django_request, extra_top_h
     for (section_title, url_name) in dashboard_sections:
          page_data.add_lazy_section(section_title, django.urls.reverse(url_name))
 
-    if viewer.is_administrator() or viewer.is_auditor():
+    if pages.page_pieces.viewing_as_admin(viewer, django_request) or pages.page_pieces.viewing_as_auditor(viewer, django_request):
         page_data.add_lazy_section("Admin actions", django.urls.reverse('dashboard:admin_only'))
 
     # todo: reinstate when I've created a userapi section in the django setup
