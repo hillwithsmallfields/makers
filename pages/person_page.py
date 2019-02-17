@@ -595,9 +595,13 @@ def events_hosted_section(who, viewer, django_request):
 
 def events_attended_section(who, viewer, django_request):
     attended = model.timeline.Timeline.past_events(person_field='signed_up', person_id=who._id).events()
-    return ([T.div(class_='attendedingevents')[pages.event_page.event_table_section(attended, who._id, django_request)]]
+    return [([T.div(class_='attendedingevents')[pages.event_page.event_table_section(attended, who._id, django_request)]]
             if len(attended) > 0
-            else T.p(class_='attendedingevents')["We have no record of you having attended any events."])
+             else T.p(class_='attendedingevents')["We have no record of you having attended any events."]),
+            T.p["Please contact ",
+                T.a(href="admin@makespace.org")["admin@makespace.org"],
+                " if there are any inaccuracies in the list of events you have attended, "
+                "as this determines which types of equipment you are seen as having been trained on."]]
 
 def events_available_section(who, viewer, django_request):
     hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events()
