@@ -195,12 +195,6 @@ def other_equipment_only(django_request, who=""):
                        "Available equipment",
                        who)
 
-def training_requests_only(django_request, who=""):
-    return one_section(django_request,
-                       pages.person_page.training_requests_section,
-                       "Outstanding training requests",
-                       who)
-
 def events_hosting_only(django_request, who=""):
     return one_section(django_request,
                        pages.person_page.events_hosting_section,

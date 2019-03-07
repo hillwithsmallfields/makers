@@ -23,7 +23,6 @@ urlpatterns = [
     path('responsibilities', views.responsibilities_only, name='responsibilities_only'),
     path('trained_on', views.trained_on_only, name='trained_on_only'),
     path('other_equipment', views.other_equipment_only, name='other_equipment_only'),
-    path('training_requests', views.training_requests_only, name='training_requests_only'),
     path('hosting', views.events_hosting_only, name='events_hosting_only'),
     path('attending', views.events_attending_only, name='events_attending_only'),
     path('hosted', views.events_hosted_only, name='events_hosted_only'),

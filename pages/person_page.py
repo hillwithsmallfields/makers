@@ -543,28 +543,6 @@ def equipment_trained_on(who, viewer, equipment_types, django_request):
                                                            or viewer.is_trainer(eqty_name)) else [])]
                      for eqty_name in sorted(keyed_types.keys())]]]]
 
-def training_requests_section(who, viewer, django_request):
-    len_training = len("_training")
-    if len(who.training_requests) == 0:
-        return [T.div(class_='requested')[T.p["You have no open training requests."]]]
-    keyed_requests = {req['request_date']: req for req in who.training_requests}
-    sorted_requests = [keyed_requests[k] for k in sorted(keyed_requests.keys())]
-    return [T.div(class_='requested')[
-        T.table(class_='unstriped')[
-            T.thead[T.tr[T.th["Date"],T.th["Equipment"],T.th["Role"]]],
-            T.tbody[
-                [T.tr[T.td[req['request_date'].strftime("%Y-%m-%d")],
-                      T.td[T.a(href=django.urls.reverse(
-                          "equiptypes:eqty",
-                          args=(model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).name,)))[
-                              model.equipment_type.Equipment_type.find_by_id(req['equipment_type']).pretty_name()]],
-                      T.td[str(req['event_type'])[:-len_training]],
-                      T.td[pages.page_pieces.cancel_button(who,
-                                                           req['equipment_type'],
-                                                           'user', "Cancel training request",
-                                                           django_request)]]
-                 for req in sorted_requests]]]]]
-
 def events_hosting_section(who, viewer, django_request):
     hosting = model.timeline.Timeline.future_events(person_field='hosts', person_id=who._id).events()
     return [T.div(class_='hostingevents')
@@ -902,7 +880,6 @@ dashboard_sections = [
     ("Equipment responsibilities", 'dashboard:responsibilities_only'),
     ("My equipment", 'dashboard:trained_on_only'),
     ("Available equipment", 'dashboard:other_equipment_only'),
-    ("Training requests", 'dashboard:training_requests_only'),
     ("Events I will be hosting", 'dashboard:events_hosting_only'),
     ("Events I have signed up for", 'dashboard:events_attending_only'),
     ("Events I have hosted", 'dashboard:events_hosted_only'),
