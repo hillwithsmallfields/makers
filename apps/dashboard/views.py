@@ -72,7 +72,6 @@ def all_user_list_page(django_request):
                                      django_request=django_request)
 
     if viewing_user.is_administrator() or viewing_user.is_auditor():
-        # Todo: this search form doesn't appear
         page_data.add_content("Search form",
                               pages.person_page.search_users_form(viewing_user, django_request))
         page_data.add_content("User list",
@@ -267,6 +266,8 @@ def user_match_page(django_request):
                 django_request,
                 filter_name, filter_string,
                 include_non_members))
+        page_data.add_content("Search form",
+                              pages.person_page.search_users_form(viewing_user, django_request))
     else:
         page_data.add_content("Error", [T.p["You do not have permission to view the list of users."]])
 
