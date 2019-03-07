@@ -111,17 +111,19 @@ def availform(who, available, django_request):
 
 def avail_table(who, slot_sums):
     days, _, times = model.timeslots.get_slots_conf()
-    return [T.div(class_='weekly_slots avail_table')[
+    return ([T.div(class_='weekly_slots avail_table')[
         [T.h4["Availability of people who have requested training"],
          T.table(class_='availability unstriped')
          [T.thead[T.tr[T.th(class_='daylabel')["Day"],
                        [[T.th[slotname]] for slotname in times]]],
           T.tbody[[[T.tr[T.th(class_='daylabel')[day],
                          [T.td[str(b) # todo: make bold, and a different style, if "who" (the viewing user) is available then
-                           ]
+                         ]
                           for t, b in zip(times, day_slots)]]]
                    for (day, day_slots) in zip(days,
                                                model.timeslots.avsums_by_day(slot_sums))]]]]]]
+            if 'Availability' in model.configuration.get_config('profile_sections')
+            else [""])
 
 def schedule_training_event_form(who, role, eqtype, extras, button_text, django_request):
     event_type = role+"_training"
