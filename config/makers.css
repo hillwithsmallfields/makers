@@ -330,11 +330,23 @@ button:active {                 /* this doesn't seem to be working but maybe I m
 form.ban_form {
     background-color: red;
     color:            yellow;
+    font-style:  italic;
+    font-weight: bold;
+}
+
+form.ban_form::after {
+    content: " (administrative action)";
 }
 
 form.permit_form {
     background-color: green;
     color:            yellow;
+    font-style:  italic;
+    font-weight: bold;
+}
+
+form.permit_form::after {
+    content: " (administrative action)";
 }
 
 p.the_small_print {
