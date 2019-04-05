@@ -13,6 +13,14 @@ import datetime
 
 """Assorted useful bits of expressions for constructing our pages."""
 
+def viewing_as_admin(viewer, django_request):
+    return ((viewer.is_administrator()
+             and not django_request.session.get('admin_view_as_user', False)))
+
+def viewing_as_auditor(viewer, django_request):
+    return ((viewer.is_auditor()
+             and not django_request.session.get('admin_view_as_user', False)))
+
 server_conf = None
 
 def set_server_conf():
@@ -195,27 +203,33 @@ def display_or_form(class_name, action_as_form,
     return T.form(action=action_as_form,
                   method='POST')[table] if action_as_form else table
 
-def general_equipment_list(who, viewer, these_types, django_request, detailed=False):
-    keyed_types = {eqty.name: eqty for eqty in these_types}
+def general_equipment_list(who, viewer,
+                           these_types,
+                           django_request,
+                           detailed=False):
+    keyed_types = {{"red": "A",
+                    "amber": "B",
+                    "green": "C"}.get(eqty.training_category, "Z") + eqty.name: eqty for eqty in these_types}
+    am_viewing_as_admin = viewing_as_admin(viewer, django_request)
     return T.table(class_='equipment_type_list unstriped')[
         T.thead[T.tr[T.th["Equipment type"],
                      T.th["Request"],
-                     T.th["Admin action"] if viewer.is_administrator() else ""]],
-        T.tbody[[[T.tr[T.th(class_='category_'+keyed_types[name].training_category)[
+                     T.th["Admin action"] if am_viewing_as_admin else ""]],
+        T.tbody[[T.tr[T.th(class_='category_'+equip_type.training_category)[
             T.a(href=django.urls.reverse("equiptypes:eqty",
-                                         args=(name,)))[keyed_types[name].pretty_name()]],
-                       T.td[machinelist(keyed_types[name],
-                                        who, django_request, False) if detailed else "",
-                            (toggle_request(who, keyed_types[name]._id, 'user',
-                                            who.has_requested_training(keyed_types[name]._id, 'user'),
-                                            django_request)
-                                        if keyed_types[name].training_category != "green"
+                                         args=(equip_type.name,)))[equip_type.pretty_name()]],
+                      T.td[machinelist(equip_type,
+                                       who, django_request, False) if detailed else "",
+                           (toggle_request(who, equip_type._id, 'user',
+                                           who.has_requested_training(equip_type._id, 'user'),
+                                           django_request)
+                                        if equip_type.training_category != "green"
                                         else "Training not required")],
-                       T.td[permit_form(keyed_types[name],
+                      (T.td[permit_form(equip_type,
                                         who._id, who.name(),
                                         'user',
-                                        django_request)] if viewer.is_administrator() else ""]]
-                            for name in sorted(keyed_types.keys())]]]
+                                        django_request)] if am_viewing_as_admin else "")]
+        for equip_type in [ keyed_types[name] for name in sorted(keyed_types.keys()) ]]]]
 
 def machinelist(eqty, who, django_request, as_owner=False):
     """Make a list of machines, with appropriate detail for each."""

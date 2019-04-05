@@ -186,13 +186,13 @@ def responsibilities_only(django_request, who=""):
 def trained_on_only(django_request, who=""):
     return one_section(django_request,
                        pages.person_page.equipment_trained_on_section,
-                       "Equipment trained on",
+                       "My equipment",
                        who)
 
 def other_equipment_only(django_request, who=""):
     return one_section(django_request,
                        pages.person_page.other_equipment_section,
-                       "Other equipment",
+                       "Available equipment",
                        who)
 
 def training_requests_only(django_request, who=""):
@@ -554,5 +554,33 @@ def debug_off(django_request):
                                      django_request=django_request)
     page_data.add_content("Confirmation",
                           [T.p["Debug disabled for this session"]])
+
+    return HttpResponse(str(page_data.to_string()))
+
+def admin_view_as_user_on(django_request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    django_request.session['admin_view_as_user'] = True
+
+    page_data = model.pages.HtmlPage("Admin_View_As_User mode enabled result",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("Confirmation",
+                          [T.p["Admin_View_As_User enabled for this session."]])
+
+    return HttpResponse(str(page_data.to_string()))
+
+def admin_view_as_user_off(django_request):
+    config_data = model.configuration.get_config()
+    model.database.database_init(config_data)
+
+    django_request.session['admin_view_as_user'] = False
+
+    page_data = model.pages.HtmlPage("Admin_View_As_User mode disabled confirmation",
+                                     pages.page_pieces.top_navigation(django_request),
+                                     django_request=django_request)
+    page_data.add_content("Confirmation",
+                          [T.p["Admin_View_As_User disabled for this session"]])
 
     return HttpResponse(str(page_data.to_string()))

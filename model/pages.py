@@ -297,6 +297,25 @@ class SectionalLevel(object):
 def page_section_string(page_title, content, user=None, initial_tab=None, needs_jquery = False):
     return RawHtmlPage(page_title, content).to_string()
 
+def make_footer(page_conf, org_conf):
+    if 'footer_text' in page_conf:
+        return untemplate.safe_unicode(page_conf['footer_text'])
+    else:
+        return T.footer[
+            T.hr,
+            T.p(class_='the_small_print')
+            ["Produced by the ",
+             T.a(href="https://github.com/hillwithsmallfields/makers/")["makers"],
+             " system.  ",
+             "We use ",
+             T.a(href="https://www.djangoproject.com/")["django"],
+             " to handle login and sessions, and that uses a ",
+             T.a(href="https://docs.djangoproject.com/en/2.1/topics/http/sessions/#using-cookie-based-sessions")["session cookie"],
+             " and a ",
+             T.a(href="https://docs.djangoproject.com/en/2.1/ref/csrf/")["CSRF protection cookie"],
+             ".  ",
+             "We don't use any other cookies that we are aware of, and we neither sell your data nor give it away."]]
+
 using_foundation = False
 
 foundation_stylesheet = """<link rel="stylesheet"
@@ -371,19 +390,7 @@ def page_string(page_title, content,
                                                                     height=logo_height,
                                                                     width=logo_width,
                                                                     src=logo)]]
-    footer = T.footer[T.hr,
-                      T.p(class_='the_small_print')
-                      ["Produced by the ",
-                       T.a(href="https://github.com/hillwithsmallfields/makers/")["makers"],
-                       " system.  ",
-                       "We use ",
-                       T.a(href="https://www.djangoproject.com/")["django"],
-                       " to handle login and sessions, and that uses a ",
-                       T.a(href="https://docs.djangoproject.com/en/2.1/topics/http/sessions/#using-cookie-based-sessions")["session cookie"],
-                       " and a ",
-                       T.a(href="https://docs.djangoproject.com/en/2.1/ref/csrf/")["CSRF protection cookie"],
-                       ".  ",
-                       "We don't use any other cookies that we are aware of, and we neither sell your data nor give it away."]]
+    footer = make_footer(page_conf, org_conf)
     return RawHtmlPage(page_title,
                     untemplate.HTML5Doc([untemplate.safe_unicode(style_text
                                                                  + script_text

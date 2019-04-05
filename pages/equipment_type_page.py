@@ -59,8 +59,8 @@ def equipment_type_section(eqty, viewing_user, django_request):
                    pages.page_pieces.eqty_training_requests(eqty, django_request)]
         roles += [("Owners", 'owner'),
                  ("Trainers", 'trainer')]
-    if (viewing_user.is_administrator()
-        or viewing_user.is_auditor()
+    if (pages.page_pieces.viewing_as_admin(viewing_user, django_request)
+        or pages.page_pieces.viewing_as_auditor(viewing_user, django_request)
         or viewing_user.is_owner(eqty)
         or viewing_user.is_trainer(eqty)):
         roles.append(("Users", 'user'))
