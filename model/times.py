@@ -77,6 +77,12 @@ def as_utc(when):
             if when.tzinfo
             else when.replace(tzinfo=timezone.utc)).astimezone(pytz.timezone('utc'))
 
+def parse_DMY(DMY_string):
+    try:
+        return datetime.strptime(DMY_string, "%d %b %Y")
+    except ValueError:
+        return None
+
 def test_times():
     our_now = now()
     print("our now is", our_now)

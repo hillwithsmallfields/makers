@@ -207,7 +207,12 @@ class Person(object):
         return model.django_calls.django_password_is_usable(self)
 
     def is_active(self):
+        """Return whether the user is active in the django part of the system."""
         return model.django_calls.django_user_is_active(self)
+
+    def set_active(self, active):
+        """Set whether the user is active in the django part of the system."""
+        model.django_calls.django_user_activation(self, active)
 
     def is_django_staff(self):
         return model.django_calls.django_user_is_staff(self)
@@ -534,7 +539,8 @@ class Person(object):
         # In case of inconsistency, such as bad imports, make sure
         # that if you are an owner or trainer, you also count as a
         # user:
-        return trained or self.is_owner(equipment_type) or self.is_trainer(equipment_type)
+        return ((trained and not detrained) # detraining as user also cancels further qualifications
+                or self.is_owner(equipment_type) or self.is_trainer(equipment_type))
 
     def is_owner(self, equipment_type):
         """Return whether the person is an owner of that equipment_type."""

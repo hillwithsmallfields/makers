@@ -14,6 +14,7 @@ import argparse
 import model.configuration as configuration
 import csv
 import model.database as database
+import model.times
 import yaml
 
 def import_template_file(file):
@@ -59,12 +60,26 @@ def import_role_file(role, csv_file, verbose):
                 if verbose:
                     print("checkback is", checkback, "with training events", checkback.get_training_events())
 
+def process_leavers(leavers_file_name, config):
+    organization_as_id = Equipment_type.find(config['organization']['name'])._id
+    with open(leavers_file_name) as leavers_file:
+        for row in csv.DictReader(leavers_file):
+            name = row['Name']
+	    date_left = model.times.parse_DMY(row['Cancelled on']) or model.times.parse_DMY(row['Expires (date)'])
+	    canceller = Person.find(row['Cancelled by'])
+	    notes = row.get('Notes')
+            leaving_event = Event.find('user_untraining',
+                                       date_left,
+                                       [canceller._id],
+                                       organization_as_id)
+
 def import_main(verbose=True):
     # todo: convert all dates to datetime.datetime as mentioned in http://api.mongodb.com/python/current/examples/datetimes.html
     parser = argparse.ArgumentParser()
     parser.add_argument("-y", "--equipment-types", default=None)
     parser.add_argument("-e", "--equipment", default=None)
     parser.add_argument("-m", "--members", default=None)
+    parser.add_argument("-l", "--leavers", default=None)
     parser.add_argument("-u", "--users", default=None)
     parser.add_argument("-o", "--owners", default=None)
     parser.add_argument("-t", "--trainers", default=None)
@@ -111,6 +126,7 @@ def import0(args):
 
     if args.members is not None and args.members != "None":
         induction_event = None
+        organization_as_id = Equipment_type.find(config['organization']['name'])._id
         with open(args.members) as members_file:
             for row in csv.DictReader(members_file):
                 # todo: check that they are not already in the collection
@@ -144,7 +160,7 @@ def import0(args):
                 induction_event = Event.find('user_training',
                                               row['Date inducted'],
                                               [inductor._id],
-                                              Equipment_type.find(config['organization']['name'])._id)
+                                              organization_as_id)
                 induction_event.add_signed_up([added])
                 induction_event.mark_results([added], [], [])
                 # print("induction event is now", induction_event)
@@ -157,6 +173,10 @@ def import0(args):
     # read the trainers before the people they train:
     import_role_file('trainer', args.trainers, verbose)
     import_role_file('user', args.users, verbose)
+
+    if args.leavers is not None and args.leavers != "None":
+        process_leavers(args.leavers, config)
+
     import_template_file(args.templates)
 
 if __name__ == "__main__":

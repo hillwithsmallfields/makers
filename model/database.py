@@ -106,6 +106,7 @@ def get_person_dict(identification):
                 and re.match("^[0-9a-fA-F]+$", identification)
                 and collection.find_one({'_id': bson.objectid.ObjectId(identification)}))
             or collection.find_one({'link_id': identification})
+            or collection.find_one({'aka': identification})
             or collection.find_one({'fob': identification})
             # names and email addresses are kept in a separate database
             or collection.find_one({'link_id': name_to_id(identification)}))
