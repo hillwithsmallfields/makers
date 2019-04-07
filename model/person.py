@@ -539,7 +539,8 @@ class Person(object):
         # In case of inconsistency, such as bad imports, make sure
         # that if you are an owner or trainer, you also count as a
         # user:
-        return trained or self.is_owner(equipment_type) or self.is_trainer(equipment_type)
+        return ((trained and not detrained) # detraining as user also cancels further qualifications
+                or self.is_owner(equipment_type) or self.is_trainer(equipment_type))
 
     def is_owner(self, equipment_type):
         """Return whether the person is an owner of that equipment_type."""
