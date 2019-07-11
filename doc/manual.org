@@ -1,0 +1,418 @@
+* Makers system manual
+** Introduction
+
+   This is the membership, equipment and training database originally
+   written for Makespace, a hackerspace in Cambridge, UK.  The source
+   code is available on github at
+   =https://github.com/hillwithsmallfields/makers=, and we hope it
+   will come into use for other organizations too.
+
+   The system is configurable through a YAML file; some installations
+   may suppress some of the features described here.
+
+   The system holds the following information:
+
+   - the list of members
+   - the list of equipment types
+   - the list of equipment instances
+   - the list of events held at the hackerspace
+
+   Some further information is stored in each of these entries, and
+   there is some further static information in files determining the
+   configuration of the system and of the organization it models.
+
+   Through this system, you can:
+
+   - maintain your user profile
+   - check your training status for equipment
+   - request training on equipment
+   - schedule events
+   - sign up for events
+   - check equipment status
+
+*** Roles
+
+    There are three "roles" in which you can be trained for each piece
+    of equipment:
+
+    - user
+    - trainer
+    - owner
+
+    Users can use the equipment, trainers can create user training and
+    trainer training events and can mark the results for each attendee,
+    and owners can create owner training events and mark their results,
+    and can create maintenance events.
+
+*** The main workflow
+
+    Eligible members can request training for a particular role on a
+    particular type of equipment, and if there is a training event of
+    the appropriate type already open and with spaces available, the
+    user is given a link to sign up for it.
+
+    Eligibility for requesting training is determined by the
+    =attendee_prerequisites= field of the template for the event.  For
+    Makespace, where only members can be trained to use the equipment,
+    the prerequisite for user training is that they are a member.  The
+    prerequisites for being trained as an owner or a trainer are that
+    the person is already a user of the same type of equipment.
+    (Likewise, there are prerequisites for scheduling and hosting each
+    type of event.)
+
+    When a trainer schedules a training event, the system searches for
+    users who have requested that type of training, sorts them into
+    order of how long they've been waiting, and sends to those who've
+    been waiting longest (up to the maximum number of attendees for the
+    event) emails containing offers of training, in the form of a link
+    with a UUID identifying the event and the user, that will generate
+    a page on which the user can accept or decline the invitation.
+
+    There is a limit on the number of training requests you can have
+    open at once (set in the config file as
+    =training:default_max_requests=), to encourage people to be specific
+    about requesting training only on equipment they're serious about
+    using.  Your personal limit can be raised by an admin if you can
+    convince them that you have good reason; and we will experiment
+    with the system-wide default number for this as we settle into
+    using the system.
+
+    If you don't turn up for training that you've signed up for, more
+    than a set number of times (=training:no_shows_limit= in the config
+    file), you won't be able to request or accept more training until
+    you've contacted an admin about it.  This may sound a bit
+    draconian, but we have had significant problems with people wasting
+    training slots by signing up but not turning up; as trainers are
+    volunteering their time, training slots are one of our scarcer
+    resources.
+
+    For the rare occasions when we have to withdraw permission to use
+    something, there is also an "untraining" event type, which cancels
+    permission.  You have permission to use an equipment type if your
+    most recent training for it is more recent than your most recent
+    untraining for it.  Admins and device owners and trainers can
+    create and apply untraining events to users.
+
+*** Special equipment classes
+
+    There are some special classes of "equipment" built into the
+    system:
+
+    - being an inducted member of the hackerspace is represented by
+      having been trained on the equipment type whose name is given
+      under =organization:name= in the config file (and being an inductor
+      is represented by having been trained as a trainer on that type
+      of equipment).
+
+    - being a database admin is represented by having been trained as
+      an owner of the equipment named under =organization:database= in
+      the config file (and being an auditor, which is a read-only
+      admin, by being trained as a user of it).
+
+    - being able to post to the announcements page / screen is
+      represented by being a user of the equipment type named as
+      =organization:announcements= in the config file.
+
+** Databases and collections
+
+   The key to understanding the system is that it is centred around
+   ``events'', the most important type of which is training.  The
+   system manages people's permissions to do things (such as to use
+   particular equipment), and those permissions are represented by
+   people having successfully attended events which grant those
+   permissions (i.e. training).  The event history is the only place
+   where information about who is trained on what equipment is stored;
+   database entries for users do *not* have any information about what
+   they are trained on, and database entries for equipment types do
+   *not* have any information about who is trained on them.  Storing
+   this information in the event history provides useful supplementary
+   information: who hosted the training event (i.e. did the training),
+   and when the event occurred.  In principle, this should make it
+   possible to trace someone's authority for a particular role right
+   back to the team who set the equipment up when it arrived, although
+   at Makespace our early records aren't quite complete in this
+   respect.
+
+** Division of data between databases
+
+   To aid GDPR compliance, user data is split into two parts, which
+   are stored in separate mongodb databases: "profile" information,
+   which is personally identifying, and may be deleted at the user's
+   request when they leave; and "operational" information, which is
+   not personally identifying, and is kept permanently, for
+   operational reasons --- without the profile information, it is
+   anonymous.
+
+   The databases referring to people are connected by a UUID referred
+   to as the =link_id=.  We don't use the membership number for this,
+   partly because that is personally identifying information and so
+   should not be in the "permanent" operational database, and partly
+   because the system is designed to be able to handle the induction
+   process, and so can be configured to allow non-members (who do not
+   yet have a membership number) to sign up so that they can apply for
+   "See the space" sessions and for inductions.
+
+*** The login database (Postgres)
+
+    The login database is used by django to handle logins holds as
+    little information as django would let me get away with: it has a
+    user id, an email address, and a =link_id=.  I presume django
+    stores the hashed password there too.  This information may have
+    to be removed at the user's request when they leave.
+
+*** The profile database (Mongodb)
+
+    The most basic purpose of the profile database is to hold the
+    users' names (so the administrators can identify records),
+    membership numbers (likewise) and email addresses (so the system
+    can notify users when training they have requested is scheduled).
+
+    In a fully-fledged system (which manages all events for an
+    organization, not just the training events), the user can store
+    further information here, including interest areas and levels so
+    users can be notified when possibly interesting events are
+    scheduled; and, for catered events, what they don't want to eat
+    (so suitable numbers of vegetarian pizzas, etc, can be provided).
+
+    The text for badge printers can also be stored here.
+
+*** The operational database (Mongodb)
+
+    This is contains the non-personally-identifying data, that the
+    system uses for its operation.  This includes their pending
+    training requests (and how many open training requests they are
+    permitted, if different from the default; this can be set only by
+    admins); and also the level of privacy they want for their
+    information (for example, whether their name can be shown to
+    attendees when they are hosting a training session).
+
+    It also includes a bitmap for which weekly timeslots they are
+    typically available for training, because sending users training
+    invitations for times they know they cannot make causes a delay
+    for users further down the queue for that training.  If a
+    particular installation does not want to use this feature, the
+    bitmap is set to "available" for all time slots, and the UI
+    feature for displaying and editing it is omitted from the users'
+    profile pages.
+
+    The operational data also has space for recording the users' RFID
+    fob codes (or something that can be tied to them), in preparation
+    for being able to generate lists of who can use each type of
+    equipment, to be downloaded into controllers attached to the
+    equipment to enable the equipment only for qualified users.
+
+    The operational data is normally kept permanently, even when a
+    user has left, to maintain the chain of training from each user
+    back to the original installer of the equipment, so if the user
+    has ever trained anyone, it would be destructive to remove their
+    operational data.  Of course, it could be removed by someone with
+    command-line access to the database, if the user has exceptional
+    fears.
+   
+*** The equipment types database (Mongodb)
+
+    There are two databases related to equipment: one with entries
+    shared between all equipment of the same type, and one with
+    entries for each instance of that type.  This is the former.
+
+    Training is connected to an equipment type, not an individual
+    instance of the type.  This database exists mainly to give
+    training sessions a way of indicating what they are training on.
+
+    These entries can also have links to wiki pages about the
+    equipment, and other background information (manufacturer, model
+    number, etc).
+
+*** The equipment database (Mongodb)
+
+    There are two databases related to equipment: one with entries
+    shared between all equipment of the same type, and one with
+    entries for each instance of that type.  This is the latter.
+
+    The names of the instances (such as _Jaws_ and _Betsy_ for the
+    laser cutters) are stored here.
+
+    In a fully-fledged system, equipment status can be stored here.
+
+*** Events (Mongodb)
+
+    Each event has:
+
+    - a type
+    - a timestamp and a duration
+    - a location
+    - a list of hosts (normally just one) --- this is the trainer, for
+      a training event
+    - a list of attendees
+    - a list of people succesfully attending the event (for training
+      events)
+    - a list of people unsuccesfully attending the event (for training
+      events)
+    - a list of people failing to attend the event (for training
+      events)
+    - a list of equipment instances reserved for the event --- this is
+      the only way equipment can be reserved
+
+    In a fully-fledged system, which handles all events (instead of
+    only training events) a room can be reserved for the event because
+    rooms are instances of the =room= type of equipment.
+
+*** Event templates (Mongodb)
+
+    Each type of event has a template entry, controlling which fields
+    the event has, and indicating prerequisites for the user creating
+    the event and for users signing up for the event.
+
+    (More information to come for this.)
+
+** Static (file) data
+
+*** The configuration file
+
+    The configuration file is written in YAML, and controls:
+
+    - Some details of how pages are displayed
+    - The order in which user profile sections are displayed (omission
+      from the sequence suppresses a section)
+    - The profile fields stored for each user
+    - The possible interest areas, if the interest areas feature is used
+    - The start and end times of availability timeslots, if that
+      feature is used
+    - Some controls for the event template editor
+    - The locations equipment instances can be stored in
+
+** Privacy and data protection
+
+   The default is that users cannot see other user's data (even their
+   names).  There are some exceptions to this, which are controlled by
+   flags that each user can set in their profile:
+
+   - They can allow their name to be seen by the hosts of an event
+     (typically, equipment trainers) when they are signed up to attend
+     the event.  The same flag also means that, once trained, they can
+     be seen on the list of users of an equipment type, by the owners
+     and trainers of that equipment type.
+   - They can allow their name to be seen by attendees of an event,
+     when they are hosts of the event.
+
+   We hope that most users will permit these (particularly the
+   latter), but understand that there are some circumstances (such as
+   being stalked) in which people may wish to avoid this.
+
+   Users with administrative permissions can see (and alter) all user
+   data, as this is required to perform that role.  In practice, very
+   few people will have these permissions; typically the board of
+   directors (four to six people), the administrative staff (one
+   person) and the system maintainer (one person).
+
+   The databases and the server are kept on a cloud server instance
+   with whole disk encryption, and web access is through https only,
+   and command line access (which currently two people have: one of
+   the directors, and the system maintainer) through ssh only.
+
+** Things database admins can do through the web interface
+
+   There are some things admins can set on your profile that (to avoid
+   the risk of misuse) you can't do yourself:
+
+   - Clear the flag that says you're a persistent non-attender of
+     training.
+   - Ban you from equipment or from the space itself, and cancel the
+     ban (bans are represented as untraining events); when a ban is
+     created, a future re-training may be created at the same time, to
+     make a ban of fixed duration.
+   - Correct your training status by creating training/untraining
+     events.
+   - Increase the number of training requests you can have open at
+     once.
+   - Backdate a training request, if you have convinced them that you
+     a good reason to jump the queue.
+   - Edit event creation templates.
+
+** Administrative events requiring command-line access
+
+   These may eventually be done through the web interface, but for now
+   there are some actions that require command-line access to the
+   server, mostly through the program utils/import.py:
+
+   - Bulk import of user and training data (from CSV files)
+   - Creation of equipment types and instances (by importing from CSV
+     files)
+
+** The API
+
+   There is currently a partial API, which allows users to retrieve
+   their data (which the GDPR requires it to be possible for them to
+   do) and which can also generate lists of codes of the fobs of
+   qualified users, for equipment controllers.
+
+   (More information to come for this.)
+
+** How your data is used
+
+   We use your data primarily to keep track of who can use each type
+   of equipment and and who can schedule each type of event, and
+   secondarily for other administrative tasks.  Later, we will also
+   use it to control and keep track of equipment use.
+
+   As our number of members grows, we are outgrowing our old model of
+   being a small group who know each other, and also the
+   administrative load is growing, therefore we are increasing the
+   automation of how we run the space.  Also, as the GDPR comes into
+   effect, we don't want lists of people on a public wiki to be the
+   only way we can indicate who can use equipment.  And,
+   unfortunately, there are some people who, if they damage equipment,
+   won't own up to it, and as we don't all know each other by name
+   now, they can't necessarily be traced.  So, we are moving towards
+   having a controller attached to each piece of equipment, with a
+   keyfob reader, to enable the equipment only for those who have been
+   trained on it, and will also keep a record of who used the
+   equipment and when.
+
+   To minimize the risk of personal identifying information leaking
+   out, the information going to the equipment controllers will not
+   include your name, but only your keyfob number (except for
+   equipment that can be left running unattended, such as the 3-D
+   printers, as they display the user name associated with the current
+   job).
+
+** Leaving (and possibly re-joining)
+
+   Your database entry is held in three databases:
+
+   - the relational database used by django to manage your login account
+   - an identifying database containing your name, email address, etc
+   - an operational database containing no personal identifying information.
+
+   These three entries are linked by having the same link_id field,
+   containing a UUID.
+
+   There are two ways that you can leave the system:
+
+   - having your entries in the login database and the identifying
+     database deleted (leaving just anonymous link_id UUID in the
+     operational database's log of events); this is what the GDPR
+     requires us to offer.  Until then, you can get the the link_id
+     identifying your anonymized data (it is displayed on your profile
+     page), which may be helpful if you do decide to re-join despite
+     having expected not to at the time you left.  (We can't mail it
+     to you on leaving, as we keep a copy of emails sent by the
+     administrators, and by keeping that email we would be failing to
+     anonymize the remaining data.)
+
+   - having a de-training event applied (by an admin) to your
+     hackerspace training, which represents suspension of your
+     membership until further notice.  This makes it easier to
+     re-join, and (until an expiry time) allows your training status
+     to be regained without going through re-training if you re-join.
+
+   When you leave, you will be marked as de-trained on the hackerspace, and
+   a future one-person de-training event will be scheduled for each
+   piece of equipment you're trained on, with a delay specified by the
+   configuration for that equipment.  If you re-join before then,
+   those de-training events will be cancelled, and you will be able to
+   resume using that equipment without re-training.
+
+   If the hackerspace requires you to leave (bans you) for misconduct, we
+   will keep your identifying information as required for operational
+   reasons (to stop you re-joining).
