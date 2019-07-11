@@ -6,12 +6,19 @@
    code is available on github, and we hope it will come into use for
    other organizations too.
 
-   It holds the following information:
+   The system is configurable through a YAML file; some installations
+   may suppress some of the features described here.
+
+   The system holds the following information:
 
    - the list of members
    - the list of equipment types
    - the list of equipment instances
    - the list of events held at the hackerspace
+
+   Some further information is stored in each of these entries, and
+   there is some further static information in files determining the
+   configuration of the system and of the organization it models.
 
    Through this system, you can:
 
@@ -22,80 +29,252 @@
    - sign up for events
    - check equipment status
 
+*** Roles
+
+    There are three "roles" in which you can be trained for each piece
+    of equipment:
+
+    - user
+    - trainer
+    - owner
+
+    Users can use the equipment, trainers can create user training and
+    trainer training events and can mark the results for each attendee,
+    and owners can create owner training events and mark their results,
+    and can create maintenance events.
+
+*** The main workflow
+
+    Eligible members can request training for a particular role on a
+    particular type of equipment, and if there is a training event of
+    the appropriate type already open and with spaces available, the
+    user is given a link to sign up for it.
+
+    Eligibility for requesting training is determined by the
+    =attendee_prerequisites= field of the template for the event.  For
+    Makespace, where only members can be trained to use the equipment,
+    the prerequisite for user training is that they are a member.  The
+    prerequisites for being trained as an owner or a trainer are that
+    the person is already a user of the same type of equipment.
+    (Likewise, there are prerequisites for scheduling and hosting each
+    type of event.)
+
+    When a trainer schedules a training event, the system searches for
+    users who have requested that type of training, sorts them into
+    order of how long they've been waiting, and sends to those who've
+    been waiting longest (up to the maximum number of attendees for the
+    event) emails containing offers of training, in the form of a link
+    with a UUID identifying the event and the user, that will generate
+    a page on which the user can accept or decline the invitation.
+
+    There is a limit on the number of training requests you can have
+    open at once (set in the config file as
+    =training:default_max_requests=), to encourage people to be specific
+    about requesting training only on equipment they're serious about
+    using.  Your personal limit can be raised by an admin if you can
+    convince them that you have good reason; and we will experiment
+    with the system-wide default number for this as we settle into
+    using the system.
+
+    If you don't turn up for training that you've signed up for, more
+    than a set number of times (=training:no_shows_limit= in the config
+    file), you won't be able to request or accept more training until
+    you've contacted an admin about it.  This may sound a bit
+    draconian, but we have had significant problems with people wasting
+    training slots by signing up but not turning up; as trainers are
+    volunteering their time, training slots are one of our scarcer
+    resources.
+
+    For the rare occasions when we have to withdraw permission to use
+    something, there is also an "untraining" event type, which cancels
+    permission.  You have permission to use an equipment type if your
+    most recent training for it is more recent than your most recent
+    untraining for it.  Admins and device owners and trainers can
+    create and apply untraining events to users.
+
+*** Special equipment classes
+
+    There are some special classes of "equipment" built into the
+    system:
+
+    - being an inducted member of the hackerspace is represented by
+      having been trained on the equipment type whose name is given
+      under =organization:name= in the config file (and being an inductor
+      is represented by having been trained as a trainer on that type
+      of equipment).
+
+    - being a database admin is represented by having been trained as
+      an owner of the equipment named under =organization:database= in
+      the config file (and being an auditor, which is a read-only
+      admin, by being trained as a user of it).
+
+    - being able to post to the announcements page / screen is
+      represented by being a user of the equipment type named as
+      =organization:announcements= in the config file.
+
+** Databases and collections
+
    The key to understanding the system is that it is centred around
-   ``events'', the most important type of which is training.  The system
-   manages people's permissions to do things (such as to use
+   ``events'', the most important type of which is training.  The
+   system manages people's permissions to do things (such as to use
    particular equipment), and those permissions are represented by
    people having successfully attended events which grant those
-   permissions (i.e. training).
+   permissions (i.e. training).  The event history is the only place
+   where information about who is trained on what equipment is stored;
+   database entries for users do *not* have any information about what
+   they are trained on, and database entries for equipment types do
+   *not* have any information about who is trained on them.  Storing
+   this information in the event history provides useful supplementary
+   information: who hosted the training event (i.e. did the training),
+   and when the event occurred.  In principle, this should make it
+   possible to trace someone's authority for a particular role right
+   back to the team who set the equipment up when it arrived, although
+   at Makespace our early records aren't quite complete in this
+   respect.
 
-   There are three "roles" in which you can be trained for each piece
-   of equipment:
+** Division of data between databases
 
-   - user
-   - trainer
-   - owner
+   To aid GDPR compliance, user data is split into two parts, which
+   are stored in separate mongodb databases: "profile" information,
+   which is personally identifying, and may be deleted at the user's
+   request when they leave; and "operational" information, which is
+   not personally identifying, and is kept permanently, for
+   operational reasons --- without the profile information, it is
+   anonymous.
 
-   Users can use the equipment, trainers can create user training and
-   trainer training events and can mark the results for each attendee,
-   and owners can create owner training events and mark their results,
-   and can create maintenance events.
+   The databases referring to people are connected by a UUID referred
+   to as the =link_id=.  We don't use the membership number for this,
+   partly because that is personally identifying information and so
+   should not be in the "permanent" operational database, and partly
+   because the system is designed to be able to handle the induction
+   process, and so can be configured to allow non-members (who do not
+   yet have a membership number) to sign up so that they can apply for
+   "See the space" sessions and for inductions.
 
-   There are some special classes of "equipment" built into the
-   system:
+*** The login database (Postgres)
 
-   - being an inducted member of the hackerspace is represented by
-     having been trained on the equipment type whose name is given
-     under organization:name in the config file (and being an inductor
-     is represented by having been trained as a trainer on that type
-     of equipment).
+    The login database is used by django to handle logins holds as
+    little information as django would let me get away with: it has a
+    user id, an email address, and a =link_id=.  I presume django
+    stores the hashed password there too.  This information may have
+    to be removed at the user's request when they leave.
 
-   - being a database admin is represented by having been trained as
-     an owner of the equipment named under organization:database in
-     the config file (and being an auditor, which is a read-only
-     admin, by being trained as a user of it).
+*** The profile database (Mongodb)
 
-   - being able to post to the announcements page / screen is
-     represented by being a user of the equipment type named as
-     organization:announcements in the config file.
+    The most basic purpose of the profile database is to hold the
+    users' names (so the administrators can identify records),
+    membership numbers (likewise) and email addresses (so the system
+    can notify users when training they have requested is scheduled).
 
-   Members can request training on a particular type of equipment, and
-   if there is a training event of the appropriate type already open
-   and with spaces available, the user is given a link to sign up for
-   it.
+    In a fully-fledged system (which manages all events for an
+    organization, not just the training events), the user can store
+    further information here, including interest areas and levels so
+    users can be notified when possibly interesting events are
+    scheduled; and, for catered events, what they don't want to eat
+    (so suitable numbers of vegetarian pizzas, etc, can be provided).
 
-   When a trainer schedules a training event, the system searches for
-   users who have requested that type of training, sorts them into
-   order of how long they've been waiting, and sends to those who've
-   been waiting longest (up to the maximum number of attendees for the
-   event) emails containing offers of training, in the form of a link
-   with a UUID identifying the event and the user, that will generate
-   a page on which the user can accept or decline the invitation.
+*** The operational database (Mongodb)
 
-   There is a limit on the number of training requests you can have
-   open at once (set in the config file as
-   training:default_max_requests), to encourage people to be specific
-   about requesting training only on equipment they're serious about
-   using.  Your personal limit can be raised by an admin if you can
-   convince them that you have good reason; and we will experiment
-   with the system-wide default number for this as we settle into
-   using the system.
+    This is contains the non-personally-identifying data, that the
+    system uses for its operation.  This includes their pending
+    training requests (and how many open training requests they are
+    permitted, if different from the default; this can be set only by
+    admins); and also the level of privacy they want for their
+    information (for example, whether their name can be shown to
+    attendees when they are hosting a training session).
 
-   If you don't turn up for training that you've signed up for, more
-   than a set number of times (training:no_shows_limit in the config
-   file), you won't be able to request or accept more training until
-   you've contacted an admin about it.  This may sound a bit
-   draconian, but we have had significant problems with people wasting
-   training slots by signing up but not turning up; as trainers are
-   volunteering their time, training slots are one of our scarcer
-   resources.
+    It also includes a bitmap for which weekly timeslots they are
+    typically available for training, because sending users training
+    invitations for times they know they cannot make causes a delay
+    for users further down the queue for that training.  If a
+    particular installation does not want to use this feature, the
+    bitmap is set to "available" for all time slots, and the UI
+    feature for displaying and editing it is omitted from the users'
+    profile pages.
 
-   For the rare occasions when we have to withdraw permission to use
-   something, there is also an "untraining" event type, which cancels
-   permission.  You have permission to use an equipment type if your
-   most recent training for it is more recent than your most recent
-   untraining for it.  Admins and device owners and trainers can
-   create and apply untraining events to users.
+    The operational data also has space for recording the users' RFID
+    fob codes (or something that can be tied to them), in preparation
+    for being able to generate lists of who can use each type of
+    equipment, to be downloaded into controllers attached to the
+    equipment to enable the equipment only for qualified users.
+
+    The operational data is normally kept permanently, even when a
+    user has left, to maintain the chain of training from each user
+    back to the original installer of the equipment, so if the user
+    has ever trained anyone, it would be destructive to remove their
+    operational data.  Of course, it could be removed by someone with
+    command-line access to the database, if the user has exceptional
+    fears.
+   
+*** The equipment types database (Mongodb)
+
+    There are two databases related to equipment: one with entries
+    shared between all equipment of the same type, and one with
+    entries for each instance of that type.  This is the former.
+
+    Training is connected to an equipment type, not an individual
+    instance of the type.  This database exists mainly to give
+    training sessions a way of indicating what they are training on.
+
+    These entries can also have links to wiki pages about the
+    equipment, and other background information (manufacturer, model
+    number, etc).
+
+*** The equipment database (Mongodb)
+
+    There are two databases related to equipment: one with entries
+    shared between all equipment of the same type, and one with
+    entries for each instance of that type.  This is the latter.
+
+    The names of the instances (such as _Jaws_ and _Betsy_ for the
+    laser cutters) are stored here.
+
+    In a fully-fledged system, equipment status can be stored here.
+
+*** Events (Mongodb)
+
+    Each event has:
+
+    - a type
+    - a timestamp and a duration
+    - a location
+    - a list of hosts (normally just one) --- this is the trainer, for
+      a training event
+    - a list of attendees
+    - a list of people succesfully attending the event (for training
+      events)
+    - a list of people unsuccesfully attending the event (for training
+      events)
+    - a list of people failing to attend the event (for training
+      events)
+    - a list of equipment instances reserved for the event --- this is
+      the only way equipment can be reserved
+
+    In a fully-fledged system, which handles all events (instead of
+    only training events) a room can be reserved for the event because
+    rooms are instances of the =room= type of equipment.
+
+*** Event templates (Mongodb)
+
+    Each type of event has a template entry, controlling which fields
+    the event has, and indicating prerequisites for the user creating
+    the event and for users signing up for the event.
+
+** Static (file) data
+
+*** The configuration file
+
+    The configuration file is written in YAML, and controls:
+
+    - Some details of how pages are displayed
+    - The order in which user profile sections are displayed (omission
+      from the sequence suppresses a section)
+    - The profile fields stored for each user
+    - The possible interest areas, if the interest areas feature is used
+    - The start and end times of availability timeslots, if that
+      feature is used
+    - Some controls for the event template editor
+    - The locations equipment instances can be stored in
 
 ** Privacy and data protection
 
@@ -154,6 +333,13 @@
    - Bulk import of user and training data (from CSV files)
    - Creation of equipment types and instances (by importing from CSV
      files)
+
+** The API
+
+   There is currently a partial API, which allows users to retrieve
+   their data (which the GDPR requires it to be possible for them to
+   do) and which can also generate lists of codes of the fobs of
+   qualified users, for equipment controllers.
 
 ** How your data is used
 
