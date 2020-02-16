@@ -220,6 +220,10 @@
    although they could be added (subject to profile privacy settings)
    for machine types that can display the name of the current user (in
    particular, the 3D printers).
+** Other internal exports
+   The system allows the user to set a badge text in their profile,
+   and can export this to the badge printer (which, however, cannot
+   yet import it).
 ** Exchange with other organizations
    We could export a users' qualification list, with a digital
    signature, for import into compatible systems run by other
