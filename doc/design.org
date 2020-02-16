@@ -187,6 +187,13 @@
    and importing those.  It wouldn't be difficult to add these to the
    web interface, but they happen rarely enough for it not have been a
    development priority.
+** Adding inductions to the system
+   The system is designed for new users to be able to sign up online
+   and request attendance at a "see the space" session.  If they
+   "pass" that, they would then be able to sign up for an induction.
+   This is why the system uses a UUID rather than a membership number,
+   as the common key across its three underlying databases; the
+   membership number will only be allocated on becoming a member.
 * Ease of maintenance
 ** The code
    The system is written entirely in fairly straightforward Python,
