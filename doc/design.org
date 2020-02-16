@@ -2,10 +2,11 @@
 #+AUTHOR: John Sturdy
 #+BEAMER_FRAME_LEVEL: 2
 * The inspiration
-  I wrote the system because of the unsuitability of the system
-  my local hackerspace, Makespace, was using for signing up for
-  training on equipment, which works by setting up training sessions
-  on meetup.com and announcing them on Google Groups.
+** Why I wrote the system
+   I wrote the system because of the unsuitability of the system my
+   local hackerspace, Makespace, was using for signing up for training
+   on equipment, which works by setting up training sessions on
+   meetup.com and announcing them on Google Groups.
 ** The problems with the old system
    The main problem with this is that the first people to respond to
    the announcments get the training slots, regardless of how long
@@ -21,10 +22,11 @@
    become available, with those who have been waiting for longest
    getting priority.
 * The central idea
-  After some experimentation with ideas for how to represent the
-  information, one idea stood out above the others: that the central
-  data items are not the users, nor the equipment types (although
-  these are important), but events (training sessions) linking them.
+** Events are central  
+   After some experimentation with ideas for how to represent the
+   information, one idea stood out above the others: that the central
+   data items are not the users, nor the equipment types (although
+   these are important), but events (training sessions) linking them.
 ** How events hold the information together
    The fact that a particular user is trained for a given role on a
    given piece of equipment is represented by the existence of a past
@@ -62,12 +64,13 @@
    induction, being a member (i.e. having been trained on the
    hackerspace itself) is a prerequisite.
 * What naturally followed
-  Once events were established as the centre of the system, a lot more
-  could be fitted into place around them.
+** More types of events
+   Once events were established as the centre of the system, a lot more
+   could be fitted into place around them.
 
-  Since future events can be displayed on a calendar, and current
-  events on a monitor by the door, it makes sense to represent all
-  types of events in the hackerspace, not just training sessions.
+   Since future events can be displayed on a calendar, and current
+   events on a monitor by the door, it makes sense to represent all
+   types of events in the hackerspace, not just training sessions.
 ** Booking
    Makespace doesn't allow for equipment booking other than for
    training sessions.  The system I have produced makes provision for
@@ -120,3 +123,29 @@
    through those who wish their names to be as visible as they are
    now, to those who wish to self-promote in the hope of getting
    freelance contracts!
+* Export of data
+** Control of data export
+   The GDPR requires users to be able to access their data.  As well
+   as them being able to see the data through their profile pages
+   (redacted as necessary where other users' information is involved
+   --- for example, the host of a training event might not want their
+   name to be visible to attendees), they are able to extract their
+   data as JSON through an API.  This not only supports the GDPR
+   requirements, but may also be useful to those in the Quantified
+   Self movement.
+** Export to our machine controllers
+   Another part of the API can produce lists of the current keyfob
+   identifiers of users allowed to use each type of equipment, to
+   allow devices with a suitable controller to enable themselves only
+   on presentation of the fob of a permitted user.  This also allows
+   the machine usage to be logged per user, for tracing damage to
+   equipment.  These lists do not normally include the users' names,
+   although they could be added (subject to profile privacy settings)
+   for machine types that can display the name of the current user (in
+   particular, the 3D printers).
+** Exchange with other organizations
+   We could export a users' qualification list, with a digital
+   signature, for import into compatible systems run by other
+   hackerspaces who have looked at our training and decided that it is
+   equivalent to their own training.
+
