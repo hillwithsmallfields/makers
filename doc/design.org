@@ -123,6 +123,83 @@
    through those who wish their names to be as visible as they are
    now, to those who wish to self-promote in the hope of getting
    freelance contracts!
+* Ease of use
+** Web interface
+   All except a few very obscure operations are currently done through
+   a web interface, presented through a simple framework that makes it
+   easy to provide help information on each page.
+
+   Users can edit their profiles, people can create events (only
+   trainers can create training events), and equipment owners can edit
+   equipment profiles, all through web forms.
+** Main workflow
+   Users navigate to the page for an equipment type they'd like to be
+   trained on, and use a button on it to indicate they'd like training
+   on it.
+
+   Trainers go to the page for the equipment type (linked from their
+   profile) and can create a training session (from a template),
+   indicating how many people can attend the session.
+** What happens when training is scheduled
+   The system mails invitations to the indicated number of people,
+   starting with those who have been waiting longest.  The invitations
+   include links which bring up pages on which they can indicate they
+   will or won't attend (or have lost interest in the training).
+
+   When people reply that they can't attend, or don't reply within a
+   set period, people further down the queue are then mailed.
+** At the training session
+   The trainer brings up a page for the event, which presents a table
+   with a row for each attendee, with radio buttons for pass, fail, or
+   no-show.
+
+   The attendees who are marked as passing the training are then seen
+   by the system as being allowed to use that equipment in that role.
+** Setting restrictions
+   The system limits the number of equipment types a user can be
+   waiting for training on, to deter people from signing up for
+   everything.  There is a system-wide limit, but it can be
+   over-ridden by the adminstrators for individual users according to
+   circumstances.  Users cannot request training on further equipment
+   types when over their limit.
+
+   The system also records the number of times that each user has
+   accepted a training invitation but the trainer has indicated that
+   they did not attend.  This can be reset by the administrator, but
+   the user has to request this (and presumably convince the
+   adminstrator that they are not wantonly wasting training slots).
+   While a user is over the limit for this, they cannot request more
+   training.
+** Admin interface
+   System administrators can do all the actions above, but without the
+   restrictions (such as prerequisites) that are normally applied.
+
+   General administrators, and the owners and trainers of individual
+   equipment types, can also create special events through a web
+   interface not available to other users, to de-train (ban) and
+   restore users.
+
+   General administrators can also create arbitrary events.
+** The obscure operations
+   Creation of equipment types, and adding of individual pieces of
+   equipment, is not currently available through the web interface; it
+   has to be done by making spreadsheets, saving them as CSV files,
+   and importing those.  It wouldn't be difficult to add these to the
+   web interface, but they happen rarely enough for it not have been a
+   development priority.
+* Ease of maintenance
+** The code
+   The system is written entirely in fairly straightforward Python,
+   and reasonably well commented.
+** The configuration
+   The system is partly configured through a YAML config file, which
+   should be understandable to any competent programmer and to many
+   semi-technical people.  Most of this information (except for where
+   the database is) could be moved into the database and made editable
+   through web forms, although as the organization for which it was
+   originally written (Makespace) doesn't want some parts of the
+   system to be enabled, it may be as well to leave it in the config
+   file.
 * Export of data
 ** Control of data export
    The GDPR requires users to be able to access their data.  As well
@@ -148,4 +225,29 @@
    signature, for import into compatible systems run by other
    hackerspaces who have looked at our training and decided that it is
    equivalent to their own training.
+* System internals
+** Databases
+   The system uses two noSQL (mongo) databases, and one relational one
+   which is forced on it by using Django to handle the user login
+   sessions.
 
+   One of the noSQL databases contains the user profiles, and entries
+   in this should be deleted on request, along with the corresponding
+   entries in Django's account database, if a user leaves and asks for
+   their personally identifying data to be deleted.
+
+   The other noSQL database contains the operational information:
+   events by date (past, present and future), user operational
+   information (non-identifying), equipment types, equipment
+   instances, etc.  If a user leaves and asks for their identifying
+   data to be removed, an anonymous operational stub of their data is
+   kept as a placeholder to indicate that "somebody" attended or
+   hosted an event.
+* What we don't do, that some places might want
+** Voting
+   Some hackerspaces' joining procedures include existing members
+   voting on applications to join.  The system doesn't include this,
+   as the organization it was written for doesn't use this procedure.
+
+   In fact, it doesn't include any voting or polling facilities at
+   all.
