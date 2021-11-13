@@ -252,7 +252,7 @@ p.p.s Christopher Lenz wrote a good reply to Cliff's post:
 from __future__ import with_statement
 import types
 from decimal import Decimal
-from cgi import escape as xml_escape
+from html import escape as xml_escape
 
 __author__ = 'Tavis Rudd <tavis@damnsimple.com>'
 
@@ -444,7 +444,6 @@ for typeset, visitor in (
     (func_types, (lambda o, w: w.walk(o())))):
     for type_ in typeset:
         default_visitors_map[type_] = visitor
-
 
 ################################################################################
 # 5: Declarative classes for creating a dom-like tree of xml/html elements:
@@ -752,7 +751,6 @@ Example(
     'a snippet using a list comprehension',
     div[[span(id=('id', i))[i, ' is > ', i-1]
          for i in range(5)]])
-
 
 ################################################################################
 # 9: Extended example using some fictional model data
